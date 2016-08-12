@@ -1,0 +1,34 @@
+This is a source distribution of MCPL - Monte Carlo Particle Lists.
+
+Included are the core utilities for reading and writing .mcpl files: A binary
+format with lists of particle state information, for interchanging and
+reshooting events between various Monte Carlo simulation applications.
+
+Hooks for Geant4 (geant4.cern.ch) and MCNP (SSW files) are included in this
+distribution as well. Hooks for McStas (mcstas.org) are already included
+directly upstream in McStas. A few examples of how to use the Geant4 hooks, or
+how to interact with MCPL files from standalone C code, are also provided. Refer
+to the FILES file for more information about included files, and refer to the
+comment at the top of the CMakeLists.txt file for how to build and install with
+CMake.
+
+MCPL and most code distributed here was written 2015-2016 by Thomas Kittelmann
+(thomas.kittelmann@esss.se). The MCNP-SSW converters were written in close
+collaboration with Esben Klinkby (esbe@dtu.dk), and the McStas converters were
+written by Erik Knudsen (erkn@fysik.dtu.dk) and Peter Willendrup
+(pkwi@fysik.dtu.dk).
+
+See the file LICENSE for usage conditions.
+
+The latest version of MCPL and further instructions and documentation can be
+found at the websites: http://cern.ch/mcpl and http://mcpl.mccode.org/.
+
+Note that instructions for installation and setup of third-party products like
+Geant4, McStas and MCNP are beyond the scope of this file. But for Geant4, a few
+extra tips are given here, to avoid typical issues encountered by new users
+(this was tested with Geant4 10.0.p03):
+
+  1) Refer to the instructions at http://geant4.cern.ch/
+  2) Provide the -DGEANT4_INSTALL_DATA=ON flag to CMake during installation.
+  3) After installation, source <geant4installdir>/bin/geant4.sh to set up
+     a proper runtime environment.
