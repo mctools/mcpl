@@ -1,0 +1,9 @@
+From McXtrace version 1.3, MCPL plugins are shipped as part of the McXtrace
+Component distribution. Please refer to the following McXtrace instrument files
+in the examples/ directory of that distribution for demonstrations of how to
+enable the relevant components:
+
+  examples/Test_MCPL_input.instr
+  examples/Test_MCPL_output.instr
+
+Further instructions are also available at https://mctools.github.io/mcpl/.
