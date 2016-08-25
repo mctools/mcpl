@@ -6,7 +6,7 @@ description: >
   in particle simulations, facilitating interfacing between
   various Monte Carlo programmes.
 
-baseurl: "/junk"
+baseurl: "/mcpl"
 
 markdown: kramdown
 highlighter: rouge
