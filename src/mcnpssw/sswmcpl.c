@@ -163,7 +163,7 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
       printf("Error: specified configuration file %s does not contain title found in ssw file: \"%s\".\n",inputdeckfile,ssw_title(f));
       return 0;
     }
-    mcpl_hdr_add_data(mcplfh, "mcnp_config_file", (uint32_t)cfgfile_lbuf,(const char *)cfgfile_buf);
+    mcpl_hdr_add_data(mcplfh, "mcnp_input_deck", (uint32_t)cfgfile_lbuf,(const char *)cfgfile_buf);
     free(cfgfile_buf);
   }
 
@@ -199,13 +199,14 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
   actual_filename[0]='\0';
   strcat(actual_filename,tmp);
 
+  int did_gzip = 0;
   if (opt_gzip)
-    mcpl_closeandgzip_outfile(mcplfh);
+    did_gzip = mcpl_closeandgzip_outfile_rc(mcplfh);
   else
     mcpl_close_outfile(mcplfh);
   ssw_close_file(f);
 
-  printf("Created %s%s\n",actual_filename,(opt_gzip?".gz":""));
+  printf("Created %s%s\n",actual_filename,(did_gzip?".gz":""));
   free(actual_filename);
   return 1;
 }
@@ -227,7 +228,7 @@ void ssw2mcpl_parse_args(int argc,char **argv, const char** infile,
       progname = progname ? progname + 1 : argv[0];
       printf("Usage:\n\n");
       printf("  %s [options] input.ssw [output.mcpl]\n\n",progname);
-      printf("Converts the Monte Carlo particles in the input.ssw file (MCNP Surface \n"
+      printf("Converts the Monte Carlo particles in the input.ssw file (MCNP Surface\n"
              "Source Write format) to MCPL format and stores in the designated output\n"
              "file (defaults to \"output.mcpl\").\n"
              "\n"
@@ -235,10 +236,10 @@ void ssw2mcpl_parse_args(int argc,char **argv, const char** infile,
              "\n"
              "  -h, --help   : Show this usage information.\n"
              "  -d, --double : Enable double-precision storage of floating point values.\n"
-             "  -s, --surf   : Store SSW surface id information in the MCPL userflags.\n"
+             "  -s, --surf   : Store SSW surface IDs in the MCPL userflags.\n"
              "  -n, --nogzip : Do not attempt to gzip output file.\n"
-             "  -c FILE      : Embed entire configuration FILE used to produce input.sww\n"
-             "                 in the MCPL header.\n"
+             "  -c FILE      : Embed entire configuration FILE (the input deck)\n"
+             "                 used to produce input.ssw in the MCPL header.\n"
              );
       exit(0);
     }
@@ -475,8 +476,6 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
       rawtype = conv_mcnp6_pdg2ssw(mcpl_p->pdgcode);
     else
       rawtype = conv_mcnpx_pdg2ssw(mcpl_p->pdgcode);
-    if (rawtype==2)
-      rawtype=0;
     if (!rawtype) {
       ++skipped_nosswtype;
       if (skipped_nosswtype<=100) {
@@ -555,30 +554,31 @@ int mcpl2ssw_app_usage( const char** argv, const char * errmsg ) {
   progname =  progname ? progname + 1 : argv[0];
   printf("Usage:\n\n");
   printf("  %s [options] <input.mcpl> <reference.ssw> [output.ssw]\n\n",progname);
-  printf("Converts the Monte Carlo particles in the input MCPL file to SSW format (MCNP\n"
-         "Surface Source Write) and stores the result in the designated output file (defaults\n"
-         "to \"output.ssw\").\n"
+  printf("Converts the Monte Carlo particles in the input MCPL file to SSW format\n"
+         "(MCNP Surface Source Write) and stores the result in the designated output\n"
+         "file (defaults to \"output.ssw\").\n"
          "\n"
-         "In order to do so and get the details of the SSW format correct, the user must also\n"
-         "provide a reference SSW file from the same approximate setup (MCNP version, input\n"
-         "deck...) where the new SSW file is to be used. The reference SSW file can of course\n"
-         "be very small, as only the file header is important (the new file essentially gets\n"
-         "a copy of the header found in the reference file, except for certain fields related\n"
-         "to number of particles whose values are changed).\n"
+         "In order to do so and get the details of the SSW format correct, the user\n"
+         "must also provide a reference SSW file from the same approximate setup\n"
+         "(MCNP version, input deck...) where the new SSW file is to be used. The\n"
+         "reference SSW file can of course be very small, as only the file header is\n"
+         "important (the new file essentially gets a copy of the header found in the\n"
+         "reference file, except for certain fields related to number of particles\n"
+         "whose values are changed).\n"
          "\n"
-         "Finally, one must pay attention to the Surface ID assigned to the particles in the\n"
-         "resulting SSW file: Either the user specifies a global one with -s<ID>, or it is assumed\n"
-         "that the MCPL userflags field in the input file is actually intended to become the\n"
-         "Surface ID. Note that not all MCPL files have userflag fields and that valid Surface\n"
-         "IDs are integers in the range 1-999999.\n"
+         "Finally, one must pay attention to the Surface ID assigned to the\n"
+         "particles in the resulting SSW file: Either the user specifies a global\n"
+         "one with -s<ID>, or it is assumed that the MCPL userflags field in the\n"
+         "input file is actually intended to become the Surface ID. Note that not\n"
+         "all MCPL files have userflag fields and that valid Surface IDs are\n"
+         "integers in the range 1-999999.\n"
          "\n"
          "Options:\n"
          "\n"
          "  -h, --help   : Show this usage information.\n"
-         "  -d, --double : Enable double-precision storage of floating point values.\n"
-         "  -s<ID>       : All particles in the resulting SSW file will have this surface ID.\n"
-         "  -l<LIMIT>    : Limit the maximum number of particles to put in the SSW file (note\n"
-         "                 that SSW files only supports up to 2147483647 particles).\n"
+         "  -s<ID>       : All particles in the SSW file will get this surface ID.\n"
+         "  -l<LIMIT>    : Limit the number of particles transferred to the SSW file\n"
+         "                 (defaults to 2147483647, the maximal SSW capacity).\n"
          );
   return 0;
 }
@@ -624,6 +624,10 @@ int mcpl2ssw_parse_args(int argc,const char **argv, const char** inmcplfile,
             return mcpl2ssw_app_usage(argv,"Bad option: missing number");
         }
       }
+
+    } else if (n==6 && strcmp(a,"--help")==0) {
+      mcpl2ssw_app_usage(argv,0);
+      return -1;
     } else if (n>=1&&a[0]!='-') {
       if (*outsswfile)
         return mcpl2ssw_app_usage(argv,"Too many arguments.");

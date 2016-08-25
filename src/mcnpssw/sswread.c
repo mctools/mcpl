@@ -315,8 +315,8 @@ ssw_file_t ssw_open_file(const char * filename)
   /* printf("ssw_open_file: Found aids  = '%s'\n",f->aids); */
 
   if ( f->is_mcnp6 ) {
-    if ( strcmp(f->vers,"6")!=0 ) {
-      printf("ssw_open_file error: Unsupported MCNP6 source version :\"%s\" (must be \"6\")\n",f->vers);
+    if ( strcmp(f->vers,"6")!=0 && strcmp(f->vers,"6.mpi")!=0 ) {
+      printf("ssw_open_file error: Unsupported MCNP6 source version :\"%s\" (must be \"6\" or \"6.mpi\")\n",f->vers);
       return ssw_openerror(f,"ssw_open_file error: Unsupported MCNP6 source version");
     }
   } else {
@@ -536,7 +536,7 @@ int32_t conv_mcnpx_ssw2pdg(int32_t c)
   if (c<=34)
     return conv_mcnpx_to_pdg_0to34[c];
   if (c>=401&&c<=434)
-    return - conv_mcnpx_to_pdg_0to34[c%100];
+    return c==402 ? 22 : - conv_mcnpx_to_pdg_0to34[c%100];
   int32_t sign = 1;
   if (c%1000==435) {
     sign = -1;
@@ -554,6 +554,10 @@ int32_t conv_mcnpx_ssw2pdg(int32_t c)
     long ZM1 = c%1000;
     return sign * (1000000000 + (ZM1+1)*10000 + A*10);
   }
+  //Retry without non-type related parts:
+  int j = (c%1000)/100;
+  if (j==2||j==6)
+    return conv_mcnpx_ssw2pdg(c-200);
   return 0;
 }
 
@@ -568,7 +572,7 @@ int32_t conv_mcnp6_ssw2pdg(int32_t c)
     //Note that A (see below) has been observed in SSW files to have non-zero
     //values for ptype<37 as well, so don't require A, Z or S to be 0 here.
     int32_t p = conv_mcnp6_to_pdg_0to36[ptype];
-    return antibit ? -p : p;
+    return (antibit&&p!=22) ? -p : p;
   }
   if (ptype==37) {
     int A = c%512;  c /=  512;

@@ -16,6 +16,12 @@
 #include <stdlib.h>
 #include <memory.h>
 
+
+double randuniform(double a, double b)
+{
+  return a + rand() * (b-a) / RAND_MAX;
+}
+
 int main(int argc,char**argv) {
 
   if (argc!=2) {
@@ -32,7 +38,6 @@ int main(int argc,char**argv) {
 
   mcpl_outfile_t f = mcpl_create_outfile(filename);
   mcpl_hdr_set_srcname(f,"my_cool_program_name");
-  mcpl_enable_universal_pdgcode(f,2112);//all particles are neutrons
 
   // By default, floating point numbers will be stored in single precision and
   // neither polarisation nor user-flags will be stored in the file. These
@@ -42,6 +47,10 @@ int main(int argc,char**argv) {
   //    mcpl_enable_userflags(f);
   //    mcpl_enable_polarisation(f);
   //    mcpl_enable_doubleprec(f);
+
+  // If all particles will be of the same type, optimise the file a bit by:
+  //
+  //    mcpl_enable_universal_pdgcode(f,2112);//all particles are neutrons
 
   //We can add comments (strings) to the header. It is always a good idea to add
   //comments explaining things like coordinate system, contents of user-flags
@@ -56,26 +65,31 @@ int main(int argc,char**argv) {
 
   //Allocate the particle structure we will use during the simulation loop
   //to register particle data in the output file:
-  mcpl_particle_t * particle = (mcpl_particle_t*)calloc(sizeof(mcpl_particle_t),1);
+  mcpl_particle_t * particle = mcpl_get_empty_particle(f);
 
   //Simulation loop, modify the particle struct and add to the file as many
   //times as needed (here everything will simply be filled with some stupid
   //random numbers):
   for (int i = 0; i < 1000; ++i) {
+    //particle type:
+    if (rand()%2)
+      particle->pdgcode = 2112;//50% neutrons
+    else
+      particle->pdgcode = 22;//50% gammas
     //position in centimeters:
-    particle->position[0] = rand();
-    particle->position[1] = rand();
-    particle->position[2] = rand();
+    particle->position[0] = randuniform(-100,100);
+    particle->position[1] = randuniform(-100,100);
+    particle->position[2] = randuniform(-100,100);
     //kinetic energy in MeV:
-    particle->ekin = rand();
+    particle->ekin = randuniform(0.001,10);
     //momentum direction (unit vector):
     particle->direction[0] = 0.0;
     particle->direction[1] = 0;
     particle->direction[2] = 1.0;
     //time in milliseconds:
-    particle->time = rand();
+    particle->time = randuniform(0,100);
     //weight in unspecified units:
-    particle->weight = rand();
+    particle->weight = randuniform(0.01,10);
     //modify userflags and polarisation (what units?) as well, if enabled.
 
     //Finally, add the particle to the file:
@@ -84,7 +98,6 @@ int main(int argc,char**argv) {
 
   //At the end, remember to properly close the output file (and cleanup mem if desired):
   mcpl_closeandgzip_outfile(f);
-  free(particle);
 
   //Note: By calling mcpl_closeandgzip_outfile rather than mcpl_close_outfile,
   //the output file will (in most cases) end up being gzipped, resulting in a

@@ -68,7 +68,10 @@
 /*                                                                                 */
 /***********************************************************************************/
 
-#define MCPL_VERSION 6       /* Code version (100*MAJOR+MINOR) */
+#define MCPL_VERSION_MAJOR 0
+#define MCPL_VERSION_MINOR 7
+#define MCPL_VERSION_PATCH 0
+#define MCPL_VERSION     700 /* (10000*MAJOR+100*MINOR+PATCH)   */
 #define MCPL_FORMATVERSION 2 /* Format version of written files */
 
 #ifdef __cplusplus
@@ -129,6 +132,12 @@ extern "C" {
 
   /* Alternatively close with (will call mcpl_gzip_file after close): */
   void mcpl_closeandgzip_outfile(mcpl_outfile_t);
+  int mcpl_closeandgzip_outfile_rc(mcpl_outfile_t);/*version returning non-zero on success*/
+
+  /* Convenience function which returns a pointer to a nulled-out particle
+     struct which can be used to edit and pass to mcpl_add_particle. It can be
+     reused and will be automatically free'd when the file is closed: */
+  mcpl_particle_t* mcpl_get_empty_particle(mcpl_outfile_t);
 
   /***********************/
   /* Reading .mcpl files */
@@ -197,6 +206,11 @@ extern "C" {
 
   /* Attempt to run gzip on a file (does not require MCPL_HASZLIB on unix): */
   void mcpl_gzip_file(const char * filename);
+  int mcpl_gzip_file_rc(const char * filename);/*version returning non-zero on success*/
+
+  /* Convenience function which transfers all settings, blobs and comments to */
+  /* outfile. Intended to make it easy to filter files via custom C code.   */
+  void mcpl_transfer_metadata(mcpl_file_t source, mcpl_outfile_t target);
 
   /******************/
   /* Error handling */
@@ -2860,6 +2874,7 @@ typedef struct {
   unsigned particle_size;
   int particle_offset;
   mcpl_particlesingleprec_t * psp;
+  mcpl_particle_t* puser;
 } mcpl_outfileinternal_t;
 
 #define MCPLIMP_OUTFILEDECODE mcpl_outfileinternal_t * f = (mcpl_outfileinternal_t *)of.internal; assert(f)
@@ -3308,6 +3323,19 @@ void mcpl_update_nparticles(FILE* f, uint64_t n)
     mcpl_error(errmsg);
 }
 
+mcpl_particle_t* mcpl_get_empty_particle(mcpl_outfile_t of)
+{
+  MCPLIMP_OUTFILEDECODE;
+  if (f->puser) {
+    //Calling more than once. This could be innocent, or it could indicate
+    //problems in multi-threaded user-code. Better disallow and give an error:
+    mcpl_error("mcpl_get_empty_particle must not be called more than once per output file");
+  } else {
+    f->puser = (mcpl_particle_t*)calloc(sizeof(mcpl_particle_t),1);
+  }
+  return f->puser;
+}
+
 void mcpl_close_outfile(mcpl_outfile_t of)
 {
   MCPLIMP_OUTFILEDECODE;
@@ -3318,17 +3346,47 @@ void mcpl_close_outfile(mcpl_outfile_t of)
   fclose(f->file);
   free(f->filename);
   free(f->psp);
+  free(f->puser);
   free(f);
 }
 
-void mcpl_closeandgzip_outfile(mcpl_outfile_t of)
+void mcpl_transfer_metadata(mcpl_file_t source, mcpl_outfile_t target)
+{
+  mcpl_hdr_set_srcname(target,mcpl_hdr_srcname(source));
+  for (unsigned i = 0; i < mcpl_hdr_ncomments(source); ++i)
+    mcpl_hdr_add_comment(target,mcpl_hdr_comment(source,i));
+  const char** blobkeys = mcpl_hdr_blobkeys(source);
+  if (blobkeys) {
+    int nblobs = mcpl_hdr_nblobs(source);
+    uint32_t ldata;
+    const char * data;
+    for (int i = 0; i < nblobs; ++i) {
+      int res = mcpl_hdr_blob(source,blobkeys[i],&ldata,&data);
+      assert(res);//key must exist
+      (void)res;
+      mcpl_hdr_add_data(target, blobkeys[i], ldata, data);
+    }
+  }
+  if (mcpl_hdr_has_userflags(source))
+    mcpl_enable_userflags(target);
+  if (mcpl_hdr_has_polarisation(source))
+    mcpl_enable_polarisation(target);
+  if (mcpl_hdr_has_doubleprec(source))
+    mcpl_enable_doubleprec(target);
+  int32_t updg = mcpl_hdr_universel_pdgcode(source);
+  if (updg)
+    mcpl_enable_universal_pdgcode(target,updg);
+}
+
+int mcpl_closeandgzip_outfile_rc(mcpl_outfile_t of)
 {
   MCPLIMP_OUTFILEDECODE;
   char * filename = f->filename;
   f->filename = 0;//prevent free in mcpl_close_outfile
   mcpl_close_outfile(of);
-  mcpl_gzip_file(filename);
+  int rc = mcpl_gzip_file_rc(filename);
   free(filename);
+  return rc;
 }
 
 typedef struct {
@@ -4233,7 +4291,7 @@ int mcpl_tool(int argc,char** argv) {
   if (opt_version) {
     if (filename1)
       return mcpl_tool_usage(argv,"Unrecognised arguments for --version.");
-    printf("MCPL version %i.%i\n",MCPL_VERSION/100,MCPL_VERSION%100);
+    printf("MCPL version %i.%i.%i\n",MCPL_VERSION_MAJOR,MCPL_VERSION_MINOR,MCPL_VERSION_PATCH);
     return 0;
   }
 
@@ -4296,6 +4354,17 @@ int mcpl_tool(int argc,char** argv) {
   return 0;
 }
 
+void mcpl_gzip_file(const char * filename)
+{
+  /* for backwards compatibility, this version simply ignores the return code */
+  mcpl_gzip_file_rc(filename);
+}
+void mcpl_closeandgzip_outfile(mcpl_outfile_t of)
+{
+  /* for backwards compatibility, this version simply ignores the return code */
+  mcpl_closeandgzip_outfile_rc(of);
+}
+
 #if defined(MCPL_HASZLIB) && !defined(Z_SOLO) && !defined(MCPL_NO_CUSTOM_GZIP)
 #  define MCPLIMP_HAS_CUSTOM_GZIP
 int _mcpl_custom_gzip(const char *file, const char *mode);//return 1 if successful, 0 if not
@@ -4308,7 +4377,7 @@ int _mcpl_custom_gzip(const char *file, const char *mode);//return 1 if successf
 #  include <sys/wait.h>
 #  include <errno.h>
 
-void mcpl_gzip_file(const char * filename)
+int mcpl_gzip_file_rc(const char * filename)
 {
   const char * bn = strrchr(filename, '/');
   bn = bn ? bn + 1 : filename;
@@ -4340,6 +4409,7 @@ void mcpl_gzip_file(const char * filename)
     printf("MCPL: execlp/gzip error: %s\n",strerror(errno));
     exit(1);
   }
+  return 1;
 }
 #else
 //Non unix-y platform (like windows). We could use e.g. windows-specific calls
@@ -4347,14 +4417,15 @@ void mcpl_gzip_file(const char * filename)
 //the system anyway, so we either resort to using zlib directly to gzip, or we
 //disable the feature and print a warning.
 #  ifndef MCPLIMP_HAS_CUSTOM_GZIP
-void mcpl_gzip_file(const char * filename)
+int mcpl_gzip_file_rc(const char * filename)
 {
   const char * bn = strrchr(filename, '/');
   bn = bn ? bn + 1 : filename;
   printf("MCPL WARNING: Requested compression of %s to %s.gz is not supported in this build.\n",bn,bn);
+  return 0;
 }
 #  else
-void mcpl_gzip_file(const char * filename)
+int mcpl_gzip_file_rc(const char * filename)
 {
   const char * bn = strrchr(filename, '/');
   bn = bn ? bn + 1 : filename;
@@ -4363,6 +4434,7 @@ void mcpl_gzip_file(const char * filename)
     printf("MCPL ERROR: Problems encountered while compressing file %s.\n",bn);
   else
     printf("MCPL: Succesfully compressed file into %s.gz\n",bn);
+  return 1;
 }
 #  endif
 #endif
@@ -14938,8 +15010,8 @@ ssw_file_t ssw_open_file(const char * filename)
   /* printf("ssw_open_file: Found aids  = '%s'\n",f->aids); */
 
   if ( f->is_mcnp6 ) {
-    if ( strcmp(f->vers,"6")!=0 ) {
-      printf("ssw_open_file error: Unsupported MCNP6 source version :\"%s\" (must be \"6\")\n",f->vers);
+    if ( strcmp(f->vers,"6")!=0 && strcmp(f->vers,"6.mpi")!=0 ) {
+      printf("ssw_open_file error: Unsupported MCNP6 source version :\"%s\" (must be \"6\" or \"6.mpi\")\n",f->vers);
       return ssw_openerror(f,"ssw_open_file error: Unsupported MCNP6 source version");
     }
   } else {
@@ -15159,7 +15231,7 @@ int32_t conv_mcnpx_ssw2pdg(int32_t c)
   if (c<=34)
     return conv_mcnpx_to_pdg_0to34[c];
   if (c>=401&&c<=434)
-    return - conv_mcnpx_to_pdg_0to34[c%100];
+    return c==402 ? 22 : - conv_mcnpx_to_pdg_0to34[c%100];
   int32_t sign = 1;
   if (c%1000==435) {
     sign = -1;
@@ -15177,6 +15249,10 @@ int32_t conv_mcnpx_ssw2pdg(int32_t c)
     long ZM1 = c%1000;
     return sign * (1000000000 + (ZM1+1)*10000 + A*10);
   }
+  //Retry without non-type related parts:
+  int j = (c%1000)/100;
+  if (j==2||j==6)
+    return conv_mcnpx_ssw2pdg(c-200);
   return 0;
 }
 
@@ -15191,7 +15267,7 @@ int32_t conv_mcnp6_ssw2pdg(int32_t c)
     //Note that A (see below) has been observed in SSW files to have non-zero
     //values for ptype<37 as well, so don't require A, Z or S to be 0 here.
     int32_t p = conv_mcnp6_to_pdg_0to36[ptype];
-    return antibit ? -p : p;
+    return (antibit&&p!=22) ? -p : p;
   }
   if (ptype==37) {
     int A = c%512;  c /=  512;
@@ -15432,7 +15508,7 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
       printf("Error: specified configuration file %s does not contain title found in ssw file: \"%s\".\n",inputdeckfile,ssw_title(f));
       return 0;
     }
-    mcpl_hdr_add_data(mcplfh, "mcnp_config_file", (uint32_t)cfgfile_lbuf,(const char *)cfgfile_buf);
+    mcpl_hdr_add_data(mcplfh, "mcnp_input_deck", (uint32_t)cfgfile_lbuf,(const char *)cfgfile_buf);
     free(cfgfile_buf);
   }
 
@@ -15468,13 +15544,14 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
   actual_filename[0]='\0';
   strcat(actual_filename,tmp);
 
+  int did_gzip = 0;
   if (opt_gzip)
-    mcpl_closeandgzip_outfile(mcplfh);
+    did_gzip = mcpl_closeandgzip_outfile_rc(mcplfh);
   else
     mcpl_close_outfile(mcplfh);
   ssw_close_file(f);
 
-  printf("Created %s%s\n",actual_filename,(opt_gzip?".gz":""));
+  printf("Created %s%s\n",actual_filename,(did_gzip?".gz":""));
   free(actual_filename);
   return 1;
 }
@@ -15496,7 +15573,7 @@ void ssw2mcpl_parse_args(int argc,char **argv, const char** infile,
       progname = progname ? progname + 1 : argv[0];
       printf("Usage:\n\n");
       printf("  %s [options] input.ssw [output.mcpl]\n\n",progname);
-      printf("Converts the Monte Carlo particles in the input.ssw file (MCNP Surface \n"
+      printf("Converts the Monte Carlo particles in the input.ssw file (MCNP Surface\n"
              "Source Write format) to MCPL format and stores in the designated output\n"
              "file (defaults to \"output.mcpl\").\n"
              "\n"
@@ -15504,10 +15581,10 @@ void ssw2mcpl_parse_args(int argc,char **argv, const char** infile,
              "\n"
              "  -h, --help   : Show this usage information.\n"
              "  -d, --double : Enable double-precision storage of floating point values.\n"
-             "  -s, --surf   : Store SSW surface id information in the MCPL userflags.\n"
+             "  -s, --surf   : Store SSW surface IDs in the MCPL userflags.\n"
              "  -n, --nogzip : Do not attempt to gzip output file.\n"
-             "  -c FILE      : Embed entire configuration FILE used to produce input.sww\n"
-             "                 in the MCPL header.\n"
+             "  -c FILE      : Embed entire configuration FILE (the input deck)\n"
+             "                 used to produce input.ssw in the MCPL header.\n"
              );
       exit(0);
     }
@@ -15744,8 +15821,6 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
       rawtype = conv_mcnp6_pdg2ssw(mcpl_p->pdgcode);
     else
       rawtype = conv_mcnpx_pdg2ssw(mcpl_p->pdgcode);
-    if (rawtype==2)
-      rawtype=0;
     if (!rawtype) {
       ++skipped_nosswtype;
       if (skipped_nosswtype<=100) {
@@ -15824,30 +15899,31 @@ int mcpl2ssw_app_usage( const char** argv, const char * errmsg ) {
   progname =  progname ? progname + 1 : argv[0];
   printf("Usage:\n\n");
   printf("  %s [options] <input.mcpl> <reference.ssw> [output.ssw]\n\n",progname);
-  printf("Converts the Monte Carlo particles in the input MCPL file to SSW format (MCNP\n"
-         "Surface Source Write) and stores the result in the designated output file (defaults\n"
-         "to \"output.ssw\").\n"
+  printf("Converts the Monte Carlo particles in the input MCPL file to SSW format\n"
+         "(MCNP Surface Source Write) and stores the result in the designated output\n"
+         "file (defaults to \"output.ssw\").\n"
          "\n"
-         "In order to do so and get the details of the SSW format correct, the user must also\n"
-         "provide a reference SSW file from the same approximate setup (MCNP version, input\n"
-         "deck...) where the new SSW file is to be used. The reference SSW file can of course\n"
-         "be very small, as only the file header is important (the new file essentially gets\n"
-         "a copy of the header found in the reference file, except for certain fields related\n"
-         "to number of particles whose values are changed).\n"
+         "In order to do so and get the details of the SSW format correct, the user\n"
+         "must also provide a reference SSW file from the same approximate setup\n"
+         "(MCNP version, input deck...) where the new SSW file is to be used. The\n"
+         "reference SSW file can of course be very small, as only the file header is\n"
+         "important (the new file essentially gets a copy of the header found in the\n"
+         "reference file, except for certain fields related to number of particles\n"
+         "whose values are changed).\n"
          "\n"
-         "Finally, one must pay attention to the Surface ID assigned to the particles in the\n"
-         "resulting SSW file: Either the user specifies a global one with -s<ID>, or it is assumed\n"
-         "that the MCPL userflags field in the input file is actually intended to become the\n"
-         "Surface ID. Note that not all MCPL files have userflag fields and that valid Surface\n"
-         "IDs are integers in the range 1-999999.\n"
+         "Finally, one must pay attention to the Surface ID assigned to the\n"
+         "particles in the resulting SSW file: Either the user specifies a global\n"
+         "one with -s<ID>, or it is assumed that the MCPL userflags field in the\n"
+         "input file is actually intended to become the Surface ID. Note that not\n"
+         "all MCPL files have userflag fields and that valid Surface IDs are\n"
+         "integers in the range 1-999999.\n"
          "\n"
          "Options:\n"
          "\n"
          "  -h, --help   : Show this usage information.\n"
-         "  -d, --double : Enable double-precision storage of floating point values.\n"
-         "  -s<ID>       : All particles in the resulting SSW file will have this surface ID.\n"
-         "  -l<LIMIT>    : Limit the maximum number of particles to put in the SSW file (note\n"
-         "                 that SSW files only supports up to 2147483647 particles).\n"
+         "  -s<ID>       : All particles in the SSW file will get this surface ID.\n"
+         "  -l<LIMIT>    : Limit the number of particles transferred to the SSW file\n"
+         "                 (defaults to 2147483647, the maximal SSW capacity).\n"
          );
   return 0;
 }
@@ -15893,6 +15969,10 @@ int mcpl2ssw_parse_args(int argc,const char **argv, const char** inmcplfile,
             return mcpl2ssw_app_usage(argv,"Bad option: missing number");
         }
       }
+
+    } else if (n==6 && strcmp(a,"--help")==0) {
+      mcpl2ssw_app_usage(argv,0);
+      return -1;
     } else if (n>=1&&a[0]!='-') {
       if (*outsswfile)
         return mcpl2ssw_app_usage(argv,"Too many arguments.");

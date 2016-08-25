@@ -24,6 +24,8 @@ src/mcnpssw/        : MCPL hooks for MCNP in C, in the form of a few .h/.c file
                       by MCNP.
 src/mcstas/         : No actual code is here, just a small reminder of how the
                       MCPL plugin shipped with McStas can be used.
+src/mcxtrace/       : No actual code is here, just a small reminder of how the
+                      MCPL plugin shipped with McXtrace can be used.
 src_fat/            : Various "fat" versions of files from the above directories
                       under src/, for convenience. These files are automatically
                       generated and might also contain code under the zlib

@@ -5,30 +5,32 @@ format with lists of particle state information, for interchanging and
 reshooting events between various Monte Carlo simulation applications.
 
 Hooks for Geant4 (geant4.cern.ch) and MCNP (SSW files) are included in this
-distribution as well. Hooks for McStas (mcstas.org) are already included
-directly upstream in McStas. A few examples of how to use the Geant4 hooks, or
-how to interact with MCPL files from standalone C code, are also provided. Refer
-to the FILES file for more information about included files, and refer to the
-comment at the top of the CMakeLists.txt file for how to build and install with
-CMake.
+distribution as well. Hooks for McStas (mcstas.org) and McXtrace (mcxtrace.org)
+are already included directly upstream in those applications. A few examples of
+how to use the Geant4 hooks, or how to interact with MCPL files from standalone
+C code, are also provided. Refer to the FILES file for more information about
+included files, and refer to the comment at the top of the CMakeLists.txt file
+for how to build and install with CMake.
 
 MCPL and most code distributed here was written 2015-2016 by Thomas Kittelmann
 (thomas.kittelmann@esss.se). The MCNP-SSW converters were written in close
-collaboration with Esben Klinkby (esbe@dtu.dk), and the McStas converters were
-written by Erik Knudsen (erkn@fysik.dtu.dk) and Peter Willendrup
+collaboration with Esben Klinkby (esbe@dtu.dk), and the McStas and McXtrace
+converters were written by Erik Knudsen (erkn@fysik.dtu.dk) and Peter Willendrup
 (pkwi@fysik.dtu.dk).
 
 See the file LICENSE for usage conditions.
 
+A substantial effort went into developing MCPL. If you use it for your work, we
+would appreciate it if you would use the following reference in your work:
+
+
+      [ Paper not yet published, please find draft and instructions ]
+      [ for how to cite on https://mctools.github.io/mcpl/          ]
+
+
 The latest version of MCPL and further instructions and documentation can be
-found at the websites: http://cern.ch/mcpl and http://mcpl.mccode.org/.
+found at https://mctools.github.io/mcpl/.
 
 Note that instructions for installation and setup of third-party products like
-Geant4, McStas and MCNP are beyond the scope of this file. But for Geant4, a few
-extra tips are given here, to avoid typical issues encountered by new users
-(this was tested with Geant4 10.0.p03):
-
-  1) Refer to the instructions at http://geant4.cern.ch/
-  2) Provide the -DGEANT4_INSTALL_DATA=ON flag to CMake during installation.
-  3) After installation, source <geant4installdir>/bin/geant4.sh to set up
-     a proper runtime environment.
+Geant4, McStas and MCNP are beyond the scope of this file. Please refer to the
+products own instructions for more information.

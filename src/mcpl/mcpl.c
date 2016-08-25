@@ -230,6 +230,7 @@ typedef struct {
   unsigned particle_size;
   int particle_offset;
   mcpl_particlesingleprec_t * psp;
+  mcpl_particle_t* puser;
 } mcpl_outfileinternal_t;
 
 #define MCPLIMP_OUTFILEDECODE mcpl_outfileinternal_t * f = (mcpl_outfileinternal_t *)of.internal; assert(f)
@@ -678,6 +679,19 @@ void mcpl_update_nparticles(FILE* f, uint64_t n)
     mcpl_error(errmsg);
 }
 
+mcpl_particle_t* mcpl_get_empty_particle(mcpl_outfile_t of)
+{
+  MCPLIMP_OUTFILEDECODE;
+  if (f->puser) {
+    //Calling more than once. This could be innocent, or it could indicate
+    //problems in multi-threaded user-code. Better disallow and give an error:
+    mcpl_error("mcpl_get_empty_particle must not be called more than once per output file");
+  } else {
+    f->puser = (mcpl_particle_t*)calloc(sizeof(mcpl_particle_t),1);
+  }
+  return f->puser;
+}
+
 void mcpl_close_outfile(mcpl_outfile_t of)
 {
   MCPLIMP_OUTFILEDECODE;
@@ -688,17 +702,47 @@ void mcpl_close_outfile(mcpl_outfile_t of)
   fclose(f->file);
   free(f->filename);
   free(f->psp);
+  free(f->puser);
   free(f);
 }
 
-void mcpl_closeandgzip_outfile(mcpl_outfile_t of)
+void mcpl_transfer_metadata(mcpl_file_t source, mcpl_outfile_t target)
+{
+  mcpl_hdr_set_srcname(target,mcpl_hdr_srcname(source));
+  for (unsigned i = 0; i < mcpl_hdr_ncomments(source); ++i)
+    mcpl_hdr_add_comment(target,mcpl_hdr_comment(source,i));
+  const char** blobkeys = mcpl_hdr_blobkeys(source);
+  if (blobkeys) {
+    int nblobs = mcpl_hdr_nblobs(source);
+    uint32_t ldata;
+    const char * data;
+    for (int i = 0; i < nblobs; ++i) {
+      int res = mcpl_hdr_blob(source,blobkeys[i],&ldata,&data);
+      assert(res);//key must exist
+      (void)res;
+      mcpl_hdr_add_data(target, blobkeys[i], ldata, data);
+    }
+  }
+  if (mcpl_hdr_has_userflags(source))
+    mcpl_enable_userflags(target);
+  if (mcpl_hdr_has_polarisation(source))
+    mcpl_enable_polarisation(target);
+  if (mcpl_hdr_has_doubleprec(source))
+    mcpl_enable_doubleprec(target);
+  int32_t updg = mcpl_hdr_universel_pdgcode(source);
+  if (updg)
+    mcpl_enable_universal_pdgcode(target,updg);
+}
+
+int mcpl_closeandgzip_outfile_rc(mcpl_outfile_t of)
 {
   MCPLIMP_OUTFILEDECODE;
   char * filename = f->filename;
   f->filename = 0;//prevent free in mcpl_close_outfile
   mcpl_close_outfile(of);
-  mcpl_gzip_file(filename);
+  int rc = mcpl_gzip_file_rc(filename);
   free(filename);
+  return rc;
 }
 
 typedef struct {
@@ -1603,7 +1647,7 @@ int mcpl_tool(int argc,char** argv) {
   if (opt_version) {
     if (filename1)
       return mcpl_tool_usage(argv,"Unrecognised arguments for --version.");
-    printf("MCPL version %i.%i\n",MCPL_VERSION/100,MCPL_VERSION%100);
+    printf("MCPL version %i.%i.%i\n",MCPL_VERSION_MAJOR,MCPL_VERSION_MINOR,MCPL_VERSION_PATCH);
     return 0;
   }
 
@@ -1666,6 +1710,17 @@ int mcpl_tool(int argc,char** argv) {
   return 0;
 }
 
+void mcpl_gzip_file(const char * filename)
+{
+  /* for backwards compatibility, this version simply ignores the return code */
+  mcpl_gzip_file_rc(filename);
+}
+void mcpl_closeandgzip_outfile(mcpl_outfile_t of)
+{
+  /* for backwards compatibility, this version simply ignores the return code */
+  mcpl_closeandgzip_outfile_rc(of);
+}
+
 #if defined(MCPL_HASZLIB) && !defined(Z_SOLO) && !defined(MCPL_NO_CUSTOM_GZIP)
 #  define MCPLIMP_HAS_CUSTOM_GZIP
 int _mcpl_custom_gzip(const char *file, const char *mode);//return 1 if successful, 0 if not
@@ -1678,7 +1733,7 @@ int _mcpl_custom_gzip(const char *file, const char *mode);//return 1 if successf
 #  include <sys/wait.h>
 #  include <errno.h>
 
-void mcpl_gzip_file(const char * filename)
+int mcpl_gzip_file_rc(const char * filename)
 {
   const char * bn = strrchr(filename, '/');
   bn = bn ? bn + 1 : filename;
@@ -1710,6 +1765,7 @@ void mcpl_gzip_file(const char * filename)
     printf("MCPL: execlp/gzip error: %s\n",strerror(errno));
     exit(1);
   }
+  return 1;
 }
 #else
 //Non unix-y platform (like windows). We could use e.g. windows-specific calls
@@ -1717,14 +1773,15 @@ void mcpl_gzip_file(const char * filename)
 //the system anyway, so we either resort to using zlib directly to gzip, or we
 //disable the feature and print a warning.
 #  ifndef MCPLIMP_HAS_CUSTOM_GZIP
-void mcpl_gzip_file(const char * filename)
+int mcpl_gzip_file_rc(const char * filename)
 {
   const char * bn = strrchr(filename, '/');
   bn = bn ? bn + 1 : filename;
   printf("MCPL WARNING: Requested compression of %s to %s.gz is not supported in this build.\n",bn,bn);
+  return 0;
 }
 #  else
-void mcpl_gzip_file(const char * filename)
+int mcpl_gzip_file_rc(const char * filename)
 {
   const char * bn = strrchr(filename, '/');
   bn = bn ? bn + 1 : filename;
@@ -1733,6 +1790,7 @@ void mcpl_gzip_file(const char * filename)
     printf("MCPL ERROR: Problems encountered while compressing file %s.\n",bn);
   else
     printf("MCPL: Succesfully compressed file into %s.gz\n",bn);
+  return 1;
 }
 #  endif
 #endif
