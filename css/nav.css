@@ -1,0 +1,36 @@
+nav {
+    width: auto;
+    display: inline-block;
+}
+
+nav ul {
+    list-style: none;
+    list-style-type: none;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    white-space: nowrap;
+    width: auto;
+}
+
+nav ul li { float: left; padding: 0; margin: 0; }
+
+nav ul li {
+    border-right: 1px solid #999;
+}
+
+nav ul li:last-child {
+    border-right: none;
+}
+
+nav ul li a { display: block; padding: 0.25ex 0.5em; margin: 0; text-decoration: none; }
+nav ul li a.active:hover,a.active:focus { background-color: #33a7ff; text-decoration: none; }
+nav ul li a.cat_active:hover,a.cat_active:focus { background-color: #007ee6; text-decoration: none; }
+nav ul li a.active {  color: #fff; background-color: #0090ff;}
+nav ul li a.cat_active {  color: #fff; background-color: #0065b5; }
+nav ul li a.cat_inactive { color:#eee; background-color: #444; }
+nav ul li a.subpage_inactive { color:#eee; background-color: #444; }
+nav ul li a.cat_inactive:hover,a.cat_inactive:focus { background-color: #666; text-decoration: none; }
+nav ul li a.subpage_inactive:hover,a.subpage_inactive:focus { background-color: #666; text-decoration: none; }
+
+nav ul.subpages { font-style: italic; font-size: 90%; }

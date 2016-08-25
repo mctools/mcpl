@@ -1,0 +1,56 @@
+{% include fct_parsenode.html page=page %}
+{% assign page_slug = node_slug %}
+{% assign page_cat = node_cat %}
+{% assign page_subslug = node_subslug %}
+          {% capture dummy %}
+          <nav><ul>
+{% assign sorted_pages = site.pages | sort: "name" | reverse | sort: "weight" | reverse | map: "to_liquid" %}
+{% assign subpages_in_cat = "" | split:"|"  %}
+{% for node in sorted_pages %}
+  {% include fct_parsenode.html page=node %}
+  {% if page_cat == node_cat %}
+    {% if node_cat == node_slug %}
+      {% assign node_catintro = node %}
+      {% assign node_catintro_url = node.url %}
+    {% else %}
+      {% assign subpages_in_cat = subpages_in_cat | push: node %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+{% for node in sorted_pages %}
+  {% include fct_parsenode.html page=node %}
+  {% if node_cat == node_slug %}
+    {% if page_cat == node_cat %}
+      {% if subpages_in_cat.size == 0 %}
+        {% assign linkclass = "active" %}
+      {% else %}
+        {% assign linkclass = "cat_active" %}
+      {% endif %}
+    {% else %}
+      {% assign linkclass = "cat_inactive" %}
+    {% endif %}
+<li><a href="{{node.url|prepend: site.baseurl }}" class="{{ linkclass }}">{{node.navtitle| default: node_slug}}</a></li>
+  {% endif %}
+{% endfor %}
+</ul>
+{% if subpages_in_cat.size > 0 %}
+  {% assign subpages_in_cat = subpages_in_cat | unshift: node_catintro %}
+            <ul class="subpages">
+{% for node in subpages_in_cat %}
+  {% include fct_parsenode.html page=node %}
+  {% if page_slug == node_slug %}
+    {% assign linkclass = "active" %}
+  {% else %}
+    {% assign linkclass = "subpage_inactive" %}
+  {% endif %}
+{% assign link_name = node_subslug %}
+{% if node.navtitle != nil %}{% assign link_name = node.navtitle %}{% endif %}
+  {% if node_catintro_url == node.url %}
+    {% assign link_name = "intro" %}
+  {% endif %}
+    <li><a href="{{node.url|prepend: site.baseurl}}" class="{{linkclass}}">{{link_name}}</a></li>
+{% endfor %}
+                </ul>
+{% endif %}
+          </nav>
+{% endcapture %}{{ dummy | strip_newlines | normalize_whitespace }}

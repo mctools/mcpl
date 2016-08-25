@@ -1,0 +1,22 @@
+title: MCPL
+tagline: Monte Carlo Particle Lists
+
+description: >
+  MCPL : Monte Carlo Particle Lists. A binary format for usage
+  in particle simulations, facilitating interfacing between
+  various Monte Carlo programmes.
+
+baseurl: "/junk"
+
+markdown: kramdown
+highlighter: rouge
+permalink: pretty
+
+exclude: [README.md]
+
+defaults:
+  -
+    scope:
+      path: "" # an empty string here means all files in the project
+    values:
+      layout: "default"

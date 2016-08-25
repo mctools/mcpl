@@ -1,0 +1,1 @@
+{% assign node_slug = include.page.slug | default: include.page.name | strip | remove: ".md" | downcase | escape %}{% assign node_cat = node_slug | split: "_" | first %}{% assign node_subslug = node_slug | split: "_" | slice 2,-1 %}
