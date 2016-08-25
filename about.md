@@ -15,8 +15,8 @@ in the indicated areas:
 A substantial effort went into developing MCPL. If you use it for your work, we
 would appreciate it if you would use the following reference in your work:
 
-**TODO - PAPER IN PREPARATION**
-**TODO: [https://guides.github.com/activities/citable-code/](https://guides.github.com/activities/citable-code/)**
+**(not published yet, but draft available: {% include linkpaper.html %})**
+**Please reference the github release instead: [![DOI](https://zenodo.org/badge/24077/mctools/mcpl.svg)](https://zenodo.org/badge/latestdoi/24077/mctools/mcpl)**
 
 ## License
 
