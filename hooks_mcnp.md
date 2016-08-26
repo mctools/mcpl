@@ -16,14 +16,16 @@ single-file ("fat") versions of the code with these links: {% include linkfile.h
 
 Next, compile them with two commands (exchange "gcc" with the name of your compiler - e.g.
 "clang" on OSX):
-
 ```shell
 gcc -std=c99 -lm ssw2mcpl_app_fat.c -o ssw2mcpl
 gcc -std=c99 -lm mcpl2ssw_app_fat.c -o mcpl2ssw
 ```
-
 And you are ready to run! For instance:
-
 ```shell
 ./ssw2mcpl <my-ssw-file> <my-mcpl-file>
+```
+Or get full usage instructions with:
+```shell
+./ssw2mcpl --help
+./mcpl2ssw --help
 ```
