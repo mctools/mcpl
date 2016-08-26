@@ -12,11 +12,7 @@ information in: {% include linkpaper.html subsection=3.2 %}.
 Rather than downloading the full MCPL distribution, it is possible to get hold
 of the two commands discussed in the {% include linkpaper.html subsection=3.2
 linkname="paper" %}, _ssw2mcpl_ and _mcpl2ssw_, simply by downloading the two
-single-file ("fat") versions of the code with these links: {%
-include linkfile.html file="src_fat/ssw2mcpl_app_fat.c" download=true
-%} and {%
-include linkfile.html file="src_fat/mcpl2ssw_app_fat.c" download=true
-%}.
+single-file ("fat") versions of the code with these links: {% include linkfile.html file="src_fat/ssw2mcpl_app_fat.c" download=true %} and {% include linkfile.html file="src_fat/mcpl2ssw_app_fat.c" download=true %}.
 
 Next, compile them with two commands (exchange "gcc" with the name of your compiler - e.g.
 "clang" on OSX):
