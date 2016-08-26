@@ -1,1 +1,7 @@
-[{{include.file | split: "/" | last }}]({{ include.file | prepend: "/raw/master/" | prepend: site.github.repository_url }}){: download}
+{% capture dummy %}
+{%  if include.download %}
+{%    assign dltag=" download" %}
+{%  else %}
+{%    assign dltag="" %}
+<a href="{{ include.file | prepend: "/raw/master/" | prepend: site.github.repository_url }}"{{dltag}}>{{include.file | split: "/" | last }}</a>
+{% endcapture %}{{ dummy | strip_newlines | normalize_whitespace }}
