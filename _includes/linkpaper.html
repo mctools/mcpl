@@ -8,5 +8,8 @@
 {%   assign paperlink = paperlink |append: "#nameddest=section."|append: include.section %}
 {%   assign linkname = linkname |append: " (section "|append: include.section|append: ")" %}
 {% endif %}
+{% if include.linkname != nil %}
+{%   assign linkname = include.linkname %}
+{% endif %}
 <a href="{{paperlink}}">{{linkname}}</a>
 {% endcapture %}{{ dummy | strip_newlines | normalize_whitespace }}
