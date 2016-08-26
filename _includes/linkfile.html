@@ -4,4 +4,5 @@
 {%  else %}
 {%    assign dltag="" %}
 <a href="{{ include.file | prepend: "/raw/master/" | prepend: site.github.repository_url }}"{{dltag}}>{{include.file | split: "/" | last }}</a>
+{% endif %}
 {% endcapture %}{{ dummy | strip_newlines | normalize_whitespace }}
