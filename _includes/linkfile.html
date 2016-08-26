@@ -1,8 +1,3 @@
 {% capture dummy %}
-{%  if include.download != nil %}
-{%    assign dltag=" download" %}
-{%  else %}
-{%    assign dltag="" %}
-{% endif %}
 <a href="{{ include.file | prepend: "/raw/master/" | prepend: site.github.repository_url }}"{{dltag}}>{{include.file | split: "/" | last }}</a>
 {% endcapture %}{{ dummy | strip_newlines | normalize_whitespace }}
