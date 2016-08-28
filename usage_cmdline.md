@@ -94,3 +94,30 @@ Other options:
 
 ```
 {% endif %}
+
+
+## Quick and dirty way to get the mcpltool
+
+Rather than downloading the full MCPL distribution, it is possible to get hold
+of the _mcpltool_ command discussed in the {% include linkpaper.html subsection=2.3
+linkname="paper" %} simply by downloading the
+single-file ("fat") versions of the code with this link: {% include linkfile.html file="src_fat/mcpltool_app_fat.c" download=true %}.
+
+Next, compile it with the command (exchange "gcc" with the name of your compiler - e.g.
+"clang" on OSX):
+
+```shell
+gcc -std=c99 -lm mcpltool_app_fat.c -o mcpltool
+```
+
+And you are ready to run! For instance you can inspect an MCPL file with:
+
+```shell
+./mcpltool  <my-mcpl-file>
+```
+
+Or get full usage instructions with:
+
+```shell
+./mcpltool --help
+```
