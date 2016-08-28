@@ -9,12 +9,12 @@ information in: {% include linkpaper.html subsection=3.2 %}.
 
 ## Quick and dirty way to get ssw2mcpl and mcpl2ssw
 
-Rather than downloading the full MCPL distribution, it is possible to get hold
+Rather than downloading and building the full MCPL distribution, it is possible to get hold
 of the two commands discussed in the {% include linkpaper.html subsection=3.2
-linkname="paper" %}, _ssw2mcpl_ and _mcpl2ssw_, simply by downloading the two
-single-file ("fat") versions of the code with these links: {% include linkfile.html file="src_fat/ssw2mcpl_app_fat.c" %} and {% include linkfile.html file="src_fat/mcpl2ssw_app_fat.c" %}.
+linkname="paper" %}, _ssw2mcpl_ and _mcpl2ssw_, simply by downloading and saving
+the two single-file ("fat") versions of the code with via these links: {% include linkfile.html file="src_fat/ssw2mcpl_app_fat.c" %} and {% include linkfile.html file="src_fat/mcpl2ssw_app_fat.c" %}.
 
-Next, compile them with two commands (exchange "gcc" with the name of your compiler - e.g.
+Next, go to a terminal and compile them with two commands (exchange "gcc" with the name of your compiler - e.g.
 "clang" on OSX):
 
 ```shell
