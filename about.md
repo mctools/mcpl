@@ -1,13 +1,13 @@
 ---
 title: About
-underconstruction: true
 weight: -9999
 ---
 
 MCPL was developed and is maintained by the following persons with contributions
 in the indicated areas:
 
-* Thomas Kittelmann ([ESS](https://europeanspallationsource.se/)): Main developer (all areas, primary responsible for core code and Geant4 hooks).
+* Thomas Kittelmann ([ESS](https://europeanspallationsource.se/)): Main
+  developer (all areas).
 * Esben Klinkby ([DTU](http://www.dtu.dk/)): MCNP hooks
 * Erik Bergbäck Knudsen ([DTU](http://www.dtu.dk/)): McStas & McXtrace hooks
 * Peter Willendrup ([DTU](http://www.dtu.dk/)): McStas & McXtrace hooks
@@ -15,8 +15,13 @@ in the indicated areas:
 A substantial effort went into developing MCPL. If you use it for your work, we
 would appreciate it if you would use the following reference in your work:
 
-**(not published yet, but draft available: {% include linkpaper.html %})**
-**Please reference the github release instead: [![DOI](https://zenodo.org/badge/24077/mctools/mcpl.svg)](https://zenodo.org/badge/latestdoi/24077/mctools/mcpl)**
+TODO: This is still not published (but a draft is available: {% include linkpaper.html %})!<br/>
+Please reference the github release instead:
+[![DOI](https://zenodo.org/badge/24077/mctools/mcpl.svg)](https://zenodo.org/badge/latestdoi/24077/mctools/mcpl)<br/>
+This place will be updated as soon as MCPL has been published
+in a scientific journal.
+{: style="color:#D44; font-weight: bold; font-size: 80%; text-align: center; margin: 2em"}
+
 
 ## License
 
@@ -36,3 +41,8 @@ Additionally, thanks to the following persons for providing useful feedback and 
 
 * Kalliopi Kanaki ([ESS](https://europeanspallationsource.se/))
 * Xiao Xiao Cai ([ESS](https://europeanspallationsource.se/) & [DTU](http://www.dtu.dk/))
+
+[![BrightnESS](LOCAL:images/brightness_logo.png){:height="50px"}](https://brightness.esss.se/)
+[![SINE2020](LOCAL:images/sine2020_logo.png){:height=200}{:height="50px"}](http://www.sine2020.eu/)
+[![ESS](LOCAL:images/ess-logo.png){:height="50px"}](http://europeanspallationsource.se/)
+[![DTU](LOCAL:images/DTU-logo.png){:height="50px"}](http://www.dtu.dk/)
