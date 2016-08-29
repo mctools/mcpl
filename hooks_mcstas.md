@@ -35,7 +35,8 @@ library and include paths must be added to the build step. An example of this
 could be (assuming McStas is installed in /usr/share/mcstas/2.3):
 
 ```shell
-mcstas -t MyInstrument.instr cc -o MyInstrument.out MyInstrument.c \
+mcstas -t MyInstrument.instr 
+cc -o MyInstrument.out MyInstrument.c \
    -I/usr/share/mcstas/2.3/libs/mcpl -L/usr/share/mcstas/2.3/libs/mcpl \
    -lmcpl -lm -O2
 ```
