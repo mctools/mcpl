@@ -1,12 +1,20 @@
 ---
 title: Using MCPL from the command line
-underconstruction: true
 ---
 
-This page has yet to be completed. For now refer to the almost complete
-information in: {% include linkpaper.html subsection=2.3 %}.
+- two magic lines for toc
+{:toc}
 
-{% if false %}
+The MCPL distribution includes a handy command line tool, _mcpltool_, which can
+be used from the command line to either inspect MCPL files, or to carry out a
+limited number of operations on them. Please find more information in: {%
+include linkpaper.html subsection=2.3 %}.
+
+## Examples
+
+A few examples of how to use the mcpltool are provided here.
+
+### Run with no arguments to inspect file
 
 ```shell
 $ mcpltool myoutput.mcpl.gz
@@ -47,7 +55,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     9        2112     0.30553      54.471      33.386          20      0.4862    0.011958     0.87377  0.00016442           1
 ```
 
-bla
+### Get full usage instructions
 
 ```shell
 $ mcpltool --help
@@ -93,8 +101,6 @@ Other options:
   -h, --help      : Display this usage information (ignores all other options).
 
 ```
-{% endif %}
-
 
 ## Quick and dirty way to get the mcpltool
 

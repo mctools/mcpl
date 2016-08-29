@@ -1,18 +1,27 @@
 ---
 title: Using MCPL from C or C++
-underconstruction: true
 navtitle: C/C++
 ---
 
-This page has yet to be completed. For now refer to the almost complete
-information in: {% include linkpaper.html subsection=2.2 %}.
+- two magic lines for toc
+{:toc}
 
+It is possible for advanced users to interact directly with MCPL files from C or
+C++ code, by including the header file {% include linkfile.html
+file="src/mcpl/mcpl.h" %} and making sure the resulting library or application
+is linked with the code in {% include linkfile.html file="src/mcpl/mcpl.c"
+%}. This is described in more detail in {% include linkpaper.html subsection=2.2
+%}.
 
-{% if false %}
+However, notice that most end-users should not have to write such code. Rather,
+they should be able to use pre-existing converters or plugins for their Monte
+Carlo applications (c.f. [hooks](LOCAL:hooks)).
 
-bla mcpl.h, mcpl.c
+## Code examples for C or C++ code
 
-## Reading MCPL files with custom C or C++ code
+For inspiration, please find here a few code examples dealing with MCPL files.
+
+### Reading MCPL files
 
 ```c
 #include "mcpl.h"
@@ -37,11 +46,10 @@ void example()
 }
 ```
 
-## Creating MCPL files with custom C or C++ code
+### Creating MCPL files
 
 ```c
 #include "mcpl.h"
-#include <stdlib.h>
 
 void example()
 {
@@ -61,8 +69,7 @@ void example()
   */
 
 
-  mcpl_particle_t * p;
-  p = (mcpl_particle_t*)calloc(sizeof(mcpl_particle_t),1);
+  mcpl_particle_t * p = mcpl_get_empty_particle(f);
 
   int i;
   for ( i = 0; i < 1000; ++i ) {
@@ -88,7 +95,49 @@ void example()
   }
 
   mcpl_close_outfile(f);
-  free(p);
 }
 ```
-{% endif %}
+
+### Extracting subset of particles from file
+
+The example below shows a small C-programme which can be used to extract just
+neutrons (pdgcode 2112) with EKin<0.1MeV from an existing MCPL file into a new one:
+
+```c
+
+#include "mcpl.h"
+#include <stdio.h>
+
+int main(int argc,char**argv) {
+
+  if (argc!=3) {
+    printf("Please supply input and output filenames\n");
+    return 1;
+  }
+
+  const char * infilename = argv[1];
+  const char * outfilename = argv[2];
+
+  // Initialisation, open existing file and create output file handle. Transfer
+  // all meta-data from existing file, and add an extra comment in the output
+  // file to document the process:
+
+  mcpl_file_t fi = mcpl_open_file(infilename);
+  mcpl_outfile_t fo = mcpl_create_outfile(outfilename);
+  mcpl_transfer_metadata(fi, fo);
+  mcpl_hdr_add_comment(fo,"Applied custom filter to select neutrons with ekin<100eV");
+
+  //Loop over particles from input, only triggering mcpl_add_particle calls for
+  //the chosen particles:
+
+  const mcpl_particle_t* particle;
+  while ( ( particle = mcpl_read(fi) ) ) {
+    if ( particle->pdgcode == 2112 && particle->ekin < 0.1 )
+      mcpl_add_particle(fo,particle);
+  }
+
+  //Close up files:
+  mcpl_closeandgzip_outfile(fo);
+  mcpl_close_file(fi);
+}
+```
