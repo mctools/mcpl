@@ -101,7 +101,7 @@ Other options:
 Rather than downloading and building the full MCPL distribution, it is possible to get hold
 of the _mcpltool_ command discussed in the {% include linkpaper.html subsection=2.3
 linkname="paper" %} simply by downloading and saving the
-single-file ("fat") versions of the code found at this link: {% include linkfile.html file="src_fat/mcpltool_app_fat.c" download=true %}.
+single-file ("fat") version of the code found at this link: {% include linkfile.html file="src_fat/mcpltool_app_fat.c" download=true %}.
 
 Next, compile it with the command (exchange "gcc" with the name of your compiler - e.g.
 "clang" on OSX):
