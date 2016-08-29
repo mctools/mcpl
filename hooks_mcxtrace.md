@@ -23,7 +23,8 @@ library and include paths must be added to the build step. An example of this
 could be (assuming McXtrace is installed in /usr/share/mcxtrace/1.3):
 
 ```shell
-mcxtrace -t MyInstrument.instr cc -o MyInstrument.out MyInstrument.c \
+mcxtrace -t MyInstrument.instr 
+cc -o MyInstrument.out MyInstrument.c \
    -I/usr/share/mcxtrace/1.3/libs/mcpl -L/usr/share/mcxtrace/1.3/libs/mcpl \
    -lmcpl -lm -O2
 ```
