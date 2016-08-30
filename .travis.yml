@@ -19,9 +19,8 @@ before_script:
 
 script:
     - make install
-
-after_script:
     - cd ../rundir
     - ../install/bin/mcplexample_write myfile.mcpl
-    - ../install/bin/mcplexample_read myfile.mcpl
+    - ../install/bin/mcplexample_read myfile.mcpl.gz
+    - ../install/bin/mcplexample_read nonexistingfile.mcpl
 
