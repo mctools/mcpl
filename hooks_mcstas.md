@@ -29,8 +29,8 @@ component codes after the release.
 ## Notes for users running in special environments
 
 As from release 2.3 of McStas, linking to the MCPL-library
-distributed with McStas is automatic when using the GUI or the utility
-scripts like mcrun. If neither is available, such as may be the case in an HPC-environment,
+distributed with McStas is **automatic when using the GUI or the utility
+scripts like mcrun**. If neither is available, such as may be the case in an HPC-environment,
 library and include paths must be added to the build step. An example of this
 could be (assuming McStas is installed in /usr/share/mcstas/2.3):
 
