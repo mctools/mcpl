@@ -20,7 +20,12 @@ before_script:
 script:
     - make install
     - cd ../rundir
+    - find ../install
     - ../install/bin/mcplexample_write myfile.mcpl
     - ../install/bin/mcplexample_read myfile.mcpl.gz
-    - ../install/bin/mcplexample_read nonexistingfile.mcpl
+    - ../install/bin/mcplexample_filter myfile.mcpl.gz myfile_filtered.mcpl
+    - ../install/bin/mcplexample_read myfile_filtered.mcpl.gz
+    - ../install/bin/mcpltool myfile.mcpl.gz
+    - ../install/bin/mcpltool myfile_filtered.mcpl.gz
+    - ../install/bin/mcpltool_fat myfile_filtered.mcpl.gz
 
