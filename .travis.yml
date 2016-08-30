@@ -13,9 +13,15 @@ compiler:
     - clang
 
 before_script:
-    - mkdir build
+    - mkdir build install rundir
     - cd build
-    - cmake ..
+    - cmake .. -DBUILD_FAT=ON -DBUILD_WITHG4=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../install/
 
-script: make
+script:
+    - make install
+
+after_script:
+    - cd ../rundir
+    - ../install/bin/mcplexample_write myfile.mcpl
+    - ../install/bin/mcplexample_read myfile.mcpl
 
