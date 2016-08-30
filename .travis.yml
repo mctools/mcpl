@@ -35,7 +35,7 @@ before_script:
 
 script:
     - set -e
-    - make install
+    - make VERBOSE=1 install
     - cd ../rundir
     - find ../install
     - ../install/bin/mcplexample_write myfile.mcpl
