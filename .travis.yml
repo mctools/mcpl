@@ -21,6 +21,7 @@ compiler:
     - clang
 
 before_script:
+    - $CC --version
     - mkdir build install rundir
     - cd build
     - cmake .. -DBUILD_FAT=ON -DBUILD_WITHG4=OFF -DCMAKE_BUILD_TYPE=${BUILD} -DCMAKE_INSTALL_PREFIX=../install/
