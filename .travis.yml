@@ -1,7 +1,12 @@
+language: cpp
 
 os:
   - linux
   - osx
+
+env:
+    - BUILD='Release'
+    - BUILD='Debug'
 
 addons:
   apt:
@@ -11,8 +16,6 @@ addons:
       - cmake
       - cmake-data
 
-language: cpp
-
 compiler:
     - gcc
     - clang
@@ -20,14 +23,13 @@ compiler:
 before_script:
     - mkdir build install rundir
     - cd build
-    - cmake .. -DBUILD_FAT=ON -DBUILD_WITHG4=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../install/
+    - cmake .. -DBUILD_FAT=ON -DBUILD_WITHG4=OFF -DCMAKE_BUILD_TYPE=${BUILD} -DCMAKE_INSTALL_PREFIX=../install/
 
 script:
     - make install
     - cd ../rundir
     - find ../install
     - ../install/bin/mcplexample_write myfile.mcpl
-    - ../install/bin/mcplexample_read myfile.mcpl.gz
     - ../install/bin/mcplexample_filter myfile.mcpl.gz myfile_filtered.mcpl
     - ../install/bin/mcplexample_read myfile_filtered.mcpl.gz
     - ../install/bin/mcpltool myfile.mcpl.gz
