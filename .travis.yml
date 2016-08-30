@@ -48,4 +48,13 @@ script:
     - ../install/bin/mcpltool myfile.mcpl.gz
     - ../install/bin/mcpltool myfile_filtered.mcpl.gz
     - ../install/bin/mcpltool_fat myfile_filtered.mcpl.gz
+    - ../install/bin/mcpltool_fat failonpurposetotestmailnotification.mcpl
     - set +e
+
+notifications:
+  email:
+    recipients:
+      - mcpl-developers@cern.ch
+      - tkess@doki.dk
+    on_success: change
+    on_failure: always
