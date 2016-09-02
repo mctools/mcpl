@@ -7,7 +7,7 @@ MCPL was developed and is maintained by the following persons with contributions
 in the indicated areas:
 
 * Thomas Kittelmann ([ESS](https://europeanspallationsource.se/)): Main
-  developer (all areas).
+  developer (all areas)
 * Esben Klinkby ([DTU](http://www.dtu.dk/)): MCNP hooks
 * Erik Bergbäck Knudsen ([DTU](http://www.dtu.dk/)): McStas & McXtrace hooks
 * Peter Willendrup ([DTU](http://www.dtu.dk/)): McStas & McXtrace hooks
