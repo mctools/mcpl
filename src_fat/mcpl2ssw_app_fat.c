@@ -70,8 +70,8 @@
 
 #define MCPL_VERSION_MAJOR 0
 #define MCPL_VERSION_MINOR 99
-#define MCPL_VERSION_PATCH 0
-#define MCPL_VERSION    9900 /* (10000*MAJOR+100*MINOR+PATCH)   */
+#define MCPL_VERSION_PATCH 1
+#define MCPL_VERSION    9901 /* (10000*MAJOR+100*MINOR+PATCH)   */
 #define MCPL_FORMATVERSION 2 /* Format version of written files */
 
 #ifdef __cplusplus
@@ -4193,7 +4193,8 @@ int mcpl_tool_usage( char** argv, const char * errmsg ) {
 
 int mcpl_str2int(const char* str, size_t len, int64_t* res)
 {
-  //portable 64bit str2int with error checking.
+  //portable 64bit str2int with error checking (only INT64_MIN might not be
+  //possible to specify).
   *res = 0;
   if (!len)
     len=strlen(str);
@@ -4210,11 +4211,12 @@ int mcpl_str2int(const char* str, size_t len, int64_t* res)
     if (str[i]<'0'||str[i]>'9') {
       return 0;
     }
+    int64_t prev = tmp;
     tmp *= 10;
     tmp += str[i] - '0';
+    if (prev>=tmp)
+      return 1;//overflow (hopefully it did not trigger a signal or FPE)
   }
-  if (tmp > INT64_MAX)
-    return 0;
   *res = sign * tmp;
   return 1;
 }
@@ -4365,7 +4367,7 @@ int mcpl_tool(int argc,char** argv) {
     int32_t pdgcode_select = 0;
     if (pdgcode_str) {
       int64_t pdgcode64;
-      if (!mcpl_str2int(pdgcode_str, 0, &pdgcode64) || pdgcode64<INT32_MIN || pdgcode64>INT32_MAX || !pdgcode64)
+      if (!mcpl_str2int(pdgcode_str, 0, &pdgcode64) || pdgcode64<-2147483648 || pdgcode64>2147483647 || !pdgcode64)
         return mcpl_tool_usage(argv,"Must specify non-zero 32bit integer as argument to -p.");
       pdgcode_select = (int32_t)pdgcode64;
     }
@@ -4373,7 +4375,8 @@ int mcpl_tool(int argc,char** argv) {
     if (opt_num_skip>0)
       mcpl_seek(fi,(uint64_t)opt_num_skip);
 
-    uint64_t left = opt_num_limit>0 ? (uint64_t)opt_num_limit : UINT64_MAX;
+    //uint64_t(-1) instead of UINT64_MAX to fix clang c++98 compilation
+    uint64_t left = opt_num_limit>0 ? (uint64_t)opt_num_limit : (uint64_t)-1;
     uint64_t added = 0;
     const mcpl_particle_t* particle;
     while ( left-- && ( particle = mcpl_read(fi) ) ) {
