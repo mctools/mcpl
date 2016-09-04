@@ -32,7 +32,7 @@ int main(int argc,char**argv) {
   printf("Opened MCPL file produced with %s\n",mcpl_hdr_srcname(f));
   for (unsigned i = 0; i < mcpl_hdr_ncomments(f); ++i)
     printf("file had comment: '%s'\n",mcpl_hdr_comment(f,i));
-  printf("File containts %llu particles\n",(unsigned long long)mcpl_hdr_nparticles(f));
+  printf("File contains %llu particles\n",(unsigned long long)mcpl_hdr_nparticles(f));
 
   //Now, loop over particles and print some info:
 

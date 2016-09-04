@@ -30,7 +30,7 @@ int main(int argc,char**argv) {
   mcpl_file_t fi = mcpl_open_file(infilename);
   mcpl_outfile_t fo = mcpl_create_outfile(outfilename);
   mcpl_transfer_metadata(fi, fo);
-  mcpl_hdr_add_comment(fo,"Applied custom filter to select neutrons with ekin<100eV");
+  mcpl_hdr_add_comment(fo,"Applied custom filter to select neutrons with ekin<100keV");
 
   //Loop over particles from input, only triggering mcpl_add_particle calls for
   //the chosen particles:

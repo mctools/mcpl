@@ -51,20 +51,14 @@
 //                                                                                 //
 //  This file can be freely used as per the terms in the LICENSE file.             //
 //                                                                                 //
+//  Find more information and updates at https://mctools.github.io/mcpl/           //
+//                                                                                 //
 //  Written by Thomas Kittelmann, 2015-2016.                                       //
 //                                                                                 //
 /////////////////////////////////////////////////////////////////////////////////////
 
 
 //////
-//
-// TODO:
-//  * Implement --ignore flag for --merge.
-//
-// Planned features delayed for next release (not implemented yet):
-//  * Don't require code to calloc and keep track of their own mcpl_particle_t instance.
-//  * mcpl_gzip_file and mcpl_closeandgzip_outfile must return status indicating
-//    success or not (to know if .mcpl or .mcpl.gz file is the result).
 //
 //Possible future developments:
 //
@@ -111,7 +105,7 @@
 // 8) Consider writing .mcpl.gz files directly (through a large buffer
 //    presumably). Or to have compressed blocks internally.
 //
-// 9) Should use unsigned char* rather than char* for buffers.
+// 9) Should use unsigned char* rather than char* for buffers?
 //
 //////
 
@@ -3882,11 +3876,12 @@ int mcpl_tool_usage( char** argv, const char * errmsg ) {
   printf("Usage:\n");
   printf("  %s [dump-options] FILE\n",progname);
   printf("  %s --merge [merge-options] FILE1 FILE2\n",progname);
+  printf("  %s --extract [extract-options] FILE1 FILE2\n",progname);
   printf("  %s --repair FILE\n",progname);
   printf("  %s --version\n",progname);
   printf("  %s --help\n",progname);
   printf("\n");
-  printf("Dump Options:\n");
+  printf("Dump options:\n");
   printf("  By default include the info in the FILE header plus the first ten contained\n");
   printf("  particles. Modify with the following options:\n");
   assert(MCPLIMP_TOOL_DEFAULT_NLIMIT==10);
@@ -3897,13 +3892,17 @@ int mcpl_tool_usage( char** argv, const char * errmsg ) {
   printf("  -sN             : Skip past the first N particles in the file (default %i).\n",MCPLIMP_TOOL_DEFAULT_NSKIP);
   printf("  -bKEY           : Dump binary blob stored under KEY to standard output.\n");
   printf("\n");
-  printf("Merge Options:\n");
+  printf("Merge options:\n");
   printf("  -m, --merge FILE1 FILE2\n");
   printf("                    Appends the particle contents in FILE2 to the end of FILE1.\n");
-  printf("                    Note that this will fail unless FILE1 and FILE2 have iden-\n");
-  printf("                    tical headers (but see option --ignore below).\n");
-  printf("  -i, --ignore      Ignore comments and binary blobs in FILE2. This allows some\n");
-  printf("                    otherwise forbidden merges, but some info might get lost.\n");
+  printf("                    Note that this will fail unless FILE1 and FILE2 have compa-\n");
+  printf("                    tible headers.\n");
+  printf("\n");
+  printf("Extract options:\n");
+  printf("  -e, --extract FILE1 FILE2\n");
+  printf("                    Extracts particles from FILE1 into a new FILE2.\n");
+  printf("  -lN, -sN          Select range of particles in FILE1 (as above).\n");
+  printf("  -pPDGCODE         select particles of type given by PDGCODE.\n");
   printf("\n");
   printf("Other options:\n");
   printf("  -r, --repair FILE\n");
@@ -3915,16 +3914,45 @@ int mcpl_tool_usage( char** argv, const char * errmsg ) {
   return 0;
 }
 
+int mcpl_str2int(const char* str, size_t len, int64_t* res)
+{
+  //portable 64bit str2int with error checking.
+  *res = 0;
+  if (!len)
+    len=strlen(str);
+  if (!len)
+    return 0;
+  int sign = 1;
+  if (str[0]=='-') {
+    sign = -1;
+    len -= 1;
+    str += 1;
+  }
+  int64_t tmp = 0;
+  for (size_t i=0; i<len; ++i) {
+    if (str[i]<'0'||str[i]>'9') {
+      return 0;
+    }
+    tmp *= 10;
+    tmp += str[i] - '0';
+  }
+  if (tmp > INT64_MAX)
+    return 0;
+  *res = sign * tmp;
+  return 1;
+}
+
 int mcpl_tool(int argc,char** argv) {
   const char * filename1 = 0;
   const char * filename2 = 0;
   const char * blobkey = 0;
+  const char * pdgcode_str = 0;
   int opt_justhead = 0;
   int opt_nohead = 0;
   int64_t opt_num_limit = -1;
   int64_t opt_num_skip = -1;
   int opt_merge = 0;
-  int opt_ignore = 0;
+  int opt_extract = 0;
   int opt_repair = 0;
   int opt_version = 0;
 
@@ -3952,18 +3980,26 @@ int mcpl_tool(int argc,char** argv) {
           blobkey = a+j+1;
           break;
         }
+        if (a[j]=='p') {
+          if (pdgcode_str)
+            return mcpl_tool_usage(argv,"-p specified more than once");
+          if (j+1==n)
+            return mcpl_tool_usage(argv,"Missing argument for -p");
+          pdgcode_str = a+j+1;
+          break;
+        }
+
         switch(a[j]) {
           case 'h': return mcpl_tool_usage(argv,0);
           case 'j': opt_justhead = 1; break;
           case 'n': opt_nohead = 1; break;
           case 'm': opt_merge = 1; break;
-          case 'i': opt_ignore = 1; break;
+          case 'e': opt_extract = 1; break;
           case 'r': opt_repair = 1; break;
           case 'v': opt_version = 1; break;
           case 'l': consume_digit = &opt_num_limit; break;
           case 's': consume_digit = &opt_num_skip; break;
           default:
-            printf("%c\n",a[j]);
             return mcpl_tool_usage(argv,"Unrecognised option");
         }
         if (consume_digit) {
@@ -3979,7 +4015,7 @@ int mcpl_tool(int argc,char** argv) {
       const char * lo_justhead = "justhead";
       const char * lo_nohead = "nohead";
       const char * lo_merge = "merge";
-      const char * lo_ignore = "ignore";
+      const char * lo_extract = "extract";
       const char * lo_repair = "repair";
       const char * lo_version = "version";
       //Use strstr instead of "strcmp(a,"--help")==0" to support shortened
@@ -3988,7 +4024,7 @@ int mcpl_tool(int argc,char** argv) {
       else if (strstr(lo_justhead,a)==lo_justhead) opt_justhead = 1;
       else if (strstr(lo_nohead,a)==lo_nohead) opt_nohead = 1;
       else if (strstr(lo_merge,a)==lo_merge) opt_merge = 1;
-      else if (strstr(lo_ignore,a)==lo_ignore) opt_ignore = 1;
+      else if (strstr(lo_extract,a)==lo_extract) opt_extract = 1;
       else if (strstr(lo_repair,a)==lo_repair) opt_repair = 1;
       else if (strstr(lo_version,a)==lo_version) opt_version = 1;
       else return mcpl_tool_usage(argv,"Unrecognised option");
@@ -4002,10 +4038,17 @@ int mcpl_tool(int argc,char** argv) {
       return mcpl_tool_usage(argv,"Bad arguments");
     }
   }
-  int number_dumpopts = (opt_justhead + opt_nohead + (opt_num_limit!=-1) + (opt_num_skip!=-1) + (blobkey!=0));
+
+  if ( opt_extract==0 && pdgcode_str )
+    return mcpl_tool_usage(argv,"-p can only be used with --extract.");
+
+  int number_dumpopts = (opt_justhead + opt_nohead + (blobkey!=0));
+  if (opt_extract==0)
+    number_dumpopts += (opt_num_limit!=-1) + (opt_num_skip!=-1);
   int any_dumpopts = number_dumpopts != 0;
-  int any_mergeopts = (opt_merge + opt_ignore)!=0;
-  if (any_dumpopts+any_mergeopts+opt_repair+opt_version>1)
+  int any_extractopts = (opt_extract!=0||pdgcode_str!=0);
+  int any_mergeopts = (opt_merge!=0);
+  if (any_dumpopts+any_mergeopts+any_extractopts+opt_repair+opt_version>1)
     return mcpl_tool_usage(argv,"Conflicting options specified.");
 
   if (blobkey&&(number_dumpopts>1))
@@ -4018,19 +4061,61 @@ int mcpl_tool(int argc,char** argv) {
     return 0;
   }
 
-  if (opt_ignore&&!opt_merge)
-    return mcpl_tool_usage(argv,"Use --ignore only with --merge.");
-
   if (opt_merge) {
     if (!filename2)
       return mcpl_tool_usage(argv,"Must specify two input files with --merge.");
-    if (opt_ignore)
-      return mcpl_tool_usage(argv,"--ignore is not implemented yet.");
 
     if (!mcpl_can_merge(filename1,filename2))
       return mcpl_tool_usage(argv,"Requested files are incompatible for merge as they have different header info.");
 
     mcpl_merge(filename1,filename2);
+    return 0;
+  }
+
+  if (opt_extract) {
+    if (!filename2)
+      return mcpl_tool_usage(argv,"Must specify both input and output files with --extract.");
+
+    mcpl_file_t fi = mcpl_open_file(filename1);
+    mcpl_outfile_t fo = mcpl_create_outfile(filename2);
+    mcpl_transfer_metadata(fi, fo);
+    uint64_t fi_nparticles = mcpl_hdr_nparticles(fi);
+
+    char comment[1024];
+    sprintf(comment, "mcpltool: extracted particles from file with %" PRIu64 " particles",fi_nparticles);
+    mcpl_hdr_add_comment(fo,comment);
+
+    int32_t pdgcode_select = 0;
+    if (pdgcode_str) {
+      int64_t pdgcode64;
+      if (!mcpl_str2int(pdgcode_str, 0, &pdgcode64) || pdgcode64<INT32_MIN || pdgcode64>INT32_MAX || !pdgcode64)
+        return mcpl_tool_usage(argv,"Must specify non-zero 32bit integer as argument to -p.");
+      pdgcode_select = (int32_t)pdgcode64;
+    }
+
+    if (opt_num_skip>0)
+      mcpl_seek(fi,(uint64_t)opt_num_skip);
+
+    uint64_t left = opt_num_limit>0 ? (uint64_t)opt_num_limit : UINT64_MAX;
+    uint64_t added = 0;
+    const mcpl_particle_t* particle;
+    while ( left-- && ( particle = mcpl_read(fi) ) ) {
+      if (pdgcode_select && pdgcode_select!= particle->pdgcode)
+        continue;
+      mcpl_add_particle(fo,particle);
+      ++added;
+    }
+
+    char *fo_filename = (char*)malloc(strlen(mcpl_outfile_filename(fo))+4);
+    fo_filename[0] = '\0';
+    strcat(fo_filename,mcpl_outfile_filename(fo));
+    if (mcpl_closeandgzip_outfile_rc(fo))
+      strcat(fo_filename,".gz");
+    mcpl_close_file(fi);
+
+    printf("MCPL: Succesfully extracted %" PRIu64 " / %" PRIu64 " particles from %s into %s\n",
+           added,fi_nparticles,filename1,fo_filename);
+    free(fo_filename);
     return 0;
   }
 

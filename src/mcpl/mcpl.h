@@ -11,7 +11,7 @@
 /*  particle state information, for interchanging and reshooting events between    */
 /*  various Monte Carlo simulation applications.                                   */
 /*                                                                                 */
-/*  Refer to the top of mcpl.c for details regarding how to build.                 */
+/*  Find more information and updates at https://mctools.github.io/mcpl/           */
 /*                                                                                 */
 /*  This file can be freely used as per the terms in the LICENSE file.             */
 /*                                                                                 */
@@ -20,9 +20,9 @@
 /***********************************************************************************/
 
 #define MCPL_VERSION_MAJOR 0
-#define MCPL_VERSION_MINOR 7
+#define MCPL_VERSION_MINOR 99
 #define MCPL_VERSION_PATCH 0
-#define MCPL_VERSION     700 /* (10000*MAJOR+100*MINOR+PATCH)   */
+#define MCPL_VERSION    9900 /* (10000*MAJOR+100*MINOR+PATCH)   */
 #define MCPL_FORMATVERSION 2 /* Format version of written files */
 
 #ifdef __cplusplus
