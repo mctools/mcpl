@@ -7,6 +7,9 @@
 {% assign sorted_pages = site.pages | sort: "name" | reverse | sort: "weight" | reverse | map: "to_liquid" %}
 {% assign subpages_in_cat = "" | split:"|"  %}
 {% for node in sorted_pages %}
+  {% unless node.title %}
+    {% continue %}
+  {% endunless %}
   {% include fct_parsenode.html page=node %}
   {% if page_cat == node_cat %}
     {% if node_cat == node_slug %}
@@ -18,6 +21,9 @@
   {% endif %}
 {% endfor %}
 {% for node in sorted_pages %}
+  {% unless node.title %}
+    {% continue %}
+  {% endunless %}
   {% include fct_parsenode.html page=node %}
   {% if node_cat == node_slug %}
     {% if page_cat == node_cat %}
