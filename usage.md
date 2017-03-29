@@ -10,7 +10,8 @@ Many more details can be found in {% include linkpaper.html section=2 %}, or in 
 
 * Generic access:
   * [Use mcpl.h from C or C++.](LOCAL:usage_c)
-  * [Use mcpltool from the command line.](LOCAL:usage_cmdline)* [Using plugins and converters for specific applications](LOCAL:hooks):
+  * [Use mcpltool from the command line.](LOCAL:usage_cmdline).
+ * [Using plugins and converters for specific applications](LOCAL:hooks):
   * [Geant4](LOCAL:hooks_geant4)
   * [McStas](LOCAL:hooks_mcstas)
   * [McXtrace](LOCAL:hooks_mcxtrace)
