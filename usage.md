@@ -9,10 +9,10 @@ Using MCPL typically implies using pre-existing plugins or converters to either 
 Many more details can be found in {% include linkpaper.html section=2 %}, or in the pages below (can also be accessed via the navigation bar at the top of the page):
 
 * Generic access:
-  * [Use mcpl.h from C or C++.](LOCAL:usage_c)
-  * [Use mcpltool from the command line.](LOCAL:usage_cmdline).
- * [Using plugins and converters for specific applications](LOCAL:hooks):
-  * [Geant4](LOCAL:hooks_geant4)
-  * [McStas](LOCAL:hooks_mcstas)
-  * [McXtrace](LOCAL:hooks_mcxtrace)
-  * [MCNP](LOCAL:hooks_mcnp)
+  * [Use mcpl.h from C or C++](LOCAL:usage_c).
+  * [Use mcpltool from the command line](LOCAL:usage_cmdline).
+* [Using plugins and converters for specific applications](LOCAL:hooks):
+  * [Geant4](LOCAL:hooks_geant4).
+  * [McStas](LOCAL:hooks_mcstas).
+  * [McXtrace](LOCAL:hooks_mcxtrace).
+  * [MCNP](LOCAL:hooks_mcnp).
