@@ -46,9 +46,11 @@ public:
     G4MCPLWriter * mcplwriter = new G4MCPLWriter("myoutput.mcpl");
 
     mcplwriter->AddComment( "Transmission spectrum from 10GeV proton beam on 20cm lead" );
-    // mcplwriter->AddData( ... );          //optionally add binary data blob(s) to header
-    // mcplwriter->EnableDoublePrecision(); //optionally enable double precision storage
-    // mcplwriter->EnablePolarisation();    //optionally enable storage of polarisation vectors
+    // mcplwriter->AddComment( ... );          //optionally add comment to header
+    // mcplwriter->AddData( ... );             //optionally add binary data blob(s) to header
+    // mcplwriter->EnableDoublePrecision();    //optionally enable double precision storage
+    // mcplwriter->EnablePolarisation();       //optionally enable storage of polarisation vectors
+    // mcplwriter->EnableUniversalWeight(1.0); //optionally enable universal weight
 
     G4SDManager::GetSDMpointer()->AddNewDetector( mcplwriter );
     detector_log->SetSensitiveDetector(mcplwriter);

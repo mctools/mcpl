@@ -6,4 +6,7 @@ enable the relevant components:
   examples/Test_MCPL_input.instr
   examples/Test_MCPL_output.instr
 
+Additionally, users of McXtrace automatically have access to the mcpltool
+command.
+
 Further instructions are also available at https://mctools.github.io/mcpl/.

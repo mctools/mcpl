@@ -2,16 +2,17 @@
 *** The files in this distribution are:
 
 README              : Brief instructions.
-LICENSE             : License conditions
-VERSION             : File containing the version of the distribution
-FILES               : This file
+LICENSE             : License conditions.
+VERSION             : File containing the version of the distribution.
+CHANGELOG           : Release notes.
+INSTALL             : Build and installation instructions.
+FILES               : This file.
 examples/           : Small standalone examples for reading and writing MCPL
                       files, either from standalone C applications or through
-                      Geant4 simulations in C++.
+                      Geant4 simulations in C++. Also contains a small sample
+                      MCPL file.
 CMakeLists.txt      : Configuration file for optionally building and installing
-                      via CMake. It is mainly provided as an illustration of the
-                      necessary build steps, and many users would likely prefer
-                      to simply copy MCPL files into their existing build system.
+                      via CMake (cf. the INSTALL file for instructions).
 src/mcpl/           : Implementation of MCPL itself in C, along with the mcpltool
                       command line application. The file mcpl.h is the public
                       interface of MCPL and mcpl.c is the implementation.
@@ -28,8 +29,10 @@ src/mcxtrace/       : No actual code is here, just a small reminder of how the
                       MCPL plugin shipped with McXtrace can be used.
 src_fat/            : Various "fat" versions of files from the above directories
                       under src/, for convenience. These files are automatically
-                      generated and might also contain code under the zlib
-                      license.
+                      generated and also contain code under the zlib license
+                      (see src_fat/LICENSE.zlib).
+src_fat/LICENSE.zlib: License conditions for zlib (http://zlib.net) code, which
+                      is embedded in files under the src_fat/ directory.
 src_fat/mcpl.c      : Replacement for src/mcpl/mcpl.c which includes zlib
                       sources internally (thus making transparent compression
                       available even when zlib is not available to the build
@@ -39,3 +42,5 @@ src_fat/*_app.c     : Single-file versions of the command-line applications
                       without the need for any external headers or libraries
                       (except math-lib: -lm), and includes both MCPL, zlib and
                       mcnpssw sources internally as needed.
+src_fat/Makefile    : Simple makefile for building the "fat" command-line
+                      applications (cf. the INSTALL file for instructions).

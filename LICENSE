@@ -11,6 +11,10 @@ programmes might require additional permissions and licenses, as mandated by the
 third-party programme in question. This is outside the scope of the MCPL
 project, and the authors of MCPL can not be held responsible for any such usage.
 
+Additionally, note that the zlib compression library (http://zlib.net) is
+embedded in files found in the src_fat/ directory, and usage of such files must
+thus also respect the zlib license (see src_fat/LICENSE.zlib).
+
 A substantial effort went into developing MCPL. If you use it for your work, we
 would appreciate it if you would use the following reference in your work:
 

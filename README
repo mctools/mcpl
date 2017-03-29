@@ -4,19 +4,19 @@ Included are the core utilities for reading and writing .mcpl files: A binary
 format with lists of particle state information, for interchanging and
 reshooting events between various Monte Carlo simulation applications.
 
-Hooks for Geant4 (geant4.cern.ch) and MCNP (SSW files) are included in this
-distribution as well. Hooks for McStas (mcstas.org) and McXtrace (mcxtrace.org)
-are already included directly upstream in those applications. A few examples of
-how to use the Geant4 hooks, or how to interact with MCPL files from standalone
-C code, are also provided. Refer to the FILES file for more information about
-included files, and refer to the comment at the top of the CMakeLists.txt file
-for how to build and install with CMake.
+MCPL I/O hooks for Geant4 (geant4.cern.ch) and MCNP (SSW files) are included in
+this distribution as well. Hooks for McStas (mcstas.org) and McXtrace
+(mcxtrace.org) are already included directly upstream in those applications. A
+few examples of how to use the Geant4 hooks, or how to interact with MCPL files
+from standalone C code, are also provided. Refer to the FILES file for more
+information about included files, and refer to the INSTALL file for build
+instructions.
 
-MCPL and most code distributed here was written 2015-2016 by Thomas Kittelmann
+MCPL and most code distributed here was written 2015-2017 by Thomas Kittelmann
 (thomas.kittelmann@esss.se). The MCNP-SSW converters were written in close
 collaboration with Esben Klinkby (esbe@dtu.dk), and the McStas and McXtrace
-converters were written by Erik Knudsen (erkn@fysik.dtu.dk) and Peter Willendrup
-(pkwi@fysik.dtu.dk).
+converters were written by Erik B. Knudsen (erkn@fysik.dtu.dk) and Peter
+Willendrup (pkwi@fysik.dtu.dk).
 
 See the file LICENSE for usage conditions.
 

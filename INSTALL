@@ -1,0 +1,166 @@
+The official and supported way in which to build all files in the MCPL
+distribution is via CMake, however, depending on the use-case it might be more
+appropriate to simply integrate MCPL directly into the build system of a given
+simulation framework, or to use a quick compilation of one of the "fat" versions
+of the command line tools: mcpltool, ssw2mcpl or mcpl2ssw. The various options
+are discussed below.
+
+
+
+Building via CMake
+------------------
+
+The MCPL distribution requires CMake version 3.0.0 or later. If you do not have
+CMake installed, or if your platform has an older version installed, you have to
+visit http://cmake.org/ and acquire a recent version. CMake is a very powerful
+cross-platform configuration and build tool and a complete discussion of it is
+beyond the scope of the present instructions. Further in-depth instructions and
+tutorials are available at http://cmake.org/ and elsewhere online. The following
+is a quick recipe (using an in-source build for simplicity):
+
+1. Since you are reading this INSTALL file, it is assumed you have already
+   unpacked the MCPL source distribution somewhere. Assuming this is in a
+   directory called /path/to/mcplsource, step into this directory with:
+
+   cd /path/to/mcplsource
+
+2. Now, configure with CMake (assuming you wish to install the result into a
+   directory called /path/to/mcplinstall):
+
+   cmake . -DCMAKE_INSTALL_PREFIX=/path/to/mcplinstall
+
+   This will fail if your system is missing basic build tools, such as a C/C++
+   capable compiler. In addition to generic CMake options, you can fine-tune
+   what will be build by adding one or more of the following flags to the
+   command:
+
+   * -DBUILD_WITHZLIB=OFF [whether to link with zlib, default is ON]
+   * -DBUILD_EXAMPLES=OFF [whether to build examples, default is ON]
+   * -DBUILD_FAT=ON       [whether to build "fat" binaries, default is OFF]
+   * -DBUILD_WITHG4=OFF   [whether to build G4 hooks, default is ON]
+   * -DBUILD_WITHSSW=OFF  [whether to build SSW hooks, default is ON]
+
+3. Perform the build and install in one step with (assuming you are on a
+   platform where CMake generates makefiles):
+
+   make install
+
+4. Now you can use the installed files from /path/to/mcplinstall. For instance,
+   you can invoke the mcpltool with (showing usage instructions):
+
+   /path/to/mcplinstall/bin/mcpltool --help
+
+
+
+Building "fat" tools via simple Makefile
+----------------------------------------
+
+Assuming you are only interested in getting access to the commands mcpltool,
+mcpl2ssw and ssw2mcpl, and that you are on a standard UNIX-like platform such as
+Linux or OS X, you can forego the CMake build described above and simply invoke
+a simple Makefile
+
+1. Since you are reading this INSTALL file, it is assumed you have already
+   unpacked the MCPL source distribution somewhere. Assuming this is in a
+   directory called /path/to/mcplsource, step into this directory with:
+
+   cd /path/to/mcplsource
+
+2. Invoke the build:
+
+   make -f src_fat/Makefile
+
+3. The resulting binaries are now in src_fat/mcpltool, src_fat/mcpl2ssw and
+   src_fat/ssw2mcpl. You can copy them somewhere else or use them where they
+   are. For instance, you can immediately invoke the mcpltool with (showing
+   usage instructions):
+
+   ./src_fat/mcpltool --help
+
+
+
+Building "fat" tools via quick and dirty one-liners
+---------------------------------------------------
+
+If for some reason neither the CMake build nor Makefile above works for you, you
+can skip using a build tool altogether and simply invoke a direct compilation
+command, in order to build one of the command line tools (using one of the "fat"
+source files).
+
+1. Since you are reading this INSTALL file, it is assumed you have already
+   unpacked the MCPL source distribution somewhere. Assuming this is in a
+   directory called /path/to/mcplsource, step into this directory with:
+
+   cd /path/to/mcplsource
+
+2. Assuming you wish to build the mcpltool (exchange "mcpltool" with "ssw2mcpl"
+   or "mcpl2ssw" in the commands below to build a different utility), simply do:
+
+   gcc -std=c99 -lm src_fat/mcpltool_app_fat.c -o mcpltool
+
+   If you have a different compiler than gcc (such as "clang"), of course
+   put that instead of "gcc" in the command above.
+
+3. You can copy the resulting binary somewhere else or use it where it is.
+   For instance, you can immediately invoke the mcpltool with (showing usage
+   instructions):
+
+   ./mcpltool --help
+
+
+
+Use MCPL from an existing environment
+-------------------------------------
+
+Presently (March 2017), MCPL is known to be integrated into McStas, McXtrace and
+the coding framework of the ESS detector group. Users of these environments will
+have already access to MCPL, as it is integrated and distributed along with
+them. For the two former, refer to src/mcstas/README and src/mcxtrace/README
+respectively for how to proceed.
+
+
+
+Integrating MCPL into an existing environment
+---------------------------------------------
+
+Maintainers of a given development environment or simulation tool might wish to
+integrate MCPL directly into their code-base, thus providing their users with
+MCPL support and integration out of the box. How to best perform such
+integration will naturally depend on the particular use-case, but a few general
+pieces of advice are provided here (feel free to contact the MCPL team for
+additional advice and feedback, see https://mctools.github.io/mcpl/contact/).
+
+1. If your users need code-level access to functionality provided in mcpl.h, you
+   should copy src/mcpl/mcpl.h and src/mcpl/mcpl.c into a suitable location in your
+   build system and make sure they are compiled into a library (like
+   libmcpl.so). The compilation can proceed using either a C++ compiler (any
+   standard), or a C compiler (using -std=c99 or later), and must be linked with
+   the math library, due to internal usage of the sqrt function (typically
+   supply -lm at the link stage). It is also highly recommended to enable
+   zlib support by either setting -DMCPL_HASZLIB, as well as
+   the include path for zlib.h and the appropriate link flag (typically
+   -lz). Alternatively, zlib support can be enabled by substituting
+   src/mcpl/mcpl.c with src_fat/mcpl_fat.c.
+2. Provide access to the mcpltool by compiling either src/mcpl/mcpltool_app.c or
+   src_fat/mcpltool_app_fat.c (the former must be linked with the MCPL library
+   compiled in item #1 above).
+3. If your users use Geant4, you should copy over the two MCPL-G4 interface
+   classes from src/geant4 and make sure the .cc files get compiled and linked
+   with the MCPL library from item #1 above.
+4. If your users use MCNP, or might interact with people who do, you should make
+   sure to provide the mcpl2ssw and ssw2mcpl commands. This can either be done
+   by simply copying over src_fat/ssw2mcpl_app_fat.c and
+   src_fat/mcpl2ssw_app_fat.c and compiling them directly, or by copying over
+   files from src/mcnpssw/, compiling sswmcpl.h, sswmcpl.c, sswread.h and
+   sswread.c into a library (find instructions regarding flags at the top of the
+   two .c files), and subsequently use that library when compiling
+   mcpl2ssw_app.c and ssw2mcpl_app.c into the two command line applications.
+5. If applicable, provide your users with pre-written hooks using MCPL, in
+   whatever form is suitable for your framework. For instance, the McStas
+   developers added two user-visible McStas components: MCPL_input and
+   MCPL_output. Internal code in these two components include and use functions
+   from mcpl.h to implement their functionality (taking care of details such as
+   user-visible parameters and multi-processing in the same way other McStas
+   components do), but McStas users need not worry about those details. The
+   integration is completed by making the mcpltool command available at the
+   command line for McStas users.

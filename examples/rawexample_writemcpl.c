@@ -70,7 +70,8 @@ int main(int argc,char**argv) {
   //Simulation loop, modify the particle struct and add to the file as many
   //times as needed (here everything will simply be filled with some stupid
   //random numbers):
-  for (int i = 0; i < 1000; ++i) {
+  int i;
+  for (i = 0; i < 1000; ++i) {
     //particle type:
     if (rand()%2)
       particle->pdgcode = 2112;//50% neutrons

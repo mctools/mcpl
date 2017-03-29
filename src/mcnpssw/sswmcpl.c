@@ -10,7 +10,7 @@
 //                                                                                 //
 //  SSWMCPL_HDR_INCPATH  : Specify alternative value if the sswmcpl header         //
 //                         itself is not to be included as "sswmcpl.h".            //
-//  SSWREAD_HDR_INCPATH  : Specify alternative value if the sswreader header       //
+//  SSWREAD_HDR_INCPATH  : Specify alternative value if the sswread header         //
 //                         is not to be included as "sswread.h".                   //
 //  MCPL_HEADER_INCPATH  : Specify alternative value if the MCPL header is         //
 //                         not to be included as "mcpl.h".                         //
@@ -21,7 +21,7 @@
 // permissions and licenses from third-parties, which is not within the scope of   //
 // the MCPL project itself.                                                        //
 //                                                                                 //
-// Written 2015-2016, thomas.kittelmann@esss.se (European Spallation Source).      //
+// Written 2015-2017, thomas.kittelmann@esss.se (European Spallation Source).      //
 //                                                                                 //
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -132,20 +132,34 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
   ssw_file_t f = ssw_open_file(sswfile);
   mcpl_outfile_t mcplfh = mcpl_create_outfile(mcplfile);
 
-  char buf[4096];
-  buf[0] = '\0';
-  strncat(buf,ssw_srcname(f),sizeof(buf)-1);
-  strncat(buf,"-",sizeof(buf)-1);
-  strncat(buf,ssw_srcversion(f),sizeof(buf)-1);
-  char* c = buf;
-  while ( *c && ( *c = toupper( *c )) ) ++c;
-  mcpl_hdr_set_srcname(mcplfh,buf);//todo: use kods and version...
-  mcpl_hdr_add_comment(mcplfh,"MCNP(X) SSW file converted to MCPL with ssw2mcpl");
-  buf[0] = '\0';
-  strncat(buf,"Title/description encoded in SSW file: \'",sizeof(buf)-1);
-  strncat(buf,ssw_title(f),sizeof(buf)-1);
-  strncat(buf,"\'",sizeof(buf)-1);
-  mcpl_hdr_add_comment(mcplfh,buf);
+  mcpl_hdr_set_srcname(mcplfh,ssw_mcnpflavour(f));
+
+  uint64_t lstrbuf = 1024;
+  lstrbuf += strlen(ssw_srcname(f));
+  lstrbuf += strlen(ssw_srcversion(f));
+  lstrbuf += strlen(ssw_title(f));
+
+  if (lstrbuf<4096) {
+    char * buf = (char*)malloc((int)lstrbuf);
+    buf[0] = '\0';
+    strcat(buf,"SSW file from ");
+    strcat(buf,ssw_mcnpflavour(f));
+    strcat(buf," converted with ssw2mcpl (from MCPL release v" MCPL_VERSION_STR ")");
+    mcpl_hdr_add_comment(mcplfh,buf);
+
+    buf[0] = '\0';
+    strcat(buf,"SSW metadata: [kods='");
+    strcat(buf,ssw_srcname(f));
+    strcat(buf,"', vers='");
+    strcat(buf,ssw_srcversion(f));
+    strcat(buf,"', title='");
+    strcat(buf,ssw_title(f));
+    strcat(buf,"']");
+    mcpl_hdr_add_comment(mcplfh,buf);
+    free(buf);
+  } else {
+    mcpl_hdr_add_comment(mcplfh,"SSW metadata: <too long so not stored>");
+  }
   if (opt_surf) {
     mcpl_hdr_add_comment(mcplfh,"The userflags in this file are the surface IDs found in the SSW file");
     mcpl_enable_userflags(mcplfh);
@@ -201,7 +215,7 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
 
   int did_gzip = 0;
   if (opt_gzip)
-    did_gzip = mcpl_closeandgzip_outfile_rc(mcplfh);
+    did_gzip = mcpl_closeandgzip_outfile(mcplfh);
   else
     mcpl_close_outfile(mcplfh);
   ssw_close_file(f);
@@ -220,7 +234,8 @@ void ssw2mcpl_parse_args(int argc,char **argv, const char** infile,
   *surface_info = 0;
   *double_prec = 0;
   *do_gzip = 1;
-  for (int i=1; i < argc; ++i) {
+  int i;
+  for (i=1; i < argc; ++i) {
     if (argv[i][0]=='\0')
       continue;
     if (strcmp(argv[i],"-h")==0||strcmp(argv[i],"--help")==0) {
@@ -360,6 +375,9 @@ void ssw_writerecord(FILE* outfile, int reclen, size_t lbuf, char* buf)
   lbuf = 0;//flush record
 }
 
+//Fwd declaration of internal function in sswread.c:
+void ssw_internal_grabhdr( const char * filename, int is_gzip, int64_t hdrlen,
+                           unsigned char * hdrbuf );
 
 
 int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refsswfile,
@@ -381,29 +399,38 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
 
   //Open reference file and figure out variables like header length, position of
   //"nparticles"-like variables, fortran record length and mcnp version.
-  int ssw_mcnp6_format;
   int ssw_reclen;
   int ssw_ssblen;
   int64_t ssw_hdrlen;
   int64_t ssw_np1pos;
   int64_t ssw_nrsspos;
   ssw_layout(fsswref, &ssw_reclen, &ssw_ssblen, &ssw_hdrlen, &ssw_np1pos, &ssw_nrsspos);
-  ssw_mcnp6_format = ssw_is_mcnp6(fsswref);
-  if (ssw_is_gzipped(fsswref))
-    ssw_error("Current code does not support the reference ssw file to be gzipped. Please gunzip and rerun.");
+  assert(ssw_np1pos<ssw_hdrlen);
+  assert(ssw_nrsspos<ssw_hdrlen);
 
+#define SSW_MCNP6 1
+#define SSW_MCNPX 2
+#define SSW_MCNP5 3
+  int ssw_mcnp_type = 0;
+  if (ssw_is_mcnp6(fsswref)) {
+    ssw_mcnp_type = SSW_MCNP6;
+  } else if (ssw_is_mcnpx(fsswref)) {
+    ssw_mcnp_type = SSW_MCNPX;
+  } else if (ssw_is_mcnp5(fsswref)) {
+    ssw_mcnp_type = SSW_MCNP5;
+  }
+  assert(ssw_mcnp_type>0);
+  char ref_mcnpflavour_str[64];
+  ref_mcnpflavour_str[0] = '\0';
+  strcat(ref_mcnpflavour_str,ssw_mcnpflavour(fsswref));
+
+  int ref_is_gzipped = ssw_is_gzipped(fsswref);
   ssw_close_file(fsswref);
 
+  //Grab the header:
   unsigned char * hdrbuf = (unsigned char*)malloc(ssw_hdrlen);
-  FILE * fraw_sswref = fopen(refsswfile,"rb");
-  if (!fraw_sswref)
-    ssw_error("Problems opening reference ssw file directly\n");
-
-  int64_t nb = fread(hdrbuf, 1, ssw_hdrlen, fraw_sswref);
-  if (nb!=ssw_hdrlen)
-    ssw_error("Problems reading headers from reference ssw file directly\n");
-
-  fclose(fraw_sswref);
+  assert(hdrbuf);
+  ssw_internal_grabhdr( refsswfile, ref_is_gzipped, ssw_hdrlen, hdrbuf );
 
   int32_t orig_np1 = * ((int32_t*)(&hdrbuf[ssw_np1pos]));
 
@@ -422,7 +449,7 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
 
   //Write header:
 
-  nb = fwrite(hdrbuf, 1, ssw_hdrlen, fout);
+  int nb = fwrite(hdrbuf, 1, ssw_hdrlen, fout);
   if (nb!=ssw_hdrlen)
     ssw_error("Problems writing header to new SSW file");
 
@@ -432,7 +459,7 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
 
   if ( ssw_ssblen != 10 && ssw_ssblen != 11)
     ssw_error("Unexpected length of ssb record in reference SSW file");
-  if ( ssw_mcnp6_format && ssw_ssblen != 11 )
+  if ( (ssw_mcnp_type == SSW_MCNP6) && ssw_ssblen != 11 )
     ssw_error("Unexpected length of ssb record in reference SSW file (expected 11 for MCNP6 files)");
 
   //ssb[0] should be history number (starting from 1), but in our case we always
@@ -472,15 +499,20 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
     }
 
     int64_t rawtype;
-    if (ssw_mcnp6_format)
+    if (ssw_mcnp_type == SSW_MCNP6) {
       rawtype = conv_mcnp6_pdg2ssw(mcpl_p->pdgcode);
-    else
+    } else if (ssw_mcnp_type == SSW_MCNPX) {
       rawtype = conv_mcnpx_pdg2ssw(mcpl_p->pdgcode);
+    } else {
+      assert(ssw_mcnp_type == SSW_MCNP5);
+      rawtype = (mcpl_p->pdgcode==2112?1:(mcpl_p->pdgcode==22?2:0));
+    }
+
     if (!rawtype) {
       ++skipped_nosswtype;
       if (skipped_nosswtype<=100) {
-        printf("WARNING: Found PDG code (%li) in the MCPL file which can not be converted to an MCNP particle type\n",
-               (long)mcpl_p->pdgcode);
+        printf("WARNING: Found PDG code (%li) in the MCPL file which can not be converted to an %s particle type\n",
+               (long)mcpl_p->pdgcode,ref_mcnpflavour_str);
         if (skipped_nosswtype==100)
           printf("WARNING: Suppressing future warnings regarding non-convertible PDG codes.\n");
       }
@@ -489,18 +521,25 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
 
     assert(rawtype>0);
 
-    if (ssw_mcnp6_format) {
+    if (ssw_mcnp_type == SSW_MCNP6) {
       assert(ssw_ssblen==11);
-      ssb[10] = isurf;//FIXME: Should we set the sign of ssb[10] to mean something (we take abs(ssb[10]) in sswread.c).
+      ssb[10] = isurf;//Should we set the sign of ssb[10] to mean something (we take abs(ssb[10]) in sswread.c)?
       ssb[1] = rawtype*4;//Shift 2 bits (thus we only create files with those two bits zero!)
-    } else {
+    } else if (ssw_mcnp_type == SSW_MCNPX) {
       ssb[1] = isurf + 1000000*rawtype;
       if (ssw_ssblen==11)
-        ssb[10] = 1.0;//FIXME: Unsure what should be here, but seems to not be used anyway(?)
+        ssb[10] = 1.0;//Cosine of angle at surface? Can't calculate it, so we simply set
+                      //it to 1 (seems to be not used anyway?)
+    } else {
+      assert(ssw_mcnp_type == SSW_MCNP5);
+      ssb[1] = (isurf + 1000000*rawtype)*8;
+      if (ssw_ssblen==11)
+        ssb[10] = 1.0;//Cosine of angle at surface? Can't calculate it, so we simply set
+                      //it to 1 (seems to be not used anyway?)
     }
 
     //Sign of ssb[1] is used to store the sign of dirz:
-    assert(ssb[1] >= 0.0);
+    assert(ssb[1] >= 1.0);
     if (mcpl_p->direction[2]<0.0)
       ssb[1] = - ssb[1];
 
@@ -525,7 +564,8 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
   int32_t new_np1 = new_nrss;
 
   if (new_np1==0) {
-    printf("WARNING: Input MCPL file has 0 particles but we are setting number"
+    //SSW files must at least have 1 history (but can have 0 particles)
+    printf("WARNING: Input MCPL file has 0 useful particles but we are setting number"
            " of histories in new SSW file to 1 to avoid creating an invalid file.\n");
     new_np1 = 1;
   }
@@ -538,7 +578,7 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
   fclose(fout);
 
   printf("Created %s with %lli particles (nrss) and %lli histories (np1).\n",outsswfile,(long long)new_nrss,(long long)labs(new_np1));
-  return 0;
+  return 1;
 
 
 }
@@ -595,7 +635,8 @@ int mcpl2ssw_parse_args(int argc,const char **argv, const char** inmcplfile,
 
   int64_t opt_num_limit = -1;
   int64_t opt_num_isurf = -1;
-  for (int i = 1; i<argc; ++i) {
+  int i;
+  for (i = 1; i<argc; ++i) {
     const char * a = argv[i];
     size_t n = strlen(a);
     if (!n)
@@ -603,7 +644,8 @@ int mcpl2ssw_parse_args(int argc,const char **argv, const char** inmcplfile,
     if (n>=2&&a[0]=='-'&&a[1]!='-') {
       //short options:
       int64_t * consume_digit = 0;
-      for (size_t j=1; j<n; ++j) {
+      size_t j;
+      for (j=1; j<n; ++j) {
         if (consume_digit) {
           if (a[j]<'0'||a[j]>'9')
             return mcpl2ssw_app_usage(argv,"Bad option: expected number");

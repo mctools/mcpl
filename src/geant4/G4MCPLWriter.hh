@@ -52,6 +52,7 @@ class G4MCPLWriter : public G4VSensitiveDetector
     void AddData( const G4String& dataKey, size_t dataLength, const char* data );
     void EnableDoublePrecision();
     void EnablePolarisation();
+    void EnableUniversalWeight(G4double);
 
     //The default ProcessHits simply "consumes" all particles entering the
     //volume, in the sense that we store their state at pre-step as a particle
@@ -72,8 +73,8 @@ class G4MCPLWriter : public G4VSensitiveDetector
   protected:
     //Methods that can be used inside ProcessHits to store particles into the
     //MCPL file and/or kill the track:
-    void storePreStep(const G4Step * step) { Store(step,step->GetPreStepPoint()); }
-    void storePostStep(const G4Step * step) { Store(step,step->GetPostStepPoint()); }
+    void StorePreStep(const G4Step * step) { Store(step,step->GetPreStepPoint()); }
+    void StorePostStep(const G4Step * step) { Store(step,step->GetPostStepPoint()); }
     void Kill(G4Step * step) { step->GetTrack()->SetTrackStatus(fStopAndKill); }
 
   private:

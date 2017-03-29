@@ -9,10 +9,10 @@
 //                                                                                 //
 // The code was written with help from E. Klinkby DTU NuTech and under             //
 // inspiration from equivalent programs written in Fortran (E. Klinkby DTU         //
-// NuTech with help from H. Breitkreutz) and in python (K. Batkov ESS,             //
-// https://github.com/kbat/mc-tools/blob/master/mcnp/ssw.py).                      //
+// NuTech with help from H. Breitkreutz) and in python (PyNE & mc-tools by K.      //
+// Batkov ESS).                                                                    //
 //                                                                                 //
-// Refer to the top of mcnp_ssweader.c for details regarding how to build.         //
+// Refer to the top of sswread.c for details regarding how to build.               //
 //                                                                                 //
 // This file can be freely used as per the terms in the LICENSE file.              //
 //                                                                                 //
@@ -20,7 +20,7 @@
 // permissions and licenses from third-parties, which is not within the scope of   //
 // the MCPL project itself.                                                        //
 //                                                                                 //
-// Written 2015-2016, thomas.kittelmann@esss.se (European Spallation Source).      //
+// Written 2015-2017, thomas.kittelmann@esss.se (European Spallation Source).      //
 //                                                                                 //
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -54,11 +54,14 @@ extern "C" {
 
   //Query header info:
   unsigned long ssw_nparticles(ssw_file_t);
-  const char* ssw_srcname(ssw_file_t);//"mcnp" or "mcnpx"
+  const char* ssw_srcname(ssw_file_t);//Usually "mcnp" or "mcnpx"
   const char* ssw_srcversion(ssw_file_t);
-  const char* ssw_title(ssw_file_t);
+  const char* ssw_title(ssw_file_t);//Problem title from input deck
   int ssw_is_gzipped(ssw_file_t);//whether input file was gzipped
   int ssw_is_mcnp6(ssw_file_t);
+  int ssw_is_mcnp5(ssw_file_t);
+  int ssw_is_mcnpx(ssw_file_t);
+  const char * ssw_mcnpflavour(ssw_file_t);//string like "MCNPX" or "MCNP6"
 
   //load next particle (null indicates eof):
   const ssw_particle_t * ssw_load_particle(ssw_file_t);

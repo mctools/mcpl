@@ -53,7 +53,7 @@ G4bool G4MCPLWriter::ProcessHits(G4Step * step,G4TouchableHistory*)
   //particles taking their very first step (this would double-
   //count secondary particles created at the volume edge):
   if ( step->GetTrack()->GetCurrentStepNumber() > 1 )
-    storePreStep(step);
+    StorePreStep(step);
 
   //Tell Geant4 to stop further tracking of the particle:
   Kill(step);
@@ -81,6 +81,11 @@ void G4MCPLWriter::EnablePolarisation()
   m_store_polarisation = true;
 }
 
+void G4MCPLWriter::EnableUniversalWeight(G4double w)
+{
+  mcpl_enable_universal_weight(m_f,w);
+}
+
 void G4MCPLWriter::Store( const G4Step * step, const G4StepPoint* pt )
 {
   G4Track * trk = step->GetTrack();
@@ -95,14 +100,14 @@ void G4MCPLWriter::Store( const G4Step * step, const G4StepPoint* pt )
   m_p.ekin = pt->GetKineticEnergy();//already in MeV
   const G4ThreeVector& pos = pt->GetPosition();
   const G4ThreeVector& dir = pt->GetMomentumDirection();
-  const double tocm(1.0/CLHEP::cm);
+  const G4double tocm(1.0/CLHEP::cm);
   m_p.position[0] = pos.x() * tocm;
   m_p.position[1] = pos.y() * tocm;
   m_p.position[2] = pos.z() * tocm;
   m_p.direction[0] = dir.x();
   m_p.direction[1] = dir.y();
   m_p.direction[2] = dir.z();
-  double dm2 = dir.mag2();
+  G4double dm2 = dir.mag2();
   if (fabs(dm2-1.0)>1.0e-12) {
     if (!dm2) {
       if (m_p.ekin) {
@@ -124,7 +129,6 @@ void G4MCPLWriter::Store( const G4Step * step, const G4StepPoint* pt )
   }
 
   if (m_store_polarisation) {
-    //units??
     const G4ThreeVector& pol = pt->GetPolarization();
     m_p.polarisation[0] = pol.x();
     m_p.polarisation[1] = pol.y();

@@ -1,9 +1,7 @@
 ##################################################################################
 #                                                                                #
-# Example CMake file which can be used to compile and link all files distributed #
-# with MCPL. Obviously, in many cases, users will simply copy a few source files #
-# into their existing setup, and build them using whatever system they use to    #
-# build the rest of their code.                                             .    #
+# CMake file which can be used to compile and link all code in the MCPL.         #
+# distribution.                                                                  #
 #                                                                                #
 # One way to invoke cmake to build and install would be like this:               #
 #                                                                                #
@@ -13,7 +11,9 @@
 #                                                                                #
 #  $> make install                                                               #
 #                                                                                #
-# Written 2016 by T. Kittelmann.                                                 #
+# Refer to the INSTALL file from the MCPL distribution for more details.         #
+#                                                                                #
+# Written 2016-2017 by T. Kittelmann.                                            #
 #                                                                                #
 ##################################################################################
 
@@ -22,7 +22,7 @@ cmake_minimum_required(VERSION 3.0.0)
 project(MCPL CXX C)
 
 set(BUILD_EXAMPLES  ON CACHE STRING "Whether to build examples.")
-set(BUILD_WITHZLIB  ON CACHE STRING "Whether to link with ZLib if available.")
+set(BUILD_WITHZLIB  ON CACHE STRING "Whether to link with zlib if available.")
 set(BUILD_WITHSSW   ON CACHE STRING "Whether to build the MCPL-SSW converters.")
 set(BUILD_WITHG4    ON CACHE STRING "Whether to build Geant4 plugins if Geant4 is available.")
 set(BUILD_FAT      OFF CACHE STRING "Whether to also build the fat binaries.")
@@ -110,8 +110,9 @@ if(ZLIB_FOUND)
   target_include_directories(mcpl SYSTEM PRIVATE ${ZLIB_INCLUDE_DIRS})
   target_link_libraries(mcpl ${ZLIB_LIBRARIES})
   if (BUILD_WITHSSW)
-    target_compile_definitions(sswmcpl PRIVATE "-DSSWREADER_HASZLIB")
+    target_compile_definitions(sswmcpl PRIVATE "-DSSWREAD_HASZLIB")
     target_include_directories(sswmcpl SYSTEM PRIVATE ${ZLIB_INCLUDE_DIRS})
+    target_link_libraries(sswmcpl ${ZLIB_LIBRARIES})
   endif()
 else()
   message("zlib support not enabled - gzipped input files will NOT be directly readable by resulting binaries.")

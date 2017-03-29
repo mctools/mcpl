@@ -5,17 +5,17 @@
 //                                                                                 //
 //                                                                                 //
 //  Compilation of sswread.c can proceed via any compliant C-compiler using        //
-//  -std=c99 later, and the resulting code must always be linked with libm         //
+//  -std=c99 or later, and the resulting code must always be linked with libm      //
 //  (using -lm). Furthermore, the following preprocessor flags can be used         //
 //  when compiling sswread.c to fine tune the build process and the                //
 //  capabilities of the resulting binary.                                          //
 //                                                                                 //
 //  SSWREAD_HASZLIB : Define if compiling and linking with zlib, to allow direct   //
-//                      reading of gzipped SSW files.                              //
-//  SSWREAD_ZLIB_INCPATH : Specify alternative value if the zlib header is         //
-//                           not to be included as "zlib.h".                       //
-//  SSWREAD_HDR_INCPATH : Specify alternative value if the sswread header          //
-//                          itself is not to be included as "sswread.h".           //
+//                    reading of gzipped SSW files.                                //
+//  SSWREAD_ZLIB_INCPATH : Specify alternative value if the zlib header is not to  //
+//                         be included as "zlib.h".                                //
+//  SSWREAD_HDR_INCPATH : Specify alternative value if the sswread header itself   //
+//                        is not to be included as "sswread.h".                    //
 //                                                                                 //
 // This file can be freely used as per the terms in the LICENSE file.              //
 //                                                                                 //
@@ -23,7 +23,7 @@
 // permissions and licenses from third-parties, which is not within the scope of   //
 // the MCPL project itself.                                                        //
 //                                                                                 //
-//  Written 2015-2016, thomas.kittelmann@esss.se (European Spallation Source).     //
+// Written 2015-2017, thomas.kittelmann@esss.se (European Spallation Source).      //
 //                                                                                 //
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -48,6 +48,15 @@
 #include <string.h>
 #include <stdint.h>
 
+
+//Should be large enough to hold first record in all supported files:
+#define SSWREAD_STDBUFSIZE 1024
+
+#define SSW_MCNP_NOTFOUND 0
+#define SSW_MCNP6 1
+#define SSW_MCNPX 2
+#define SSW_MCNP5 3
+
 void ssw_error(const char * msg) {
   printf("ERROR: %s\n",msg);
   exit(1);
@@ -70,7 +79,7 @@ typedef struct {
   int32_t nrcd;
   int32_t niss;
   int32_t pos;
-  int is_mcnp6;
+  int mcnp_type;
 #ifdef SSWREAD_HASZLIB
   gzFile filegz;
 #else
@@ -79,7 +88,8 @@ typedef struct {
   FILE * file;
   ssw_particle_t part;
   unsigned lbuf;
-  char buf[1024];
+  unsigned lbufmax;
+  char * buf;
   size_t np1pos;
   size_t nrsspos;
   size_t headlen;
@@ -117,10 +127,28 @@ int ssw_loadrecord(ssw_fileinternal_t* f)
     f->lbuf = rl;
   }
 
-  if (f->lbuf>sizeof(f->buf)) {
-    printf("SSW Error: internal buffer too short\n");
+  if (f->lbuf > f->lbufmax) {
+    //Very large record, must grow buffer:
+    free(f->buf);
+    f->lbufmax = f->lbuf;
+    f->buf = malloc(f->lbufmax);
+  }
+
+  if ( f->lbuf <= SSWREAD_STDBUFSIZE
+       && f->lbufmax > SSWREAD_STDBUFSIZE ) {
+    //Make sure we don't hold on to very large buffers once they are no longer
+    //needed:
+    free(f->buf);
+    f->lbufmax = SSWREAD_STDBUFSIZE;
+    f->buf = malloc(f->lbufmax);
+  }
+
+  if (!f->buf) {
+    //Could be corrupted data resulting in unusually large lbuf:
+    printf("SSW Error: unable to allocate requested buffer (corrupted input?).\n");
     return 0;
   }
+
   char * buf = (char*)f->buf;
   if (!ssw_readbytes(f, buf, f->lbuf))
     return 0;
@@ -147,7 +175,9 @@ void ssw_close_file(ssw_file_t ff) {
     f->file = 0;
   }
 #endif
+  free(f->buf);
   free(f);
+  ff.internal = 0;
 }
 
 void ssw_strip(char **str) {
@@ -172,6 +202,7 @@ ssw_file_t ssw_openerror(ssw_fileinternal_t * f, const char* msg) {
     if (f->filegz)
       gzclose(f->filegz);
 #endif
+    free(f->buf);
     free(f);
   }
   ssw_error(msg);
@@ -180,16 +211,60 @@ ssw_file_t ssw_openerror(ssw_fileinternal_t * f, const char* msg) {
   return out;
 }
 
-ssw_file_t ssw_open_file(const char * filename)
+//NB: Do not change function signature without updating code in sswmcpl.c as well!
+void ssw_internal_grabhdr( const char * filename, int is_gzip, int64_t hdrlen,
+                           unsigned char * hdrbuf )
 {
-  if (!filename)
-    ssw_error("ssw_open_file called with null string");
+  //To be used by mcpl2ssw, but we don't want to complicate the build process
+  //for users further by also requiring sswmcpl.c to deal with zlib
+  //directly. Thus, we provide a hidden function here which mcpl2ssw can use by
+  //forward declaring it.
+  if (is_gzip) {
+#ifdef SSWREAD_HASZLIB
+    gzFile filegz = gzopen(filename,"rb");
+    if (!filegz)
+      ssw_error("Unable to open file!");
+    int64_t pos = 0;
+    int64_t toread = hdrlen;
+    while(toread) {
+      int chunk = (hdrlen>16384?16384:(int)hdrlen);
+      int nb = gzread(filegz, hdrbuf+pos, chunk);
+      if (!nb)
+        printf("SSW Error: read failure\n");
+      assert(toread >= nb);
+      toread -= nb;
+      pos += nb;
+    }
+    gzclose(filegz);
+#else
+    ssw_error("This installation was not built with zlib support and can not read compressed (.gz) files directly.");
+#endif
+  } else {
+    FILE * fh = fopen(filename,"rb");
+    if (!fh)
+      ssw_error("Unable to open file!\n");
+    int64_t pos = 0;
+    int64_t toread = hdrlen;
+    while(toread) {
+      int chunk = (hdrlen>16384?16384:(int)hdrlen);
+      int nb = fread(hdrbuf+pos,1,chunk,fh);
+      if (!nb)
+        printf("SSW Error: read failure\n");
+      assert(toread >= nb);
+      toread -= nb;
+      pos += nb;
+    }
+    fclose(fh);
+  }
+}
 
-  ssw_file_t out;
-  out.internal = 0;
-
+ssw_file_t ssw_open_and_procrec0( const char * filename )
+{
   ssw_fileinternal_t * f = (ssw_fileinternal_t*)calloc(sizeof(ssw_fileinternal_t),1);
   assert(f);
+
+  ssw_file_t out;
+  out.internal = f;
 
   //open file (with gzopen if filename ends with .gz):
   f->file = 0;
@@ -201,7 +276,7 @@ ssw_file_t ssw_open_file(const char * filename)
     if (!f->filegz)
       ssw_error("Unable to open file!");
 #else
-    ssw_error("This installation of sswread was not built with zlib support and can not read compressed (.gz) files directly.");
+    ssw_error("This installation was not built with zlib support and can not read compressed (.gz) files directly.");
 #endif
   } else {
     f->file = fopen(filename,"rb");
@@ -209,50 +284,103 @@ ssw_file_t ssw_open_file(const char * filename)
       ssw_error("Unable to open file!");
   }
 
+  //Prepare buffer. SSWREAD_STDBUFSIZE bytes should always be enough for the
+  //first record (guaranteed by the checks below), but it might later grow on
+  //demand inside ssw_loadrecord if needed.
+
+  f->lbufmax = SSWREAD_STDBUFSIZE;
+  char * buf = malloc(f->lbufmax);
+  f->buf = buf;
+
   //Fortran data is usually written in "records" with an initial and final 32bit
-  //or 64bit integer specifying the record byte-length. The known file-types
+  //or 64bit integer specifying the record byte-length. The tested file-types
   //begin in one of the following ways:
   //
-  // 1) 4B[163|167] + "mcnp" : MCNPX2.7.0 with 32bit reclen
-  // 2) 8B[163|167] + "mcnp" : MCNPX2.7.0 with 64bit reclen
-  // 3) 16B +4B[143] + "mcnp" : MCNP6 with 32bit reclen
-  // 4) 24B +8B[143] + "mcnp" : MCNP6 with 64bit reclen
+  // 1) 4B[163|167] + KODS : MCNPX2.7.0 with 32bit reclen
+  // 2) 8B[163|167] + KODS : MCNPX2.7.0 with 64bit reclen
+  // 3) 16B +4B[143] + KODS : MCNP6 with 32bit reclen.
+  // 4) 24B +8B[143] + KODS : MCNP6 with 64bit reclen
+  // 5) 4B[143]+KODS : MCNP5 with 32bit reclen.
+  // 6) 8B[143]+KODS : MCNP5 with 64bit reclen.
   //
-  //Thus, we probe the first 36 bytes and see if we can find 4 chars spelling
-  //out "mcnp" at the indicated positions, preceeded by an integer with the
-  //correct value (143, 163 or 167 as indicated).
+  //Where KODS is 8 bytes representing the "code name" as a string. For pure
+  //MCNPX/MCNP6 this string contains "mcnpx" and "mcnp" respectively, but we
+  //should allow for custom in-house versions with modified contents of KODS. We
+  //do, however, require that the first character or KODS is an ASCII character
+  //in the range 32-126 (i.e. non-extended ascii without control or null chars).
+  //
+  //Note that for option 3) and 4), the 16B / 24B are a fortran record with 8
+  //bytes of data - usually (always?) the string "SF_00001".
 
-  char * buf = (char*)f->buf;
+  //Thus, we probe the first 36 bytes and search the patterns above:
+
   ssw_readbytes(f,buf,36);
+  uint32_t first32 = *((uint32_t*)buf);
+  uint32_t first64 = *((uint64_t*)buf);
 
   f->reclen = 0;
+  f->mcnp_type = SSW_MCNP_NOTFOUND;
   uint64_t lenrec0 = 99999;
   unsigned rec0begin = 0;
-  f->is_mcnp6 = 0;
-  if ( strncmp(buf+4,"mcnp",4) == 0 && (lenrec0=*((uint32_t*)buf)) >= 163 && lenrec0 <=167 ) {
-    //case 1:
+
+  //First look for MCNP6:
+  if ( first32==8 && *((uint32_t*)(buf+12))==8 && *((uint32_t*)(buf+16))==143 && buf[20]>=32 && buf[20]<127) {
+    //Looks like 3), an mcnp6 file with 32bit fortran records.
+    f->mcnp_type = SSW_MCNP6;
     f->reclen = 4;
-    rec0begin = 4;
-  } else if ( strncmp(buf+8,"mcnp",4) == 0 && (lenrec0=*((uint64_t*)buf)) >= 163 && lenrec0 <=167 ) {
-    //case 2:
-    f->reclen = 8;
-    rec0begin = 8;
-  } else if ( strncmp(buf+4+16,"mcnp",4) == 0 && (lenrec0=*((uint32_t*)(buf+16))) == 143 ) {
-    //case 3:
-    f->reclen = 4;
+    lenrec0 = 143;
     rec0begin = 20;
-    f->is_mcnp6 = 1;
-  } else if ( strncmp(buf+8+24,"mcnp",4) == 0 && (lenrec0=*((uint64_t*)(buf+24))) == 143 ) {
-    //case 4:
-    f->reclen = 8;
+  } else if ( first32==8 && *((uint64_t*)(buf+16))==8 && *((uint64_t*)(buf+24))==143 && buf[32]>=32 && buf[32]<127) {
+    //Looks like 4), an mcnp6 file with 64bit fortran records.
+    f->mcnp_type = SSW_MCNP6;
+    f->reclen = 4;
+    lenrec0 = 143;
     rec0begin = 32;
-    f->is_mcnp6 = 1;
   }
-  if (f->reclen==0||rec0begin==0||(lenrec0!=143&&lenrec0!=163&&lenrec0!=167)) {
-    return ssw_openerror(f,"ssw_open_file error: File does not look like a supported mcnp .ssw file");
+
+  //Next, look for MCNPX:
+  if ( f->mcnp_type == SSW_MCNP_NOTFOUND ) {
+    if ( (first32==163||first32==167) && ( buf[4]>=32 && buf[4]<127 ) ) {
+      //Looks like 1), an mcnpx file with 32bit fortran records.
+      f->mcnp_type = SSW_MCNPX;
+      f->reclen = 4;
+      lenrec0 = first32;
+      rec0begin = 4;
+    } else if ( (first64==163||first64==167) && ( buf[8]>=32 && buf[8]<127 ) ) {
+      //Looks like 2), an mcnpx file with 64bit fortran records.
+      f->mcnp_type = SSW_MCNPX;
+      f->reclen = 8;
+      lenrec0 = first64;
+      rec0begin = 8;
+    }
   }
-  if (f->reclen==8)
-    printf("ssw_open_file WARNING: 64bit Fortran records detected. This is untested.\n");
+
+  //Finally, look for MCNP5:
+  if ( f->mcnp_type == SSW_MCNP_NOTFOUND ) {
+    if ( first32==143 && ( buf[4]>=32 && buf[4]<127 ) ) {
+      //Looks like 5), an mcnp5 file with 32bit fortran records.
+      f->mcnp_type = SSW_MCNP5;
+      f->reclen = 4;
+      lenrec0 = first32;
+      rec0begin = 4;
+    } else if ( first64==143 && ( buf[8]>=32 && buf[8]<127 ) ) {
+      //Looks like 6), an mcnp5 file with 64bit fortran records.
+      f->mcnp_type = SSW_MCNP5;
+      f->reclen = 8;
+      lenrec0 = first64;
+      rec0begin = 8;
+    }
+  }
+
+  if ( f->mcnp_type == SSW_MCNP_NOTFOUND )
+    return ssw_openerror(f,"ssw_open_file error: File does not look like a supported MCNP SSW file");
+
+  assert(f->reclen && rec0begin && lenrec0 && lenrec0<99999 );
+
+  if (f->reclen==8) {
+    printf("ssw_open_file WARNING: 64bit Fortran records detected which is untested (feedback"
+           " appreciated at https://mctools.github.io/mcpl/contact/).\n");
+  }
 
   //Finish reading the first record:
   int missingrec0 = (int)(lenrec0 + rec0begin) - (int)36 + f->reclen;
@@ -269,7 +397,7 @@ ssw_file_t ssw_open_file(const char * filename)
     return ssw_openerror(f,"ssw_open_file error: Unexpected header contents\n");
 
   //decode first record, inspired by ssw.py:
-  if (f->is_mcnp6) {
+  if (f->mcnp_type == SSW_MCNP6) {
     char * r = buf + rec0begin;
     unsigned n;
     memcpy(f->kods,r, n=8); r += n;
@@ -278,7 +406,7 @@ ssw_file_t ssw_open_file(const char * filename)
     memcpy(f->idtms,r, n=18); r += n;
     memcpy(f->aids,r, n=80); r += n;
     f->probs[0]='\0';
-  } else {
+  } else if (f->mcnp_type == SSW_MCNPX) {
     assert(lenrec0==163||lenrec0==167);
     char * r = buf + f->reclen;
     unsigned n;
@@ -288,7 +416,19 @@ ssw_file_t ssw_open_file(const char * filename)
     memcpy(f->idtms,r, n=19); r += n;
     memcpy(f->probs,r, n=19); r += n;
     memcpy(f->aids,r, n=80); r += n;
+  } else {
+    assert(f->mcnp_type == SSW_MCNP5);
+    assert(lenrec0==143);
+    char * r = buf + f->reclen;
+    unsigned n;
+    memcpy(f->kods,r, n=8); r += n;
+    memcpy(f->vers,r, n=5); r += n;
+    memcpy(f->lods,r, n=8); r += n;
+    memcpy(f->idtms,r, n=19); r += n;
+    memcpy(f->probs,r, n=19); r += n;
+    memcpy(f->aids,r, n=80); r += n;
   }
+
   char * tmp;
   tmp = f->kods; ssw_strip(&tmp);
   tmp = f->vers; ssw_strip(&tmp);
@@ -298,40 +438,47 @@ ssw_file_t ssw_open_file(const char * filename)
   tmp = f->aids; ssw_strip(&tmp);
   const char * bn = strrchr(filename, '/');
   bn = bn ? bn + 1 : filename;
-  printf("ssw_open_file: Opened file    : %s\n",bn);
 
-  if (strcmp(f->kods,"mcnp")!=0&&strcmp(f->kods,"mcnpx")!=0) {
-    printf("ssw_open_file error: Unsupported source code name :\"%s\" (must be \"mcnp\" or \"mcnpx\")\n",f->kods);
-    return ssw_openerror(f,"ssw_load error: Unsupported source code name");
+  printf("ssw_open_file: Opened file \"%s\":\n",bn);
+
+  const char * expected_kods = (f->mcnp_type == SSW_MCNPX?"mcnpx":"mcnp");
+  if (strcmp(f->kods,expected_kods)!=0) {
+    printf("ssw_open_file WARNING: Unusual MCNP flavour detected (\"%s\").\n",f->kods);
   }
 
-  printf("ssw_open_file: Detected code  : %s (v%s)\n",(f->is_mcnp6?"MCNP6":"MCNPX"),f->vers);
-  printf("ssw_open_file: Detected title : \"%s\"\n",f->aids);
-  /* printf("ssw_open_file: Found kods  = '%s'\n",f->kods); */
-  /* printf("ssw_open_file: Found vers  = '%s'\n",f->vers); */
-  /* printf("ssw_open_file: Found lods  = '%s'\n",f->lods); */
-  /* printf("ssw_open_file: Found idtms = '%s'\n",f->idtms); */
-  /* printf("ssw_open_file: Found probs = '%s'\n",f->probs); */
-  /* printf("ssw_open_file: Found aids  = '%s'\n",f->aids); */
-
-  if ( f->is_mcnp6 ) {
+  if (f->mcnp_type==SSW_MCNP6) {
     if ( strcmp(f->vers,"6")!=0 && strcmp(f->vers,"6.mpi")!=0 ) {
-      printf("ssw_open_file error: Unsupported MCNP6 source version :\"%s\" (must be \"6\" or \"6.mpi\")\n",f->vers);
-      return ssw_openerror(f,"ssw_open_file error: Unsupported MCNP6 source version");
+      printf("ssw_open_file WARNING: Untested MCNP6 source version : \"%s\". (feedback"
+             " appreciated at https://mctools.github.io/mcpl/contact/)\n",f->vers);
     }
-  } else {
-    if ( strcmp(f->vers,"2.6.0")!=0 && strcmp(f->vers,"2.7.0")!=0 && strcmp(f->vers,"26b")!=0 ) {
-      printf("ssw_open_file error: Unsupported MCNPX source version :\"%s\" (must be \"2.7.0\", \"2.6.0\" or \"26b\")\n",f->vers);
-      return ssw_openerror(f,"ssw_open_file error: Unsupported MCNPX source version");
-    }
-    if (strcmp(f->vers,"2.6.0")==0||strcmp(f->vers,"26b")==0)
-      printf("ssw_open_file warning: Attempting to open MCNPX file with version %s. This is untested.\n",f->vers);
+  } else if (f->mcnp_type==SSW_MCNPX) {
+    if ( strcmp(f->vers,"2.5.0")!=0 && strcmp(f->vers,"2.6.0")!=0
+         && strcmp(f->vers,"2.7.0")!=0 && strcmp(f->vers,"26b")!=0 )
+      printf("ssw_open_file WARNING: Untested MCNPX source version : \"%s\". (feedback"
+             " appreciated at https://mctools.github.io/mcpl/contact/)\n",f->vers);
+  } else if (f->mcnp_type==SSW_MCNP5) {
+    if ( strcmp(f->vers,"5")!=0 )
+      printf("ssw_open_file WARNING: Untested MCNP5 source version : \"%s\". (feedback"
+             " appreciated at https://mctools.github.io/mcpl/contact/)\n",f->vers);
   }
 
+  return out;
+}
+ssw_file_t ssw_open_file( const char * filename )
+{
+  if (!filename)
+    ssw_error("ssw_open_file called with null string for filename");
+
+  //Open, classify and process first record with mcnp type and version info:
+
+  ssw_file_t out = ssw_open_and_procrec0( filename );
+  ssw_fileinternal_t * f = (ssw_fileinternal_t *)out.internal; assert(f);
+
+  //Skip a record:
   if (!ssw_loadrecord(f))
     return ssw_openerror(f,"ssw_open_file error: problems loading record");
 
-  //Position of &buf[0] in file:
+  //Position of current record payload in file:
   long int current_recpos;
 #ifdef SSWREAD_HASZLIB
   if (f->filegz)
@@ -339,20 +486,20 @@ ssw_file_t ssw_open_file(const char * filename)
   else
 #endif
     current_recpos = ftell(f->file);
-
   current_recpos -= f->reclen;
   current_recpos -= f->lbuf;
 
+  //Read size data and mark position of nrss & np1 variables.
   int32_t * bi = (int32_t*)f->buf;
-  if ( f->is_mcnp6 && f->lbuf>=32 ) {
+  if ( (f->mcnp_type == SSW_MCNP6) && f->lbuf>=32 ) {
     f->np1 = bi[0];
     f->np1pos = current_recpos + 0 * sizeof(int32_t);
     f->nrss = bi[2];
     f->nrsspos = current_recpos + 2 * sizeof(int32_t);
-    f->nrcd = abs(bi[4]);//not sure what negative bi[4] indicates?
-    f->njsw = bi[5];//or... abs(bi[1])??
-    f->niss = bi[6];//konstantin had bi[7] here...
-  } else if (f->lbuf==20) {
+    f->nrcd = abs(bi[4]);
+    f->njsw = bi[5];
+    f->niss = bi[6];
+  } else if ( (f->mcnp_type == SSW_MCNPX) && f->lbuf==20 ) {
     f->np1 = bi[0];
     f->np1pos = current_recpos + 0 * sizeof(int32_t);
     f->nrss = bi[1];
@@ -360,8 +507,25 @@ ssw_file_t ssw_open_file(const char * filename)
     f->nrcd = bi[2];
     f->njsw = bi[3];
     f->niss = bi[4];
+  } else if ( (f->mcnp_type == SSW_MCNP5) && f->lbuf==32 ) {
+    int64_t np1_64 = ((int64_t*)f->buf)[0];
+    if (np1_64 > 2147483647 || np1_64 < -2147483647)
+      return ssw_openerror(f,"ssw_open_file error: MCNP5 files with more than 2147483647"
+                           " histories are not supported");
+    f->np1 = (int32_t)np1_64;
+    f->np1pos = current_recpos + 0 * sizeof(int64_t);
+    uint64_t nrss_64 = ((uint64_t*)f->buf)[1];
+    if (nrss_64 > 2147483647 )
+      return ssw_openerror(f,"ssw_open_file error: MCNP5 files with more than 2147483647"
+                           " particles are not supported");
+    f->nrss = (int32_t)nrss_64;
+    f->nrsspos = current_recpos + 1 * sizeof(int64_t);
+    f->nrcd = bi[4];
+    f->njsw = bi[5];
+    f->niss = bi[6];
   } else if (f->lbuf==40) {
-    printf("ssw_open_file warning: Using untested code path..\n");
+    printf("ssw_open_file WARNING: File format has header format for which decoding was never tested (feedback"
+           " appreciated at https://mctools.github.io/mcpl/contact/).\n");
     f->np1 = bi[0];
     f->np1pos = current_recpos + 0 * sizeof(int32_t);
     f->nrss = bi[2];
@@ -373,18 +537,29 @@ ssw_file_t ssw_open_file(const char * filename)
     return ssw_openerror(f,"ssw_open_file error: Unexpected record length");
   }
 
-  printf("ssw_open_file: Detected source statistics (histories): %11i\n" , abs(f->np1));
-  printf("ssw_open_file: Detected particles in file            : %11i\n" , f->nrss);
-  printf("ssw_open_file: Detected number of surfaces           : %11i\n" , f->njsw);
-  printf("ssw_open_file: Detected histories at surfaces        : %11i\n" , f->niss);
-  printf("ssw_open_file: Detected length of SSB array          : %11i\n" , f->nrcd);
+  printf("ssw_open_file:    File layout detected : %s\n",ssw_mcnpflavour(out));
+  printf("ssw_open_file:    Code ID fields : \"%s\" / \"%s\"\n",f->kods,f->vers);
+  printf("ssw_open_file:    Title field : \"%s\"\n",f->aids);
+  /* printf("ssw_open_file: Found kods  = '%s'\n",f->kods); */
+  /* printf("ssw_open_file: Found vers  = '%s'\n",f->vers); */
+  /* printf("ssw_open_file: Found lods  = '%s'\n",f->lods); */
+  /* printf("ssw_open_file: Found idtms = '%s'\n",f->idtms); */
+  /* printf("ssw_open_file: Found probs = '%s'\n",f->probs); */
+  /* printf("ssw_open_file: Found aids  = '%s'\n",f->aids); */
+  printf("ssw_open_file:    Source statistics (histories): %11i\n" , abs(f->np1));
+  printf("ssw_open_file:    Particles in file            : %11i\n" , f->nrss);
+  printf("ssw_open_file:    Number of surfaces           : %11i\n" , f->njsw);
+  printf("ssw_open_file:    Histories at surfaces        : %11i\n" , f->niss);
+  //  printf("ssw_open_file: File length of SSB array          : %11i\n" , f->nrcd);
 
+  if(f->nrcd==6)
+    return ssw_openerror(f,"ssw_open_file error: SSW files with spherical sources are not currently supported.");
   if(f->nrcd<10)
-    return ssw_openerror(f,"ssw_open_file error: Too short SSB arrays in file.");//might be a configuration issue?
+    return ssw_openerror(f,"ssw_open_file error: Too short SSB arrays in file");
   if(f->nrcd>11)
     return ssw_openerror(f,"ssw_open_file error: Unexpected length of SSB arrays in file");
 
-  if (f->is_mcnp6&&f->nrcd==10)
+  if ( (f->mcnp_type == SSW_MCNP6) && f->nrcd==10 )
     return ssw_openerror(f,"ssw_open_file error: Unexpected length of SSB arrays in MCNP6 file");
 
   int32_t niwr = 0;
@@ -396,14 +571,18 @@ ssw_file_t ssw_open_file(const char * filename)
     if (!ssw_loadrecord(f))
       return ssw_openerror(f,"ssw_open_file error: problems loading record");
     niwr = bi[0];
+    //mipts = bi[1];//source particle type
+    //kjaq  = bi[2];//macrobody facet flag
   }
 
-  //skip over njsw + niwr + 1(mipts) records which we are not interested in:
-  for (int i = 0; i < f->njsw+niwr+1; ++i) {
+  //skip over njsw + niwr + 1 records which we are not interested in:
+  int i;
+  for (i = 0; i < f->njsw+niwr+1; ++i) {
     if (!ssw_loadrecord(f))
       return ssw_openerror(f,"ssw_open_file error: problems loading record");
   }
 
+  //End of header. Mark the position and return a file handle:
 #ifdef SSWREAD_HASZLIB
   if (f->filegz)
     f->headlen = gztell(f->filegz);
@@ -436,10 +615,31 @@ const char* ssw_title(ssw_file_t ff) {
   return f->aids;
 }
 
-
 int ssw_is_mcnp6(ssw_file_t ff) {
   SSW_FILEDECODE;
-  return f->is_mcnp6;
+  return f->mcnp_type == SSW_MCNP6;
+}
+
+int ssw_is_mcnpx(ssw_file_t ff) {
+  SSW_FILEDECODE;
+  return f->mcnp_type == SSW_MCNPX;
+}
+
+int ssw_is_mcnp5(ssw_file_t ff) {
+  SSW_FILEDECODE;
+  return f->mcnp_type == SSW_MCNP5;
+}
+
+const char * ssw_mcnpflavour(ssw_file_t ff) {
+  SSW_FILEDECODE;
+  switch(f->mcnp_type) {
+  case SSW_MCNP5: return "MCNP5";
+  case SSW_MCNP6: return "MCNP6";
+  case SSW_MCNPX: return "MCNPX";
+  default:
+    ssw_error("ssw_mcnpflavour: logic error.\n");
+  }
+  return "MCNP_logic_error";
 }
 
 int ssw_is_gzipped(ssw_file_t ff) {
@@ -495,7 +695,7 @@ const ssw_particle_t * ssw_load_particle(ssw_file_t ff)
   int64_t nx = ssb[1];
   if (nx<0) nx = - nx;//sign is used for sign of dirz (see below)
 
-  if (f->is_mcnp6) {
+  if ( f->mcnp_type == SSW_MCNP6 ) {
     assert(f->nrcd==11);
     p->isurf = labs((int32_t)ssb[10]);
     nx /= 4;//ignore two lowest bits, maybe used to indicate cell-source-particle and energy-group mode (??)
@@ -503,14 +703,22 @@ const ssw_particle_t * ssw_load_particle(ssw_file_t ff)
     p->pdgcode = conv_mcnp6_ssw2pdg(nx);
     if (!p->pdgcode)
       printf("ssw_load_particle WARNING: Could not convert raw MCNP6 SSW type (%li) to pdg code\n",(long)(p->rawtype));
-  } else {
+  } else if ( f->mcnp_type == SSW_MCNPX ) {
     p->isurf = nx % 1000000;
     p->rawtype = nx / 1000000;
     p->pdgcode = conv_mcnpx_ssw2pdg(p->rawtype);
     if (!p->pdgcode)
       printf("ssw_load_particle WARNING: Could not convert raw MCNPX SSW type (%li) to pdg code\n",(long)(p->rawtype));
+  } else {
+    assert( f->mcnp_type == SSW_MCNP5 );
+    nx /= 8;//Guess: Get rid of some bits that might be used for something else
+    p->isurf = nx % 1000000;
+    p->rawtype = nx / 1000000;
+    p->rawtype /= 100;//Guess: Get rid of some "bits" that might be used for something else
+    p->pdgcode = (p->rawtype==1?2112:(p->rawtype==2?22:0));//only neutrons and gammas in MCNP5
+    if (!p->pdgcode)
+      printf("ssw_load_particle WARNING: Could not convert raw MCNP5 SSW type (%li) to pdg code\n",(long)(p->rawtype));
   }
-
   p->dirz = sqrt(fmax(0.0, 1. - p->dirx*p->dirx-p->diry*p->diry));
   if (ssb[1]<0.0)
     p->dirz = - p->dirz;
@@ -590,11 +798,12 @@ int32_t conv_mcnpx_pdg2ssw(int32_t c)
 {
   int32_t absc = c < 0 ? -c : c;
   if (absc <= 1000020040) {
-    for (int i = 0; i<35; ++i) {
+    int i;
+    for (i = 0; i<35; ++i) {
       if (conv_mcnpx_to_pdg_0to34[i]==c)
         return i;
     }
-    for (int i = 0; i<35; ++i) {
+    for (i = 0; i<35; ++i) {
       if (conv_mcnpx_to_pdg_0to34[i] == -c)
         return 400+i;
     }
@@ -621,11 +830,12 @@ int32_t conv_mcnp6_pdg2ssw(int32_t c)
   if (absc <= 1000020040) {
     if (c==-11)
       return 7;//e+ is special case, pick 7 (anti e-) rather than 16 (straight e+)
-    for (int i = 0; i<37; ++i) {
+    int i;
+    for (i = 0; i<37; ++i) {
       if (conv_mcnp6_to_pdg_0to36[i]==c)
         return 2*i;
     }
-    for (int i = 0; i<37; ++i) {
+    for (i = 0; i<37; ++i) {
       if (conv_mcnp6_to_pdg_0to36[i] == -c)
         return 1 + 2*i;
     }
