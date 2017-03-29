@@ -32,22 +32,22 @@ compiler:
 
 before_script:
     - set -e
-    - mkdir build install rundir
+    - mkdir build installdir rundir
     - cd build
-    - cmake .. -DBUILD_FAT=ON -DCMAKE_BUILD_TYPE=${BUILD} -DCMAKE_INSTALL_PREFIX=../install/
+    - cmake .. -DBUILD_FAT=ON -DCMAKE_BUILD_TYPE=${BUILD} -DCMAKE_INSTALL_PREFIX=../installdir/
     - set +e
 
 script:
     - set -e
     - make VERBOSE=1 install
     - cd ../rundir
-    - find ../install
-    - ../install/bin/mcplexample_write myfile.mcpl
-    - ../install/bin/mcplexample_filter myfile.mcpl.gz myfile_filtered.mcpl
-    - ../install/bin/mcplexample_read myfile_filtered.mcpl.gz
-    - ../install/bin/mcpltool myfile.mcpl.gz
-    - ../install/bin/mcpltool myfile_filtered.mcpl.gz
-    - ../install/bin/mcpltool_fat myfile_filtered.mcpl.gz
+    - find ../installdir
+    - ../installdir/bin/mcplexample_write myfile.mcpl
+    - ../installdir/bin/mcplexample_filter myfile.mcpl.gz myfile_filtered.mcpl
+    - ../installdir/bin/mcplexample_read myfile_filtered.mcpl.gz
+    - ../installdir/bin/mcpltool myfile.mcpl.gz
+    - ../installdir/bin/mcpltool myfile_filtered.mcpl.gz
+    - ../installdir/bin/mcpltool_fat myfile_filtered.mcpl.gz
     - set +e
 
 notifications:
