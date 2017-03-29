@@ -3,10 +3,6 @@ title: Get MCPL
 underconstruction: true
 weight: 9999
 ---
-
-This page has yet to be completed. For now refer to the almost complete
-information in: {% include linkpaper.html subsection=2.5 %}.
-
 You can use the [tar.gz]({{site.github.tar_url|replace: "/gh-pages","/master"}}),
  [zip]({{site.github.zip_url|replace: "/gh-pages","/master"}})
  or [github]({{site.github.repository_url}}) links above
@@ -18,18 +14,13 @@ already have MCPL available through the framework you are using.
 After downloading the MCPL
 [tar-ball]({{site.github.tar_url|replace: "/gh-pages","/master"}})
 or [zip-file]({{site.github.zip_url|replace: "/gh-pages","/master"}}),
-unpack it somewhere (/path/to/sourcedir), create and step into a third temporary directory
-(/path/to/builddir) and configure, compile and install in a location of your
-choice (/path/to/installdir) using the commands:
+unpack it somewhere and follow the instructions in the
+[INSTALL]({{"/raw/master/INSTALL" | prepend: site.github.repository_url }})
+file for how to proceed to build and install using either CMake (to build everything including examples) or a simple Makefile or compilation command (to build just "fat" versions of mcpltool, ssw2mcpl or mcpl2ssw executables).
 
-```shell
-cmake /path/to/sourcedir -DCMAKE_INSTALL_PREFIX=/path/to/installdir
-make install
-```
+For more details, refer to the information in the 
+[INSTALL]({{"/raw/master/INSTALL" | prepend: site.github.repository_url }})
+file of your tar-ball, and to the discussion in:
+{% include linkpaper.html subsection=2.5 %}.
 
-After this is done, look in /path/to/installdir for the MCPL distribution.
-
-{% if false %}
-Should we provide a few example mcpl files for download, so people can
-immediately play around?
-{% endif %}
+To start playing around with the mcpltool, we also provide a small sample MCPL file with the distribution: [example.mcpl]({{"/raw/master/examples/example.mcpl" | prepend: site.github.repository_url }}).
