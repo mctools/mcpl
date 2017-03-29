@@ -8,7 +8,7 @@ Using MCPL typically implies using pre-existing plugins or converters to either 
 
 Many more details can be found in {% include linkpaper.html section=2 %}, or in the pages below:
 
-* Core MCPL code:
+* Generic access:
   * [Use mcpl.h from C or C++.](LOCAL:usage_c)
   * [Use mcpltool from the command line.](LOCAL:usage_cmdline)
 * [Using plugins and converters for specific applications](LOCAL:hooks):
