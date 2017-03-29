@@ -12,7 +12,7 @@ You can use the [tar.gz]({{site.github.tar_url|replace: "/gh-pages","/master"}})
  or [github]({{site.github.repository_url}}) links above
 to download the latest MCPL distribution. But take note that if you are a user
 of [McStas](LOCAL:usage_mcstas), [McXtrace](LOCAL:usage_mcxtrace) or the
-[ESS-dgcode framework](https://ess-ics.atlassian.net/wiki/x/lgDD), you likely
+[ESS-dgcode framework](https://confluence.esss.lu.se/x/lgDD), you likely
 already have MCPL available through the framework you are using.
 
 After downloading the MCPL
