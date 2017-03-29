@@ -1,5 +1,6 @@
 ---
 title: Using MCPL from the command line
+weight: 20
 ---
 
 - two magic lines for toc
