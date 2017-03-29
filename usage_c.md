@@ -1,6 +1,7 @@
 ---
 title: Using MCPL from C or C++
 navtitle: C/C++
+weight: 10
 ---
 
 - two magic lines for toc
