@@ -1,5 +1,5 @@
 ---
-title: Using MCPL through application-specific hooks
+title: Application-specific MCPL hooks
 underconstruction: false
 weight: 10
 ---
