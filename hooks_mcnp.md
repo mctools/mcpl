@@ -89,7 +89,55 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 ### Converting an MCPL file to SSW
 
-todo
+Usage of the `mcpl2ssw` command to convert an MCPL file into the SSW format is slightly more involved than the reverse conversion: in addition to an input MCPL file, the user must also supply a reference
+SSW file in a format suitable for the MCNP setup in which the
+resulting \texttt{SSW} file is subsequently intended to be used as input. This added complexity is necessary since different MCNP flavours have different SSW format, but also because the SSW file actually contains details about the simulation geometry used in a particular setup. It doesn't matter how many particles are stored in the reference SSW file, it can in principle be very small. Additionally, `mcpl2ssw` needs to assign MCNP surface ID's to all particles. This can be set globally with the `-s` flag, or else `mcpl2ssw` will try to use the contents of the MCPL userflags field as the surface ID's.
+
+Assuming refsswfile.w is an SSW file in a format compatible with the target setup, the MCPL file myfile.mcpl.gz can be converted into a compatible SSW file, newfile.w, with the following command:
+
+```shell
+mcpl2ssw myfile.mcpl.gz refsswfile.w newfile.w
+```
+```
+Opened MCPL file produced with "MCNPX" (contains 2000 particles)
+Opening reference SSW file:
+ssw_open_file: Opened file "refsswfile.w":
+ssw_open_file:    File layout detected : MCNP6
+ssw_open_file:    Code ID fields : "mcnp" / "6"
+ssw_open_file:    Title field : "Example to write mcpl from mcnp5,mcnp6 and mcnpx"
+ssw_open_file:    Source statistics (histories):        1000
+ssw_open_file:    Particles in file            :        2000
+ssw_open_file:    Number of surfaces           :           2
+ssw_open_file:    Histories at surfaces        :        1000
+Creating (or overwriting) output SSW file.
+Initiating particle conversion loop.
+Ending particle conversion loop.
+Created newfile.w with 2000 particles (nrss) and 2000 histories (np1).
+```
+ 
+Note that here refsswfile.w is associated with MCNP6 while myfile.mcpl.gz was created with ssw2mcpl from an MCNPX file, but of course MCPL files from non-MCNP simulations can be used as well - assuming the surface ID's can be specified globally or in the userflags field. The reason the above example worked was that myfile.mcpl.gz had been created from with the `-s` flag to `ssw2mcpl` (the user should of course make sure that the surface ID's in the two setups were compatible).
+
+Here is another example, in which the MCPL file originates in a Geant4 simulation, and the surface ID is set globally to 4 (again, it is the users responsibility that this makes sense):
+
+```shell
+mcpl2ssw -s4 g4output.mcpl refsswfile.w newfile.w
+```
+```
+Opened MCPL file produced with "G4MCPLWriter [G4MCPLWriter]" (contains 1006 particles)
+Opening reference SSW file:
+ssw_open_file: Opened file "refsswfile.w":
+ssw_open_file:    File layout detected : MCNP6
+ssw_open_file:    Code ID fields : "mcnp" / "6"
+ssw_open_file:    Title field : "Example to write mcpl from mcnp5,mcnp6 and mcnpx"
+ssw_open_file:    Source statistics (histories):        1000
+ssw_open_file:    Particles in file            :        2000
+ssw_open_file:    Number of surfaces           :           2
+ssw_open_file:    Histories at surfaces        :        1000
+Creating (or overwriting) output SSW file.
+Initiating particle conversion loop.
+Ending particle conversion loop.
+Created newfile.w with 1006 particles (nrss) and 1006 histories (np1).
+```
 
 ### Get full usage instructions
 
