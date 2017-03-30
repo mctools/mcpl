@@ -6,14 +6,16 @@ weight: 20
 - two magic lines for toc
 {:toc}
 
-The MCPL distribution includes a handy command line tool, _mcpltool_, which can
-be used from the command line to either inspect MCPL files, or to carry out a
-limited number of operations on them. Please find more information in: {%
+The MCPL distribution includes a handy command-line tool, _mcpltool_, which can
+be used to either inspect MCPL files, or to carry out a
+limited number of operations on them.
+
+Please find more information in: {%
 include linkpaper.html subsection=2.3 %}.
 
 ## Examples
 
-A few examples of how to use the _mcpltool_ are provided here. Note that a small sample MCPL file is included with the MCPL distribution at [example/example.mcpl]({{"/raw/master/example/example.mcpl" | prepend: site.github.repository_url }}), in case new users would like something to try the _mcpltool_ on.
+A few examples of how to use the _mcpltool_ are provided here. Note that a small sample MCPL file is included with the MCPL distribution at [examples/example.mcpl]({{"/raw/master/examples/example.mcpl" | prepend: site.github.repository_url }}), in case new users would like something to try the _mcpltool_ on.
 
 ### Run with no arguments to inspect file
 
@@ -62,7 +64,8 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 ```shell
 $ mcpltool --help
 ```
-```Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.
+```
+Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.
 
 The default behaviour is to display the contents of the FILE in human readable
 format (see Dump Options below for how to modify what is displayed).
