@@ -6,16 +6,18 @@ weight: 20
 - two magic lines for toc
 {:toc}
 
-The MCPL distribution includes a handy command-line tool, _mcpltool_, which can
+The MCPL distribution includes a handy command-line tool, `mcpltool`, which can
 be used to either inspect MCPL files, or to carry out a
 limited number of operations on them.
 
-Please find more information in: {%
-include linkpaper.html subsection=2.3 %}.
+This page includes a few examples of how `mcpltool` can be used, but users are referred to
+{% include linkpaper.html subsection=2.3 %} for more information.
+
+At the bottom of the page is also included a quick and dirty recipe for how the `mcpltool` command can be obtained without first downloading and installing the MCPL distribution (note that users of McStas, McXtrace and the ESS dgcode framework already have access to the command).
 
 ## Examples
 
-A few examples of how to use the _mcpltool_ are provided here. Note that a small sample MCPL file is included with the MCPL distribution at [examples/example.mcpl]({{"/raw/master/examples/example.mcpl" | prepend: site.github.repository_url }}), in case new users would like something to try the _mcpltool_ on.
+A few examples of how to use the `mcpltool` are provided here. Note that a small sample MCPL file is included with the MCPL distribution at [examples/example.mcpl]({{"/raw/master/examples/example.mcpl" | prepend: site.github.repository_url }}), in case new users would like something to try the `mcpltool` on.
 
 ### Run with no arguments to inspect file
 
@@ -151,7 +153,7 @@ Other options:
 ## Quick and dirty way to get the mcpltool
 
 Rather than downloading and building the full MCPL distribution, it is possible to get hold
-of the _mcpltool_ command simply by downloading and saving the
+of the `mcpltool` command simply by downloading and saving the
 single-file ("fat") version of the code found at this link: {% include linkfile.html file="src_fat/mcpltool_app_fat.c" download=true %}.
 
 Next, compile it with the command (exchange "gcc" with the name of your compiler - e.g.
