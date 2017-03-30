@@ -119,7 +119,7 @@ of the _mcpltool_ command simply by downloading and saving the
 single-file ("fat") version of the code found at this link: {% include linkfile.html file="src_fat/mcpltool_app_fat.c" download=true %}.
 
 Next, compile it with the command (exchange "gcc" with the name of your compiler - e.g.
-"clang" on OSX):
+"clang" on OS X):
 
 ```shell
 gcc -std=c99 -lm mcpltool_app_fat.c -o mcpltool
