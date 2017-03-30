@@ -52,7 +52,6 @@ void example()
 
 ```c
 #include "mcpl.h"
-
 void example()
 {
   mcpl_outfile_t f = mcpl_create_outfile("myfile.mcpl");
@@ -70,7 +69,6 @@ void example()
      mcpl_hdr_add_data(f,"mydatakey",
                        my_datalength, my_databuf)
   */
-
 
   mcpl_particle_t * p = mcpl_get_empty_particle(f);
 
