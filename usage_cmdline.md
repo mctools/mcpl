@@ -19,7 +19,9 @@ At the bottom of the page is also included a quick and dirty recipe for how the 
 
 A few examples of how to use the `mcpltool` are provided here. Note that a small sample MCPL file is included with the MCPL distribution at [examples/example.mcpl]({{"/raw/master/examples/example.mcpl" | prepend: site.github.repository_url }}), in case new users would like something to try the `mcpltool` on.
 
-### Run with no arguments to inspect file
+### Inspect file contents
+
+Simply invoking `mcpltool` on a file with no additional arguments, results in a summary of the header information being printed, in addition to the particle state information of the first ten particles in the file:
 
 ```shell
 $ mcpltool example.mcpl
@@ -60,6 +62,8 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     8        2112     0.41955     -3.0206     0.11889          20    -0.62614    0.040539     0.77866  2.7557e-05           1
     9        2112     0.64336     -11.788      12.976          20    -0.77018    -0.35919     0.52707  6.1839e-05           1
 ```
+
+The `-l` (limit) and `-s` (skip) flags can be used to change which particles are printed (use `-l0` to print _all_ particles), and `-j` can be used to suppress the header information.
 
 ### Extract some particles from a file
 
