@@ -21,7 +21,7 @@ Carlo applications (c.f. [hooks](LOCAL:hooks)).
 
 ## Code examples for C or C++ code
 
-For inspiration, please find here a few code examples dealing with MCPL files.
+For inspiration, please find here a few code examples dealing with MCPL files. Note that units on the fields  of the  `mcpl_particle_t` struct are MeV (ekin), cm (position) and milliseconds (time). The particle type is given by the pdgcode field, which must follow the [PDG code standard](http://pdg.lbl.gov/2014/reviews/rpp2014-rev-monte-carlo-numbering.pdf) (2112=neutron, 22=gamma, etc.).
 
 ### Reading MCPL files
 
@@ -104,7 +104,7 @@ void example()
 ### Extracting subset of particles from file
 
 The example below shows a small C-programme which can be used to extract just
-neutrons (pdgcode 2112) with EKin<0.1MeV from an existing MCPL file into a new one:
+neutrons ([pdgcode](http://pdg.lbl.gov/2014/reviews/rpp2014-rev-monte-carlo-numbering.pdf) 2112) with EKin<0.1MeV from an existing MCPL file into a new one:
 
 ```c
 
