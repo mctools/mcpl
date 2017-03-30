@@ -61,10 +61,11 @@ void example()
   /* Tune file options or add custom comments or
      binary data into the header:
 
-     mcpl_enable_universal_pdgcode(f,myglobalpdgcode);
      mcpl_enable_userflags(f);
      mcpl_enable_polarisation(f);
      mcpl_enable_doubleprec(f);
+     mcpl_enable_universal_pdgcode(f,myglobalpdgcode);
+     mcpl_enable_universal_weight(f,myglobalweight);
      mcpl_hdr_add_comment(f,"Some comment.");
      mcpl_hdr_add_data(f,"mydatakey",
                        my_datalength, my_databuf)
@@ -83,12 +84,12 @@ void example()
        p->direction[k] (k=0,1,2)
        p->ekin
        p->time
-       p->weight
 
        These should also be set when required by
        file options:
 
        p->pdgcode
+       p->weight
        p->userflags
        p->polarisation[k] (k=0,1,2)
     */
@@ -139,7 +140,7 @@ int main(int argc,char**argv) {
   }
 
   //Close up files:
-  mcpl_closeandgzip_outfile(fo);
+  mcpl_close_outfile(fo);
   mcpl_close_file(fi);
 }
 ```
