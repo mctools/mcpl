@@ -37,12 +37,12 @@ MCPL: Attempting to compress file newfile.mcpl with gzip
 MCPL: Succesfully compressed file into newfile.mcpl.gz
 Created newfile.mcpl.gz
 ```
-However, it is possible to add more than the minimal amount of information into the output file. First of all, the `-d` flag can be used to enable double-precision rather than single-precision storage of floating point numbers. Next, the `-s` flag will cause the MCNP surface ID's to be embedded in the MCPL userflags fields, and finally specifying `-c <path_to_input_deck>` will cause the MCNP input deck used to generate the SSW file in question to be embedded into the MCPL header (can later be retrieved with `mcpltool -bmcnp_input_deck newfile.mcpl`). In particular, it is highly recommended to embed the input_deck with `-c` for later reference. Thus, enabling as much information as possible in the MCPL file would happen with:
+However, it is possible to add more than the minimal amount of information into the output file. First of all, the `-d` flag can be used to enable double-precision rather than single-precision storage of floating point numbers. Next, the `-s` flag will cause the MCNP surface ID's to be embedded in the MCPL userflags fields, and finally specifying `-c <path_to_input_deck>` will cause the MCNP input deck used to generate the SSW file in question to be embedded into the MCPL header (can later be retrieved with `mcpltool -bmcnp_input_deck newfile.mcpl`). In particular, it is highly recommended to embed the input_deck with `-c` for later reference, and the `-s` might be essential if the file is intended to be converted back for usage in an MCNP with compatible surface ID's. Thus, enabling as much information as possible in the MCPL file would happen with:
 
 ```shell
 ssw2mcpl -d -s -c input_deck sswfile.w newfile.mcpl
 ```
-Inspecting the resulting newfile.mcpl with `mcpltool` might give an output like this:
+Inspecting the resulting newfile.mcpl with `mcpltool` might give an output like this (admittedly the SSW file was not from a very interesting simulation):
 
 ```shell
 mcpltool newfile.mcpl
