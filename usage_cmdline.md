@@ -13,21 +13,21 @@ include linkpaper.html subsection=2.3 %}.
 
 ## Examples
 
-A few examples of how to use the mcpltool are provided here.
+A few examples of how to use the _mcpltool_ are provided here. Note that a small sample MCPL file is included with the MCPL distribution at [example/example.mcpl]({{"/raw/master/example/example.mcpl" | prepend: site.github.repository_url }}), in case new users would like something to try the _mcpltool_ on.
 
 ### Run with no arguments to inspect file
 
 ```shell
-$ mcpltool myoutput.mcpl.gz
+$ mcpltool example.mcpl
 ```
 ```
-Opened MCPL file myoutput.mcpl.gz:
+Opened MCPL file example.mcpl:
 
   Basic info
-    Format             : MCPL-2
-    No. of particles   : 1106933
+    Format             : MCPL-3
+    No. of particles   : 1006
     Header storage     : 140 bytes
-    Data storage       : 39849588 bytes
+    Data storage       : 36216 bytes
 
   Custom meta data
     Source             : "G4MCPLWriter [G4MCPLWriter]"
@@ -39,21 +39,22 @@ Opened MCPL file myoutput.mcpl.gz:
     User flags         : no
     Polarisation info  : no
     Fixed part. type   : no
+    Fixed part. weight : no
     FP precision       : single
     Endianness         : little
     Storage            : 36 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
-    0         211      487.02     -0.5898       1.835          20   -0.092407     0.20491     0.97441  7.3346e-07           1
-    1          22      1.5326      1.0635      11.351          20    0.080441     0.66026     0.74672  1.0882e-06           1
-    2          22      3.9526    -0.43907      8.6473          20    -0.56616     0.50558     0.65104  1.0286e-06           1
-    3          22     0.82591      1.7444      9.7622          20    0.092099     0.79597     0.59829  1.0378e-06           1
-    4          22      1.1958      2.1806      8.6416          20     0.21997     0.66435     0.71432  1.0124e-06           1
-    5          22      1.2525      3.0949      7.7366          20     0.48903     0.30789     0.81612   1.013e-06           1
-    6          22      2.6247       3.948       5.681          20     0.62503     0.64221     0.44374  9.1152e-07           1
-    7        2212      824.28     -1.8797     -2.5124          20     -0.3077    -0.40496       0.861  7.6539e-07           1
-    8        -211      3459.8    -0.79521     0.91481          20    -0.13441     0.14438     0.98035  7.0618e-07           1
-    9        2112     0.30553      54.471      33.386          20      0.4862    0.011958     0.87377  0.00016442           1
+    0          22      1.2635     -3.5852    -0.81223          20    -0.41453   -0.022799     0.90975  7.3389e-07           1
+    1          22      2.6273     0.85935      10.196          20   0.0031473     0.75937     0.65065  8.6567e-07           1
+    2         211      1050.4      2.9741    -0.32269          20     0.24133   0.0099724     0.97039  7.1473e-07           1
+    3        2112     0.26395     -2.7828      -4.709          20     -0.7575    0.041025     0.65154  2.7656e-05           1
+    4        2112     0.34922     0.42959     -11.636          20     0.22266    -0.82642     0.51716  1.9382e-05           1
+    5        2112      1.4445      3.8808      14.263          20   -0.036128     0.47899     0.87708  1.9604e-05           1
+    6        2112     0.21436     -20.706    0.071227          20    -0.42916     0.43638     0.79082  1.1434e-05           1
+    7        2112     0.27496     -6.9939      7.9537          20    -0.47614     0.36919     0.79812  6.8358e-05           1
+    8        2112     0.41955     -3.0206     0.11889          20    -0.62614    0.040539     0.77866  2.7557e-05           1
+    9        2112     0.64336     -11.788      12.976          20    -0.77018    -0.35919     0.52707  6.1839e-05           1
 ```
 
 ### Get full usage instructions
@@ -61,8 +62,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 ```shell
 $ mcpltool --help
 ```
-```
-Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.
+```Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.
 
 The default behaviour is to display the contents of the FILE in human readable
 format (see Dump Options below for how to modify what is displayed).
@@ -72,11 +72,12 @@ This installation supports direct reading of gzipped files (.mcpl.gz).
 Usage:
   mcpltool [dump-options] FILE
   mcpltool --merge [merge-options] FILE1 FILE2
+  mcpltool --extract [extract-options] FILE1 FILE2
   mcpltool --repair FILE
   mcpltool --version
   mcpltool --help
 
-Dump Options:
+Dump options:
   By default include the info in the FILE header plus the first ten contained
   particles. Modify with the following options:
   -j, --justhead  : Dump just header info and no particle info.
@@ -86,13 +87,19 @@ Dump Options:
   -sN             : Skip past the first N particles in the file (default 0).
   -bKEY           : Dump binary blob stored under KEY to standard output.
 
-Merge Options:
-  -m, --merge FILE1 FILE2
-                    Appends the particle contents in FILE2 to the end of FILE1.
-                    Note that this will fail unless FILE1 and FILE2 have iden-
-                    tical headers (but see option --ignore below).
-  -i, --ignore      Ignore comments and binary blobs in FILE2. This allows some
-                    otherwise forbidden merges, but some info might get lost.
+Merge options:
+  -m, --merge FILEOUT FILE1 FILE2 ... FILEN
+                    Creates new FILEOUT with combined particle contents from
+                    specified list of N existing and compatible files.
+  -m, --merge --inplace FILE1 FILE2 ... FILEN
+                    Appends the particle contents in FILE2 ... FILEN into
+                    FILE1. Note that this action modifies FILE1!
+
+Extract options:
+  -e, --extract FILE1 FILE2
+                    Extracts particles from FILE1 into a new FILE2.
+  -lN, -sN          Select range of particles in FILE1 (as above).
+  -pPDGCODE         select particles of type given by PDGCODE.
 
 Other options:
   -r, --repair FILE
@@ -100,14 +107,12 @@ Other options:
                     dating the file header with the correct number of particles.
   -v, --version   : Display version of MCPL installation.
   -h, --help      : Display this usage information (ignores all other options).
-
 ```
 
 ## Quick and dirty way to get the mcpltool
 
 Rather than downloading and building the full MCPL distribution, it is possible to get hold
-of the _mcpltool_ command discussed in the {% include linkpaper.html subsection=2.3
-linkname="paper" %} simply by downloading and saving the
+of the _mcpltool_ command simply by downloading and saving the
 single-file ("fat") version of the code found at this link: {% include linkfile.html file="src_fat/mcpltool_app_fat.c" download=true %}.
 
 Next, compile it with the command (exchange "gcc" with the name of your compiler - e.g.
