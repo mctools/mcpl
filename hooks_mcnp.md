@@ -37,7 +37,7 @@ MCPL: Attempting to compress file newfile.mcpl with gzip
 MCPL: Succesfully compressed file into newfile.mcpl.gz
 Created newfile.mcpl.gz
 ```
-However, it is possible to add more than the minimal amount of information into the output file. First of all, the `-d` flag can be used to enable double-precision rather than single-precision storage of floating point numbers. Next, the `-s` flag will cause the MCNP surface ID's to be embedded in the MCPL userflags fields, and finally specifying `-c <path_to_input_deck>` will cause the MCNP input deck used to generate the SSW file in question to be embedded into the MCPL header (can later be retrieved with `mcpltool -bmcnp_input_deck newfile.mcpl`). In particular, it is highly recommended to embed the input_deck with `-c` for later reference, and the `-s` might be essential if the file is intended to be converted back for usage in an MCNP with compatible surface ID's. Thus, enabling as much information as possible in the MCPL file would happen with:
+However, it is possible to add more than the minimal amount of information into the output file. First of all, the `-d` flag can be used to enable double-precision rather than single-precision storage of floating point numbers. Next, the `-s` flag will cause the MCNP surface ID's to be embedded in the MCPL userflags fields, and finally specifying `-c <path_to_input_deck>` will cause the MCNP input deck used to generate the SSW file in question to be embedded into the MCPL header (can later be retrieved with `mcpltool -bmcnp_input_deck newfile.mcpl`). In particular, it is highly recommended to embed the input_deck with `-c` for later reference, and the `-s` might be essential if the file is intended to be converted back for usage in an MCNP simulation with compatible surface ID's. Thus, enabling as much information as possible in the MCPL file would happen with:
 
 ```shell
 ssw2mcpl -d -s -c input_deck sswfile.w newfile.mcpl
@@ -141,7 +141,62 @@ Created newfile.w with 1006 particles (nrss) and 1006 histories (np1).
 
 ### Get full usage instructions
 
-todo
+```shell
+ssw2mcpl --help
+```
+```
+Usage:
+
+  ssw2mcpl [options] input.ssw [output.mcpl]
+
+Converts the Monte Carlo particles in the input.ssw file (MCNP Surface
+Source Write format) to MCPL format and stores in the designated output
+file (defaults to "output.mcpl").
+
+Options:
+
+  -h, --help   : Show this usage information.
+  -d, --double : Enable double-precision storage of floating point values.
+  -s, --surf   : Store SSW surface IDs in the MCPL userflags.
+  -n, --nogzip : Do not attempt to gzip output file.
+  -c FILE      : Embed entire configuration FILE (the input deck)
+                 used to produce input.ssw in the MCPL header.
+```
+
+```shell
+mcpl2ssw --help
+```
+```
+Usage:
+
+  mcpl2ssw [options] <input.mcpl> <reference.ssw> [output.ssw]
+
+Converts the Monte Carlo particles in the input MCPL file to SSW format
+(MCNP Surface Source Write) and stores the result in the designated output
+file (defaults to "output.ssw").
+
+In order to do so and get the details of the SSW format correct, the user
+must also provide a reference SSW file from the same approximate setup
+(MCNP version, input deck...) where the new SSW file is to be used. The
+reference SSW file can of course be very small, as only the file header is
+important (the new file essentially gets a copy of the header found in the
+reference file, except for certain fields related to number of particles
+whose values are changed).
+
+Finally, one must pay attention to the Surface ID assigned to the
+particles in the resulting SSW file: Either the user specifies a global
+one with -s<ID>, or it is assumed that the MCPL userflags field in the
+input file is actually intended to become the Surface ID. Note that not
+all MCPL files have userflag fields and that valid Surface IDs are
+integers in the range 1-999999.
+
+Options:
+
+  -h, --help   : Show this usage information.
+  -s<ID>       : All particles in the SSW file will get this surface ID.
+  -l<LIMIT>    : Limit the number of particles transferred to the SSW file
+                 (defaults to 2147483647, the maximal SSW capacity).
+```
 
 ## Quick and dirty way to get ssw2mcpl and mcpl2ssw
 
