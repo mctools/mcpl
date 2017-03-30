@@ -103,6 +103,8 @@ Note that files are currently compatible if and only if they have similar settin
 
 ### Get full usage instructions
 
+Full usage instructions are obtainable with the `--help` flag:
+
 ```shell
 $ mcpltool --help
 ```
