@@ -141,6 +141,8 @@ Created newfile.w with 1006 particles (nrss) and 1006 histories (np1).
 
 ### Get full usage instructions
 
+Full usage instructions are obtainable with the `--help` flag:
+
 ```shell
 ssw2mcpl --help
 ```
@@ -162,6 +164,7 @@ Options:
   -c FILE      : Embed entire configuration FILE (the input deck)
                  used to produce input.ssw in the MCPL header.
 ```
+and
 
 ```shell
 mcpl2ssw --help
