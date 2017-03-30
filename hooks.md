@@ -1,4 +1,4 @@
----
+c---
 title: Application-specific MCPL hooks
 underconstruction: false
 weight: 10
@@ -14,6 +14,6 @@ While more details about such plugins and converters can be found in {% include 
 * [MCPL hooks for McXtrace](LOCAL:hooks_mcxtrace)
 * [MCPL hooks for MCNP](LOCAL:hooks_mcnp)
 
-Please [get in touch](local:contact) if you are interested in helping out with providing hooks for applications not listed above, or to provide feedback on the existing hooks.
+Please [get in touch](LOCAL:contact) if you are interested in helping out with providing hooks for applications not listed above, or to provide feedback on the existing hooks.
 
 
