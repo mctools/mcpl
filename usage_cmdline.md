@@ -85,6 +85,16 @@ MCPL: Succesfully compressed file into justneutrons.mcpl.gz
 MCPL: Succesfully extracted 1 / 1006 particles from examples/example.mcpl into justneutrons.mcpl.gz
 ```
 
+### Merging compatible files
+
+Using the `--merge` flag, it is possible to merge contents from a list of compatible files into a single new one. Here four existing files are merged, creating newfile.mcpl as a result:
+
+```shell
+mcpltool --merge newfile.mcpl file1.mcpl file2.mcpl file3.mcpl file4.mcpl
+```
+
+Note that files are currently compatible if and only if they have similar settings and meta-data.
+
 ### Get full usage instructions
 
 ```shell
