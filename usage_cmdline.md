@@ -74,7 +74,7 @@ MCPL: Succesfully extracted 726 / 1006 particles from examples/example.mcpl into
 
 Note that the output file is currently always compressed into .mcpl.gz when possible (this behaviour might change in the future).
 
-You can also use the `-l` and `-s` flags to extract particles according to their position in the file (which might for instance be useful to extract a specific interesting particle from a huge file).
+You can also use the `-l` and `-s` flags to extract particles according to their position in the file, which might for instance be useful to extract a specific interesting particle from a huge file. Here we extract 1 particle starting from position 123:
 
 ```shell
 mcpltool --extract -l1 -s123  examples/example.mcpl justneutrons.mcpl
