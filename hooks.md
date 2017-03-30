@@ -1,4 +1,4 @@
-c---
+---
 title: Application-specific MCPL hooks
 underconstruction: false
 weight: 10
