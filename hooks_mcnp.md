@@ -1,6 +1,6 @@
 ---
 title: MCPL converters for MCNP
-underconstruction: true
+underconstruction: false
 weight: 20
 ---
 
@@ -15,7 +15,7 @@ At the bottom of the page is also included a quick and dirty recipe for how the 
 
 ## Examples
 
-todo
+A few exampes and instructions of how to use `ssw2mcpl` and `mcpl2ssw` are provided in the following.
 
 ### Converting an SSW file to MCPL
 
