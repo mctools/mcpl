@@ -59,6 +59,32 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     9        2112     0.64336     -11.788      12.976          20    -0.77018    -0.35919     0.52707  6.1839e-05           1
 ```
 
+### Extract some particles from a file
+
+Using the `--extract` flag, it is possible to extract a subset of particles from a file, into a new file. Using the `-p` flag, one can select according to [particle type](http://pdg.lbl.gov/2014/reviews/rpp2014-rev-monte-carlo-numbering.pdf) (2112=neutron, 22=gamma, etc.).
+
+```shell
+mcpltool --extract -p2112 example.mcpl justneutrons.mcpl
+```
+```
+MCPL: Attempting to compress file justneutrons.mcpl with gzip
+MCPL: Succesfully compressed file into justneutrons.mcpl.gz
+MCPL: Succesfully extracted 726 / 1006 particles from examples/example.mcpl into justneutrons.mcpl.gz
+```
+
+Note that the output file is currently always compressed into .mcpl.gz when possible (this behaviour might change in the future).
+
+You can also use the `-l` and `-s` flags to extract particles according to their position in the file (which might for instance be useful to extract a specific interesting particle from a huge file).
+
+```shell
+mcpltool --extract -l1 -s123  examples/example.mcpl justneutrons.mcpl
+```
+```
+MCPL: Attempting to compress file justneutrons.mcpl with gzip
+MCPL: Succesfully compressed file into justneutrons.mcpl.gz
+MCPL: Succesfully extracted 1 / 1006 particles from examples/example.mcpl into justneutrons.mcpl.gz
+```
+
 ### Get full usage instructions
 
 ```shell
@@ -110,32 +136,6 @@ Other options:
                     dating the file header with the correct number of particles.
   -v, --version   : Display version of MCPL installation.
   -h, --help      : Display this usage information (ignores all other options).
-```
-
-### Extract some particles from a file
-
-Using the `--extract` flag, it is possible to extract a subset of particles from a file, into a new file. Using the `-p` flag, one can select according to [particle type](http://pdg.lbl.gov/2014/reviews/rpp2014-rev-monte-carlo-numbering.pdf) (2112=neutron, 22=gamma, etc.).
-
-```shell
-mcpltool --extract -p2112 example.mcpl justneutrons.mcpl
-```
-```
-MCPL: Attempting to compress file justneutrons.mcpl with gzip
-MCPL: Succesfully compressed file into justneutrons.mcpl.gz
-MCPL: Succesfully extracted 726 / 1006 particles from examples/example.mcpl into justneutrons.mcpl.gz
-```
-
-Note that the output file is currently always compressed into .mcpl.gz when possible (this behaviour might change in the future).
-
-You can also use the `-l` and `-s` flags to extract particles according to their position in the file (which might for instance be useful to extract a specific interesting particle from a huge file).
-
-```shell
-mcpltool --extract -l1 -s123  examples/example.mcpl justneutrons.mcpl
-```
-```
-MCPL: Attempting to compress file justneutrons.mcpl with gzip
-MCPL: Succesfully compressed file into justneutrons.mcpl.gz
-MCPL: Succesfully extracted 1 / 1006 particles from examples/example.mcpl into justneutrons.mcpl.gz
 ```
 
 ## Quick and dirty way to get the mcpltool
