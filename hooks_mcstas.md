@@ -7,10 +7,6 @@ weight: 40
 - two magic lines for toc
 {:toc}
 
-This page has yet to be fully written. For now, in addition to the few notes
-below, refer to the almost complete information in: {% include linkpaper.html
-subsection=3.3 %}.
-
 MCPL input or output from [McStas](http://mcstas.org) is handled via two components, [MCPL_input](http://mcstas.org/download/components/misc/MCPL_input.html) and [MCPL_output](http://mcstas.org/download/components/misc/MCPL_output.html), which users can activate by adding entries at relevant points in their instrument files. Please refer to {% include linkpaper.html
 subsection=3.3 %} for a more detailed discussion of these.
 
@@ -23,9 +19,20 @@ inside McStas already since version 2.3 (_but note that McStas 2.3 users need to
 
 ### MCPL_input
 
+In its most simple form, users can add the following lines to their instrument files in order to inject particles from an MCPL file into their instrument simulations:
+
 ```c
 COMPONENT vin = MCPL_input( filename="myfile.mcpl" )
 AT(0,0,0) RELATIVE Origin
+```
+
+The initial position of the particles will be given by the coordinates found in the MCPL file, relative to the position of the MCPL_input component in the instrument. In the example above, the particle coordinates will thus be interpreted as being relative to the Origin component.
+
+For further details, refer to {% include linkpaper.html
+subsection=3.3 %} and/or bring up documentation specific to the actual version of MCPL_input being used by typing:
+
+```shell
+mcdoc MCPL_input
 ```
 
 ### MCPL_output
