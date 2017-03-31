@@ -11,7 +11,7 @@ This page has yet to be fully written. For now, in addition to the few notes
 below, refer to the almost complete information in: {% include linkpaper.html
 subsection=3.3 %}.
 
-MCPL input or output from McStas is handled via two components, [MCPL_input](http://mcstas.org/download/components/misc/MCPL_input.html) and [MCPL_output](http://mcstas.org/download/components/misc/MCPL_output.html), which users can activate by adding entries at relevant points in their instrument files. Please refer to {% include linkpaper.html
+MCPL input or output from [McStas](http://mcstas.org) is handled via two components, [MCPL_input](http://mcstas.org/download/components/misc/MCPL_input.html) and [MCPL_output](http://mcstas.org/download/components/misc/MCPL_output.html), which users can activate by adding entries at relevant points in their instrument files. Please refer to {% include linkpaper.html
 subsection=3.3 %} for a more detailed discussion of these.
 
 Users of McStas do not need to download MCPL themselves, as it is included
@@ -21,16 +21,23 @@ inside McStas already since version 2.3 (_but note that McStas 2.3 users need to
 
 ## How to use the components
 
-(todo)
+### MCPL_input
 
 ```c
 COMPONENT vin = MCPL_input( filename="myfile.mcpl" )
 AT(0,0,0) RELATIVE Origin
 ```
 
+### MCPL_output
+
 ```c
 COMPONENT mcplout = MCPL_output( filename="myoutput.mcpl" )
 AT(0,0,0) RELATIVE PREVIOUS
+```
+
+```c
+COMPONENT mcplout = MCPL_output( filename="myoutput.mcpl" )
+AT(0,0,0) RELATIVE ABSOLUTE
 ```
 
 ## Notes for users of McStas version 2.3
