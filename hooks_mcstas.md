@@ -22,7 +22,7 @@ here](#notes-for-users-of-mcstas-version-23)_). In addition to the
 [MCPL_input](http://mcstas.org/download/components/misc/MCPL_input.html) and
 [MCPL_output](http://mcstas.org/download/components/misc/MCPL_output.html)
 components, this also gives McStas users access to the
-[mcpltool](LOCAL:usage_cmdline) command.
+[mcpltool](LOCAL:usage_cmdline/) command.
 
 ## How to use the components
 

@@ -17,7 +17,7 @@ is linked with the code in the {% include linkfile.html file="src/mcpl/mcpl.c"
 
 However, notice that most end-users should not have to write such code. Rather,
 they should be able to use pre-existing converters or plugins for their Monte
-Carlo applications (c.f. [hooks](LOCAL:hooks)).
+Carlo applications (c.f. [hooks](LOCAL:hooks/)).
 
 ## Code examples for C or C++ code
 

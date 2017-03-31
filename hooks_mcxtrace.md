@@ -15,7 +15,7 @@ subsection=3.3 %} for a more detailed discussion of these.
 Users of McXtrace do not need to download MCPL themselves, as it is included
 inside McXtrace already starting from version 1.4 (expected to be released spring 2017). In addition to the
 MCPL_input and MCPL_output components, this also gives McXtrace users
-access to the [mcpltool](LOCAL:usage_cmdline) command.
+access to the [mcpltool](LOCAL:usage_cmdline/) command.
 
 ## How to use the components
 
