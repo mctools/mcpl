@@ -14,8 +14,8 @@ scientific community, along with converters and plugins for several popular
 simulation packages.
 
 MCPL is described in great detail in {% include
-linkpaper.html %}, and in particular details of the file format itself can be
-found in {% include linkpaper.html
+linkpaper.html linkname="the MCPL paper" %}, and in particular details of the file format itself can be
+found in {% include linkpaper.html linkname="section 2"
 section=2 %}. The present web-page serves as an online home for MCPL, providing
 both quick recipes and updated information where needed. You can [download](LOCAL:get)
 and try out the MCPL distribution right away, or use the
