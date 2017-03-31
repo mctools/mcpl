@@ -16,7 +16,7 @@ A substantial effort went into developing MCPL. If you use it for your work, we
 would appreciate it if you would use the following reference in your work:
 
 TODO: The paper was submitted to Computer Physics Communications Sep 9, 2016.<br/> A
-preliminary draft is available at <http://arxiv.org/abs/1609.02792> and
+preliminary draft is available at <https://arxiv.org/abs/1609.02792> and
  {% include linkpaper.html linkname="here." %}<br/>
 Until publication please reference the github release instead:
 [![DOI](https://zenodo.org/badge/24077/mctools/mcpl.svg)](https://zenodo.org/badge/latestdoi/24077/mctools/mcpl)<br/>
