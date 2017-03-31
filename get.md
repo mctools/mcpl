@@ -4,7 +4,7 @@ weight: 9999
 ---
 You can use the [tar.gz]({{site.github.tar_url|replace: "/gh-pages","/master"}}),
  [zip]({{site.github.zip_url|replace: "/gh-pages","/master"}})
- or [github]({{site.github.repository_url}}) links above
+ or [github]({{site.github.repository_url}}) links
 to download the latest MCPL distribution. But take note that if you are a user
 of [McStas](LOCAL:hooks_mcstas/), [McXtrace](LOCAL:hooks_mcxtrace/) or the
 [ESS-dgcode framework](https://confluence.esss.lu.se/x/lgDD), you likely
