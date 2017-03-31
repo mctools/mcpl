@@ -5,6 +5,6 @@
   <title>MCPL : {% if page.title %}{{ page.title | escape }}{% else %}{{ site.tagline | escape }}{% endif %}</title>
   <meta name="description" content="{{ page.excerpt | default: site.description | strip_html | normalize_whitespace | truncate: 160 | escape }}">
   <link rel="stylesheet" type="text/css" media="screen" href="{{ "/css/main.css" | prepend: site.baseurl }}">
-  <link rel="canonical" href="{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.github.url }}">
+  <link rel="canonical" href="{{ page.url | replace:'index.html','' | prepend: site.github.url }}">
   <link rel="icon" href="{{ "/favicon.ico" | prepend: site.baseurl }}" type="image/x-icon"/>
 </head>
