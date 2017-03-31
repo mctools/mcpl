@@ -15,7 +15,7 @@ Note that users of the [ESS-dgcode framework](https://confluence.esss.lu.se/x/lg
 
 ## Using MCPL files as simulation input via G4MCPLGenerator
 
-The `G4MCPLGenerator` class is a subclass of Geant4's `G4VUserPrimaryGeneratorAction` interface class, and can be activated in the usual manner for such classes. There are only two things to keep in mind: First of all, the name of the MCPL file to be used as input must be provided in the form of a string to the constructor of`G4MCPLGenerator`. Second of all, if the MCPL file runs out of particles (which it will if Geant4 is requested to simulate more events than there are particles in the MCPL file), the `G4MCPLGenerator` will graciously request the `G4RunManager` to abort the simulation. Thus, a convenient way in which to use the entire input file for simulation is to launch the simulation with a very high number of events requested, as is shown in the following example:
+The `G4MCPLGenerator` class is a subclass of Geant4's `G4VUserPrimaryGeneratorAction` interface class, and can be activated in the usual manner for such classes. The name of the MCPL file to be used as input must be provided in the form of a string to the constructor of`G4MCPLGenerator`. Additionally, if the MCPL file runs out of particles (which it will eventually if Geant4 is requested to simulate more events than there are particles in the MCPL file), the `G4MCPLGenerator` will graciously request the `G4RunManager` to abort the simulation. Thus, a convenient way in which to use the entire input file for simulation is to launch the simulation with a very high number of events requested, as is shown in the following example:
 
 ```c++
 #include "G4MCPLGenerator.hh"
