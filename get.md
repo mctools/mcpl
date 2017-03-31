@@ -17,7 +17,7 @@ unpack it somewhere and follow the instructions in the
 [INSTALL]({{"/raw/master/INSTALL" | prepend: site.github.repository_url }})
 file for how to proceed to build and install using either CMake (to build everything including examples) or a simple Makefile or compilation command (to build just "fat" versions of mcpltool, ssw2mcpl and mcpl2ssw executables).
 
-For more details, refer to the information in the 
+For more details, refer to the information in the
 [INSTALL]({{"/raw/master/INSTALL" | prepend: site.github.repository_url }})
 file of your tar-ball, and to the discussion in:
 {% include linkpaper.html subsection=2.5 %}.
