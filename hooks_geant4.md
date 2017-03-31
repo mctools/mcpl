@@ -63,12 +63,12 @@ G4SDManager::GetSDMpointer()->AddNewDetector(mcplwriter);
 alogvol->SetSensitiveDetector(mcplwriter);
 ```
 
-For advanced use-cases, it is possible to fine-tune the way the particles are captured and whether they are "killed" or merely recorded, and it is also possible to fill custom information into the MCPL _userflags_ in the resulting file. In order to do either, the user must sub-class the `G4MCPLGenerator` and overwrite the relevant method. Refer to the detailed instructions in {% include linkpaper.html subsection=3.1
+For advanced use-cases, it is possible to fine-tune the way the particles are captured and whether they are "killed" or merely recorded, and it is also possible to fill custom information into the MCPL _userflags_ in the resulting file. In order to do either, the user must sub-class the `G4MCPLGenerator` and overwrite the relevant method(s). Refer to the detailed instructions in {% include linkpaper.html subsection=3.1
 %} for more information.
 
 # Integrating MCPL in a given Geant4 setup
 
-Note that in order to actually use the `G4MCPLGenerator` and `G4MCPLWriter`, the simplest approach might be to copy the [C++ files in which they reside]({{"/raw/master/src/geant4/" | prepend: site.github.repository_url }}) into your existing build system (along with [mcpl.h and mcpl.c]({{"/raw/master/src/mcpl/" | prepend: site.github.repository_url }})).
+Note that in order to actually use the `G4MCPLGenerator` and `G4MCPLWriter` classes, the simplest approach might be to copy the [C++ files in which they reside]({{"/raw/master/src/geant4/" | prepend: site.github.repository_url }}) into your existing build system (along with [mcpl.h and mcpl.c]({{"/raw/master/src/mcpl/" | prepend: site.github.repository_url }})).
 
 Alternatively, a perhaps more "clean" approach would be to first build and install the MCPL distribution itself via the provided CMake script after first installing Geant4 and making sure Geant4 is noticed correctly during the configuration (more [here](LOCAL:get)). This should, after the build and install is completed (with `make install`) result in an installation which includes files like the following (actual contents might depend a bit on your platform and setup, for instance the extension `.so` will usually be `.dylib` on OS X):
 
@@ -84,4 +84,4 @@ Alternatively, a perhaps more "clean" approach would be to first build and insta
     └── libmcpl.so
 ```
 
-Next, make sure that the build system in which you work on your Geant4 code will include the `include/` directory above in the compiler's include path (so you can for instance do `#include "G4MCPLGenerator.hh"` in your code), and that your application is linked with the two libraries in the `lib/` directory above.
+Next, make sure that the build system in which you work on your Geant4 code will include the `include/` directory above in the compiler's include path (so you can for instance do `#include "G4MCPLGenerator.hh"` in your code), and that your application is linked with the two libraries in the `lib/` directory above. It might also be a good idea to add the `bin/` directory above to your `PATH` environmental variable, so you have access to the `mcpltool` in order to easily inspect and modify MCPL files from [the command line](LOCAL:usage_cmdline).
