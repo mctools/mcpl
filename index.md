@@ -24,6 +24,7 @@ menu above to navigate to more information.
 _This work was supported in part by the European Union's Horizon 2020 research
 and innovation programme under grant agreement No 676548 (the BrightnESS
 project) and under grant agreement No 654000 (the SINE2020 project)._
+{: style="font-size: 80%;" }
 
 [![BrightnESS](LOCAL:images/brightness_logo.png){:height="50px"}](https://brightness.esss.se/)
 [![SINE2020](LOCAL:images/sine2020_logo.png){:height=200}{:height="50px"}](http://www.sine2020.eu/)
