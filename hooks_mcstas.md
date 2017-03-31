@@ -37,14 +37,24 @@ mcdoc MCPL_input
 
 ### MCPL_output
 
+In its most simple form, users can add the following lines to their instrument files at a given point in order to capture a snapshot of particles at that point in their instrument simulations and store them in an MCPL file:
+
+
 ```c
 COMPONENT mcplout = MCPL_output( filename="myoutput.mcpl" )
 AT(0,0,0) RELATIVE PREVIOUS
 ```
+The coordinates of the stored particle will be relative to the MCPL_output component itself. Thus, the above lines captures particles relative to the previous component. This could for instance make sense if the previous component was the sample component, and you need the coordinates to be written to be relative to the sample position. If instead you need the coordinates to be absolute, you could either specify `ABSOLUTE` or the `Origin` component:
 
 ```c
 COMPONENT mcplout = MCPL_output( filename="myoutput.mcpl" )
 AT(0,0,0) RELATIVE ABSOLUTE
+```
+For further details, refer to {% include linkpaper.html
+subsection=3.3 %} and/or bring up documentation specific to the actual version of MCPL_output being used by typing:
+
+```shell
+mcdoc MCPL_output
 ```
 
 ## Notes for users of McStas version 2.3
