@@ -11,7 +11,8 @@ MCPL input or output from [McStas](http://mcstas.org) is handled via two compone
 subsection=3.3 %} for a more detailed discussion of these.
 
 Users of McStas do not need to download MCPL themselves, as it is included
-inside McStas already since version 2.3 (_but note that McStas 2.3 users need to update their components as explained further down, McStas 2.4 and later will hopefully be without such issues_). In addition to the
+inside McStas already since version 2.3 (_but note that McStas 2.3 users need to update their components
+[as explained further down](#notes-for-users-of-mcstas-version-23), McStas 2.4 and later will hopefully be without such issues_). In addition to the
 [MCPL_input](http://mcstas.org/download/components/misc/MCPL_input.html) and 
 [MCPL_output](http://mcstas.org/download/components/misc/MCPL_output.html) components, this also gives McStas users access to the [mcpltool](LOCAL:usage_cmdline) command.
 
