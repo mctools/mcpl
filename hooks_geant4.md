@@ -11,8 +11,6 @@ The interface between MCPL and [Geant4](http://geant4.cern.ch/) consists of two 
 
 # Basic usage examples
 
-In order to use the 
-
 ## Using MCPL files as simulation input via G4MCPLGenerator
 
 (todo)
@@ -60,7 +58,9 @@ alogvol->SetSensitiveDetector(mcplwriter);
 
 # Integrating MCPL in a given Geant4 setup
 
-Note that in order to actually use the `G4MCPLGenerator` and `G4MCPLWriter`, the [C++ files in which they reside]({{"/raw/master/src/geant4/" | prepend: site.github.repository_url }}) should either be copied into your existing build system (along with [mcpl.h and mcpl.c]({{"/raw/master/src/mcpl/" | prepend: site.github.repository_url }})), or alternatively one can simply build and install the MCPL distribution itself via the provided CMake script after first installing Geant4 (more [here](LOCAL:get)), which should result in an installation which includes files like (actual contents might depend a bit on your platform and setup, for instance the extension `.so` will likely become `.dylib` on OS X):
+Note that in order to actually use the `G4MCPLGenerator` and `G4MCPLWriter`, the simplest approach might simply be to copy the [C++ files in which they reside]({{"/raw/master/src/geant4/" | prepend: site.github.repository_url }}) into your existing build system (along with [mcpl.h and mcpl.c]({{"/raw/master/src/mcpl/" | prepend: site.github.repository_url }})).
+
+Alternatively, a perhaps more "clean" approach would be to first build and install the MCPL distribution itself via the provided CMake script after first installing Geant4 and making sure Geant4 is noticed correctly during the configuration (more [here](LOCAL:get)). This should, after the build and install is completed (with `make install`) result in an installation which includes files like the following (actual contents might depend a bit on your platform and setup, for instance the extension `.so` will likely become `.dylib` on OS X):
 
 ```
 ├── bin/
@@ -74,4 +74,4 @@ Note that in order to actually use the `G4MCPLGenerator` and `G4MCPLWriter`, the
     └── libmcpl.so
 ```
 
-Next, make sure that the build system in which you work on your Geant4 code will include the `include/` directory above in the compilers include path (so you can for instance do `#include "G4MCPLGenerator.hh"` in your code), and that your application is linked with the two libraries in the `lib/` directory above.
+Next, make sure that the build system in which you work on your Geant4 code will include the `include/` directory above in the compiler's include path (so you can for instance do `#include "G4MCPLGenerator.hh"` in your code), and that your application is linked with the two libraries in the `lib/` directory above.
