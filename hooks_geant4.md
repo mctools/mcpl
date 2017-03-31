@@ -42,8 +42,6 @@ For advanced use-cases, it is possible to fine-tune the way the particles from t
 
 ## Creating MCPL files from simulations via G4MCPLWriter
 
-(todo)
-
 The `G4MCPLWriter` class is a subclass of Geant4's `G4VSensitiveDetector` interface class, and can be activated in the usual manner for such classes. In the default configuration it “consumes” all particles which, during a simulation, enter any geometrical volume(s) to which it is attached by the user and stores them into the MCPL file which was specified as an argument to its constructor. It also asks Geant4 to end further simulation of those particles (“killing” them), in order to avoid potential issues of double-counting.
 
 It is of course also possible to add meta-data to, or otherwise modify the settings of, the newly created MCPL file. The following code sample illustrate the typical usage pattern (`alogvol` is here a logical volume in Geant4, chosen by the user according to their needs):
