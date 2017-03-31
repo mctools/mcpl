@@ -15,7 +15,7 @@ Note that users of the [ESS-dgcode framework](https://confluence.esss.lu.se/x/lg
 
 ## Using MCPL files as simulation input via G4MCPLGenerator
 
-(todo)
+The `G4MCPLGenerator` class is a subclass of Geant4's `G4VUserPrimaryGeneratorAction` interface class, and can be activated in the usual manner for such classes. There are only two things to keep in mind: First of all, the name of the MCPL file to be used as input must be provided in the form of a string to the constructor of`G4MCPLGenerator`. Second of all, if the MCPL file runs out of particles (which it will if Geant4 is requested to simulate more events than there are particles in the MCPL file), the `G4MCPLGenerator` will graciously request the `G4RunManager` to abort the simulation. Thus, a convenient way in which to use the entire input file for simulation is to launch the simulation with a very high number of events requested, as is shown in the following example:
 
 ```c++
 #include "G4MCPLGenerator.hh"
@@ -36,6 +36,9 @@ int main( int argc, char** argv ) {
   return 0;
 }
 ```
+
+For advanced use-cases, it is possible to fine-tune the way the particles from the input MCPL file are used. For instance, it is possible to apply a filter in order to ignore some of the particles, or to modify their properties (e.g. performing coordinate transformations, time-shifting or re-weighting). In order to do so, the user must sub-class the `G4MCPLGenerator` and overwrite one or two methods as relevant. Refer to the detailed instructions in {% include linkpaper.html subsection=3.1
+%} for more information.
 
 ## Creating MCPL files from simulations via G4MCPLWriter
 
@@ -60,7 +63,7 @@ alogvol->SetSensitiveDetector(mcplwriter);
 
 # Integrating MCPL in a given Geant4 setup
 
-Note that in order to actually use the `G4MCPLGenerator` and `G4MCPLWriter`, the simplest approach might simply be to copy the [C++ files in which they reside]({{"/raw/master/src/geant4/" | prepend: site.github.repository_url }}) into your existing build system (along with [mcpl.h and mcpl.c]({{"/raw/master/src/mcpl/" | prepend: site.github.repository_url }})).
+Note that in order to actually use the `G4MCPLGenerator` and `G4MCPLWriter`, the simplest approach might be to copy the [C++ files in which they reside]({{"/raw/master/src/geant4/" | prepend: site.github.repository_url }}) into your existing build system (along with [mcpl.h and mcpl.c]({{"/raw/master/src/mcpl/" | prepend: site.github.repository_url }})).
 
 Alternatively, a perhaps more "clean" approach would be to first build and install the MCPL distribution itself via the provided CMake script after first installing Geant4 and making sure Geant4 is noticed correctly during the configuration (more [here](LOCAL:get)). This should, after the build and install is completed (with `make install`) result in an installation which includes files like the following (actual contents might depend a bit on your platform and setup, for instance the extension `.so` will usually be `.dylib` on OS X):
 
