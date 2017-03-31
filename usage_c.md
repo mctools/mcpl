@@ -12,7 +12,7 @@ C++ code, by including the header file {% include linkfile.html file="src/mcpl/m
 %} and making sure the resulting library or application
 is linked with the code in the {% include linkfile.html file="src/mcpl/mcpl.c"
 %} file. This is described in more detail in {% include linkpaper.html subsection=2.2
-%} and the API is documented in detail in {% include linkpaper.html section="Appendix.3" linkname="MCPL writeup (Appendix C)"
+%} and the API is documented in detail in {% include linkpaper.html section="Appendix.3" linkname="the MCPL paper (Appendix C)"
 %}.
 
 However, notice that most end-users should not have to write such code. Rather,

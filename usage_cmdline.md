@@ -172,7 +172,7 @@ gcc -std=c99 -lm mcpltool_app_fat.c -o mcpltool
 And you are ready to run! For instance you can inspect an MCPL file with:
 
 ```shell
-./mcpltool  <my-mcpl-file>
+./mcpltool <my-mcpl-file>
 ```
 
 Or get full usage instructions with:
