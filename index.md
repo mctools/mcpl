@@ -27,5 +27,5 @@ project) and under grant agreement No 654000 (the SINE2020 project)._
 
 [![BrightnESS](LOCAL:images/brightness_logo.png){:height="50px"}](https://brightness.esss.se/)
 [![SINE2020](LOCAL:images/sine2020_logo.png){:height=200}{:height="50px"}](http://www.sine2020.eu/)
-[![ESS](LOCAL:images/ess-logo.png){:height="50px"}](http://europeanspallationsource.se/)
+[![ESS](LOCAL:images/ess-logo.png){:height="50px"}](https://europeanspallationsource.se/)
 [![DTU](LOCAL:images/DTU-logo.png){:height="50px"}](http://www.dtu.dk/)
