@@ -1,6 +1,6 @@
 {% capture dummy %}
 {% assign paperlink = "/mcpl_paper_draft_2017-03-30.pdf" |prepend: site.baseurl %}
-{% assign linkname = "MCPL writeup" %}
+{% assign linkname = "the MCPL paper" %}
 {% if include.subsection != nil %}
 {%   assign paperlink = paperlink |append: "#nameddest=subsection."|append: include.subsection %}
 {%   assign linkname = linkname |append: " (section "|append: include.subsection|append: ")" %}
