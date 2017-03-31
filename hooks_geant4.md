@@ -44,6 +44,10 @@ For advanced use-cases, it is possible to fine-tune the way the particles from t
 
 (todo)
 
+The `G4MCPLWriter` class is a subclass of Geant4's `G4VSensitiveDetector` interface class, and can be activated in the usual manner for such classes. In the default configuration it “consumes” all particles which, during a simulation, enter any geometrical volume(s) to which it is attached by the user and stores them into the MCPL file which was specified as an argument to its constructor. It also asks Geant4 to end further simulation of those particles (“killing” them), in order to avoid potential issues of double-counting.
+
+It is of course also possible to add meta-data to, or otherwise modify the settings of, the newly created MCPL file. The following code sample illustrate the typical usage pattern (`alogvol` is here a logical volume in Geant4, chosen by the user according to their needs):
+
 ```c++
 //Provide output filename when creating G4MCPLWriter instance:
 G4MCPLWriter * mcplwriter = new G4MCPLWriter("myoutput.mcpl");
@@ -60,6 +64,9 @@ mcplwriter->EnableUniversalWeight(1.0);
 G4SDManager::GetSDMpointer()->AddNewDetector(mcplwriter);
 alogvol->SetSensitiveDetector(mcplwriter);
 ```
+
+For advanced use-cases, it is possible to fine-tune the way the particles are captured and whether they are "killed" or merely recorded, and it is also possible to fill custom information into the MCPL _userflags_ in the resulting file. In order to do either, the user must sub-class the `G4MCPLGenerator` and overwrite the relevant method. Refer to the detailed instructions in {% include linkpaper.html subsection=3.1
+%} for more information.
 
 # Integrating MCPL in a given Geant4 setup
 
