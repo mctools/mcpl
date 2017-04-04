@@ -13,7 +13,7 @@ Write/Read (SSW/SSR) functionality, based on intermediate files. We refer to suc
 At the bottom of the page is also included a quick and dirty recipe for how the `ssw2mcpl` and `mcpl2ssw` commands can be obtained without first downloading and installing the MCPL distribution. Note that users of the ESS dgcode framework already have access to the commands, and it is planned to provide McStas and McXtrace users with them as well
 (cf. [this issue]({{ "/20" | prepend: site.github.issues_url }})).
 
-## Examples 
+## Examples
 
 A few exampes and instructions of how to use `ssw2mcpl` and `mcpl2ssw` are provided in the following.
 
