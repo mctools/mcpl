@@ -15,14 +15,8 @@ in the indicated areas:
 A substantial effort went into developing MCPL. If you use it for your work, we
 would appreciate it if you would use the following reference in your work:
 
-TODO: The paper was submitted to Computer Physics Communications Sep 9, 2016.<br/> A
-preliminary draft is available at <https://arxiv.org/abs/1609.02792> and
- {% include linkpaper.html linkname="here." %}<br/>
-Until publication please reference the github release instead:
-[![DOI](https://zenodo.org/badge/24077/mctools/mcpl.svg)](https://zenodo.org/badge/latestdoi/24077/mctools/mcpl)<br/>
-This place will be updated as soon as the paper is published.
-{: style="color:#D44; font-weight: bold; font-size: 80%; text-align: center; margin: 2em"}
-
+T. Kittelmann, et al., Monte Carlo Particle Lists: MCPL, *Computer Physics
+Communications* (2017), <http://dx.doi.org/10.1016/j.cpc.2017.04.012>
 
 ## License
 
