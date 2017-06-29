@@ -92,7 +92,7 @@ of the component you will be using and place it in your run directory:
 
 This is because several important issues were identified and fixed in the
 component codes after the release (in particular a nasty memory leak in
-MCPL_output). Users of McStas 2.4 do not need this, although a small issue (see [https://github.com/mctools/mcpl/issues/32](here)) remains for MCPL output, which was fixed in 2.4.1.
+MCPL_output). Users of McStas 2.4 do not need this, although a small issue (see [here](https://github.com/mctools/mcpl/issues/32)) remains for MCPL output, which was fixed in 2.4.1.
 
 ## Notes for users running in special environments
 
