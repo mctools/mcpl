@@ -6,14 +6,14 @@ weight: 20
 - two magic lines for toc
 {:toc}
 
-The MCPL distribution includes a handy command-line tool, `mcpltool`, which can
-be used to either inspect MCPL files, or to carry out a
-limited number of operations on them.
+The MCPL distribution includes a handy command-line tool, `mcpltool`, which can be used to either inspect MCPL files, or to carry out a limited number of operations on them. Since release 1.2, it also includes a second tool, `pymcpltool`, which provides additional inspection features in the form of plots and statistics display.
 
-This page includes a few examples of how `mcpltool` can be used, but users are referred to
+**NOTE: The pymcpltool mentioned on this page is only available once MCPL 1.2.0 is released (early July 2017)**
+
+This page includes a few examples of the tools `mcpltool` can be used, but users are referred to
 {% include linkpaper.html subsection=2.3 %} for more information.
 
-At the bottom of the page is also included a quick and dirty recipe for how the `mcpltool` command can be obtained without first downloading and installing the MCPL distribution (note that users of McStas, McXtrace and the ESS dgcode framework already have access to the command).
+At the bottom of the page is also included recipes for how the `mcpltool` command can be quickly obtained without first downloading and installing the MCPL distribution (note that users of McStas, McXtrace and the ESS dgcode framework already have access to the command).
 
 ## Examples
 
@@ -156,9 +156,69 @@ Other options:
   -h, --help      : Display this usage information (ignores all other options).
 ```
 
-## Quick and dirty way to get the mcpltool
+### Extract statistics from a file
 
-Rather than downloading and building the full MCPL distribution, it is possible to get hold
+Using the `pymcpltool` with the `--stats` flag, it is possible to analyse a file get statistics of the contained particles and the distribution of their state parameters:
+
+```shell
+pymcpltool --stats example.mcpl
+```
+```
+------------------------------------------------------------------------------
+nparticles   : 1006
+sum(weights) : 1006
+------------------------------------------------------------------------------
+             :            mean             rms             min             max
+------------------------------------------------------------------------------
+ekin   [MeV] :          52.165         548.838      0.00139345         9724.96
+x       [cm] :       -0.248153         12.0726        -60.0882         65.8944
+y       [cm] :         2.54021         12.7636        -61.3354         57.6935
+z       [cm] :              20               0              20              20
+ux           :       0.0216263        0.487791       -0.994109        0.995773
+uy           :     -0.00868233         0.47584       -0.994904        0.979886
+uz           :        0.690676        0.240955       -0.734438        0.999994
+time    [ms] :     5.04828e-05      0.00010785     7.01658e-07      0.00166018
+weight       :               1               0               1               1
+polx         :               0               0               0               0
+poly         :               0               0               0               0
+polz         :               0               0               0               0
+------------------------------------------------------------------------------
+pdgcode      :        2112 (n)                   726 (72.17%)
+                        22 (gamma)               239 (23.76%)
+                        11 (e-)                   15 ( 1.49%)
+                      2212 (p)                    10 ( 0.99%)
+                       -11 (e+)                    8 ( 0.80%)
+                       211 (pi+)                   5 ( 0.50%)
+                      -211 (pi-)                   2 ( 0.20%)
+                        14 (nu_mu)                 1 ( 0.10%)
+                     [ values ]             [ weighted counts ]
+------------------------------------------------------------------------------
+userflags    :           0 (0x00000000)         1006 (100.00%)
+                     [ values ]             [ weighted counts ]
+------------------------------------------------------------------------------
+```
+
+Or, run can view the parameter distributions by adding `--gui`:
+```shell
+pymcpltool --stats --gui example.mcpl
+```
+Resulting in plots like:
+
+[![pdgcode distribution](LOCAL:images/pymcpltool_stats_gui_pdgcode.png){:height="50px"}](LOCAL:images/pymcpltool_stats_gui_pdgcode.png)
+[![x distribution](LOCAL:images/pymcpltool_stats_gui_x.png){:height="50px"}](LOCAL:images/pymcpltool_stats_gui_x.png)
+[![uz distribution](LOCAL:images/pymcpltool_stats_gui_uz.png){:height="50px"}](LOCAL:images/pymcpltool_stats_gui_uz.png)
+
+Or, produce a PDF file (like [this one](LOCAL:pymcpltool_stats.pdf))) with the plots instead via:
+
+```shell
+pymcpltool --stats --pdf example.mcpl
+```
+
+## Quick and dirty ways to get the mcpltool
+
+### Compile a single C file ...
+
+Rather than downloading and building the full MCPL distribution, it is first of all possible to get hold
 of the `mcpltool` command simply by downloading and saving the
 single-file ("fat") version of the code found at this link: {% include linkfile.html file="src_fat/mcpltool_app_fat.c" download=true %}.
 
@@ -175,8 +235,12 @@ And you are ready to run! For instance you can inspect an MCPL file with:
 ./mcpltool <my-mcpl-file>
 ```
 
-Or get full usage instructions with:
+### ... or just download and run the pymcpltool
+
+Assuming your machine has Python and [NumPy](http://www.numpy.org/) available, one can instead download the MCPL python module, which is a single file with no compiled dependencies, and which if executed as a script actually acts just like the normal `mcpltool`. So download and save the file: {% include linkfile.html file="src_fat/pymcpltool" download=true %}, and make it executable with `chmod +x ./pymcpltool`. Then you are all set, for instance you can inspect an MCPL file with:
 
 ```shell
-./mcpltool --help
+./pymcpltool <my-mcpl-file>
 ```
+
+Note that the `pymcpltool` only provides read-only access to MCPL files, but on the other hand it has the advantage of providing statistics and plotting capabilities which are not currently available when using the compiled `mcpltool`. Use `pymcpltool --help` for details.
