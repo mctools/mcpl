@@ -108,3 +108,7 @@ cc -o MyInstrument.out MyInstrument.c \
    -I/usr/share/mcstas/2.3/libs/mcpl -L/usr/share/mcstas/2.3/libs/mcpl \
    -lmcpl -lm -O2
 ```
+
+## Notes for ESS users of McStas and MCPL
+
+If you wish to use MCPL input as an ESS source term in a McStas simulation, [please consult the relevant page in the ESS Confluence](https://confluence.esss.lu.se/display/MCSTAS/Using+MCPL+as+source+term+in+McStas).

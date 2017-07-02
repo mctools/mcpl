@@ -15,7 +15,7 @@ in the indicated areas:
 A substantial effort went into developing MCPL. If you use it for your work, we
 would appreciate it if you would use the following reference in your work:
 
-T. Kittelmann, et al. Monte Carlo Particle Lists: MCPL, *Computer Physics Communications*, Volume 218, September 2017, Pages 17-42, ISSN 0010-4655, <https://doi.org/10.1016/j.cpc.2017.04.012>
+T. Kittelmann, et al., Monte Carlo Particle Lists: MCPL, *Computer Physics Communications*, Volume 218, September 2017, Pages 17-42, ISSN 0010-4655, <https://doi.org/10.1016/j.cpc.2017.04.012>
 
 ## License
 
