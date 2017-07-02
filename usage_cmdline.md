@@ -10,10 +10,10 @@ The MCPL distribution includes a handy command-line tool, `mcpltool`, which can 
 
 **NOTE: The pymcpltool mentioned on this page is only available once MCPL 1.2.0 is released (early July 2017)**
 
-This page includes a few examples of the tools `mcpltool` can be used, but users are referred to
+This page includes a few examples of how the command-line tools can be used, but users are referred to
 {% include linkpaper.html subsection=2.3 %} for more information.
 
-At the bottom of the page is also included recipes for how the `mcpltool` command can be quickly obtained without first downloading and installing the MCPL distribution (note that users of McStas, McXtrace and the ESS dgcode framework already have access to the command).
+At the bottom of the page is also included recipes for how the commands can be quickly obtained without first downloading and installing the MCPL distribution (note that users of McStas, McXtrace and the ESS dgcode framework already have access to the command).
 
 ## Examples
 
@@ -158,7 +158,9 @@ Other options:
 
 ### Extract statistics from a file
 
-Using the `pymcpltool` with the `--stats` flag, it is possible to analyse a file get statistics of the contained particles and the distribution of their state parameters:
+Using the `pymcpltool` with the `--stats` flag, it is possible to analyse a file
+to get statistics of the contained particles and the distribution of their state
+parameters:
 
 ```shell
 pymcpltool --stats example.mcpl
@@ -198,17 +200,17 @@ userflags    :           0 (0x00000000)         1006 (100.00%)
 ------------------------------------------------------------------------------
 ```
 
-Or, run can view the parameter distributions by adding `--gui`:
+Or, one can view the parameter distributions graphically by adding `--gui`:
 ```shell
 pymcpltool --stats --gui example.mcpl
 ```
 Resulting in plots like:
 
-[![pdgcode distribution](LOCAL:images/pymcpltool_stats_gui_pdgcode.png){:height="50px"}](LOCAL:images/pymcpltool_stats_gui_pdgcode.png)
-[![x distribution](LOCAL:images/pymcpltool_stats_gui_x.png){:height="50px"}](LOCAL:images/pymcpltool_stats_gui_x.png)
-[![uz distribution](LOCAL:images/pymcpltool_stats_gui_uz.png){:height="50px"}](LOCAL:images/pymcpltool_stats_gui_uz.png)
+[![pdgcode distribution](LOCAL:images/pymcpltool_stats_gui_pdgcode.png){:height="80px"}](LOCAL:images/pymcpltool_stats_gui_pdgcode.png)
+[![x distribution](LOCAL:images/pymcpltool_stats_gui_x.png){:height="80px"}](LOCAL:images/pymcpltool_stats_gui_x.png)
+[![uz distribution](LOCAL:images/pymcpltool_stats_gui_uz.png){:height="80px"}](LOCAL:images/pymcpltool_stats_gui_uz.png)
 
-Or, produce a PDF file (like [this one](LOCAL:pymcpltool_stats.pdf))) with the plots instead via:
+Or, produce a PDF file (like [this one](LOCAL:pymcpltool_stats.pdf)) with the plots instead via:
 
 ```shell
 pymcpltool --stats --pdf example.mcpl

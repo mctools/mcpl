@@ -16,8 +16,7 @@ Supports both Python2 and Python3.
 ```python
 import mcpl
 with mcpl.MCPLFile("example.mcpl") as f:
-    print( Number of particles in file: %i' % f.nparticles )
+    print( 'Number of particles in file: %i' % f.nparticles )
     for p in f.particles:
         print( p.x, p.y, p.z, p.ekin )
-
 ```
