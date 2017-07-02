@@ -221,13 +221,16 @@ Or, one can view the parameter distributions graphically by adding `--gui`:
 ```shell
 pymcpltool --stats --gui example.mcpl
 ```
-Resulting in plots like:
+Resulting in plots of the file contents like these:
 
+<p align="center">
 [![pdgcode distribution](LOCAL:images/pymcpltool_stats_gui_pdgcode.png){:height="100px"}](LOCAL:images/pymcpltool_stats_gui_pdgcode.png)
 [![x distribution](LOCAL:images/pymcpltool_stats_gui_x.png){:height="100px"}](LOCAL:images/pymcpltool_stats_gui_x.png)
 [![uz distribution](LOCAL:images/pymcpltool_stats_gui_uz.png){:height="100px"}](LOCAL:images/pymcpltool_stats_gui_uz.png)
+</p>
 
-Or, produce a PDF file (like [this one](LOCAL:pymcpltool_stats.pdf)) with the plots instead via:
+Or one can produce a PDF file like [this one](LOCAL:pymcpltool_stats.pdf)
+containing the plots by adding instead the `--pdf` flag:
 
 ```shell
 pymcpltool --stats --pdf example.mcpl
