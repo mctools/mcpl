@@ -238,7 +238,7 @@ pymcpltool --stats --pdf example.mcpl
 
 ### Compile a single C file ...
 
-Rather than downloading and building the full MCPL distribution, it is first of all possible to get hold
+Rather than downloading and building the full MCPL distribution, it is possible to get hold
 of the `mcpltool` command simply by downloading and saving the
 single-file ("fat") version of the code found at this link: {% include linkfile.html file="src_fat/mcpltool_app_fat.c" download=true %}.
 
@@ -257,10 +257,12 @@ And you are ready to run! For instance you can inspect an MCPL file with:
 
 ### ... or just download and run the pymcpltool
 
-Assuming your machine has Python and [NumPy](http://www.numpy.org/) available, one can instead download the MCPL python module, which is a single file with no compiled dependencies, and which if executed as a script actually acts just like the normal `mcpltool`. So download and save the file: {% include linkfile.html file="src_fat/pymcpltool" download=true %}, and make it executable with `chmod +x ./pymcpltool`. Then you are all set, for instance you can inspect an MCPL file with:
+Assuming your machine has Python and [NumPy](http://www.numpy.org/) available,
+one can simply download the MCPL python module, which is a single file with no
+compiled dependencies, and which if executed as a script actually _is_ the `pymcpltool`. So download and save the file: {% include linkfile.html file="src_fat/pymcpltool" download=true %}, and make it executable with `chmod +x ./pymcpltool`. Then you are all set, for instance you can inspect an MCPL file with:
 
 ```shell
 ./pymcpltool <my-mcpl-file>
 ```
 
-Note that the `pymcpltool` only provides read-only access to MCPL files, but on the other hand it has the advantage of providing statistics and plotting capabilities which are not currently available when using the compiled `mcpltool`. Use `pymcpltool --help` for details.
+Note that as described above, the `pymcpltool` only provides read-only access to MCPL files, but on the other hand it has the advantage of providing statistics and plotting capabilities which are not currently available when using the compiled `mcpltool`. Use `pymcpltool --help` for details.
