@@ -17,11 +17,11 @@ At the bottom of the page is also included recipes for how the commands can be q
 
 ## Examples
 
-A few examples of how to use the `mcpltool` are provided here. Note that a small sample MCPL file is included with the MCPL distribution at [examples/example.mcpl]({{"/raw/master/examples/example.mcpl" | prepend: site.github.repository_url }}), in case new users would like something to try the `mcpltool` on.
+A few examples of how to use the command-line tools are provided here. Note that a small sample MCPL file is included with the MCPL distribution at [examples/example.mcpl]({{"/raw/master/examples/example.mcpl" | prepend: site.github.repository_url }}), in case new users would like something to try the `mcpltool` on.
 
 ### Inspect file contents
 
-Simply invoking `mcpltool` on a file with no additional arguments, results in a summary of the header information being printed, in addition to the particle state information of the first ten particles in the file:
+Simply invoking `mcpltool` or `pymcpltool` on a file with no additional arguments, results in a summary of the header information being printed, in addition to the particle state information of the first ten particles in the file:
 
 ```shell
 $ mcpltool example.mcpl
@@ -67,7 +67,7 @@ The `-l` (limit) and `-s` (skip) flags can be used to change which particles are
 
 ### Extract some particles from a file
 
-Using the `--extract` flag, it is possible to extract a subset of particles from a file, into a new file. Using the `-p` flag, one can select according to [particle type](http://pdg.lbl.gov/2014/reviews/rpp2014-rev-monte-carlo-numbering.pdf) (2112=neutron, 22=gamma, etc.).
+Using the `--extract` flag to `mcpltool`, it is possible to extract a subset of particles from a file, into a new file. Using the `-p` flag, one can select according to [particle type](http://pdg.lbl.gov/2014/reviews/rpp2014-rev-monte-carlo-numbering.pdf) (2112=neutron, 22=gamma, etc.).
 
 ```shell
 mcpltool --extract -p2112 example.mcpl justneutrons.mcpl
@@ -93,7 +93,7 @@ MCPL: Succesfully extracted 1 / 1006 particles from examples/example.mcpl into j
 
 ### Merging compatible files
 
-Using the `--merge` flag, it is possible to merge contents from a list of compatible files into a single new one. Here four existing files are merged, creating newfile.mcpl as a result:
+Using the `--merge` flag to `mcpltool`, it is possible to merge contents from a list of compatible files into a single new one. Here four existing files are merged, creating newfile.mcpl as a result:
 
 ```shell
 mcpltool --merge newfile.mcpl file1.mcpl file2.mcpl file3.mcpl file4.mcpl
@@ -145,15 +145,32 @@ Merge options:
 Extract options:
   -e, --extract FILE1 FILE2
                     Extracts particles from FILE1 into a new FILE2.
-  -lN, -sN          Select range of particles in FILE1 (as above).
-  -pPDGCODE         select particles of type given by PDGCODE.
+  -lN, -sN        : Select range of particles in FILE1 (as above).
+  -pPDGCODE       : select particles of type given by PDGCODE.
 
 Other options:
   -r, --repair FILE
                     Attempt to repair FILE which was not properly closed, by up-
                     dating the file header with the correct number of particles.
+  -t, --text MCPLFILE OUTFILE
+                    Read particle contents of MCPLFILE and write into OUTFILE
+                    using a simple ASCII-based format.
   -v, --version   : Display version of MCPL installation.
   -h, --help      : Display this usage information (ignores all other options).
+```
+
+Running instead `pymcpltool --help` shows identical options as for the
+`mcpltool`, with the exception that the merge, extract and repair options are
+absent and that instead options to extract statistics are available:
+
+```
+Stat options:
+  --stats FILE    : Print statistics summary of particle state data from FILE.
+  --stats --pdf FILE
+                  : Produce PDF file mcpl.pdf with histograms of particle state
+                    data from FILE.
+  --stats --gui FILE
+                  : Like --pdf, but opens interactive histogram views directly.
 ```
 
 ### Extract statistics from a file
@@ -206,9 +223,9 @@ pymcpltool --stats --gui example.mcpl
 ```
 Resulting in plots like:
 
-[![pdgcode distribution](LOCAL:images/pymcpltool_stats_gui_pdgcode.png){:height="80px"}](LOCAL:images/pymcpltool_stats_gui_pdgcode.png)
-[![x distribution](LOCAL:images/pymcpltool_stats_gui_x.png){:height="80px"}](LOCAL:images/pymcpltool_stats_gui_x.png)
-[![uz distribution](LOCAL:images/pymcpltool_stats_gui_uz.png){:height="80px"}](LOCAL:images/pymcpltool_stats_gui_uz.png)
+[![pdgcode distribution](LOCAL:images/pymcpltool_stats_gui_pdgcode.png){:height="100px"}](LOCAL:images/pymcpltool_stats_gui_pdgcode.png)
+[![x distribution](LOCAL:images/pymcpltool_stats_gui_x.png){:height="100px"}](LOCAL:images/pymcpltool_stats_gui_x.png)
+[![uz distribution](LOCAL:images/pymcpltool_stats_gui_uz.png){:height="100px"}](LOCAL:images/pymcpltool_stats_gui_uz.png)
 
 Or, produce a PDF file (like [this one](LOCAL:pymcpltool_stats.pdf)) with the plots instead via:
 
