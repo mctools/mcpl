@@ -16,6 +16,7 @@ addons:
       - cmake
       - cmake-data
       - python-numpy
+      - python-matplotlib
 
 compiler:
     - gcc
