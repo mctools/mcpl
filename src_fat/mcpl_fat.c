@@ -2533,7 +2533,7 @@ ZEXTERN int            ZEXPORTVA gzvprintf Z_ARG((gzFile file,
 #define MCPLIMP_MAX_PARTICLE_SIZE 96
 
 int mcpl_platform_is_little_endian() {
-  // return 0 for big endian, 1 for little endian.
+  //Return 0 for big endian, 1 for little endian.
   volatile uint32_t i=0x01234567;
   return (*((uint8_t*)(&i))) == 0x67;
 }
@@ -3127,7 +3127,9 @@ void mcpl_add_particle(mcpl_outfile_t of,const mcpl_particle_t* particle)
   }
   if (f->opt_userflags) {
     *(uint32_t*)&pbuf[ibuf] = particle->userflags;
+#ifndef NDEBUG
     ibuf += sizeof(uint32_t);
+#endif
   }
   assert(ibuf==f->particle_size);
 
@@ -3368,8 +3370,12 @@ mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair_status)
   if (f->format_version!=2&&f->format_version!=3)
     mcpl_error("File is in an unsupported MCPL version!");
   f->is_little_endian = mcpl_platform_is_little_endian();
-  if (start[7]!=(f->is_little_endian?'L':'B'))
-    mcpl_error("Endian-ness of current platform is different than the one used to write the file.");
+  if (start[7]!=(f->is_little_endian?'L':'B')) {
+    if (start[7]=='L'||start[7]=='B')
+      mcpl_error("Endian-ness of current platform is different than the one used to write the file.");
+    else
+      mcpl_error("Unexpected value in endianness field!");
+  }
 
   //proceed reading header, knowing we have a consistent version and endian-ness.
   const char * errmsg = "Errors encountered while attempting to read header";
@@ -3459,10 +3465,12 @@ mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair_status)
     mcpl_error(errmsg);
   f->first_particle_pos = tellpos;
 
-  if (f->nparticles==0) {
+  if ( f->nparticles==0 || caller_is_mcpl_repair ) {
     //Although empty files are permitted, it is possible that the file was never
     //closed properly (maybe the writing program ended prematurely). Let us
-    //check to possibly recover usage of the file.
+    //check to possibly recover usage of the file. If caller is mcpl_repair, we
+    //always check since the file might have been truncated after it was first
+    //closed properly.
     if (f->filegz) {
       //SEEK_END is not supported by zlib, and there is no reliable way to get
       //the input size. Thus, all we can do is to uncompress the whole thing,
@@ -3470,14 +3478,19 @@ mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair_status)
       //can at least try to check whether the file is indeed empty or not, and
       //give an error in the latter case:
 #ifdef MCPL_HASZLIB
-      char testbuf[4];
-      nb = gzread(f->filegz, testbuf, sizeof(testbuf));
-      if (nb>0) {
-        if (caller_is_mcpl_repair) {
-          *repair_status = 1;//file broken but can't recover since gzip.
-        } else {
-          mcpl_error("Input file appears to not have been closed properly and data recovery is disabled for gzipped files.");
+      if (f->nparticles==0) {
+        char testbuf[4];
+        nb = gzread(f->filegz, testbuf, sizeof(testbuf));
+        if (nb>0) {
+          if (caller_is_mcpl_repair) {
+            *repair_status = 1;//file broken but can't recover since gzip.
+          } else {
+            mcpl_error("Input file appears to not have been closed properly and data recovery is disabled for gzipped files.");
+          }
         }
+      } else {
+        assert(caller_is_mcpl_repair);
+        *repair_status = 2;//file brokenness can not be determined since gzip.
       }
       gzseek( f->filegz, f->first_particle_pos, SEEK_SET );
 #endif
@@ -3485,12 +3498,20 @@ mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair_status)
       if (f->file && !fseek( f->file, 0, SEEK_END )) {//SEEK_END is not guaranteed to always work, so we fail our recovery attempt silently.
         int64_t endpos = ftell(f->file);
         if (endpos > (int64_t)f->first_particle_pos && (uint64_t)endpos != f->first_particle_pos) {
-          f->nparticles = ( endpos - f->first_particle_pos ) / f->particle_size;
-          if (caller_is_mcpl_repair) {
-            *repair_status = 2;//file broken and should be able to repair
-          } else {
-            printf("MCPL WARNING: Input file appears to not have been closed properly. Recovered %" PRIu64 " particles.\n",
-                   f->nparticles);
+          uint64_t np = ( endpos - f->first_particle_pos ) / f->particle_size;
+          if ( f->nparticles != np ) {
+            if ( f->nparticles > 0 && np > f->nparticles ) {
+              //should really not happen unless file was corrupted or file was
+              //first closed properly and then something was appended to it.
+              mcpl_error("Input file has invalid combination of meta-data & filesize.");
+            }
+            if (caller_is_mcpl_repair) {
+              *repair_status = 3;//file broken and should be able to repair
+            } else {
+              assert(f->nparticles == 0);
+              printf("MCPL WARNING: Input file appears to not have been closed properly. Recovered %" PRIu64 " particles.\n",np);
+            }
+            f->nparticles = np;
           }
         }
       }
@@ -3515,9 +3536,11 @@ void mcpl_repair(const char * filename)
   uint64_t nparticles = mcpl_hdr_nparticles(f);
   mcpl_close_file(f);
   if (repair_status==0) {
-    mcpl_error("Asked to repair file which does not appear to be broken.");
+    mcpl_error("File does not appear to be broken.");
   } else if (repair_status==1) {
     mcpl_error("Input file is indeed broken, but must be gunzipped before it can be repaired.");
+  } else if (repair_status==2) {
+    mcpl_error("File must be gunzipped before it can be checked and possibly repaired.");
   }
   //Ok, we should repair the file by updating nparticles in the header:
   FILE * fh = fopen(filename,"rb+");
@@ -3729,7 +3752,9 @@ const mcpl_particle_t* mcpl_read(mcpl_file_t ff)
   }
   if (f->opt_userflags) {
     p->userflags = *(uint32_t*)&pbuf[ibuf];
+#ifndef NDEBUG
     ibuf += sizeof(uint32_t);
+#endif
   } else {
     f->opt_userflags = 0;
   }
@@ -3968,7 +3993,10 @@ void mcpl_dump_particles(mcpl_file_t f, uint64_t nskip, uint64_t nlimit,
 {
   int has_uf = mcpl_hdr_has_userflags(f);
   int has_pol = mcpl_hdr_has_polarisation(f);
-  printf("index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight");
+  double uweight = mcpl_hdr_universal_weight(f);
+  printf("index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]");
+  if (!uweight)
+    printf("      weight");
   if (has_pol)
     printf("       pol-x       pol-y       pol-z");
   if (has_uf)
@@ -3983,7 +4011,7 @@ void mcpl_dump_particles(mcpl_file_t f, uint64_t nskip, uint64_t nlimit,
       continue;
     }
     uint64_t idx = mcpl_currentposition(f)-1;//-1 since mcpl_read skipped ahead
-    printf("%5" PRIu64 " %11i %11.5g %11.5g %11.5g %11.5g %11.5g %11.5g %11.5g %11.5g %11.5g",
+    printf("%5" PRIu64 " %11i %11.5g %11.5g %11.5g %11.5g %11.5g %11.5g %11.5g %11.5g",
            idx,
            p->pdgcode,
            p->ekin,
@@ -3993,9 +4021,9 @@ void mcpl_dump_particles(mcpl_file_t f, uint64_t nskip, uint64_t nlimit,
            p->direction[0],
            p->direction[1],
            p->direction[2],
-           p->time,
-           p->weight
-           );
+           p->time);
+    if (!uweight)
+      printf(" %11.5g",p->weight);
     if (has_pol)
       printf(" %11.5g %11.5g %11.5g",p->polarisation[0],p->polarisation[1],p->polarisation[2]);
     if (has_uf)
@@ -4404,13 +4432,16 @@ int mcpl_tool_usage( char** argv, const char * errmsg ) {
   printf("Extract options:\n");
   printf("  -e, --extract FILE1 FILE2\n");
   printf("                    Extracts particles from FILE1 into a new FILE2.\n");
-  printf("  -lN, -sN          Select range of particles in FILE1 (as above).\n");
-  printf("  -pPDGCODE         select particles of type given by PDGCODE.\n");
+  printf("  -lN, -sN        : Select range of particles in FILE1 (as above).\n");
+  printf("  -pPDGCODE       : select particles of type given by PDGCODE.\n");
   printf("\n");
   printf("Other options:\n");
   printf("  -r, --repair FILE\n");
   printf("                    Attempt to repair FILE which was not properly closed, by up-\n");
   printf("                    dating the file header with the correct number of particles.\n");
+  printf("  -t, --text MCPLFILE OUTFILE\n");
+  printf("                    Read particle contents of MCPLFILE and write into OUTFILE\n");
+  printf("                    using a simple ASCII-based format.\n");
   printf("  -v, --version   : Display version of MCPL installation.\n");
   printf("  -h, --help      : Display this usage information (ignores all other options).\n");
 
@@ -4464,6 +4495,7 @@ int mcpl_tool(int argc,char** argv) {
   int opt_preventcomment = 0;//undocumented unoffical flag for mcpl unit tests
   int opt_repair = 0;
   int opt_version = 0;
+  int opt_text = 0;
 
   int i;
   for (i = 1; i<argc; ++i) {
@@ -4478,45 +4510,46 @@ int mcpl_tool(int argc,char** argv) {
       for (j=1; j<n; ++j) {
         if (consume_digit) {
           if (a[j]<'0'||a[j]>'9')
-            return mcpl_tool_usage(argv,"Bad option: expected number");
+            return free(filenames),mcpl_tool_usage(argv,"Bad option: expected number");
           *consume_digit *= 10;
           *consume_digit += a[j] - '0';
           continue;
         }
         if (a[j]=='b') {
           if (blobkey)
-            return mcpl_tool_usage(argv,"-b specified more than once");
+            return free(filenames),mcpl_tool_usage(argv,"-b specified more than once");
           if (j+1==n)
-            return mcpl_tool_usage(argv,"Missing argument for -b");
+            return free(filenames),mcpl_tool_usage(argv,"Missing argument for -b");
           blobkey = a+j+1;
           break;
         }
         if (a[j]=='p') {
           if (pdgcode_str)
-            return mcpl_tool_usage(argv,"-p specified more than once");
+            return free(filenames),mcpl_tool_usage(argv,"-p specified more than once");
           if (j+1==n)
-            return mcpl_tool_usage(argv,"Missing argument for -p");
+            return free(filenames),mcpl_tool_usage(argv,"Missing argument for -p");
           pdgcode_str = a+j+1;
           break;
         }
 
         switch(a[j]) {
-          case 'h': return mcpl_tool_usage(argv,0);
+          case 'h': return free(filenames), mcpl_tool_usage(argv,0);
           case 'j': opt_justhead = 1; break;
           case 'n': opt_nohead = 1; break;
           case 'm': opt_merge = 1; break;
           case 'e': opt_extract = 1; break;
           case 'r': opt_repair = 1; break;
           case 'v': opt_version = 1; break;
+          case 't': opt_text = 1; break;
           case 'l': consume_digit = &opt_num_limit; break;
           case 's': consume_digit = &opt_num_skip; break;
           default:
-            return mcpl_tool_usage(argv,"Unrecognised option");
+            return free(filenames),mcpl_tool_usage(argv,"Unrecognised option");
         }
         if (consume_digit) {
           *consume_digit = 0;
           if (j+1==n)
-            return mcpl_tool_usage(argv,"Bad option: missing number");
+            return free(filenames),mcpl_tool_usage(argv,"Bad option: missing number");
         }
       }
     } else if (n>=3&&a[0]=='-'&&a[1]=='-') {
@@ -4531,9 +4564,10 @@ int mcpl_tool(int argc,char** argv) {
       const char * lo_preventcomment = "preventcomment";
       const char * lo_repair = "repair";
       const char * lo_version = "version";
+      const char * lo_text = "text";
       //Use strstr instead of "strcmp(a,"--help")==0" to support shortened
       //versions (works since all our long-opts start with unique char).
-      if (strstr(lo_help,a)==lo_help) return mcpl_tool_usage(argv,0);
+      if (strstr(lo_help,a)==lo_help) return free(filenames), mcpl_tool_usage(argv,0);
       else if (strstr(lo_justhead,a)==lo_justhead) opt_justhead = 1;
       else if (strstr(lo_nohead,a)==lo_nohead) opt_nohead = 1;
       else if (strstr(lo_merge,a)==lo_merge) opt_merge = 1;
@@ -4542,25 +4576,24 @@ int mcpl_tool(int argc,char** argv) {
       else if (strstr(lo_repair,a)==lo_repair) opt_repair = 1;
       else if (strstr(lo_version,a)==lo_version) opt_version = 1;
       else if (strstr(lo_preventcomment,a)==lo_preventcomment) opt_preventcomment = 1;
-      else return mcpl_tool_usage(argv,"Unrecognised option");
+      else if (strstr(lo_text,a)==lo_text) opt_text = 1;
+      else return free(filenames),mcpl_tool_usage(argv,"Unrecognised option");
     } else if (n>=1&&a[0]!='-') {
       //input file
-      if (!filenames) {
-        //For code simplicity, we overallocate and never free:
+      if (!filenames)
         filenames = (char **)calloc(argc,sizeof(char*));
-      }
       filenames[nfilenames] = a;
       ++nfilenames;
     } else {
-      return mcpl_tool_usage(argv,"Bad arguments");
+      return free(filenames),mcpl_tool_usage(argv,"Bad arguments");
     }
   }
 
   if ( opt_extract==0 && pdgcode_str )
-    return mcpl_tool_usage(argv,"-p can only be used with --extract.");
+    return free(filenames),mcpl_tool_usage(argv,"-p can only be used with --extract.");
 
   if ( opt_merge==0 && opt_inplace!=0 )
-    return mcpl_tool_usage(argv,"--inplace can only be used with --merge.");
+    return free(filenames),mcpl_tool_usage(argv,"--inplace can only be used with --merge.");
 
   int number_dumpopts = (opt_justhead + opt_nohead + (blobkey!=0));
   if (opt_extract==0)
@@ -4568,13 +4601,15 @@ int mcpl_tool(int argc,char** argv) {
   int any_dumpopts = number_dumpopts != 0;
   int any_extractopts = (opt_extract!=0||pdgcode_str!=0);
   int any_mergeopts = (opt_merge!=0);
-  if (any_dumpopts+any_mergeopts+any_extractopts+opt_repair+opt_version>1)
-    return mcpl_tool_usage(argv,"Conflicting options specified.");
+  int any_textopts = (opt_text!=0);
+  if (any_dumpopts+any_mergeopts+any_extractopts+any_textopts+opt_repair+opt_version>1)
+    return free(filenames),mcpl_tool_usage(argv,"Conflicting options specified.");
 
   if (blobkey&&(number_dumpopts>1))
-    return mcpl_tool_usage(argv,"Do not specify other dump options with -b.");
+    return free(filenames),mcpl_tool_usage(argv,"Do not specify other dump options with -b.");
 
   if (opt_version) {
+    free(filenames);
     if (nfilenames)
       return mcpl_tool_usage(argv,"Unrecognised arguments for --version.");
     printf("MCPL version " MCPL_VERSION_STR "\n");
@@ -4584,19 +4619,19 @@ int mcpl_tool(int argc,char** argv) {
   if (opt_merge) {
 
     if (nfilenames<2)
-      return mcpl_tool_usage(argv,"Too few arguments for --merge.");
+      return free(filenames),mcpl_tool_usage(argv,"Too few arguments for --merge.");
 
     int ifirstinfile = (opt_inplace ? 0 : 1);
     for (i = ifirstinfile+1; i < nfilenames; ++i)
       if (!mcpl_can_merge(filenames[ifirstinfile],filenames[i]))
-        return mcpl_tool_usage(argv,"Requested files are incompatible for merge as they have different header info.");
+        return free(filenames),mcpl_tool_usage(argv,"Requested files are incompatible for merge as they have different header info.");
 
     if (opt_inplace) {
       for (i = ifirstinfile+1; i < nfilenames; ++i)
         mcpl_merge_inplace(filenames[ifirstinfile],filenames[i]);
     } else {
       if (mcpl_file_certainly_exists(filenames[0]))
-        return mcpl_tool_usage(argv,"Requested output file already exists.");
+        return free(filenames),mcpl_tool_usage(argv,"Requested output file already exists.");
 
       //Disallow .gz endings unless it is .mcpl.gz, in which case we attempt to gzip automatically.
       char * outfn = filenames[0];
@@ -4609,10 +4644,10 @@ int mcpl_tool(int argc,char** argv) {
         strcat(outfn,filenames[0]);
         outfn[lfn-3] = '\0';
         if (mcpl_file_certainly_exists(outfn))
-          return mcpl_tool_usage(argv,"Requested output file already exists (without .gz extension).");
+          return free(filenames),mcpl_tool_usage(argv,"Requested output file already exists (without .gz extension).");
 
       } else if( lfn > 3 && !strcmp(outfn + (lfn - 3), ".gz")) {
-        return mcpl_tool_usage(argv,"Requested output file should not have .gz extension (unless it is .mcpl.gz).");
+        return free(filenames),mcpl_tool_usage(argv,"Requested output file should not have .gz extension (unless it is .mcpl.gz).");
       }
 
       mcpl_outfile_t mf = mcpl_merge_files( outfn, nfilenames-1, (const char**)filenames + 1);
@@ -4626,18 +4661,19 @@ int mcpl_tool(int argc,char** argv) {
         free(outfn);
     }
 
+    free(filenames);
     return 0;
   }
 
   if (opt_extract) {
     if (nfilenames>2)
-      return mcpl_tool_usage(argv,"Too many arguments.");
+      return free(filenames),mcpl_tool_usage(argv,"Too many arguments.");
 
     if (nfilenames!=2)
-      return mcpl_tool_usage(argv,"Must specify both input and output files with --extract.");
+      return free(filenames),mcpl_tool_usage(argv,"Must specify both input and output files with --extract.");
 
     if (mcpl_file_certainly_exists(filenames[1]))
-      return mcpl_tool_usage(argv,"Requested output file already exists.");
+      return free(filenames),mcpl_tool_usage(argv,"Requested output file already exists.");
 
     mcpl_file_t fi = mcpl_open_file(filenames[0]);
     mcpl_outfile_t fo = mcpl_create_outfile(filenames[1]);
@@ -4654,7 +4690,7 @@ int mcpl_tool(int argc,char** argv) {
     if (pdgcode_str) {
       int64_t pdgcode64;
       if (!mcpl_str2int(pdgcode_str, 0, &pdgcode64) || pdgcode64<-2147483648 || pdgcode64>2147483647 || !pdgcode64)
-        return mcpl_tool_usage(argv,"Must specify non-zero 32bit integer as argument to -p.");
+        return free(filenames),mcpl_tool_usage(argv,"Must specify non-zero 32bit integer as argument to -p.");
       pdgcode_select = (int32_t)pdgcode64;
     }
 
@@ -4682,17 +4718,55 @@ int mcpl_tool(int argc,char** argv) {
     printf("MCPL: Succesfully extracted %" PRIu64 " / %" PRIu64 " particles from %s into %s\n",
            added,fi_nparticles,filenames[0],fo_filename);
     free(fo_filename);
+    free(filenames);
+    return 0;
+  }
+
+  if (opt_text) {
+
+    if (nfilenames>2)
+      return free(filenames),mcpl_tool_usage(argv,"Too many arguments.");
+
+    if (nfilenames!=2)
+      return free(filenames),mcpl_tool_usage(argv,"Must specify both input and output files with --text.");
+
+    if (mcpl_file_certainly_exists(filenames[1]))
+      return free(filenames),mcpl_tool_usage(argv,"Requested output file already exists.");
+
+    mcpl_file_t fi = mcpl_open_file(filenames[0]);
+    FILE * fout = fopen(filenames[1],"w");
+    if (!fout)
+      return free(filenames),mcpl_tool_usage(argv,"Could not open output file.");
+
+    fprintf(fout,"#MCPL-ASCII\n#ASCII-FORMAT: v1\n#NPARTICLES: %" PRIu64 "\n#END-HEADER\n",mcpl_hdr_nparticles(fi));
+    fprintf(fout,"index     pdgcode               ekin[MeV]                   x[cm]          "
+            "         y[cm]                   z[cm]                      ux                  "
+            "    uy                      uz                time[ms]                  weight  "
+            "                 pol-x                   pol-y                   pol-z  userflags\n");
+    const mcpl_particle_t* p;
+    while ( ( p = mcpl_read(fi) ) ) {
+      uint64_t idx = mcpl_currentposition(fi)-1;//-1 since mcpl_read skipped ahead
+      fprintf(fout,"%5" PRIu64 " %11i %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g"
+              " %23.18g %23.18g %23.18g 0x%08x\n",
+              idx,p->pdgcode,p->ekin,p->position[0],p->position[1],p->position[2],
+              p->direction[0],p->direction[1],p->direction[2],p->time,p->weight,
+              p->polarisation[0],p->polarisation[1],p->polarisation[2],p->userflags);
+    }
+    fclose(fout);
+    mcpl_close_file(fi);
+    free(filenames);
     return 0;
   }
 
   if (nfilenames>1)
-    return mcpl_tool_usage(argv,"Too many arguments.");
+    return free(filenames),mcpl_tool_usage(argv,"Too many arguments.");
 
   if (!nfilenames)
-    return mcpl_tool_usage(argv,"No input file specified");
+    return free(filenames),mcpl_tool_usage(argv,"No input file specified");
 
   if (opt_repair) {
     mcpl_repair(filenames[0]);
+    free(filenames);
     return 0;
   }
 
@@ -4709,22 +4783,24 @@ int mcpl_tool(int argc,char** argv) {
     uint32_t nb = write(STDOUT_FILENO,data,ldata);
     if (nb!=ldata)
       mcpl_error("Problems writing to stdout");
+    free(filenames);
     return 0;
   }
 
   if (opt_justhead&&(opt_num_limit!=-1||opt_num_skip!=-1))
-    return mcpl_tool_usage(argv,"Do not specify -l or -s with --justhead");
+    return free(filenames),mcpl_tool_usage(argv,"Do not specify -l or -s with --justhead");
 
   if (opt_num_limit<0) opt_num_limit = MCPLIMP_TOOL_DEFAULT_NLIMIT;
   if (opt_num_skip<0) opt_num_skip = MCPLIMP_TOOL_DEFAULT_NSKIP;
 
   if (opt_justhead&&opt_nohead)
-    return mcpl_tool_usage(argv,"Do not supply both --justhead and --nohead.");
+    return free(filenames),mcpl_tool_usage(argv,"Do not supply both --justhead and --nohead.");
 
   int parts = 0;
   if (opt_nohead) parts=2;
   else if (opt_justhead) parts=1;
   mcpl_dump(filenames[0],parts,opt_num_skip,opt_num_limit);
+  free(filenames);
   return 0;
 }
 

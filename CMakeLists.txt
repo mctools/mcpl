@@ -1,3 +1,4 @@
+
 ##################################################################################
 #                                                                                #
 # CMake file which can be used to compile and link all code in the MCPL.         #
@@ -26,6 +27,7 @@ set(BUILD_WITHZLIB  ON CACHE STRING "Whether to link with zlib if available.")
 set(BUILD_WITHSSW   ON CACHE STRING "Whether to build the MCPL-SSW converters.")
 set(BUILD_WITHG4    ON CACHE STRING "Whether to build Geant4 plugins if Geant4 is available.")
 set(BUILD_FAT      OFF CACHE STRING "Whether to also build the fat binaries.")
+set(INSTALL_PY      ON CACHE STRING "Whether to also install mcpl python files.")
 
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -68,6 +70,17 @@ if (BUILD_WITHSSW)
   add_executable(mcpl2ssw "${SRC}/mcnpssw/mcpl2ssw_app.c")
   target_link_libraries(mcpl2ssw sswmcpl)
   install(TARGETS mcpl2ssw ssw2mcpl sswmcpl ${INSTDEST})
+endif()
+
+if (INSTALL_PY)
+  install(FILES "${SRC}/python/mcpl.py" DESTINATION python)
+  install(PROGRAMS "${SRC}/python/pymcpltool" DESTINATION bin)
+  if (BUILD_EXAMPLES)
+    install(PROGRAMS "${SRCEX}/pyexample_readmcpl" DESTINATION bin RENAME mcplexample_pyread)
+  endif()
+  if (BUILD_FAT)
+    install(PROGRAMS "${SRCFAT}/pymcpltool" DESTINATION bin RENAME pymcpltool_fat)
+  endif()
 endif()
 
 if (BUILD_EXAMPLES)
@@ -117,7 +130,6 @@ if(ZLIB_FOUND)
 else()
   message("zlib support not enabled - gzipped input files will NOT be directly readable by resulting binaries.")
 endif()
-
 
 if (BUILD_WITHG4)
   find_package(Geant4)

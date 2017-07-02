@@ -8,14 +8,16 @@ CHANGELOG           : Release notes.
 INSTALL             : Build and installation instructions.
 FILES               : This file.
 examples/           : Small standalone examples for reading and writing MCPL
-                      files, either from standalone C applications or through
-                      Geant4 simulations in C++. Also contains a small sample
-                      MCPL file.
+                      files, either from standalone C or python applications or
+                      through Geant4 simulations in C++. Also contains a small
+                      sample MCPL file.
 CMakeLists.txt      : Configuration file for optionally building and installing
                       via CMake (cf. the INSTALL file for instructions).
 src/mcpl/           : Implementation of MCPL itself in C, along with the mcpltool
                       command line application. The file mcpl.h is the public
                       interface of MCPL and mcpl.c is the implementation.
+src/python          : Implementation of MCPL in the pure python module mcpl.py,
+                      along with the pymcpltool command line application.
 src/geant4/         : MCPL hooks for Geant4 in C++, in the form of two classes
                       implementing respectively a G4VSensitiveDetector and a
                       G4VUserPrimaryGeneratorAction.
@@ -42,5 +44,8 @@ src_fat/*_app.c     : Single-file versions of the command-line applications
                       without the need for any external headers or libraries
                       (except math-lib: -lm), and includes both MCPL, zlib and
                       mcnpssw sources internally as needed.
+src_fat/pymcpltool  : The pymcpltool in a single executable file is included
+                      for consistency and convenience, although its contents are
+                      similar to those of src/python/mcpl.py.
 src_fat/Makefile    : Simple makefile for building the "fat" command-line
                       applications (cf. the INSTALL file for instructions).

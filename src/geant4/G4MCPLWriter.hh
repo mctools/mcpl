@@ -16,15 +16,15 @@
 // rather than letting them continue simulation.                                 //
 //                                                                               //
 // If desired, this exact behaviour can be modified in a derived class by        //
-// overriding the ProcessHits method and using the store_prestep(..),            //
-// store_poststep(..) and kill(..) protected methods inside as needed. Likewise, //
+// overriding the ProcessHits method and using the StorePreStep(..),             //
+// StorePostStep(..) and Kill(..) protected methods inside as needed. Likewise,  //
 // custom 32 bit user flags can be calculated for captured particles and stored  //
-// in the output file, by overriding the userFlags and userFlagsDescription      //
+// in the output file, by overriding the UserFlags and UserFlagsDescription      //
 // methods.                                                                      //
 //                                                                               //
 // This file can be freely used as per the terms in the LICENSE file.            //
 //                                                                               //
-// Written by Thomas Kittelmann, 2016.                                           //
+// Written by Thomas Kittelmann, 2016-2017.                                      //
 //                                                                               //
 ///////////////////////////////////////////////////////////////////////////////////
 

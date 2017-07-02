@@ -2,8 +2,9 @@ The official and supported way in which to build all files in the MCPL
 distribution is via CMake, however, depending on the use-case it might be more
 appropriate to simply integrate MCPL directly into the build system of a given
 simulation framework, or to use a quick compilation of one of the "fat" versions
-of the command line tools: mcpltool, ssw2mcpl or mcpl2ssw. The various options
-are discussed below.
+of the command line tools: mcpltool, ssw2mcpl or mcpl2ssw. Finally, the python
+module (mcpl.py) and associated tool (pymcpltool) can be used directly without
+any build step. The various options are discussed below.
 
 
 
@@ -39,6 +40,7 @@ is a quick recipe (using an in-source build for simplicity):
    * -DBUILD_FAT=ON       [whether to build "fat" binaries, default is OFF]
    * -DBUILD_WITHG4=OFF   [whether to build G4 hooks, default is ON]
    * -DBUILD_WITHSSW=OFF  [whether to build SSW hooks, default is ON]
+   * -DINSTALL_PY=OFF     [whether to install python files, default is ON]
 
 3. Perform the build and install in one step with (assuming you are on a
    platform where CMake generates makefiles):
@@ -49,6 +51,18 @@ is a quick recipe (using an in-source build for simplicity):
    you can invoke the mcpltool with (showing usage instructions):
 
    /path/to/mcplinstall/bin/mcpltool --help
+
+   The python mcpl tool can also be used directly, assuming your machine
+   contains a python (both python2 and python3 are supported) installation with
+   the NumPy (numpy.org) module available:
+
+   /path/to/mcplinstall/bin/pymcpltool --help
+
+   If you additionally wish be able to use the MCPL python module in custom
+   python code via "import mcpl", you have to add the python subdirectory to
+   your python path:
+
+   export PYTHONPATH=/path/to/mcplinstall/python:$PYTHONPATH
 
 
 
@@ -109,10 +123,39 @@ source files).
 
 
 
+
+Using just the MCPL python module or pymcpltool
+-----------------------------------------------
+
+If you just want access to the pymcpltool, you can run it directly from the
+tarball via:
+
+  ./src_fat/pymcpltool
+
+Or you can copy it to a more "proper" location on your system and make sure it
+is in your PATH. For example, if you are using the BASH shell, you could copy it
+into a directory called $HOME/bin and put the following line in your .bashrc
+file:
+
+  export PATH=$HOME/bin:$PATH
+
+If you want access to the MCPL python module, and use it via "import mcpl" in
+your python code, you must simply ensure that the file ./src/python/mcpl.py
+resides somewhere in your PYTHONPATH. For example, if you are using the BASH
+shell, you could copy it into a a directory called $HOME/python and put the
+following line in your .bashrc file:
+
+  export PYTHONPATH=$HOME/python:$PYTHONPATH
+
+Alternatively, depending on your python version and settings, it might simply be
+enough to copy mcpl.py into your run directory.
+
+
+
 Use MCPL from an existing environment
 -------------------------------------
 
-Presently (March 2017), MCPL is known to be integrated into McStas, McXtrace and
+Presently (July 2017), MCPL is known to be integrated into McStas, McXtrace and
 the coding framework of the ESS detector group. Users of these environments will
 have already access to MCPL, as it is integrated and distributed along with
 them. For the two former, refer to src/mcstas/README and src/mcxtrace/README
@@ -141,13 +184,18 @@ additional advice and feedback, see https://mctools.github.io/mcpl/contact/).
    the include path for zlib.h and the appropriate link flag (typically
    -lz). Alternatively, zlib support can be enabled by substituting
    src/mcpl/mcpl.c with src_fat/mcpl_fat.c.
-2. Provide access to the mcpltool by compiling either src/mcpl/mcpltool_app.c or
+2. If you or your users need to use the MCPL python module in python code, copy
+   over src/python/mcpl.py into a suitable location in your framework (should be
+   in the PYTHONPATH).
+3. Provide access to the mcpltool by compiling either src/mcpl/mcpltool_app.c or
    src_fat/mcpltool_app_fat.c (the former must be linked with the MCPL library
-   compiled in item #1 above).
-3. If your users use Geant4, you should copy over the two MCPL-G4 interface
+   compiled in item #1 above). Likewise, provide access to the pymcpltool by
+   copying over either src/python/pymcpltool or src_fat/pymcpltool, depending on
+   whether you also provide access to the mcpl.py module.
+4. If your users use Geant4, you should copy over the two MCPL-G4 interface
    classes from src/geant4 and make sure the .cc files get compiled and linked
    with the MCPL library from item #1 above.
-4. If your users use MCNP, or might interact with people who do, you should make
+5. If your users use MCNP, or might interact with people who do, you should make
    sure to provide the mcpl2ssw and ssw2mcpl commands. This can either be done
    by simply copying over src_fat/ssw2mcpl_app_fat.c and
    src_fat/mcpl2ssw_app_fat.c and compiling them directly, or by copying over
@@ -155,7 +203,7 @@ additional advice and feedback, see https://mctools.github.io/mcpl/contact/).
    sswread.c into a library (find instructions regarding flags at the top of the
    two .c files), and subsequently use that library when compiling
    mcpl2ssw_app.c and ssw2mcpl_app.c into the two command line applications.
-5. If applicable, provide your users with pre-written hooks using MCPL, in
+6. If applicable, provide your users with pre-written hooks using MCPL, in
    whatever form is suitable for your framework. For instance, the McStas
    developers added two user-visible McStas components: MCPL_input and
    MCPL_output. Internal code in these two components include and use functions

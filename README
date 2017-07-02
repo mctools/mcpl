@@ -2,7 +2,9 @@ This is a source distribution of MCPL - Monte Carlo Particle Lists.
 
 Included are the core utilities for reading and writing .mcpl files: A binary
 format with lists of particle state information, for interchanging and
-reshooting events between various Monte Carlo simulation applications.
+reshooting events between various Monte Carlo simulation applications. The core
+utilities include both command line tools and programming interfaces for C/C++
+and python.
 
 MCPL I/O hooks for Geant4 (geant4.cern.ch) and MCNP (SSW files) are included in
 this distribution as well. Hooks for McStas (mcstas.org) and McXtrace
@@ -23,10 +25,8 @@ See the file LICENSE for usage conditions.
 A substantial effort went into developing MCPL. If you use it for your work, we
 would appreciate it if you would use the following reference in your work:
 
-
-      [ Paper not yet published, please find draft and instructions ]
-      [ for how to cite on https://mctools.github.io/mcpl/          ]
-
+   T. Kittelmann, et al., Monte Carlo Particle Lists: MCPL, Computer Physics
+   Communications 218, 17-42 (2017), https://doi.org/10.1016/j.cpc.2017.04.012
 
 The latest version of MCPL and further instructions and documentation can be
 found at https://mctools.github.io/mcpl/.

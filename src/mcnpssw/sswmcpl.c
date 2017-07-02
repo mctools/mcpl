@@ -372,7 +372,6 @@ void ssw_writerecord(FILE* outfile, int reclen, size_t lbuf, char* buf)
     if (nb!=sizeof(rl))
       ssw_error("write error");
   }
-  lbuf = 0;//flush record
 }
 
 //Fwd declaration of internal function in sswread.c:
@@ -448,7 +447,6 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
     ssw_error("Problems opening new SSW file");
 
   //Write header:
-
   int nb = fwrite(hdrbuf, 1, ssw_hdrlen, fout);
   if (nb!=ssw_hdrlen)
     ssw_error("Problems writing header to new SSW file");
@@ -703,7 +701,7 @@ int mcpl2ssw_parse_args(int argc,const char **argv, const char** inmcplfile,
   return 0;
 }
 
-int mcpl2ssw_app(int argc,char**argv) {
+int mcpl2ssw_app( int argc, char** argv ) {
 
   const char * inmcplfile;
   const char * refsswfile;

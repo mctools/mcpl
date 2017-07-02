@@ -12,14 +12,14 @@
 // high number of particles will ensure that all particles in the input_file     //
 // will be used.                                                                 //
 //                                                                               //
-// If desired, reimplement and override the useParticle function to ignore       //
-// certain particles in the input file, or override the modifyParticle method to //
+// If desired, reimplement and override the UseParticle function to ignore       //
+// certain particles in the input file, or override the ModifyParticle method to //
 // for instance translate or rotate input coordinates or perform time shifts or  //
 // reweighing.                                                                   //
 //                                                                               //
 // This file can be freely used as per the terms in the LICENSE file.            //
 //                                                                               //
-// Written by Thomas Kittelmann, 2016.                                           //
+// Written by Thomas Kittelmann, 2016-2017.                                      //
 //                                                                               //
 ///////////////////////////////////////////////////////////////////////////////////
 

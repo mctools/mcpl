@@ -1,3 +1,18 @@
+v1.2.0 2017-07-02
+      * Add pure python module for MCPL access, stat collection and
+        plotting. Also add a pure-python mcpltool which provides readonly access
+        to MCPL files, and includes statistics and plotting capabilities. Supports
+        both python2 and python3.
+      * Add --text option to mcpltool/pymcpltool, for producing column-based
+        ascii files from MCPL particle data.
+      * mcpl_repair now detects and treats truncated files properly.
+      * Particle listings no longer show weight columns when file has a
+        universal weight.
+      * Fixed casing of method names in comments in G4MCPLGenerator and G4MCPLWriter.
+      * Sanity check that endianness field in files is indeed "L" or "B".
+      * Minor code fixes caught in static analysis with clang analyze.
+      * Minor fixes in textual output.
+
 v1.1.0 2017-03-29
       * Introduced new and more precise unit vector packing scheme. Consequently,
         MCPL_FORMATVERSION was increased from 2 to 3. Files in the old format

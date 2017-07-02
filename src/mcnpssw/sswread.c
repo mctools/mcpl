@@ -404,7 +404,7 @@ ssw_file_t ssw_open_and_procrec0( const char * filename )
     memcpy(f->vers,r, n=5); r += n;
     memcpy(f->lods,r, n=28); r += n;
     memcpy(f->idtms,r, n=18); r += n;
-    memcpy(f->aids,r, n=80); r += n;
+    memcpy(f->aids,r, n=80);
     f->probs[0]='\0';
   } else if (f->mcnp_type == SSW_MCNPX) {
     assert(lenrec0==163||lenrec0==167);
@@ -415,7 +415,7 @@ ssw_file_t ssw_open_and_procrec0( const char * filename )
     memcpy(f->lods,r, n=28); r += n;
     memcpy(f->idtms,r, n=19); r += n;
     memcpy(f->probs,r, n=19); r += n;
-    memcpy(f->aids,r, n=80); r += n;
+    memcpy(f->aids,r, n=80);
   } else {
     assert(f->mcnp_type == SSW_MCNP5);
     assert(lenrec0==143);
@@ -426,7 +426,7 @@ ssw_file_t ssw_open_and_procrec0( const char * filename )
     memcpy(f->lods,r, n=8); r += n;
     memcpy(f->idtms,r, n=19); r += n;
     memcpy(f->probs,r, n=19); r += n;
-    memcpy(f->aids,r, n=80); r += n;
+    memcpy(f->aids,r, n=80);
   }
 
   char * tmp;
@@ -737,7 +737,7 @@ static int32_t conv_mcnp6_to_pdg_0to36[] = { 0, 2112, 22, 11, 13, -2112, 12, 14,
                                              111, 321, 310, 130, -3122, -3222, -3112, -3322, -3312, -3334,
                                              1000010020, 1000010030, 1000020030, 1000020040, -211, -321 };
 
-int32_t conv_mcnpx_ssw2pdg(int32_t c)
+int32_t conv_mcnpx_ssw2pdg( int32_t c )
 {
   if (c<0)
     return 0;
@@ -769,7 +769,7 @@ int32_t conv_mcnpx_ssw2pdg(int32_t c)
   return 0;
 }
 
-int32_t conv_mcnp6_ssw2pdg(int32_t c)
+int32_t conv_mcnp6_ssw2pdg( int32_t c )
 {
   if (c<0)
     return 0;
@@ -794,7 +794,7 @@ int32_t conv_mcnp6_ssw2pdg(int32_t c)
   return 0;
 }
 
-int32_t conv_mcnpx_pdg2ssw(int32_t c)
+int32_t conv_mcnpx_pdg2ssw( int32_t c )
 {
   int32_t absc = c < 0 ? -c : c;
   if (absc <= 1000020040) {
@@ -824,7 +824,7 @@ int32_t conv_mcnpx_pdg2ssw(int32_t c)
   return 0;
 }
 
-int32_t conv_mcnp6_pdg2ssw(int32_t c)
+int32_t conv_mcnp6_pdg2ssw( int32_t c )
 {
   int32_t absc = c < 0 ? -c : c;
   if (absc <= 1000020040) {
