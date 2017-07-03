@@ -51,8 +51,8 @@ for p in myfile.particle_blocks:
 The code looks similar to the non-block case above, but each field like `p.x` or
 `p.ekin` are now actually [NumPy](http://www.numpy.org/) arrays rather than
 single numbers. By default each block encompasses 10000 particles, but this
-number can be tuned adding the `blocklength` when instantiating a new `MCPLFile`
-object.
+number can be tuned by adding a `blocklength` parameter when instantiating a new
+`MCPLFile` object.
 
 ### Access file-level meta-data
 
