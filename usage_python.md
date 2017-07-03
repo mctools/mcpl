@@ -8,15 +8,13 @@ underconstruction: true
 - two magic lines for toc
 {:toc}
 
-
-**NOTE: The python interface being documented on this page is only available once MCPL 1.2.0 is released (early July 2017)**
-
 If desired, it is possible to access the content of MCPL files from Python code
 by using the `mcpl` Python module described on this page, available since MCPL
-release 1.2.0. Notice that most end-users will likely not have to write code in
+release 1.2.0. Notice that most end-users should not normally have to write code in
 order to use MCPL. Rather, they should be able to use pre-existing converters or
 plugins for their Monte Carlo applications (c.f. [hooks](LOCAL:hooks/)).
 
+**NOTE: The python interface being documented on this page is only available once MCPL 1.2.0 is released (early July 2017)**
 
 ## Using the MCPL Python module
 
@@ -34,9 +32,9 @@ for p in myfile.particles:
 
 Here we access and print out the particle positions (units of cm) and kinetic
 energies (units of MeV). The field names and units are the same as in the
-[C/C++](LOCAL:usage_c/) interface, as can be seen by accessing the integrated
-documentation by adding a line with `help(mcpl.MCPLParticle)`.
-
+[C/C++](LOCAL:usage_c/) interface, and are documented directly via the
+integrated help system of Python.  Thus, one can get a full list of all
+available data fields by adding a line `help(mcpl.MCPLFile)` statement anywhere.
 
 ### Access blocks of particles for efficiency
 
