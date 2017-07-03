@@ -38,6 +38,8 @@ __author__ = _str('Thomas Kittelmann')
 __maintainer__ = _str('Thomas Kittelmann')
 __email__ = _str('thomas.kittelmann@esss.se')
 __all__ = [_str('MCPLFile'),
+           _str('MCPLParticle'),
+           _str('MCPLParticleBlock'),
            _str('MCPLError'),
            _str('dump_file'),
            _str('convert2ascii'),
@@ -163,52 +165,88 @@ class MCPLParticle:
     """Object representing a single particle"""
 
     def __init__(self,block,idx):
-        """Users should never create MCPLParticle objects themselves"""
+        """For internal use only - users should not normally create MCPLParticle objects themselves"""
         self._b = block#can we make it a weak ref, to make sure multiple blocks are not kept around?
         self._i = idx
     @property
-    def position(self): return self._b.position[self._i]
+    def position(self):
+        """position as 3-dimensional array [cm]"""
+        return self._b.position[self._i]
     @property
-    def direction(self): return self._b.direction[self._i]
+    def direction(self):
+        """normalised momentum direction as 3-dimensional array"""
+        return self._b.direction[self._i]
     @property
-    def polarisation(self): return self._b.polarisation[self._i]
+    def polarisation(self):
+        """polarisation vector as 3-dimensional array"""
+        return self._b.polarisation[self._i]
     @property
-    def x(self): return self._b.x[self._i]
+    def x(self):
+        """x-coordinate of position [cm]"""
+        return self._b.x[self._i]
     @property
-    def y(self): return self._b.y[self._i]
+    def y(self):
+        """y-coordinate of position [cm]"""
+        return self._b.y[self._i]
     @property
-    def z(self): return self._b.z[self._i]
+    def z(self):
+        """z-coordinate of position [cm]"""
+        return self._b.z[self._i]
     @property
-    def ux(self): return self._b.ux[self._i]
+    def ux(self):
+        """x-coordinate of normalised momentum direction"""
+        return self._b.ux[self._i]
     @property
-    def uy(self): return self._b.uy[self._i]
+    def uy(self):
+        """y-coordinate of normalised momentum direction"""
+        return self._b.uy[self._i]
     @property
-    def uz(self): return self._b.uz[self._i]
+    def uz(self):
+        """z-coordinate of normalised momentum direction"""
+        return self._b.uz[self._i]
     @property
-    def polx(self): return self._b.polx[self._i]
+    def polx(self):
+        """x-coordinate of polarisation vector"""
+        return self._b.polx[self._i]
     @property
-    def poly(self): return self._b.poly[self._i]
+    def poly(self):
+        """y-coordinate of polarisation vector"""
+        return self._b.poly[self._i]
     @property
-    def polz(self): return self._b.polz[self._i]
+    def polz(self):
+        """z-coordinate of polarisation vector"""
+        return self._b.polz[self._i]
     @property
-    def ekin(self): return self._b.ekin[self._i]
+    def ekin(self):
+        """kinetic energy [MeV]"""
+        return self._b.ekin[self._i]
     @property
-    def time(self): return self._b.time[self._i]
+    def time(self):
+        """time-stamp [millisecond]"""
+        return self._b.time[self._i]
     @property
     def weight(self):
+        """weight or intensity"""
         return self._b.weight[self._i]
     @property
-    def userflags(self): return self._b.userflags[self._i]
+    def userflags(self):
+        """custom per-particle flags"""
+        return self._b.userflags[self._i]
     @property
-    def pdgcode(self): return self._b.pdgcode[self._i]
+    def pdgcode(self):
+        """MC particle number from the Particle Data Group (2112=neutron, 22=gamma, ...)"""
+        return self._b.pdgcode[self._i]
     @property
-    def file_index(self): return self._b._offset + self._i
+    def file_index(self):
+        """Particle position in file (counting from 0)"""
+        return self._b._offset + self._i
 
 class MCPLParticleBlock:
-    """Object representing a block of particle"""
+    """Object representing a block of particle. Fields are arrays rather than single
+    numbers, but otherwise have the same meaning as on the MCPLParticle class."""
 
     def __init__(self,opt_polarisation,opt_userflags,opt_globalw,opt_globalpdg,fmtversion):
-        """Users should never create MCPLParticleBlock objects themselves"""
+        """For internal use only - users should not normally create MCPLParticle objects themselves"""
         #empty block (set offset to max int to ensure d<0 in contains_ipos and get_by_global:
         self._offset = 9223372036854775807
         #non-constant columns (never the same in all blocks):
@@ -279,6 +317,7 @@ class MCPLParticleBlock:
 
     @property
     def file_offset(self):
+        """Particle position in file of first particle in block (counting from 0)"""
         return self._offset
 
     @property
