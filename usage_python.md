@@ -100,10 +100,10 @@ file it is found.
 
 ### Just download a single file and use it...
 
-Naturally, one can simply download the {% include linkfile.html
-file="src/python/mcpl.py" download=true %} file and place it anywhere in the
-PYTHONPATH, such as the directory from which you plan to run your Python
-scripts.
+Naturally, one can simply use the following link to download and save the file:
+{% include linkfile.html file="src/python/mcpl.py" download=true %}, and place
+it anywhere in the PYTHONPATH, such as the directory from which you plan to run
+your Python scripts.
 
 ### ... or use it as part of the MCPL distribution
 
