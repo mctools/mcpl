@@ -23,7 +23,7 @@ plugins for their Monte Carlo applications (c.f. [hooks](LOCAL:hooks/)).
 ### Opening MCPL files and accessing particle contents
 
 The simplest usage, opening an MCPL file and accessing the particle contents in
-order, is very simple:
+order, is straightforward:
 
 ```python
 import mcpl
@@ -67,7 +67,7 @@ myfile = mcpl.MCPLFile("myfile.mcpl")
 print( 'Number of particles in file: %i' % myfile.nparticles )
 print( 'File created by: "%s"' % myfile.sourcename )
 if myfile.opt_polarisation:
-    print( 'File contains polarisation information')
+    print( 'File contains polarisation information' )
 for c in myfile.comments:
     print( 'File has comment: "%s"' % c )
 ```
@@ -79,7 +79,7 @@ documentation by adding a line with `help(mcpl.MCPLFile)`.
 
 Python support for MCPL was added after the release of the {% include
 linkpaper.html %}, so currently the most comprehensive documentation for the API
-provided by the `mcpl` Python module is to be found using Pythons integrated
+provided by the `mcpl` Python module is to be found using Python's integrated
 `help()` functionality, for instance by running one of the following commands in
 a terminal:
 
@@ -97,10 +97,10 @@ be available on the system.
 
 ### Just download a single file and use it...
 
-Alternatively, one can simply download the {% include linkfile.html
-file="src/python/mcpl.py" download=true %} file and place it anywhere in the
-PYTHONPATH, such as the directory from which you plan to run your Python
-scripts.
+As the entire MCPL Python module is implemented in a single pure-python file,
+one can simply download the {% include linkfile.html file="src/python/mcpl.py"
+download=true %} file and place it anywhere in the PYTHONPATH, such as the
+directory from which you plan to run your Python scripts.
 
 ### ... or use it as part of the MCPL distribution
 The `mcpl` Python module is part of the MCPL distribution starting with release
