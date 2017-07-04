@@ -40,8 +40,6 @@ ul#markdown-toc::before{
   color: #666;
 }
 
-
-
 ul#mcplnewsbox {
   border-radius: 5px 5px 5px 5px;
   -moz-border-radius: 5px 5px 5px 5px;
@@ -59,14 +57,12 @@ ul#mcplnewsbox {
     list-style-type: square;
          list-style-position: inside;
   margin-bottom: 0;
-  color: #666;
 }
 
 ul#mcplnewsbox::before{
   content:"Latest news:";
   font-size:100%;
   font-weight:bold;
-  color: #666;
 }
 
 
