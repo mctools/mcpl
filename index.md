@@ -21,9 +21,13 @@ both quick recipes and updated information where needed. You can [download](LOCA
 and try out the MCPL distribution right away, or use the
 menu above to navigate to more information.
 
-**New July 2017**: MCPL v1.2.0 released, bringing native [python](LOCAL:usage_python) support to MCPL!
+**LATEST NEWS:**
+MCPL [v1.2.0](https://github.com/mctools/mcpl/releases/tag/v1.2.0) released July
+2017, bringing native [python](LOCAL:usage_python) support and
+[pymcpltool](LOCAL:usage_cmdline) to MCPL!
 
 <br/>
+{: style="font-size: 20%;" }
 
 _This work was supported in part by the European Union's Horizon 2020 research
 and innovation programme under grant agreement No 676548 (the BrightnESS
