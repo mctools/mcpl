@@ -30,4 +30,4 @@ menu above to navigate to more information.
   [doi:10.1016/j.cpc.2017.04.012](https://doi.org/10.1016/j.cpc.2017.04.012).
 * March 29, 2017:
   [v1.1.0](https://github.com/mctools/mcpl/releases/tag/v1.1.0) released.
-{:.mcplnewsbox}
+{:#mcplnewsbox}
