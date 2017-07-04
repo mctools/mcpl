@@ -24,7 +24,7 @@ menu above to navigate to more information.
 * July 4, 2017:
   [v1.2.0](https://github.com/mctools/mcpl/releases/tag/v1.2.0)
   released, bringing native [python](LOCAL:usage_python) support and
-  [pymcpltool](LOCAL:usage_cmdline#extract-statistics-from-a-file) to MCPL!_
+  [pymcpltool](LOCAL:usage_cmdline#extract-statistics-from-a-file) to MCPL!
 * April 20, 2017: The MCPL paper (describing MCPL v1.1.0) was accepted for publication in Computer
   Physics Communications with full Open Access:
   [doi:10.1016/j.cpc.2017.04.012](https://doi.org/10.1016/j.cpc.2017.04.012).

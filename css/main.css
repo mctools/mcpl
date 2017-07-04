@@ -55,12 +55,6 @@ ul#mcplnewsbox {
   background: #f2f2f2;
 }
 
-@media screen and (min-width: 620px) {
-    ul#mcplnewsbox {
-        float: left;
-    }
-}
-
 #mcplnewsbox * {
     list-style-type: square;
          list-style-position: inside;
