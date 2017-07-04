@@ -2,7 +2,6 @@
 title: Using MCPL from Python
 navtitle: Python
 weight: 5
-underconstruction: true
 ---
 
 - two magic lines for toc
@@ -13,8 +12,6 @@ by using the `mcpl.py` Python module described on this page, available since MCP
 release 1.2.0. Notice that most end-users should not normally have to write code in
 order to use MCPL. Rather, they should be able to use pre-existing converters or
 plugins for their Monte Carlo applications (c.f. [hooks](LOCAL:hooks/)).
-
-**NOTE: The python interface being documented on this page is only available once MCPL 1.2.0 is released (early July 2017)**
 
 ## Using the MCPL Python module
 
@@ -39,7 +36,7 @@ available data fields by adding a `help(mcpl.MCPLFile)` statement anywhere.
 ### Access blocks of particles for efficiency
 
 For large files, it can be much more efficient to load a large number of
-particles as once, using instead the `particle_blocks` interface:
+particles at once, using instead the `particle_blocks` interface:
 
 ```python
 import mcpl
@@ -50,8 +47,8 @@ for p in myfile.particle_blocks:
 
 The code looks similar to the non-block case above, but each field like `p.x` or
 `p.ekin` are now actually [NumPy](http://www.numpy.org/) arrays rather than
-single numbers. By default each block encompasses 10000 particles, but this
-number can be tuned by adding a `blocklength` parameter when instantiating a new
+single numbers. By default each block encompasses 10000 particles, a number
+which can be tuned by adding a `blocklength` parameter when instantiating a new
 `MCPLFile` object.
 
 ### Access file-level meta-data

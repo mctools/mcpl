@@ -8,8 +8,6 @@ weight: 20
 
 The MCPL distribution includes a handy command-line tool, `mcpltool`, which can be used to either inspect MCPL files, or to carry out a limited number of operations on them. Since release 1.2, it also includes a second tool, `pymcpltool`, which provides additional inspection features in the form of plots and statistics display.
 
-**NOTE: The pymcpltool mentioned on this page is only available once MCPL 1.2.0 is released (early July 2017)**
-
 This page includes a few examples of how the command-line tools can be used, but users are referred to
 {% include linkpaper.html subsection=2.3 %} for more information.
 
@@ -232,6 +230,19 @@ containing the plots by adding instead the `--pdf` flag:
 
 ```shell
 pymcpltool --stats --pdf example.mcpl
+```
+
+### Extract file contents to text file
+
+Using the `mcpltool` or `pymcpltool` with the `--text` flag (available since
+MCPL version 1.2.0), it is possible to extract particle data from MCPL files
+into simple text (ASCII) files. This might be useful for compatibility with
+software expecting data in column-based text files, but the resulting files are
+obviously significantly larger and less efficient to use than the original MCPL
+files:
+
+```shell
+mcpltool --text example.mcpl out.txt
 ```
 
 ## Quick and dirty ways to get the mcpltool

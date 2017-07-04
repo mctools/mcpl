@@ -21,6 +21,10 @@ both quick recipes and updated information where needed. You can [download](LOCA
 and try out the MCPL distribution right away, or use the
 menu above to navigate to more information.
 
+**New July 2017**: MCPL v1.2.0 released, bringing native [python](LOCAL:usage_python) support to MCPL!
+
+<br/>
+
 _This work was supported in part by the European Union's Horizon 2020 research
 and innovation programme under grant agreement No 676548 (the BrightnESS
 project) and under grant agreement No 654000 (the SINE2020 project)._
