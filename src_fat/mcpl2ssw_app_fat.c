@@ -65,7 +65,7 @@
 #  define __STDC_FORMAT_MACROS
 #endif
 #ifndef _POSIX_C_SOURCE
-#  define _POSIX_C_SOURCE 1
+#  define _POSIX_C_SOURCE 200809L
 #endif
 #ifndef _ISOC99_SOURCE
 #  define _ISOC99_SOURCE 1
@@ -117,9 +117,9 @@
 
 #define MCPL_VERSION_MAJOR 1
 #define MCPL_VERSION_MINOR 2
-#define MCPL_VERSION_PATCH 0
-#define MCPL_VERSION   10200 /* (10000*MAJOR+100*MINOR+PATCH)   */
-#define MCPL_VERSION_STR "1.2.0"
+#define MCPL_VERSION_PATCH 1
+#define MCPL_VERSION   10201 /* (10000*MAJOR+100*MINOR+PATCH)   */
+#define MCPL_VERSION_STR "1.2.1"
 #define MCPL_FORMATVERSION 3 /* Format version of written files */
 
 #ifdef __cplusplus
@@ -435,7 +435,13 @@ int mcpl2ssw_app(int argc,char** argv);
 #  define __STDC_FORMAT_MACROS
 #endif
 #ifndef _POSIX_C_SOURCE
-#  define _POSIX_C_SOURCE 1
+#  define _POSIX_C_SOURCE 200809L
+#endif
+#ifndef _ISOC99_SOURCE
+#  define _ISOC99_SOURCE 1
+#endif
+#ifndef _C99_SOURCE
+#  define _C99_SOURCE 1
 #endif
 #include <inttypes.h>
 #include <stdio.h>
@@ -5070,7 +5076,7 @@ int mcpl_tool(int argc,char** argv) {
     uint32_t ldata;
     const char * data;
     if (!mcpl_hdr_blob(mcplfile, blobkey, &ldata, &data))
-      return 1;//mcpl_tool_usage(argv,"Too many arguments.");
+      return 1;
 #ifdef MCPL_THIS_IS_MS
     setmode(STDOUT_FILENO, O_BINARY);
 #endif
@@ -8615,7 +8621,7 @@ int flush;
             }
             if (state->flags & 0x0200) CRC2(state->check, hold);
             INITBITS();
-            state->mode = EXLEN;
+            state->mode = EXLEN;/* FALLTHRU *//*FALLTHRU added by TK for gcc 7.2.1 */
         case EXLEN:
             if (state->flags & 0x0400) {
                 NEEDBITS(16);
@@ -8627,7 +8633,7 @@ int flush;
             }
             else if (state->head != Z_NULL)
                 state->head->extra = Z_NULL;
-            state->mode = EXTRA;
+            state->mode = EXTRA;/* FALLTHRU *//*FALLTHRU added by TK for gcc 7.2.1 */
         case EXTRA:
             if (state->flags & 0x0400) {
                 copy = state->length;
@@ -8649,7 +8655,7 @@ int flush;
                 if (state->length) goto inf_leave;
             }
             state->length = 0;
-            state->mode = NAME;
+            state->mode = NAME;/* FALLTHRU *//*FALLTHRU added by TK for gcc 7.2.1 */
         case NAME:
             if (state->flags & 0x0800) {
                 if (have == 0) goto inf_leave;
@@ -8670,7 +8676,7 @@ int flush;
             else if (state->head != Z_NULL)
                 state->head->name = Z_NULL;
             state->length = 0;
-            state->mode = COMMENT;
+            state->mode = COMMENT;/* FALLTHRU *//*FALLTHRU added by TK for gcc 7.2.1 */
         case COMMENT:
             if (state->flags & 0x1000) {
                 if (have == 0) goto inf_leave;
@@ -8690,7 +8696,7 @@ int flush;
             }
             else if (state->head != Z_NULL)
                 state->head->comment = Z_NULL;
-            state->mode = HCRC;
+            state->mode = HCRC;/* FALLTHRU *//*FALLTHRU added by TK for gcc 7.2.1 */
         case HCRC:
             if (state->flags & 0x0200) {
                 NEEDBITS(16);
@@ -8713,16 +8719,16 @@ int flush;
             NEEDBITS(32);
             strm->adler = state->check = ZSWAP32(hold);
             INITBITS();
-            state->mode = DICT;
+            state->mode = DICT;/* FALLTHRU *//*FALLTHRU added by TK for gcc 7.2.1 */
         case DICT:
             if (state->havedict == 0) {
                 RESTORE();
                 return Z_NEED_DICT;
             }
             strm->adler = state->check = adler32(0L, Z_NULL, 0);
-            state->mode = TYPE;
+            state->mode = TYPE;/* FALLTHRU *//*FALLTHRU added by TK for gcc 7.2.1 */
         case TYPE:
-            if (flush == Z_BLOCK || flush == Z_TREES) goto inf_leave;
+            if (flush == Z_BLOCK || flush == Z_TREES) goto inf_leave;/* FALLTHRU *//*FALLTHRU added by TK for gcc 7.2.1 */
         case TYPEDO:
             if (state->last) {
                 BYTEBITS();
@@ -8772,9 +8778,9 @@ int flush;
                     state->length));
             INITBITS();
             state->mode = COPY_;
-            if (flush == Z_TREES) goto inf_leave;
+            if (flush == Z_TREES) goto inf_leave;/* FALLTHRU *//*FALLTHRU added by TK for gcc 7.2.1 */
         case COPY_:
-            state->mode = COPY;
+            state->mode = COPY;/* FALLTHRU *//*FALLTHRU added by TK for gcc 7.2.1 */
         case COPY:
             copy = state->length;
             if (copy) {
@@ -8913,9 +8919,9 @@ int flush;
             }
             Tracev((stderr, "inflate:       codes ok\n"));
             state->mode = LEN_;
-            if (flush == Z_TREES) goto inf_leave;
+            if (flush == Z_TREES) goto inf_leave;/* FALLTHRU *//*FALLTHRU added by TK for gcc 7.2.1 */
         case LEN_:
-            state->mode = LEN;
+            state->mode = LEN;/* FALLTHRU *//*FALLTHRU added by TK for gcc 7.2.1 */
         case LEN:
             if (have >= 6 && left >= 258) {
                 RESTORE();
@@ -8964,7 +8970,7 @@ int flush;
                 break;
             }
             state->extra = (unsigned)(here.op) & 15;
-            state->mode = LENEXT;
+            state->mode = LENEXT;/* FALLTHRU *//*FALLTHRU added by TK for gcc 7.2.1 */
         case LENEXT:
             if (state->extra) {
                 NEEDBITS(state->extra);
@@ -8974,7 +8980,7 @@ int flush;
             }
             Tracevv((stderr, "inflate:         length %u\n", state->length));
             state->was = state->length;
-            state->mode = DIST;
+            state->mode = DIST;/* FALLTHRU *//*FALLTHRU added by TK for gcc 7.2.1 */
         case DIST:
             for (;;) {
                 here = state->distcode[BITS(state->distbits)];
@@ -9001,7 +9007,7 @@ int flush;
             }
             state->offset = (unsigned)here.val;
             state->extra = (unsigned)(here.op) & 15;
-            state->mode = DISTEXT;
+            state->mode = DISTEXT;/* FALLTHRU *//*FALLTHRU added by TK for gcc 7.2.1 */
         case DISTEXT:
             if (state->extra) {
                 NEEDBITS(state->extra);
@@ -9017,7 +9023,7 @@ int flush;
             }
 #endif
             Tracevv((stderr, "inflate:         distance %u\n", state->offset));
-            state->mode = MATCH;
+            state->mode = MATCH;/* FALLTHRU *//*FALLTHRU added by TK for gcc 7.2.1 */
         case MATCH:
             if (left == 0) goto inf_leave;
             copy = out - left;
@@ -9092,7 +9098,7 @@ int flush;
                 Tracev((stderr, "inflate:   check matches trailer\n"));
             }
 #ifdef GUNZIP
-            state->mode = LENGTH;
+            state->mode = LENGTH;/* FALLTHRU *//*FALLTHRU added by TK for gcc 7.2.1 */
         case LENGTH:
             if (state->wrap && state->flags) {
                 NEEDBITS(32);
@@ -9105,7 +9111,7 @@ int flush;
                 Tracev((stderr, "inflate:   length matches trailer\n"));
             }
 #endif
-            state->mode = DONE;
+            state->mode = DONE;/* FALLTHRU *//*FALLTHRU added by TK for gcc 7.2.1 */
         case DONE:
             ret = Z_STREAM_END;
             goto inf_leave;
@@ -17009,11 +17015,13 @@ int mcpl2ssw_app( int argc, char** argv ) {
                                    &nparticles_limit, &surface_id );
   if (parse==-1)// --help
     return 0;
+
   if (parse)// parse error
     return parse;
 
   if (mcpl2ssw(inmcplfile, outsswfile, refsswfile,surface_id, nparticles_limit))
     return 0;
+
   return 1;
 }
 

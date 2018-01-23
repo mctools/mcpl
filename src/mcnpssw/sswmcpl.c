@@ -713,10 +713,12 @@ int mcpl2ssw_app( int argc, char** argv ) {
                                    &nparticles_limit, &surface_id );
   if (parse==-1)// --help
     return 0;
+
   if (parse)// parse error
     return parse;
 
   if (mcpl2ssw(inmcplfile, outsswfile, refsswfile,surface_id, nparticles_limit))
     return 0;
+
   return 1;
 }

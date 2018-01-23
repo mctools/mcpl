@@ -1,3 +1,10 @@
+v1.2.1 2018-01-23
+      * Correct _POSIX_C_SOURCE to address FreeBSD compilation (github issue #33).
+      * mcpl.py: Work around issues in numpy v1.14 to fix MCPLParticleBlock.position() and
+        MCPLParticleBlock.polarisation() methods (github issue #34).
+      * CMakeLists.txt: Always use absolute rpath (for OSX).
+      * Fix gcc7 compilation.
+
 v1.2.0 2017-07-02
       * Add pure python module for MCPL access, stat collection and
         plotting. Also add a pure-python mcpltool which provides readonly access

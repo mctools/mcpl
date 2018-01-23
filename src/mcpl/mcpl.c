@@ -66,7 +66,13 @@
 #  define __STDC_FORMAT_MACROS
 #endif
 #ifndef _POSIX_C_SOURCE
-#  define _POSIX_C_SOURCE 1
+#  define _POSIX_C_SOURCE 200809L
+#endif
+#ifndef _ISOC99_SOURCE
+#  define _ISOC99_SOURCE 1
+#endif
+#ifndef _C99_SOURCE
+#  define _C99_SOURCE 1
 #endif
 #include <inttypes.h>
 #include <stdio.h>
@@ -2354,7 +2360,7 @@ int mcpl_tool(int argc,char** argv) {
     uint32_t ldata;
     const char * data;
     if (!mcpl_hdr_blob(mcplfile, blobkey, &ldata, &data))
-      return 1;//mcpl_tool_usage(argv,"Too many arguments.");
+      return 1;
 #ifdef MCPL_THIS_IS_MS
     setmode(STDOUT_FILENO, O_BINARY);
 #endif

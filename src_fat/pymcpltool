@@ -32,7 +32,7 @@ _str = lambda s : s.encode('ascii') if (hasattr(s,'encode') and bytes==str) else
 
 __license__ = _str('CC0 1.0 Universal')
 __copyright__ = _str('Copyright 2017')
-__version__ = _str('1.2.0')
+__version__ = _str('1.2.1')
 __status__ = _str('Production')
 __author__ = _str('Thomas Kittelmann')
 __maintainer__ = _str('Thomas Kittelmann')
@@ -264,6 +264,7 @@ class MCPLParticleBlock:
         self._view_pos = None
         self._view_pol = None
         self._view_dir = None
+        self._pos_cache,self._pol_cache = None,None#extra ndarrays for numpy 1.14 issue
 
     def _set_data(self,data,file_offset):
         #always present, but must unpack:
@@ -355,14 +356,32 @@ class MCPLParticleBlock:
     def position(self):
         if self._view_pos is None:
             l=self._data[['x','y','z']]
-            self._view_pos = l.view((l.dtype[0],3))
+            try:
+                self._view_pos = l.view((l.dtype[0],3))
+            except ValueError:
+                #Attempt to work around Numpy bug https://github.com/numpy/numpy/issues/10387 introduced in v1.14:
+                if self._pos_cache is None:
+                    self._pos_cache = np.empty(dtype=l.dtype[0],shape=(len(l),3))
+                self._pos_cache[:,0] = l['x']
+                self._pos_cache[:,1] = l['y']
+                self._pos_cache[:,2] = l['z']
+                self._view_pos = self._pos_cache
         return self._view_pos
 
     @property
     def polarisation(self):
         if self._view_pol is None:
             l=self._data[['polx','poly','polz']]
-            self._view_pol = l.view((l.dtype[0],3))
+            try:
+                self._view_pol = l.view((l.dtype[0],3))
+            except ValueError:
+                #Attempt to work around Numpy bug https://github.com/numpy/numpy/issues/10387 introduced in v1.14:
+                if self._pol_cache is None:
+                    self._pol_cache = np.empty(dtype=l.dtype[0],shape=(len(l),3))
+                self._pol_cache[:,0] = l['polx']
+                self._pol_cache[:,1] = l['poly']
+                self._pol_cache[:,2] = l['polz']
+                self._view_pol = self._pol_cache
         return self._view_pol
 
     @property
@@ -514,7 +533,7 @@ class MCPLFile:
         assert(self._blocklength>0)
         self._iblock = 0
         self._nblocks = self.nparticles // self._blocklength + (1 if self.nparticles%self._blocklength else 0)
-        #reuse same block object for whole file (to reuse fixed columns)
+        #reuse same block object for whole file (to reuse fixed columns and internal caches)
         self._currentblock = MCPLParticleBlock(self.opt_polarisation,self.opt_userflags,
                                                self.opt_universalweight,self.opt_universalpdgcode,self.version)
 
