@@ -21,6 +21,9 @@ both quick recipes and updated information where needed. You can [download](LOCA
 and try out the MCPL distribution right away, or use the
 menu above to navigate to more information.
 
+* January 23, 2018:
+  [v1.2.1](https://github.com/mctools/mcpl/releases/tag/v1.2.1)
+  released. This is a pure maintenance release.
 * July 4, 2017:
   [v1.2.0](https://github.com/mctools/mcpl/releases/tag/v1.2.0)
   released, bringing native [python](LOCAL:usage_python) support and
