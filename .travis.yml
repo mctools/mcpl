@@ -25,8 +25,15 @@ compiler:
     - gcc
     - clang
 
+before_install:
+    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then rvm get stable --auto-dotfiles; fi
+
 before_script:
     - set -e
+    - cmake --version
+    - python --version
+    - python -c 'import numpy' 2>/dev/null || pip install numpy
+    - python -c 'import numpy; print numpy.__version__'
     - mkdir build installdir rundir
     - cd build
     - cmake .. -DBUILD_FAT=ON -DCMAKE_BUILD_TYPE=${BUILD} -DCMAKE_INSTALL_PREFIX=../installdir/
