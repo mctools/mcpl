@@ -1,3 +1,9 @@
+v1.2.2 2018-03-07
+      * mcpl.py: Fix issues in MCPLParticleBlock.position() and
+        MCPLParticleBlock.polarisation() methods which could result in
+        exceptions or warnings being emitted for certain input files or for
+        certain versions of python and numpy.
+
 v1.2.1 2018-01-23
       * Correct _POSIX_C_SOURCE to address FreeBSD compilation (github issue #33).
       * mcpl.py: Work around issues in numpy v1.14 to fix MCPLParticleBlock.position() and

@@ -28,11 +28,11 @@ agreement No 676548 (the BrightnESS project)
 
 from __future__ import division, print_function, absolute_import,unicode_literals#enable py3 behaviour in py2.6+
 
-_str = lambda s : s.encode('ascii') if (hasattr(s,'encode') and bytes==str) else s#prevent ugly help in py2
+_str = lambda s : s.encode('ascii') if (hasattr(s,'encode') and bytes==str) else s
 
 __license__ = _str('CC0 1.0 Universal')
 __copyright__ = _str('Copyright 2017')
-__version__ = _str('1.2.1')
+__version__ = _str('1.2.2')
 __status__ = _str('Production')
 __author__ = _str('Thomas Kittelmann')
 __maintainer__ = _str('Thomas Kittelmann')
@@ -355,33 +355,13 @@ class MCPLParticleBlock:
     @property
     def position(self):
         if self._view_pos is None:
-            l=self._data[['x','y','z']]
-            try:
-                self._view_pos = l.view((l.dtype[0],3))
-            except ValueError:
-                #Attempt to work around Numpy bug https://github.com/numpy/numpy/issues/10387 introduced in v1.14:
-                if self._pos_cache is None:
-                    self._pos_cache = np.empty(dtype=l.dtype[0],shape=(len(l),3))
-                self._pos_cache[:,0] = l['x']
-                self._pos_cache[:,1] = l['y']
-                self._pos_cache[:,2] = l['z']
-                self._view_pos = self._pos_cache
+            self._view_pos = np_stack((self.x,self.y,self.z),axis=1)
         return self._view_pos
 
     @property
     def polarisation(self):
         if self._view_pol is None:
-            l=self._data[['polx','poly','polz']]
-            try:
-                self._view_pol = l.view((l.dtype[0],3))
-            except ValueError:
-                #Attempt to work around Numpy bug https://github.com/numpy/numpy/issues/10387 introduced in v1.14:
-                if self._pol_cache is None:
-                    self._pol_cache = np.empty(dtype=l.dtype[0],shape=(len(l),3))
-                self._pol_cache[:,0] = l['polx']
-                self._pol_cache[:,1] = l['poly']
-                self._pol_cache[:,2] = l['polz']
-                self._view_pol = self._pol_cache
+            self._view_pol = np_stack((self.polx,self.poly,self.polz),axis=1)
         return self._view_pol
 
     @property
