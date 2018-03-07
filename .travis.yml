@@ -20,6 +20,8 @@ addons:
       - cmake-data
       - python-numpy
       - python-matplotlib
+      - python3-numpy
+      - python3-matplotlib
 
 compiler:
     - gcc
@@ -34,6 +36,10 @@ before_script:
     - python --version
     - python -c 'import numpy' 2>/dev/null || pip install numpy
     - python -c 'import numpy; print numpy.__version__'
+    - which python3 || { echo "WARNING: python3 not found so python3 commands will do nothing!!";alias python3=true; }
+    - python3 --version
+    - python3 -c 'import numpy' 2>/dev/null || pip install numpy
+    - python3 -c 'import numpy; print numpy.__version__'
     - mkdir build installdir rundir
     - cd build
     - cmake .. -DBUILD_FAT=ON -DCMAKE_BUILD_TYPE=${BUILD} -DCMAKE_INSTALL_PREFIX=../installdir/
@@ -53,8 +59,13 @@ script:
     - ../installdir/bin/mcplexample_pyread myfile.mcpl.gz
     - ../installdir/bin/pymcpltool myfile.mcpl.gz
     - ../installdir/bin/pymcpltool --stats myfile.mcpl.gz
-    - python -c 'import matplotlib' 2>/dev/null || pip install matplotlib
+    - python -c 'import matplotlib' 2>/dev/null || python -mpip install matplotlib
     - ../installdir/bin/pymcpltool --stats --pdf myfile.mcpl.gz
+    - python3 ../installdir/bin/mcplexample_pyread myfile.mcpl.gz
+    - python3 ../installdir/bin/pymcpltool myfile.mcpl.gz
+    - python3 ../installdir/bin/pymcpltool --stats myfile.mcpl.gz
+    - python3 -c 'import matplotlib' 2>/dev/null || python3 -mpip install matplotlib
+    - python3 ../installdir/bin/pymcpltool --stats --pdf myfile.mcpl.gz
     - set +e
 
 notifications:
