@@ -65,6 +65,7 @@ script:
     - python3 ../installdir/bin/pymcpltool myfile.mcpl.gz
     - python3 ../installdir/bin/pymcpltool --stats myfile.mcpl.gz
     - python3 -c 'import matplotlib' 2>/dev/null || python3 -mpip install matplotlib
+    - rm -f mcpl.pdf
     - python3 ../installdir/bin/pymcpltool --stats --pdf myfile.mcpl.gz
     - set +e
 
