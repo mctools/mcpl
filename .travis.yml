@@ -39,7 +39,7 @@ before_script:
     - if [[ x$(which python3 >& /dev/null&&echo 1||echo 0) == x0 ]]; then echo 'WARNING python3 not found so python3 commands will do nothing!'; alias python3=true; fi
     - python3 --version
     - python3 -c 'import numpy' 2>/dev/null || pip install numpy
-    - python3 -c 'import numpy; print numpy.__version__'
+    - python3 -c 'import numpy; print(numpy.__version__)'
     - mkdir build installdir rundir
     - cd build
     - cmake .. -DBUILD_FAT=ON -DCMAKE_BUILD_TYPE=${BUILD} -DCMAKE_INSTALL_PREFIX=../installdir/
