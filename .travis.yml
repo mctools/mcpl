@@ -36,7 +36,7 @@ before_script:
     - python --version
     - python -c 'import numpy' 2>/dev/null || pip install numpy
     - python -c 'import numpy; print numpy.__version__'
-    - if [[ x$(which python3 >& /dev/null&&echo 1||echo 0) == x0 ]]; then echo 'WARNING python3 not found so python3 commands will do nothing!'; alias python3=true; fi
+    - if [[ x$(which python3 >& /dev/null&&echo 1||echo 0) == x0 ]]; then echo 'WARNING python3 not found so python3 commands will do nothing!'; mkdir fakepy3; echo true > fakepy3/python3; chmod +x fakepy3/python3; export PATH="$PWD/fakepy3:$PATH"; fi
     - python3 --version
     - python3 -c 'import numpy' 2>/dev/null || pip install numpy
     - python3 -c 'import numpy; print(numpy.__version__)'
