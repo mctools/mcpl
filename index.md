@@ -21,6 +21,9 @@ both quick recipes and updated information where needed. You can [download](LOCA
 and try out the MCPL distribution right away, or use the
 menu above to navigate to more information.
 
+* September 26, 2018:
+  [v1.2.3](https://github.com/mctools/mcpl/releases/tag/v1.2.3)
+  released. This release brings support for MCNP 6.2.
 * March 7, 2018:
   [v1.2.2](https://github.com/mctools/mcpl/releases/tag/v1.2.2)
   released. This is a pure maintenance release.
