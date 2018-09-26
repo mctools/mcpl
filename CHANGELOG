@@ -1,3 +1,6 @@
+v1.2.3 2018-09-26
+      * ssw2mcpl: Support MCNP 6.2.
+
 v1.2.2 2018-03-07
       * mcpl.py: Fix issues in MCPLParticleBlock.position() and
         MCPLParticleBlock.polarisation() methods which could result in

@@ -32,7 +32,7 @@ _str = lambda s : s.encode('ascii') if (hasattr(s,'encode') and bytes==str) else
 
 __license__ = _str('CC0 1.0 Universal')
 __copyright__ = _str('Copyright 2017')
-__version__ = _str('1.2.2')
+__version__ = _str('1.2.3')
 __status__ = _str('Production')
 __author__ = _str('Thomas Kittelmann')
 __maintainer__ = _str('Thomas Kittelmann')

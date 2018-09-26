@@ -72,7 +72,7 @@ typedef struct {
   char lods[29];  // Date
   char idtms[20]; // Machine-Designator
   char probs[20]; // Problem-ID
-  char aids[81];  // Creation-Run Problem-Title-Card
+  char aids[129];  // Creation-Run Problem-Title-Card
   int32_t np1;
   int32_t nrss;
   int32_t njsw;
@@ -298,8 +298,8 @@ ssw_file_t ssw_open_and_procrec0( const char * filename )
   //
   // 1) 4B[163|167] + KODS : MCNPX2.7.0 with 32bit reclen
   // 2) 8B[163|167] + KODS : MCNPX2.7.0 with 64bit reclen
-  // 3) 16B +4B[143] + KODS : MCNP6 with 32bit reclen.
-  // 4) 24B +8B[143] + KODS : MCNP6 with 64bit reclen
+  // 3) 16B +4B[143 or 191] + KODS : MCNP6 with 32bit reclen
+  // 4) 24B +8B[143 or 191] + KODS : MCNP6 with 64bit reclen
   // 5) 4B[143]+KODS : MCNP5 with 32bit reclen.
   // 6) 8B[143]+KODS : MCNP5 with 64bit reclen.
   //
@@ -308,6 +308,10 @@ ssw_file_t ssw_open_and_procrec0( const char * filename )
   //should allow for custom in-house versions with modified contents of KODS. We
   //do, however, require that the first character or KODS is an ASCII character
   //in the range 32-126 (i.e. non-extended ascii without control or null chars).
+  //
+  //Note that for option 3) and 4), the second record can have a length of
+  //either 143 (MCNP 6.0) or 191 (MCNP 6.2), since the "aids" field increased in
+  //size from 80 to 128 chars.
   //
   //Note that for option 3) and 4), the 16B / 24B are a fortran record with 8
   //bytes of data - usually (always?) the string "SF_00001".
@@ -324,18 +328,23 @@ ssw_file_t ssw_open_and_procrec0( const char * filename )
   unsigned rec0begin = 0;
 
   //First look for MCNP6:
-  if ( first32==8 && *((uint32_t*)(buf+12))==8 && *((uint32_t*)(buf+16))==143 && buf[20]>=32 && buf[20]<127) {
+  unsigned mcnp6_lenaids = 80;
+  if ( first32==8 && *((uint32_t*)(buf+12))==8 && (*((uint32_t*)(buf+16))==143||*((uint32_t*)(buf+16))==191) && buf[20]>=32 && buf[20]<127) {
     //Looks like 3), an mcnp6 file with 32bit fortran records.
     f->mcnp_type = SSW_MCNP6;
     f->reclen = 4;
-    lenrec0 = 143;
+    lenrec0 = *((uint32_t*)(buf+16));
     rec0begin = 20;
-  } else if ( first32==8 && *((uint64_t*)(buf+16))==8 && *((uint64_t*)(buf+24))==143 && buf[32]>=32 && buf[32]<127) {
+    if (*((uint32_t*)(buf+16))==191)
+      mcnp6_lenaids = 128;
+  } else if ( first32==8 && *((uint64_t*)(buf+16))==8 && (*((uint64_t*)(buf+24))==143||*((uint64_t*)(buf+24))==191) && buf[32]>=32 && buf[32]<127) {
     //Looks like 4), an mcnp6 file with 64bit fortran records.
     f->mcnp_type = SSW_MCNP6;
-    f->reclen = 4;
-    lenrec0 = 143;
+    f->reclen = 8;
+    lenrec0 = *((uint64_t*)(buf+24));
     rec0begin = 32;
+    if (*((uint64_t*)(buf+24))==191)
+      mcnp6_lenaids = 128;
   }
 
   //Next, look for MCNPX:
@@ -404,7 +413,7 @@ ssw_file_t ssw_open_and_procrec0( const char * filename )
     memcpy(f->vers,r, n=5); r += n;
     memcpy(f->lods,r, n=28); r += n;
     memcpy(f->idtms,r, n=18); r += n;
-    memcpy(f->aids,r, n=80);
+    memcpy(f->aids,r, n=mcnp6_lenaids);
     f->probs[0]='\0';
   } else if (f->mcnp_type == SSW_MCNPX) {
     assert(lenrec0==163||lenrec0==167);
