@@ -43,16 +43,25 @@ before_script:
     - python3 --version
     - python3 -c 'import numpy' 2>/dev/null || pip install numpy
     - python3 -c 'import numpy; print(numpy.__version__)'
+    - ls -l
     - mkdir build installdir rundir
-    - cd build
+    - ls -l
+    - set +e
+    - cd ./build/
+    - ls -l
+    - set -e
     - cmake .. -DBUILD_FAT=ON -DCMAKE_BUILD_TYPE=${BUILD} -DCMAKE_INSTALL_PREFIX=../installdir/
     - set +e
+    - ls -l
 
 script:
     - set -e
     - make VERBOSE=1 install
-    - cd ../rundir
-    - find ../installdir
+    - set +e
+    - cd ../rundir/
+    - ls -l
+    - set -e
+    - find ../installdir/
     - ../installdir/bin/mcplexample_write myfile.mcpl
     - ../installdir/bin/mcplexample_filter myfile.mcpl.gz myfile_filtered.mcpl
     - ../installdir/bin/mcplexample_read myfile_filtered.mcpl.gz
