@@ -1,13 +1,13 @@
 
 ///////////////////////////////////////////////////////////////////////
 //                                                                   //
-// This is a quick and dirty standalone version of the SSW to MCPL   //
-// converter, ssw2mcpl, including both mcpl.h, mcpl.c,               //
-// sswread.h, sswread.c, a main(), and zlib.                         //
+// This is a quick and dirty standalone version of the MCPL to PHITS //
+// converter, mcpl2phits, including both mcpl.h, mcpl.c,             //
+// phitsread.h, phitsread.c, a main(), and zlib.                     //
 //                                                                   //
 // Compile into executable using C99 with libm:                      //
 //                                                                   //
-//   $CC -std=c99 -lm ssw2mcpl_app_fat.c -o ssw2mcpl                 //
+//   $CC -std=c99 -lm mcpl2phits_app_fat.c -o mcpl2phits             //
 //                                                                   //
 // Where $CC is a C99 capable C-compiler like gcc or clang.          //
 //                                                                   //
@@ -18,7 +18,7 @@
 // (http://zlib.net), the zlib license applies to those parts and is //
 // repeated below.                                                   //
 //                                                                   //
-// Note that usage of MCNP(X)-related utilities might require        //
+// Note that usage of PHITS-related utilities might require          //
 // additional permissions and licenses from third-parties, which is  //
 // not within the scope of the MCPL project itself.                  //
 //                                                                   //
@@ -78,17 +78,17 @@
 #ifndef MCPL_HASZLIB
 #  define MCPL_HASZLIB
 #endif
-#ifndef SSWREAD_HASZLIB
-#  define SSWREAD_HASZLIB
+#ifndef PHITSREAD_HASZLIB
+#  define PHITSREAD_HASZLIB
 #endif
-#ifdef SSWREAD_HDR_INCPATH
-#  undef SSWREAD_HDR_INCPATH
+#ifdef PHITSREAD_HDR_INCPATH
+#  undef PHITSREAD_HDR_INCPATH
 #endif
-#ifdef SSWMCPL_HDR_INCPATH
-#  undef SSWMCPL_HDR_INCPATH
+#ifdef PHITSMCPL_HDR_INCPATH
+#  undef PHITSMCPL_HDR_INCPATH
 #endif
-#ifdef SSWREAD_ZLIB_INCPATH
-#  undef SSWREAD_ZLIB_INCPATH
+#ifdef PHITSREAD_ZLIB_INCPATH
+#  undef PHITSREAD_ZLIB_INCPATH
 #endif
 #ifdef MCPL_ZLIB_INCPATH
 #  undef MCPL_ZLIB_INCPATH
@@ -298,65 +298,82 @@ extern "C" {
 #endif
 
 #endif
-#ifndef sswmcpl_h
-#define sswmcpl_h
+#ifndef phitsmcpl_h
+#define phitsmcpl_h
 
 //////////////////////////////////////////////////////////////////////////////////////
 //                                                                                  //
-// Functions for converting SSW files from MCNP(X) to MCPL files.                   //
+// Functions for converting binary PHITS dump files to and from MCPL files.         //
 //                                                                                  //
-// The code was written with help from E. Klinkby DTU NuTech.                       //
+// The code was written with help from D. Di Julio, ESS.                            //
 //                                                                                  //
 // This file can be freely used as per the terms in the LICENSE file.               //
 //                                                                                  //
-// However, note that usage of MCNP(X)-related utilities might require additional   //
+// However, note that usage of PHITS-related utilities might require additional     //
 // permissions and licenses from third-parties, which is not within the scope of    //
 // the MCPL project itself.                                                         //
 //                                                                                  //
-// Written 2015-2017 by Thomas.Kittelmann@esss.se.                                  //
+// Written 2019 by Thomas.Kittelmann@esss.se.                                       //
 //                                                                                  //
 //////////////////////////////////////////////////////////////////////////////////////
 
-
 //////////////////////////////////////////////////////////////////////////////////////
-// Create mcplfile based on content in sswfile. Using this function will neither
-// enable double-precision or user-flags in the output file, and will always
-// attempt to gzip the resulting MCPL file. Use ssw2mcpl2 instead to fine-tune
-// these choices or to embed a copy of the MCNP input deck file in the MCPL
-// header. Returns 1 on success, 0 on failure:
-int ssw2mcpl(const char * sswfile, const char * mcplfile);
+// Create mcplfile based on content in PHITS dump file. Using this function will
+// use single-precision in the output file, and will always attempt to gzip the
+// resulting MCPL file. Use phits2mcpl2 instead to fine-tune these choices or to
+// embed a copy of the PHITS input deck or dump summary file in the MCPL header
+// for reference. Returns 1 on success, 0 on failure:
+int phits2mcpl(const char * phitsfile, const char * mcplfile);
 
 //////////////////////////////////////////////////////////////////////////////////////
 // Advanced version of the above with more options:
 //
 //  opt_dp  : Set to 1 to enable double-precision storage of floating point
 //            values. Set to 0 for single-precision.
-//  opt_surf: Set to 1 to store SSW surface id information in the MCPL
-//            userflags. Set to 0 to not store any userflags.
 //  opt_gzip: Set to 1 to gzip the resulting mcpl file. Set to 0 to leave the
 //            resulting file uncompressed.
-//  inputdeckfile: Set to the filename of the MCNP input deck file, to embed a
+//  inputdeckfile: Set to the filename of the PHITS input deck file, to embed a
 //                 copy of it in the MCPL header. Set to 0 to not do this.
+//  dumpsummaryfile: Set to the filename of the dump summary text file (which
+//                   is produced along with the binary dump file by PHITS), to
+//                   embed a copy of it in the MCPL header. Set to 0 to not do
+//                   this.
 //
-int ssw2mcpl2(const char * sswfile, const char * mcplfile,
-              int opt_dp, int opt_surf, int opt_gzip,
-              const char * inputdeckfile);
+//  Note: The created mcpl file will have polarisation columns enabled if and
+//  only if the input dump file has polarisation info.
+
+int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
+                 int opt_dp, int opt_gzip,
+                 const char * inputdeckfile,
+                 const char * dumpsummaryfile );
 
 //////////////////////////////////////////////////////////////////////////////////////
-// Create sswfile based on content in mcplfile. This also needs a reference
-// sswfile from the same approximate setup (MCNP version, input deck...) where
-// the new SSW file is to be used. If the surface_id parameter is non-zero, all
-// particles in the resulting sswfile will have that surface ID, otherwise it
-// will be taken from the MCPL userflags (must be in range [1,999999]). Finally,
-// if the limit parameter is non-zero, it will provide an upper limit on the
-// number of particles put into the resulting ssw file (up to 2147483647).
-int mcpl2ssw(const char * mcplfile, const char * sswfile, const char * refsswfile,
-             long surface_id, long limit);
+
+// Create binary PHITS dump file based on content in mcplfile. If usepol option
+// is set to 1 (as opposed to 0), the resulting file will include polarisation (aka spin
+// direction) information and must be read via:
+//
+//           dump=13
+//                1 2 3 4 5 6 7 8 9 10 14 15 16
+//
+// Otherwise it is excluded and the reader must be configured via:
+//
+//           dump=10
+//                1 2 3 4 5 6 7 8 9 10
+//
+// If the limit parameter is non-zero, it will provide an upper limit on the
+// number of particles put into the resulting phits file. Finally, the reclen
+// parameters control whether the hidden Fortran record markers in the produced
+// file use 32bit (reclen=4) or 64bit (reclen=8) integers. The correct choice is
+// almost always to use reclen=4.
+
+int mcpl2phits( const char * mcplfile, const char * phitsdumpfile,
+                int usepol, long limit, int reclen );
 
 //////////////////////////////////////////////////////////////////////////////////////
-// For easily creating standard ssw2mcpl and mcpl2ssw cmdline applications:
-int ssw2mcpl_app(int argc,char** argv);
-int mcpl2ssw_app(int argc,char** argv);
+// For easily creating standard phits2mcpl and mcpl2phits cmdline applications:
+int phits2mcpl_app(int argc,char** argv);
+int mcpl2phits_app(int argc,char** argv);
 
 #endif
 
@@ -15346,58 +15363,56 @@ void ZLIB_INTERNAL zcfree (opaque, ptr)
 
 /////////////////////////////////////////////////////////////////////////////////////
 //                                                                                 //
-//  sswread : Code for reading SSW files from MCNP(X)                              //
+//  phitsread : Code for reading binary dump files from PHITS                      //
 //                                                                                 //
 //                                                                                 //
-//  Compilation of sswread.c can proceed via any compliant C-compiler using        //
+//  Compilation of phitsread.c can proceed via any compliant C-compiler using      //
 //  -std=c99 or later, and the resulting code must always be linked with libm      //
 //  (using -lm). Furthermore, the following preprocessor flags can be used         //
-//  when compiling sswread.c to fine tune the build process and the                //
+//  when compiling phitsread.c to fine tune the build process and the              //
 //  capabilities of the resulting binary.                                          //
 //                                                                                 //
-//  SSWREAD_HASZLIB : Define if compiling and linking with zlib, to allow direct   //
-//                    reading of gzipped SSW files.                                //
-//  SSWREAD_ZLIB_INCPATH : Specify alternative value if the zlib header is not to  //
-//                         be included as "zlib.h".                                //
-//  SSWREAD_HDR_INCPATH : Specify alternative value if the sswread header itself   //
-//                        is not to be included as "sswread.h".                    //
+//  PHITSREAD_HASZLIB : Define if compiling and linking with zlib, to allow        //
+//                      direct reading of gzipped PHITS files.                     //
+//  PHITSREAD_ZLIB_INCPATH : Specify alternative value if the zlib header is not   //
+//                           to be included as "zlib.h".                           //
+//  PHITSREAD_HDR_INCPATH : Specify alternative value if the phitsread header      //
+//                          itself is not to be included as "phitsread.h".         //
 //                                                                                 //
 // This file can be freely used as per the terms in the LICENSE file.              //
 //                                                                                 //
-// However, note that usage of MCNP(X)-related utilities might require additional  //
+// However, note that usage of PHITS-related utilities might require additional    //
 // permissions and licenses from third-parties, which is not within the scope of   //
 // the MCPL project itself.                                                        //
 //                                                                                 //
-// Written 2015-2017, thomas.kittelmann@esss.se (European Spallation Source).      //
+// Written 2019, thomas.kittelmann@esss.se (European Spallation Source).           //
 //                                                                                 //
 /////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef SSWREAD_HDR_INCPATH
-#  include SSWREAD_HDR_INCPATH
+#ifdef PHITSREAD_HDR_INCPATH
+#  include PHITSREAD_HDR_INCPATH
 #else
-#ifndef sswread_h
-#define sswread_h
+#ifndef phitsread_h
+#define phitsread_h
 
 /////////////////////////////////////////////////////////////////////////////////////
 //                                                                                 //
-// Code for reading SSW files from MCNP(X). Not all versions of the format has     //
-// been tested, but it is the hope that this will at the very least provide        //
-// reliable functionality for extracting the particle information within.          //
+// Code for reading binary PHITS dump files. This has been tested with PHITS       //
+// version 3.1 so far.                                                             //
 //                                                                                 //
-// The code was written with help from E. Klinkby DTU NuTech and under             //
-// inspiration from equivalent programs written in Fortran (E. Klinkby DTU         //
-// NuTech with help from H. Breitkreutz) and in python (PyNE & mc-tools by K.      //
-// Batkov ESS).                                                                    //
+// The code was written with help from Douglas Di Julio (European Spallation       //
+// Source), and the PHITS dump file format was mostly inferred by looking in the   //
+// PHITS manual (it is in any case extremely simple).                              //
 //                                                                                 //
-// Refer to the top of sswread.c for details regarding how to build.               //
+// Refer to the top of phitsread.c for details regarding how to build.             //
 //                                                                                 //
 // This file can be freely used as per the terms in the LICENSE file.              //
 //                                                                                 //
-// However, note that usage of MCNP(X)-related utilities might require additional  //
+// However, note that usage of PHITS-related utilities might require additional    //
 // permissions and licenses from third-parties, which is not within the scope of   //
 // the MCPL project itself.                                                        //
 //                                                                                 //
-// Written 2015-2017, thomas.kittelmann@esss.se (European Spallation Source).      //
+// Written 2019, thomas.kittelmann@esss.se (European Spallation Source).           //
 //                                                                                 //
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -15409,7 +15424,7 @@ extern "C" {
 
   typedef struct {
     void * internal;
-  } ssw_file_t;
+  } phits_file_t;
 
   typedef struct {
     double x;//cm
@@ -15418,59 +15433,50 @@ extern "C" {
     double dirx;
     double diry;
     double dirz;
+    double polx;
+    double poly;
+    double polz;
     double weight;
     double ekin;//MeV
-    double time;//"shakes" (1e-8seconds)
-    long rawtype;//raw particle type encoding (mcnpx and mcnp6 employs different schemes)
+    double time;//nanoseconds
+    long rawtype;//raw particle type encoding (PHITS "kt")
     long pdgcode;//rawtype converted to PDG codes.
-    long isurf;
-  } ssw_particle_t;
+  } phits_particle_t;
 
-  //Open file (can read gzipped ssw .gz files directly if zlib usage is enabled):
-  ssw_file_t ssw_open_file(const char * filename);
+  //Open file (can read gzipped phits .gz files directly if zlib usage is enabled):
+  phits_file_t phits_open_file(const char * filename);
 
-  //Query header info:
-  unsigned long ssw_nparticles(ssw_file_t);
-  const char* ssw_srcname(ssw_file_t);//Usually "mcnp" or "mcnpx"
-  const char* ssw_srcversion(ssw_file_t);
-  const char* ssw_title(ssw_file_t);//Problem title from input deck
-  int ssw_is_gzipped(ssw_file_t);//whether input file was gzipped
-  int ssw_is_mcnp6(ssw_file_t);
-  int ssw_is_mcnp5(ssw_file_t);
-  int ssw_is_mcnpx(ssw_file_t);
-  const char * ssw_mcnpflavour(ssw_file_t);//string like "MCNPX" or "MCNP6"
+  //Whether input file was gzipped:
+  int phits_is_gzipped(phits_file_t);
 
-  //load next particle (null indicates eof):
-  const ssw_particle_t * ssw_load_particle(ssw_file_t);
+  //Whether input file contains polarisation fields (note that the special case
+  //of a file with 0 particles will always register as not having polarisation
+  //fields):
+  int phits_has_polarisation(phits_file_t);
+
+  //load next particle (null indicates EOF):
+  const phits_particle_t * phits_load_particle(phits_file_t);
 
   //close file and release resources:
-  void ssw_close_file(ssw_file_t);
-
-  //Advanced info about file layout:
-  void ssw_layout(ssw_file_t, int* reclen, int* ssblen, int64_t* hdrlen,
-                  int64_t* np1pos, int64_t* nrsspos);
+  void phits_close_file(phits_file_t);
 
   ////////////////////////////////////////////////////////////////////////////
   //                                                                        //
-  // Utility functions for converting between particle codes used in SSW    //
-  // files from MCNPX or MCNP6 and the codes from the Particle Data Group:  //
+  // Utility functions for converting between particle codes used in PHITS  //
+  // (cf user manual for PHITS 3.1, page 29), and the codes from the        //
+  // Particle Data Group (which actually overlaps for the non-ions          //
+  // supported in PHITS):                                                   //
   //                                                                        //
   // http://pdg.lbl.gov/2014/reviews/rpp2014-rev-monte-carlo-numbering.pdf  //
   //                                                                        //
   // Note that all the functions here return 0 when the code could not be   //
   // converted. This might not be an error as such, but could indicate an   //
-  // exotic particle which has no code assigned in the target MCNP scheme.  //
-  //                                                                        //
-  // MCNP5 does not have it's own function as it only supports neutrons     //
-  // (1<->2112) and gammas (2<->22).                                        //
+  // exotic particle which has no code assigned in PHITS.                   //
   //                                                                        //
   ////////////////////////////////////////////////////////////////////////////
 
-  int32_t conv_mcnpx_ssw2pdg(int32_t);
-  int32_t conv_mcnp6_ssw2pdg(int32_t);
-
-  int32_t conv_mcnpx_pdg2ssw(int32_t);
-  int32_t conv_mcnp6_pdg2ssw(int32_t);
+  int32_t conv_code_phits2pdg(int32_t);
+  int32_t conv_code_pdg2phits(int32_t);
 
 #ifdef __cplusplus
 }
@@ -15479,9 +15485,9 @@ extern "C" {
 #endif
 #endif
 
-#ifdef SSWREAD_HASZLIB
-#  ifdef SSWREAD_ZLIB_INCPATH
-#    include SSWREAD_ZLIB_INCPATH
+#ifdef PHITSREAD_HASZLIB
+#  ifdef PHITSREAD_ZLIB_INCPATH
+#    include PHITSREAD_ZLIB_INCPATH
 #  else
 #  endif
 #endif
@@ -15489,814 +15495,61 @@ extern "C" {
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include <string.h>
 #include <stdint.h>
 
+static int phits_known_nonion_codes[] = { 11, 12, 13, 14, 22, 111, 211, 221,
+                                          311, 321, 331, 2112, 2212, 3112,
+                                          3122, 3212, 3222, 3312, 3322, 3334 };
 
-//Should be large enough to hold first record in all supported files:
-#define SSWREAD_STDBUFSIZE 1024
-
-#define SSW_MCNP_NOTFOUND 0
-#define SSW_MCNP6 1
-#define SSW_MCNPX 2
-#define SSW_MCNP5 3
-
-void ssw_error(const char * msg) {
-  printf("ERROR: %s\n",msg);
-  exit(1);
-}
-
-typedef struct {
-  //Fortran width of record length field (4 or 8)
-  int reclen;
-
-  //Header data:
-  char kods[9];   // Code
-  char vers[6];   // Version
-  char lods[29];  // Date
-  char idtms[20]; // Machine-Designator
-  char probs[20]; // Problem-ID
-  char aids[129];  // Creation-Run Problem-Title-Card
-  int32_t np1;
-  int32_t nrss;
-  int32_t njsw;
-  int32_t nrcd;
-  int32_t niss;
-  int32_t pos;
-  int mcnp_type;
-#ifdef SSWREAD_HASZLIB
-  gzFile filegz;
-#else
-  void * filegz;
-#endif
-  FILE * file;
-  ssw_particle_t part;
-  unsigned lbuf;
-  unsigned lbufmax;
-  char * buf;
-  size_t np1pos;
-  size_t nrsspos;
-  size_t headlen;
-} ssw_fileinternal_t;
-
-#define SSW_FILEDECODE ssw_fileinternal_t * f = (ssw_fileinternal_t *)ff.internal; assert(f)
-
-int ssw_readbytes(ssw_fileinternal_t* f, char * dest, int nbytes)
+int phits_cmp_codes( void const *va, void const *vb )
 {
-  int nb;
-#ifdef SSWREAD_HASZLIB
-  if (f->filegz)
-    nb = gzread(f->filegz, dest, nbytes);
-  else
-#endif
-    nb = fread(dest, 1, nbytes, f->file);
-  if (nb!=nbytes) {
-    printf("SSW Error: read failure\n");
-    return 0;
-  }
-  return 1;
+  //Standard integer comparison function for bsearch
+  const int * a = (const int *)va;
+  const int * b = (const int *)vb;
+  return  *a < *b ? -1 : ( *a > *b ? 1 : 0 );
 }
 
-int ssw_loadrecord(ssw_fileinternal_t* f)
-{
-  if (f->reclen==4) {
-    uint32_t rl;
-    if (!ssw_readbytes(f, (char*)&rl, 4))
-      return 0;
-    f->lbuf = rl;
-  } else {
-    uint64_t rl;
-    if (!ssw_readbytes(f, (char*)&rl, 8))
-      return 0;
-    f->lbuf = rl;
-  }
-
-  if (f->lbuf > f->lbufmax) {
-    //Very large record, must grow buffer:
-    free(f->buf);
-    f->lbufmax = f->lbuf;
-    f->buf = malloc(f->lbufmax);
-  }
-
-  if ( f->lbuf <= SSWREAD_STDBUFSIZE
-       && f->lbufmax > SSWREAD_STDBUFSIZE ) {
-    //Make sure we don't hold on to very large buffers once they are no longer
-    //needed:
-    free(f->buf);
-    f->lbufmax = SSWREAD_STDBUFSIZE;
-    f->buf = malloc(f->lbufmax);
-  }
-
-  if (!f->buf) {
-    //Could be corrupted data resulting in unusually large lbuf:
-    printf("SSW Error: unable to allocate requested buffer (corrupted input?).\n");
-    return 0;
-  }
-
-  char * buf = (char*)f->buf;
-  if (!ssw_readbytes(f, buf, f->lbuf))
-    return 0;
-  if (f->reclen==4) {
-    uint32_t rl;
-    return ssw_readbytes(f, (char*)&rl, 4) && f->lbuf == rl;
-  } else {
-    uint64_t rl;
-    return ssw_readbytes(f, (char*)&rl, 8) && f->lbuf == rl;
-  }
-}
-
-void ssw_close_file(ssw_file_t ff) {
-  SSW_FILEDECODE;
-  if (!f)
-    return;
-  if (f->file) {
-    fclose(f->file);
-    f->file = 0;
-  }
-#ifdef SSWREAD_HASZLIB
-  if (f->filegz) {
-    gzclose(f->filegz);
-    f->file = 0;
-  }
-#endif
-  free(f->buf);
-  free(f);
-  ff.internal = 0;
-}
-
-void ssw_strip(char **str) {
-  size_t l = strlen(*str);
-  int i = 0;
-  while ((*str)[i]==' ')
-    ++i;
-  if (i)
-    memmove(*str,*str+i,l+1-i);
-  i = l-i-1;
-  while (i>=0&&(*str)[i]==' ') {
-    (*str)[i]='\0';
-    --i;
-  }
-}
-
-ssw_file_t ssw_openerror(ssw_fileinternal_t * f, const char* msg) {
-  if (f) {
-    if (f->file)
-      fclose(f->file);
-#ifdef SSWREAD_HASZLIB
-    if (f->filegz)
-      gzclose(f->filegz);
-#endif
-    free(f->buf);
-    free(f);
-  }
-  ssw_error(msg);
-  ssw_file_t out;
-  out.internal = 0;
-  return out;
-}
-
-//NB: Do not change function signature without updating code in sswmcpl.c as well!
-void ssw_internal_grabhdr( const char * filename, int is_gzip, int64_t hdrlen,
-                           unsigned char * hdrbuf )
-{
-  //To be used by mcpl2ssw, but we don't want to complicate the build process
-  //for users further by also requiring sswmcpl.c to deal with zlib
-  //directly. Thus, we provide a hidden function here which mcpl2ssw can use by
-  //forward declaring it.
-  if (is_gzip) {
-#ifdef SSWREAD_HASZLIB
-    gzFile filegz = gzopen(filename,"rb");
-    if (!filegz)
-      ssw_error("Unable to open file!");
-    int64_t pos = 0;
-    int64_t toread = hdrlen;
-    while(toread) {
-      int chunk = (hdrlen>16384?16384:(int)hdrlen);
-      int nb = gzread(filegz, hdrbuf+pos, chunk);
-      if (!nb)
-        printf("SSW Error: read failure\n");
-      assert(toread >= nb);
-      toread -= nb;
-      pos += nb;
-    }
-    gzclose(filegz);
-#else
-    ssw_error("This installation was not built with zlib support and can not read compressed (.gz) files directly.");
-#endif
-  } else {
-    FILE * fh = fopen(filename,"rb");
-    if (!fh)
-      ssw_error("Unable to open file!\n");
-    int64_t pos = 0;
-    int64_t toread = hdrlen;
-    while(toread) {
-      int chunk = (hdrlen>16384?16384:(int)hdrlen);
-      int nb = fread(hdrbuf+pos,1,chunk,fh);
-      if (!nb)
-        printf("SSW Error: read failure\n");
-      assert(toread >= nb);
-      toread -= nb;
-      pos += nb;
-    }
-    fclose(fh);
-  }
-}
-
-ssw_file_t ssw_open_and_procrec0( const char * filename )
-{
-  ssw_fileinternal_t * f = (ssw_fileinternal_t*)calloc(sizeof(ssw_fileinternal_t),1);
-  assert(f);
-
-  ssw_file_t out;
-  out.internal = f;
-
-  //open file (with gzopen if filename ends with .gz):
-  f->file = 0;
-  f->filegz = 0;
-  char * lastdot = strrchr(filename, '.');
-  if (lastdot && strcmp(lastdot, ".gz") == 0) {
-#ifdef SSWREAD_HASZLIB
-    f->filegz = gzopen(filename,"rb");
-    if (!f->filegz)
-      ssw_error("Unable to open file!");
-#else
-    ssw_error("This installation was not built with zlib support and can not read compressed (.gz) files directly.");
-#endif
-  } else {
-    f->file = fopen(filename,"rb");
-    if (!f->file)
-      ssw_error("Unable to open file!");
-  }
-
-  //Prepare buffer. SSWREAD_STDBUFSIZE bytes should always be enough for the
-  //first record (guaranteed by the checks below), but it might later grow on
-  //demand inside ssw_loadrecord if needed.
-
-  f->lbufmax = SSWREAD_STDBUFSIZE;
-  char * buf = malloc(f->lbufmax);
-  f->buf = buf;
-
-  //Fortran data is usually written in "records" with an initial and final 32bit
-  //or 64bit integer specifying the record byte-length. The tested file-types
-  //begin in one of the following ways:
-  //
-  // 1) 4B[163|167] + KODS : MCNPX2.7.0 with 32bit reclen
-  // 2) 8B[163|167] + KODS : MCNPX2.7.0 with 64bit reclen
-  // 3) 16B +4B[143 or 191] + KODS : MCNP6 with 32bit reclen
-  // 4) 24B +8B[143 or 191] + KODS : MCNP6 with 64bit reclen
-  // 5) 4B[143]+KODS : MCNP5 with 32bit reclen.
-  // 6) 8B[143]+KODS : MCNP5 with 64bit reclen.
-  //
-  //Where KODS is 8 bytes representing the "code name" as a string. For pure
-  //MCNPX/MCNP6 this string contains "mcnpx" and "mcnp" respectively, but we
-  //should allow for custom in-house versions with modified contents of KODS. We
-  //do, however, require that the first character or KODS is an ASCII character
-  //in the range 32-126 (i.e. non-extended ascii without control or null chars).
-  //
-  //Note that for option 3) and 4), the second record can have a length of
-  //either 143 (MCNP 6.0) or 191 (MCNP 6.2), since the "aids" field increased in
-  //size from 80 to 128 chars.
-  //
-  //Note that for option 3) and 4), the 16B / 24B are a fortran record with 8
-  //bytes of data - usually (always?) the string "SF_00001".
-
-  //Thus, we probe the first 36 bytes and search the patterns above:
-
-  ssw_readbytes(f,buf,36);
-  uint32_t first32 = *((uint32_t*)buf);
-  uint32_t first64 = *((uint64_t*)buf);
-
-  f->reclen = 0;
-  f->mcnp_type = SSW_MCNP_NOTFOUND;
-  uint64_t lenrec0 = 99999;
-  unsigned rec0begin = 0;
-
-  //First look for MCNP6:
-  unsigned mcnp6_lenaids = 80;
-  if ( first32==8 && *((uint32_t*)(buf+12))==8 && (*((uint32_t*)(buf+16))==143||*((uint32_t*)(buf+16))==191) && buf[20]>=32 && buf[20]<127) {
-    //Looks like 3), an mcnp6 file with 32bit fortran records.
-    f->mcnp_type = SSW_MCNP6;
-    f->reclen = 4;
-    lenrec0 = *((uint32_t*)(buf+16));
-    rec0begin = 20;
-    if (*((uint32_t*)(buf+16))==191)
-      mcnp6_lenaids = 128;
-  } else if ( first32==8 && *((uint64_t*)(buf+16))==8 && (*((uint64_t*)(buf+24))==143||*((uint64_t*)(buf+24))==191) && buf[32]>=32 && buf[32]<127) {
-    //Looks like 4), an mcnp6 file with 64bit fortran records.
-    f->mcnp_type = SSW_MCNP6;
-    f->reclen = 8;
-    lenrec0 = *((uint64_t*)(buf+24));
-    rec0begin = 32;
-    if (*((uint64_t*)(buf+24))==191)
-      mcnp6_lenaids = 128;
-  }
-
-  //Next, look for MCNPX:
-  if ( f->mcnp_type == SSW_MCNP_NOTFOUND ) {
-    if ( (first32==163||first32==167) && ( buf[4]>=32 && buf[4]<127 ) ) {
-      //Looks like 1), an mcnpx file with 32bit fortran records.
-      f->mcnp_type = SSW_MCNPX;
-      f->reclen = 4;
-      lenrec0 = first32;
-      rec0begin = 4;
-    } else if ( (first64==163||first64==167) && ( buf[8]>=32 && buf[8]<127 ) ) {
-      //Looks like 2), an mcnpx file with 64bit fortran records.
-      f->mcnp_type = SSW_MCNPX;
-      f->reclen = 8;
-      lenrec0 = first64;
-      rec0begin = 8;
-    }
-  }
-
-  //Finally, look for MCNP5:
-  if ( f->mcnp_type == SSW_MCNP_NOTFOUND ) {
-    if ( first32==143 && ( buf[4]>=32 && buf[4]<127 ) ) {
-      //Looks like 5), an mcnp5 file with 32bit fortran records.
-      f->mcnp_type = SSW_MCNP5;
-      f->reclen = 4;
-      lenrec0 = first32;
-      rec0begin = 4;
-    } else if ( first64==143 && ( buf[8]>=32 && buf[8]<127 ) ) {
-      //Looks like 6), an mcnp5 file with 64bit fortran records.
-      f->mcnp_type = SSW_MCNP5;
-      f->reclen = 8;
-      lenrec0 = first64;
-      rec0begin = 8;
-    }
-  }
-
-  if ( f->mcnp_type == SSW_MCNP_NOTFOUND )
-    return ssw_openerror(f,"ssw_open_file error: File does not look like a supported MCNP SSW file");
-
-  assert(f->reclen && rec0begin && lenrec0 && lenrec0<99999 );
-
-  if (f->reclen==8) {
-    printf("ssw_open_file WARNING: 64bit Fortran records detected which is untested (feedback"
-           " appreciated at https://mctools.github.io/mcpl/contact/).\n");
-  }
-
-  //Finish reading the first record:
-  int missingrec0 = (int)(lenrec0 + rec0begin) - (int)36 + f->reclen;
-  assert(missingrec0>0);
-  ssw_readbytes(f,buf+36,missingrec0);
-
-  //Check final marker:
-  uint64_t lenrec0_b;
-  if (f->reclen==4)
-    lenrec0_b = *((uint32_t*)(buf+(rec0begin+lenrec0)));
-  else
-    lenrec0_b = *((uint64_t*)(buf+(rec0begin+lenrec0)));
-  if (lenrec0!=lenrec0_b)
-    return ssw_openerror(f,"ssw_open_file error: Unexpected header contents\n");
-
-  //decode first record, inspired by ssw.py:
-  if (f->mcnp_type == SSW_MCNP6) {
-    char * r = buf + rec0begin;
-    unsigned n;
-    memcpy(f->kods,r, n=8); r += n;
-    memcpy(f->vers,r, n=5); r += n;
-    memcpy(f->lods,r, n=28); r += n;
-    memcpy(f->idtms,r, n=18); r += n;
-    memcpy(f->aids,r, n=mcnp6_lenaids);
-    f->probs[0]='\0';
-  } else if (f->mcnp_type == SSW_MCNPX) {
-    assert(lenrec0==163||lenrec0==167);
-    char * r = buf + f->reclen;
-    unsigned n;
-    memcpy(f->kods,r, n=8); r += n;
-    memcpy(f->vers,r, n=5); r += n;
-    memcpy(f->lods,r, n=28); r += n;
-    memcpy(f->idtms,r, n=19); r += n;
-    memcpy(f->probs,r, n=19); r += n;
-    memcpy(f->aids,r, n=80);
-  } else {
-    assert(f->mcnp_type == SSW_MCNP5);
-    assert(lenrec0==143);
-    char * r = buf + f->reclen;
-    unsigned n;
-    memcpy(f->kods,r, n=8); r += n;
-    memcpy(f->vers,r, n=5); r += n;
-    memcpy(f->lods,r, n=8); r += n;
-    memcpy(f->idtms,r, n=19); r += n;
-    memcpy(f->probs,r, n=19); r += n;
-    memcpy(f->aids,r, n=80);
-  }
-
-  char * tmp;
-  tmp = f->kods; ssw_strip(&tmp);
-  tmp = f->vers; ssw_strip(&tmp);
-  tmp = f->lods; ssw_strip(&tmp);
-  tmp = f->idtms; ssw_strip(&tmp);
-  tmp = f->probs; ssw_strip(&tmp);
-  tmp = f->aids; ssw_strip(&tmp);
-  const char * bn = strrchr(filename, '/');
-  bn = bn ? bn + 1 : filename;
-
-  printf("ssw_open_file: Opened file \"%s\":\n",bn);
-
-  const char * expected_kods = (f->mcnp_type == SSW_MCNPX?"mcnpx":"mcnp");
-  if (strcmp(f->kods,expected_kods)!=0) {
-    printf("ssw_open_file WARNING: Unusual MCNP flavour detected (\"%s\").\n",f->kods);
-  }
-
-  if (f->mcnp_type==SSW_MCNP6) {
-    if ( strcmp(f->vers,"6")!=0 && strcmp(f->vers,"6.mpi")!=0 ) {
-      printf("ssw_open_file WARNING: Untested MCNP6 source version : \"%s\". (feedback"
-             " appreciated at https://mctools.github.io/mcpl/contact/)\n",f->vers);
-    }
-  } else if (f->mcnp_type==SSW_MCNPX) {
-    if ( strcmp(f->vers,"2.5.0")!=0 && strcmp(f->vers,"2.6.0")!=0
-         && strcmp(f->vers,"2.7.0")!=0 && strcmp(f->vers,"26b")!=0 )
-      printf("ssw_open_file WARNING: Untested MCNPX source version : \"%s\". (feedback"
-             " appreciated at https://mctools.github.io/mcpl/contact/)\n",f->vers);
-  } else if (f->mcnp_type==SSW_MCNP5) {
-    if ( strcmp(f->vers,"5")!=0 )
-      printf("ssw_open_file WARNING: Untested MCNP5 source version : \"%s\". (feedback"
-             " appreciated at https://mctools.github.io/mcpl/contact/)\n",f->vers);
-  }
-
-  return out;
-}
-ssw_file_t ssw_open_file( const char * filename )
-{
-  if (!filename)
-    ssw_error("ssw_open_file called with null string for filename");
-
-  //Open, classify and process first record with mcnp type and version info:
-
-  ssw_file_t out = ssw_open_and_procrec0( filename );
-  ssw_fileinternal_t * f = (ssw_fileinternal_t *)out.internal; assert(f);
-
-  //Skip a record:
-  if (!ssw_loadrecord(f))
-    return ssw_openerror(f,"ssw_open_file error: problems loading record");
-
-  //Position of current record payload in file:
-  long int current_recpos;
-#ifdef SSWREAD_HASZLIB
-  if (f->filegz)
-    current_recpos = gztell(f->filegz);
-  else
-#endif
-    current_recpos = ftell(f->file);
-  current_recpos -= f->reclen;
-  current_recpos -= f->lbuf;
-
-  //Read size data and mark position of nrss & np1 variables.
-  int32_t * bi = (int32_t*)f->buf;
-  if ( (f->mcnp_type == SSW_MCNP6) && f->lbuf>=32 ) {
-    f->np1 = bi[0];
-    f->np1pos = current_recpos + 0 * sizeof(int32_t);
-    f->nrss = bi[2];
-    f->nrsspos = current_recpos + 2 * sizeof(int32_t);
-    f->nrcd = abs(bi[4]);
-    f->njsw = bi[5];
-    f->niss = bi[6];
-  } else if ( (f->mcnp_type == SSW_MCNPX) && f->lbuf==20 ) {
-    f->np1 = bi[0];
-    f->np1pos = current_recpos + 0 * sizeof(int32_t);
-    f->nrss = bi[1];
-    f->nrsspos = current_recpos + 1 * sizeof(int32_t);
-    f->nrcd = bi[2];
-    f->njsw = bi[3];
-    f->niss = bi[4];
-  } else if ( (f->mcnp_type == SSW_MCNP5) && f->lbuf==32 ) {
-    int64_t np1_64 = ((int64_t*)f->buf)[0];
-    if (np1_64 > 2147483647 || np1_64 < -2147483647)
-      return ssw_openerror(f,"ssw_open_file error: MCNP5 files with more than 2147483647"
-                           " histories are not supported");
-    f->np1 = (int32_t)np1_64;
-    f->np1pos = current_recpos + 0 * sizeof(int64_t);
-    uint64_t nrss_64 = ((uint64_t*)f->buf)[1];
-    if (nrss_64 > 2147483647 )
-      return ssw_openerror(f,"ssw_open_file error: MCNP5 files with more than 2147483647"
-                           " particles are not supported");
-    f->nrss = (int32_t)nrss_64;
-    f->nrsspos = current_recpos + 1 * sizeof(int64_t);
-    f->nrcd = bi[4];
-    f->njsw = bi[5];
-    f->niss = bi[6];
-  } else if (f->lbuf==40) {
-    printf("ssw_open_file WARNING: File format has header format for which decoding was never tested (feedback"
-           " appreciated at https://mctools.github.io/mcpl/contact/).\n");
-    f->np1 = bi[0];
-    f->np1pos = current_recpos + 0 * sizeof(int32_t);
-    f->nrss = bi[2];
-    f->nrsspos = current_recpos + 2 * sizeof(int32_t);
-    f->nrcd = bi[4];
-    f->njsw = bi[6];
-    f->niss = bi[8];
-  } else {
-    return ssw_openerror(f,"ssw_open_file error: Unexpected record length");
-  }
-
-  printf("ssw_open_file:    File layout detected : %s\n",ssw_mcnpflavour(out));
-  printf("ssw_open_file:    Code ID fields : \"%s\" / \"%s\"\n",f->kods,f->vers);
-  printf("ssw_open_file:    Title field : \"%s\"\n",f->aids);
-  /* printf("ssw_open_file: Found kods  = '%s'\n",f->kods); */
-  /* printf("ssw_open_file: Found vers  = '%s'\n",f->vers); */
-  /* printf("ssw_open_file: Found lods  = '%s'\n",f->lods); */
-  /* printf("ssw_open_file: Found idtms = '%s'\n",f->idtms); */
-  /* printf("ssw_open_file: Found probs = '%s'\n",f->probs); */
-  /* printf("ssw_open_file: Found aids  = '%s'\n",f->aids); */
-  printf("ssw_open_file:    Source statistics (histories): %11i\n" , abs(f->np1));
-  printf("ssw_open_file:    Particles in file            : %11i\n" , f->nrss);
-  printf("ssw_open_file:    Number of surfaces           : %11i\n" , f->njsw);
-  printf("ssw_open_file:    Histories at surfaces        : %11i\n" , f->niss);
-  //  printf("ssw_open_file: File length of SSB array          : %11i\n" , f->nrcd);
-
-  if(f->nrcd==6)
-    return ssw_openerror(f,"ssw_open_file error: SSW files with spherical sources are not currently supported.");
-  if(f->nrcd<10)
-    return ssw_openerror(f,"ssw_open_file error: Too short SSB arrays in file");
-  if(f->nrcd>11)
-    return ssw_openerror(f,"ssw_open_file error: Unexpected length of SSB arrays in file");
-
-  if ( (f->mcnp_type == SSW_MCNP6) && f->nrcd==10 )
-    return ssw_openerror(f,"ssw_open_file error: Unexpected length of SSB arrays in MCNP6 file");
-
-  int32_t niwr = 0;
-  if (f->np1==0)
-    return ssw_openerror(f,"ssw_open_file error: File has 0 particle histories which should not be possible");
-
-  if (f->np1<0) {//Sign is well-defined since f->np1!=0
-    f->np1 = - f->np1;
-    if (!ssw_loadrecord(f))
-      return ssw_openerror(f,"ssw_open_file error: problems loading record");
-    niwr = bi[0];
-    //mipts = bi[1];//source particle type
-    //kjaq  = bi[2];//macrobody facet flag
-  }
-
-  //skip over njsw + niwr + 1 records which we are not interested in:
-  int i;
-  for (i = 0; i < f->njsw+niwr+1; ++i) {
-    if (!ssw_loadrecord(f))
-      return ssw_openerror(f,"ssw_open_file error: problems loading record");
-  }
-
-  //End of header? Mark the position:
-  f->pos = 0;
-#ifdef SSWREAD_HASZLIB
-  if (f->filegz)
-    f->headlen = gztell(f->filegz);
-  else
-#endif
-    f->headlen = ftell(f->file);
-
-  //Check that it was really the end of the header by preloading the next
-  //record(s) and checking if the length corresponds to that of particle data
-  //(NB: ssw_load_particle knows that the particle at position 0 will have
-  //already been loaded by these checks). See also
-  //https://github.com/mctools/mcpl/issues/45:
-  unsigned nmaxunexpected = 3;
-  while ( nmaxunexpected-- > 0 ) {
-    if (!ssw_loadrecord(f)) {
-      //For files with 0 particles, we assume (this is not guaranteed of
-      //course!) that the failure is due to EOF:
-      if (f->nrss==0)
-        break;
-      //But this is certainly an error for files with >0 particles:
-      return ssw_openerror(f,"ssw_open_file error: problems loading record");
-    }
-    if ( f->nrss > 0 && f->lbuf == (unsigned)8*f->nrcd ) {
-      //Looks like we preloaded the first particle of the file!
-      break;
-    } else {
-      //Looks like this could not be a particle, so we interpret this as if the
-      //header was actually one record longer than previously thought:
-      f->headlen += f->reclen * 2 + f->lbuf;
-      printf("ssw_open_file WARNING: Unexpected %i byte record encountered at end of header. Continuing under the assumption it contains valid configuration data.\n",f->lbuf);
-
-    }
-  }
-
-  //Return handle:
-  out.internal = f;
-  return out;
-}
-
-//Query header info:
-unsigned long ssw_nparticles(ssw_file_t ff) {
-  SSW_FILEDECODE;
-  return f->nrss;
-}
-
-const char* ssw_srcname(ssw_file_t ff) {
-  SSW_FILEDECODE;
-  return f->kods;
-}
-
-const char* ssw_srcversion(ssw_file_t ff) {
-  SSW_FILEDECODE;
-  return f->vers;
-}
-
-const char* ssw_title(ssw_file_t ff) {
-  SSW_FILEDECODE;
-  return f->aids;
-}
-
-int ssw_is_mcnp6(ssw_file_t ff) {
-  SSW_FILEDECODE;
-  return f->mcnp_type == SSW_MCNP6;
-}
-
-int ssw_is_mcnpx(ssw_file_t ff) {
-  SSW_FILEDECODE;
-  return f->mcnp_type == SSW_MCNPX;
-}
-
-int ssw_is_mcnp5(ssw_file_t ff) {
-  SSW_FILEDECODE;
-  return f->mcnp_type == SSW_MCNP5;
-}
-
-const char * ssw_mcnpflavour(ssw_file_t ff) {
-  SSW_FILEDECODE;
-  switch(f->mcnp_type) {
-  case SSW_MCNP5: return "MCNP5";
-  case SSW_MCNP6: return "MCNP6";
-  case SSW_MCNPX: return "MCNPX";
-  default:
-    ssw_error("ssw_mcnpflavour: logic error.\n");
-  }
-  return "MCNP_logic_error";
-}
-
-int ssw_is_gzipped(ssw_file_t ff) {
-  SSW_FILEDECODE;
-#ifdef SSWREAD_HASZLIB
-  if (f->filegz)
-    return 1;
-#endif
-  return 0;
-}
-
-void ssw_layout(ssw_file_t ff, int* reclen, int* ssblen, int64_t* hdrlen, int64_t* np1pos, int64_t* nrsspos)
-{
-  SSW_FILEDECODE;
-  *reclen = f->reclen;
-  *ssblen = f->nrcd;
-  *np1pos = f->np1pos;
-  *nrsspos = f->nrsspos;
-  *hdrlen = f->headlen;
-}
-
-
-//load next particle (null indicates eof):
-const ssw_particle_t * ssw_load_particle(ssw_file_t ff)
-{
-  SSW_FILEDECODE;
-  if (f->pos >= f->nrss)
-    return 0;
-
-  ++f->pos;
-
-  //The record of the first particle in the file is always pre-loaded during
-  //initialisation, for the others we must consume another record:
-  if ( f->pos > 1 && !ssw_loadrecord(f) ) {
-    ssw_error("ssw_load error: problems loading particle record\n");
-    return 0;
-  }
-
-  if (f->lbuf != (unsigned)8*f->nrcd) {
-    ssw_error("ssw_load error: unexpected particle data length");
-    return 0;
-  }
-
-  double * ssb = (double*)f->buf;
-
-  ssw_particle_t* p = &(f->part);
-
-  p->weight = ssb[2];
-  p->ekin = ssb[3];//MeV
-  p->time = ssb[4];
-  p->x = ssb[5];
-  p->y = ssb[6];
-  p->z = ssb[7];
-  p->dirx = ssb[8];
-  p->diry = ssb[9];
-  int64_t nx = ssb[1];
-  if (nx<0) nx = - nx;//sign is used for sign of dirz (see below)
-
-  if ( f->mcnp_type == SSW_MCNP6 ) {
-    assert(f->nrcd==11);
-    p->isurf = labs((int32_t)ssb[10]);
-    nx /= 4;//ignore two lowest bits, maybe used to indicate cell-source-particle and energy-group mode (??)
-    p->rawtype = nx;
-    p->pdgcode = conv_mcnp6_ssw2pdg(nx);
-    if (!p->pdgcode)
-      printf("ssw_load_particle WARNING: Could not convert raw MCNP6 SSW type (%li) to pdg code\n",(long)(p->rawtype));
-  } else if ( f->mcnp_type == SSW_MCNPX ) {
-    p->isurf = nx % 1000000;
-    p->rawtype = nx / 1000000;
-    p->pdgcode = conv_mcnpx_ssw2pdg(p->rawtype);
-    if (!p->pdgcode)
-      printf("ssw_load_particle WARNING: Could not convert raw MCNPX SSW type (%li) to pdg code\n",(long)(p->rawtype));
-  } else {
-    assert( f->mcnp_type == SSW_MCNP5 );
-    nx /= 8;//Guess: Get rid of some bits that might be used for something else
-    p->isurf = nx % 1000000;
-    p->rawtype = nx / 1000000;
-    p->rawtype /= 100;//Guess: Get rid of some "bits" that might be used for something else
-    p->pdgcode = (p->rawtype==1?2112:(p->rawtype==2?22:0));//only neutrons and gammas in MCNP5
-    if (!p->pdgcode)
-      printf("ssw_load_particle WARNING: Could not convert raw MCNP5 SSW type (%li) to pdg code\n",(long)(p->rawtype));
-  }
-  p->dirz = sqrt(fmax(0.0, 1. - p->dirx*p->dirx-p->diry*p->diry));
-  if (ssb[1]<0.0)
-    p->dirz = - p->dirz;
-
-  return p;
-
-}
-
-static int32_t conv_mcnpx_to_pdg_0to34[] = { 0, 2112, 22, 11, 13, 15, 12, 14, 16, 2212, 3122, 3222,
-                                             3112, 3322, 3312, 3334, 4122, 4232, 4132, 5122, 211,
-                                             111, 321, 310, 130, 411, 421, 431, 521, 511, 531,
-                                             1000010020, 1000010030, 1000020030, 1000020040 };
-
-static int32_t conv_mcnp6_to_pdg_0to36[] = { 0, 2112, 22, 11, 13, -2112, 12, 14, -11, 2212, 3122,
-                                             3222, 3112, 3322, 3312, 3334, -13, -12, -14, -2212, 211,
-                                             111, 321, 310, 130, -3122, -3222, -3112, -3322, -3312, -3334,
-                                             1000010020, 1000010030, 1000020030, 1000020040, -211, -321 };
-
-int32_t conv_mcnpx_ssw2pdg( int32_t c )
-{
-  if (c<0)
-    return 0;
-  if (c<=34)
-    return conv_mcnpx_to_pdg_0to34[c];
-  if (c>=401&&c<=434)
-    return c==402 ? 22 : - conv_mcnpx_to_pdg_0to34[c%100];
-  int32_t sign = 1;
-  if (c%1000==435) {
-    sign = -1;
-    c -= 400;
-  }
-  if (c%1000==35) {
-    //ion from MMMAAA035 where MMM = Z-1 to 100ZZZAAA0
-    c /= 1000;
-    long A = c%1000;
-    if (!A)
-      return 0;
-    c /= 1000;
-    if (c/1000)
-      return 0;
-    long ZM1 = c%1000;
-    return sign * (1000000000 + (ZM1+1)*10000 + A*10);
-  }
-  //Retry without non-type related parts:
-  int j = (c%1000)/100;
-  if (j==2||j==6)
-    return conv_mcnpx_ssw2pdg(c-200);
-  return 0;
-}
-
-int32_t conv_mcnp6_ssw2pdg( int32_t c )
-{
-  if (c<0)
-    return 0;
-  int antibit = c%2;  c /=  2;
-  int ptype = c%64;  c /=  64;
-
-  if (ptype<=36) {
-    //Note that A (see below) has been observed in SSW files to have non-zero
-    //values for ptype<37 as well, so don't require A, Z or S to be 0 here.
-    int32_t p = conv_mcnp6_to_pdg_0to36[ptype];
-    return (antibit&&p!=22) ? -p : p;
-  }
-  if (ptype==37) {
-    int A = c%512;  c /=  512;
-    int Z = c%128;  c /=  128;
-    int S = c;
-    if (A<1||Z<1||A<Z||S>9)
-      return 0;
-    int32_t p = 1000000000 + 10000*Z + 10*A + S;
-    return antibit ? -p : p;
-  }
-  return 0;
-}
-
-int32_t conv_mcnpx_pdg2ssw( int32_t c )
+int32_t conv_code_phits2pdg( int32_t c )
 {
   int32_t absc = c < 0 ? -c : c;
-  if (absc <= 1000020040) {
-    int i;
-    for (i = 0; i<35; ++i) {
-      if (conv_mcnpx_to_pdg_0to34[i]==c)
-        return i;
-    }
-    for (i = 0; i<35; ++i) {
-      if (conv_mcnpx_to_pdg_0to34[i] == -c)
-        return 400+i;
-    }
+  if (!c)
+    return 0;
+  if (absc<1000000) {
+    //Presumably PHITS use pdg codes directly for non-nuclei/ions
+    return c;
   }
-  if (absc>1000000000&&absc<=1009999990) {
+  //PHITS encode nucleis as Z*1000000+A
+  long A = absc % 1000000;
+  long Z = absc / 1000000;
+  if (!Z||Z>130||A<Z||A>500)//Just picking max Z=130, A=500 as a quick sanity check - could tighten this!
+    return 0;//impossible
+  //PDG format for ions is 10LZZZAAAI, where L!=0 indicates strangeness
+  //and I!=0 indicates exited nuclei. We only allow L=I=0 ions here.
+  long abspdgcode = 10 * (A + 1000*(Z+100000));
+  return (int32_t) ( c < 0 ? -abspdgcode : abspdgcode );
+}
+
+int32_t conv_code_pdg2phits( int32_t c )
+{
+  int32_t absc = c < 0 ? -c : c;
+  if ( absc <= 1000000000 ) {
+    //Presumably PHITS use pdg codes directly for non-nuclei/ions, but only with
+    //room for 6 digits. And in fact, only those in the phits_known_nonion_codes
+    //are supported - and for 22, 111, 331 only if not negative (these particles
+    //are their own antiparticles):
+    int key = absc;
+    void * res = bsearch(&key, phits_known_nonion_codes, sizeof(phits_known_nonion_codes) / sizeof(phits_known_nonion_codes[0]),
+                         sizeof(phits_known_nonion_codes[0]), phits_cmp_codes);
+    if ( !res || ( c < 0 && (c==-22||c==-111||c==-331) ) )
+      return 0;
+    return c;
+  }
+  if (absc<=1009999990) {
     //Ions. PDG format for ions is 10LZZZAAAI, where L!=0 indicates strangeness
     //and I!=0 indicates exited nuclei. We only allow L=I=0 ions here.
+    if (c<0)
+      return 0;//Negative ions seems to not actually be supported in PHITS.
     int32_t I = absc % 10;//isomer level
     absc/=10;
     int32_t A = absc%1000;
@@ -16305,82 +15558,320 @@ int32_t conv_mcnpx_pdg2ssw( int32_t c )
     assert(absc/1000==100);//L=0 guaranteed by enclosing condition.
     if ( I || !A || !Z || Z>A )
       return 0;
-    return (Z-1)*1000000 + A*1000 + ( c<0 ? 435 : 35 );
+    //PHITS encode nucleis as Z*1000000+A:
+    int32_t absphitscode = Z*1000000+A;
+    return c < 0 ? -absphitscode : absphitscode;
   }
   return 0;
 }
 
-int32_t conv_mcnp6_pdg2ssw( int32_t c )
+void phits_error(const char * msg) {
+  printf("ERROR: %s\n",msg);
+  exit(1);
+}
+
+//Should be more than large enough to hold all records in all supported PHITS
+//dump files, including two 64bit record markers:
+#define PHITSREAD_MAXBUFSIZE (15*sizeof(double))
+
+typedef struct {
+#ifdef PHITSREAD_HASZLIB
+  gzFile filegz;
+#else
+  void * filegz;
+#endif
+  FILE * file;
+  phits_particle_t part;
+  int reclen;//width of Fortran record length field (4 or 8)
+  unsigned particlesize;//length of particle data in bytes (typically 10*8 or 13*8)
+  char buf[PHITSREAD_MAXBUFSIZE];//for holding last record of raw data read (including record markers of reclen bytes)
+  unsigned lbuf;//number of bytes currently read into buf
+  int haspolarisation;
+} phits_fileinternal_t;
+
+int phits_readbytes(phits_fileinternal_t* f, char * dest, int nbytes)
 {
-  int32_t absc = c < 0 ? -c : c;
-  if (absc <= 1000020040) {
-    if (c==-11)
-      return 7;//e+ is special case, pick 7 (anti e-) rather than 16 (straight e+)
-    int i;
-    for (i = 0; i<37; ++i) {
-      if (conv_mcnp6_to_pdg_0to36[i]==c)
-        return 2*i;
+  assert(nbytes>0);
+  //Attempt to read at most nbytes from file and into dest, handling both
+  //gzipped and standard files.
+  int nb;
+#ifdef PHITSREAD_HASZLIB
+  if (f->filegz)
+    nb = gzread(f->filegz, dest, nbytes);
+  else
+#endif
+    nb = fread(dest, 1, nbytes, f->file);
+  return nb;
+}
+
+int phits_ensure_load(phits_fileinternal_t* f, int nbytes)
+{
+  //For slowly filling up f->buf while reading first record. Returns 1 in case of success.
+  if ( nbytes > (int)PHITSREAD_MAXBUFSIZE )
+    return 0;
+  int missing = nbytes - f->lbuf;
+  if ( missing<=0 )
+    return 1;
+  int nr = phits_readbytes(f,&(f->buf[f->lbuf]),missing);
+  if (nr!=missing)
+    return 0;
+  f->lbuf = nbytes;
+  return 1;
+}
+
+int phits_tryload_reclen(phits_fileinternal_t* f, int reclen ) {
+  assert(reclen==4||reclen==8);
+  if ( ! phits_ensure_load( f, reclen ) )
+    return 0;
+  char * buf = & ( f->buf[0] );
+  uint64_t l1 = ( reclen == 4 ? (uint64_t)(*((uint32_t*)buf)) : (uint64_t)(*((uint64_t*)buf)) );
+  if ( ! phits_ensure_load( f, l1 + 2*reclen ) )
+    return 0;
+  buf += (reclen + l1);
+  uint64_t l2 = ( reclen == 4 ? (uint64_t)(*((uint32_t*)buf)) : (uint64_t)(*((uint64_t*)buf)) );
+  if (l1!=l2)
+    return 0;
+  //All ok!
+  f->reclen = reclen;
+  f->particlesize = l1;
+  return 1;
+}
+
+phits_file_t phits_openerror(phits_fileinternal_t * f, const char* msg) {
+  if (f) {
+    if (f->file)
+      fclose(f->file);
+#ifdef PHITSREAD_HASZLIB
+    if (f->filegz)
+      gzclose(f->filegz);
+#endif
+    free(f);
+  }
+  phits_error(msg);
+  phits_file_t out;
+  out.internal = 0;
+  return out;
+}
+
+  phits_file_t phits_open_internal( const char * filename )
+  {
+    phits_fileinternal_t * f = (phits_fileinternal_t*)calloc(sizeof(phits_fileinternal_t),1);
+    assert(f);
+
+    phits_file_t out;
+    out.internal = f;
+
+    //Init:
+    f->particlesize = 0;
+    f->lbuf = 0;
+    f->reclen = 4;
+    f->file = 0;
+    f->filegz = 0;
+    f->haspolarisation = 0;
+    memset( &( f->part ),0,sizeof(f->part) );
+
+    //open file (with gzopen if filename ends with .gz):
+    const char * lastdot = strrchr(filename, '.');
+    if (lastdot && strcmp(lastdot, ".gz") == 0) {
+  #ifdef PHITSREAD_HASZLIB
+      f->filegz = gzopen(filename,"rb");
+      if (!f->filegz)
+        phits_error("Unable to open file!");
+  #else
+      phits_error("This installation was not built with zlib support and can not read compressed (.gz) files directly.");
+  #endif
+    } else {
+      f->file = fopen(filename,"rb");
+      if (!f->file)
+        phits_error("Unable to open file!");
     }
-    for (i = 0; i<37; ++i) {
-      if (conv_mcnp6_to_pdg_0to36[i] == -c)
-        return 1 + 2*i;
+
+    //Try to read first Fortran record marker, keeping in mind that we do not
+    //know if it is 32bit or 64bit, and that an empty file is to be interpreted
+    //as a valid PHITS dump file with 0 particles:
+
+    if (!phits_ensure_load(f,1)) {
+      //Can't read a single byte. Assume that this indicates an empty file and
+      //therefore a valid PHITS dump file with 0 particles:
+      //file with 0 particles, mark as EOF:
+      f->particlesize = 0;
+      f->haspolarisation = 0;//Convention: We mark empty files as NOT HAVING
+                             //polarisation info (to avoid potentially inflating
+                             //mcpl files in various merge/conversion
+                             //scenarios).
+      return out;
     }
+
+    //Try to read first record with first 32bit then 64bit record lengths
+    //(updating f->reclen and f->particlesize in case of success):
+    if (!phits_tryload_reclen(f,4)) {
+      if (!phits_tryload_reclen(f,8)) {
+        if (f->lbuf<8)
+          phits_error("Invalid PHITS dump file: too short\n");
+        phits_error("Invalid PHITS dump file: Problems reading first record.\n");
+      }
+    }
+    assert( f->reclen==4 || f->reclen==8 );
+
+    if (f->reclen==8) {
+      printf("phits_open_file WARNING: 64bit Fortran records detected which is untested (feedback"
+             " appreciated at https://mctools.github.io/mcpl/contact/).\n");
+    }
+
+    if (f->particlesize == 10*sizeof(double)) {
+      f->haspolarisation = 0;
+    } else if (f->particlesize == 13*sizeof(double)) {
+      f->haspolarisation = 1;
+    } else {
+      phits_error("Invalid PHITS dump file: Does not contain exactly 10 or 13 fields in each"
+                  " particle - like due to unsupported configuration flags being used when"
+                  " producing the file.\n");
+    }
+
+    //All ok it seems, copy first particle data into buffer:
+    // memcpy(f->bufdata,&tmpbuf[f->reclen],f->particlesize);
+    // f->particledatabuffer = &(f->bufdata[0]);
+    return out;
   }
 
-  if (absc>1000000000&&absc<=1009999990) {
-    //Ions. PDG format for ions is 10LZZZAAAI, where L!=0 indicates strangeness
-    //and I!=0 indicates exited nuclei. We only allow L=0 ions here.
-    int32_t I = absc % 10;//isomer level
-    absc/=10;
-    int32_t A = absc%1000;
-    absc/=1000;
-    int32_t Z = absc % 1000;
-    assert(absc/1000==100);//L=0 guaranteed by enclosing condition.
-    if ( !A || !Z || Z>A )
-      return 0;
-    int32_t res = (c<0?1:0);
-    res += 2*37;
-    res += 128*A;
-    res += 128*512*Z;
-    res += 128*512*128*I;
-    return res;
+  phits_file_t phits_open_file( const char * filename )
+  {
+    if (!filename)
+      phits_error("phits_open_file called with null string for filename");
+
+    //Open, classify and process first record with mcnp type and version info:
+
+    phits_file_t out = phits_open_internal( filename );
+    phits_fileinternal_t * f = (phits_fileinternal_t *)out.internal; assert(f);
+
+    out.internal = f;
+    return out;
   }
-  return 0;
+  const phits_particle_t * phits_load_particle(phits_file_t ff)
+  {
+    phits_fileinternal_t * f = (phits_fileinternal_t *)ff.internal;
+    assert(f);
+
+    if (!f->particlesize) {
+      //EOF already
+      return 0;
+    }
+
+    assert( f->particlesize == 10*sizeof(double) || f->particlesize == 13*sizeof(double) );
+
+    if (!f->lbuf) {
+      if (!phits_ensure_load(f, 1)) {
+        //Can't read a single byte - assume EOF:
+        f->particlesize = 0;
+        return 0;
+      }
+      //Try to load another record
+      int old_reclen = f->reclen;
+      (void)old_reclen;//otherwise unused if assert inactive.
+      unsigned old_particlesize = f->particlesize;
+      if (!phits_tryload_reclen(f,f->reclen)) {
+        phits_error("Problems loading particle data record!");
+        return 0;
+      }
+      assert(f->reclen==old_reclen);
+      if ( f->particlesize != old_particlesize) {
+        phits_error("Problems loading particle data record - particle data length changed mid-file (perhaps it is not actually a binary PHITS dump file after all?)!");
+        return 0;
+      }
+    }
+
+    assert( f->lbuf == f->particlesize + f->reclen * 2 );
+    double * pdata = (double*)(f->buf+f->reclen);
+    phits_particle_t * pp =  & (f->part);
+    pp->rawtype = pdata[0];
+    //NB: PHITS units, not MCPL units here (only difference is time unit which is ns in PHITS and ms in MCPL):
+    pp->x = pdata[1];//cm
+    pp->y = pdata[2];//cm
+    pp->z = pdata[3];//cm
+    pp->dirx = pdata[4];
+    pp->diry = pdata[5];
+    pp->dirz = pdata[6];
+    pp->ekin = pdata[7];//MeV
+    pp->weight = pdata[8];
+    pp->time = pdata[9];//ns
+    if (f->particlesize == 13*sizeof(double)) {
+      pp->polx = pdata[10];
+      pp->poly = pdata[11];
+      pp->polz = pdata[12];
+    } else {
+      pp->polx = 0.0;
+      pp->poly = 0.0;
+      pp->polz = 0.0;
+    }
+
+    pp->pdgcode = conv_code_phits2pdg(pp->rawtype);
+
+    //Mark as used:
+    f->lbuf = 0;
+
+    return pp;
+  }
+
+int phits_has_polarisation(phits_file_t ff)
+{
+  phits_fileinternal_t * f = (phits_fileinternal_t *)ff.internal;
+  assert(f);
+  return f->haspolarisation;
+}
+
+void phits_close_file(phits_file_t ff) {
+
+  phits_fileinternal_t * f = (phits_fileinternal_t *)ff.internal;
+  assert(f);
+  if (!f)
+    return;
+  if (f->file) {
+    fclose(f->file);
+    f->file = 0;
+  }
+#ifdef PHITSREAD_HASZLIB
+  if (f->filegz) {
+    gzclose(f->filegz);
+    f->file = 0;
+  }
+#endif
+  free(f);
+  ff.internal = 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
 //                                                                                 //
-//  sswmcpl : Code for converting between MCPL and SSW files from MCNP(X).         //
+//  phitsmcpl : Code for converting between MCPL and binary PHITS dump files.      //
 //                                                                                 //
 //                                                                                 //
-//  Compilation of sswmcpl.c can proceed via any compliant C-compiler using        //
+//  Compilation of phitsmcpl.c can proceed via any compliant C-compiler using      //
 //  -std=c99 later. Furthermore, the following preprocessor flag can be used       //
-//  when compiling sswmcpl.c to fine tune the build process.                       //
+//  when compiling phitsmcpl.c to fine tune the build process.                     //
 //                                                                                 //
-//  SSWMCPL_HDR_INCPATH  : Specify alternative value if the sswmcpl header         //
-//                         itself is not to be included as "sswmcpl.h".            //
-//  SSWREAD_HDR_INCPATH  : Specify alternative value if the sswread header         //
-//                         is not to be included as "sswread.h".                   //
+//  PHITSMCPL_HDR_INCPATH  : Specify alternative value if the phitsmcpl header     //
+//                         itself is not to be included as "phitsmcpl.h".          //
+//  PHITSREAD_HDR_INCPATH  : Specify alternative value if the phitsread header     //
+//                         is not to be included as "phitsread.h".                 //
 //  MCPL_HEADER_INCPATH  : Specify alternative value if the MCPL header is         //
 //                         not to be included as "mcpl.h".                         //
 //                                                                                 //
 // This file can be freely used as per the terms in the LICENSE file.              //
 //                                                                                 //
-// However, note that usage of MCNP(X)-related utilities might require additional  //
+// However, note that usage of PHITS-related utilities might require additional    //
 // permissions and licenses from third-parties, which is not within the scope of   //
 // the MCPL project itself.                                                        //
 //                                                                                 //
-// Written 2015-2017, thomas.kittelmann@esss.se (European Spallation Source).      //
+// Written 2019, thomas.kittelmann@esss.se (European Spallation Source).           //
 //                                                                                 //
 /////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef SSWMCPL_HDR_INCPATH
-#  include SSWMCPL_HDR_INCPATH
+#ifdef PHITSMCPL_HDR_INCPATH
+#  include PHITSMCPL_HDR_INCPATH
 #else
 #endif
 
-#ifdef SSWREAD_HDR_INCPATH
-#  include SSWREAD_HDR_INCPATH
+#ifdef PHITSREAD_HDR_INCPATH
+#  include PHITSREAD_HDR_INCPATH
 #else
 #endif
 
@@ -16395,9 +15886,9 @@ int32_t conv_mcnp6_pdg2ssw( int32_t c )
 #include <stdio.h>
 #include <assert.h>
 
-void ssw_error(const char * msg);//fwd declare internal function from sswread.c
+void phits_error(const char * msg);//fwd declare internal function from phitsread.c
 
-int sswmcpl_buf_is_text(size_t n, const unsigned char * buf) {
+int phitsmcpl_buf_is_text(size_t n, const unsigned char * buf) {
   //We correctly allow ASCII & UTF-8 but falsely classify UTF-16 and UTF-32 as
   //data. See http://stackoverflow.com/questions/277521#277568 for how we could
   //also detect UTF-16 & UTF-32.
@@ -16408,7 +15899,7 @@ int sswmcpl_buf_is_text(size_t n, const unsigned char * buf) {
   return 1;
 }
 
-int sswmcpl_file2buf(const char * filename, unsigned char** buf, size_t* lbuf, size_t maxsize, int require_text) {
+int phitsmcpl_file2buf(const char * filename, unsigned char** buf, size_t* lbuf, size_t maxsize, int require_text) {
   *buf = 0;
   *lbuf = 0;
   FILE * file = fopen(filename, "rb");
@@ -16456,7 +15947,7 @@ int sswmcpl_file2buf(const char * filename, unsigned char** buf, size_t* lbuf, s
   }
   fclose(file);
 
-  if ( require_text && !sswmcpl_buf_is_text(bbuf_size, bbuf) ) {
+  if ( require_text && !phitsmcpl_buf_is_text(bbuf_size, bbuf) ) {
     printf("Error: file %s does not appear to be a text file.\n",filename);
     free(bbuf);
     return 0;
@@ -16466,91 +15957,80 @@ int sswmcpl_file2buf(const char * filename, unsigned char** buf, size_t* lbuf, s
   return 1;
 }
 
-int ssw2mcpl(const char * sswfile, const char * mcplfile)
+int phits2mcpl(const char * phitsfile, const char * mcplfile)
 {
-  return ssw2mcpl2(sswfile, mcplfile, 0, 0, 1, 0);
+  return phits2mcpl2(phitsfile, mcplfile, 0, 1, 0, 0);
 }
 
-int ssw2mcpl2(const char * sswfile, const char * mcplfile,
-              int opt_dp, int opt_surf, int opt_gzip,
-              const char * inputdeckfile)
+int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
+                 int opt_dp, int opt_gzip,
+                 const char * inputdeckfile,
+                 const char * dumpsummaryfile )
 {
-  ssw_file_t f = ssw_open_file(sswfile);
+  phits_file_t f = phits_open_file(phitsdumpfile);
   mcpl_outfile_t mcplfh = mcpl_create_outfile(mcplfile);
 
-  mcpl_hdr_set_srcname(mcplfh,ssw_mcnpflavour(f));
+  mcpl_hdr_set_srcname(mcplfh,"PHITS");
 
-  uint64_t lstrbuf = 1024;
-  lstrbuf += strlen(ssw_srcname(f));
-  lstrbuf += strlen(ssw_srcversion(f));
-  lstrbuf += strlen(ssw_title(f));
+  mcpl_hdr_add_comment(mcplfh,"Converted from PHITS with phits2mcpl (from MCPL release v" MCPL_VERSION_STR ")");
 
-  if (lstrbuf<4096) {
-    char * buf = (char*)malloc((int)lstrbuf);
-    buf[0] = '\0';
-    strcat(buf,"SSW file from ");
-    strcat(buf,ssw_mcnpflavour(f));
-    strcat(buf," converted with ssw2mcpl (from MCPL release v" MCPL_VERSION_STR ")");
-    mcpl_hdr_add_comment(mcplfh,buf);
-
-    buf[0] = '\0';
-    strcat(buf,"SSW metadata: [kods='");
-    strcat(buf,ssw_srcname(f));
-    strcat(buf,"', vers='");
-    strcat(buf,ssw_srcversion(f));
-    strcat(buf,"', title='");
-    strcat(buf,ssw_title(f));
-    strcat(buf,"']");
-    mcpl_hdr_add_comment(mcplfh,buf);
-    free(buf);
-  } else {
-    mcpl_hdr_add_comment(mcplfh,"SSW metadata: <too long so not stored>");
-  }
-  if (opt_surf) {
-    mcpl_hdr_add_comment(mcplfh,"The userflags in this file are the surface IDs found in the SSW file");
-    mcpl_enable_userflags(mcplfh);
-  }
-  if (opt_dp) {
+  if (opt_dp)
     mcpl_enable_doubleprec(mcplfh);
-  }
+
+  if (phits_has_polarisation(f))
+    mcpl_enable_polarisation(mcplfh);
 
   if (inputdeckfile) {
     unsigned char* cfgfile_buf;
     size_t cfgfile_lbuf;
-    if (!sswmcpl_file2buf(inputdeckfile, &cfgfile_buf, &cfgfile_lbuf, 104857600, 1))
+    if (!phitsmcpl_file2buf(inputdeckfile, &cfgfile_buf, &cfgfile_lbuf, 104857600, 1))
       return 0;
-    if (!strstr((const char*)cfgfile_buf, ssw_title(f))) {
-      printf("Error: specified configuration file %s does not contain title found in ssw file: \"%s\".\n",inputdeckfile,ssw_title(f));
+    //We won't do much for sanity checks since we want to avoid the risk of
+    //false positives, but at least the word "dump" should occur in both input
+    //deck and dump summary files:
+    if (!strstr((const char*)cfgfile_buf, "dump")) {
+      printf("Error: specified configuration file %s looks invalid as it does not contain the word \"dump\".\n",inputdeckfile);
       return 0;
     }
-    mcpl_hdr_add_data(mcplfh, "mcnp_input_deck", (uint32_t)cfgfile_lbuf,(const char *)cfgfile_buf);
+    mcpl_hdr_add_data(mcplfh, "phits_input_deck", (uint32_t)cfgfile_lbuf,(const char *)cfgfile_buf);
     free(cfgfile_buf);
   }
+  if (dumpsummaryfile) {
+    unsigned char* summaryfile_buf;
+    size_t summaryfile_lbuf;
+    if (!phitsmcpl_file2buf(dumpsummaryfile, &summaryfile_buf, &summaryfile_lbuf, 104857600, 1))
+      return 0;
+    //Same check as for the input deck above:
+    if (!strstr((const char*)summaryfile_buf, "dump")) {
+      printf("Error: specified dump summary file %s looks invalid as it does not contain the word \"dump\".\n",dumpsummaryfile);
+      return 0;
+    }
+    mcpl_hdr_add_data(mcplfh, "phits_dump_summary_file", (uint32_t)summaryfile_lbuf,(const char *)summaryfile_buf);
+    free(summaryfile_buf);
+  }
 
-  mcpl_particle_t mcpl_particle;
-  memset(&mcpl_particle,0,sizeof(mcpl_particle));
+  mcpl_particle_t* mcpl_particle = mcpl_get_empty_particle(mcplfh);
 
-  const ssw_particle_t * p;
-  while ((p=ssw_load_particle(f))) {
-    mcpl_particle.pdgcode = p->pdgcode;
-    if (!mcpl_particle.pdgcode) {
-      printf("Warning: ignored particle with no PDG code set (raw ssw type was %li).\n",p->rawtype);
+  const phits_particle_t * p;
+  while ((p=phits_load_particle(f))) {
+    if (!p->pdgcode) {
+      printf("Warning: ignored particle with no PDG code set (raw phits kt code was %li).\n",p->rawtype);
       continue;
     }
-
-    mcpl_particle.position[0] = p->x;//already in cm
-    mcpl_particle.position[1] = p->y;//already in cm
-    mcpl_particle.position[2] = p->z;//already in cm
-    mcpl_particle.direction[0] = p->dirx;
-    mcpl_particle.direction[1] = p->diry;
-    mcpl_particle.direction[2] = p->dirz;
-    mcpl_particle.time = p->time * 1.0e-5;//"shakes" to milliseconds
-    mcpl_particle.weight = p->weight;
-    mcpl_particle.ekin = p->ekin;//already in MeV
-    mcpl_particle.userflags = p->isurf;
-
-    mcpl_add_particle(mcplfh,&mcpl_particle);
-
+    mcpl_particle->pdgcode = p->pdgcode;
+    mcpl_particle->position[0] = p->x;//already in cm
+    mcpl_particle->position[1] = p->y;//already in cm
+    mcpl_particle->position[2] = p->z;//already in cm
+    mcpl_particle->direction[0] = p->dirx;
+    mcpl_particle->direction[1] = p->diry;
+    mcpl_particle->direction[2] = p->dirz;
+    mcpl_particle->polarisation[0] = p->polx;
+    mcpl_particle->polarisation[1] = p->poly;
+    mcpl_particle->polarisation[2] = p->polz;
+    mcpl_particle->time = p->time * 1.0e6;//nanoseconds to milliseconds
+    mcpl_particle->weight = p->weight;
+    mcpl_particle->ekin = p->ekin;//already in MeV
+    mcpl_add_particle(mcplfh,mcpl_particle);
   }
 
   const char * tmp = mcpl_outfile_filename(mcplfh);
@@ -16564,20 +16044,21 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
     did_gzip = mcpl_closeandgzip_outfile(mcplfh);
   else
     mcpl_close_outfile(mcplfh);
-  ssw_close_file(f);
+  phits_close_file(f);
 
   printf("Created %s%s\n",actual_filename,(did_gzip?".gz":""));
   free(actual_filename);
   return 1;
 }
 
-void ssw2mcpl_parse_args(int argc,char **argv, const char** infile,
-                         const char **outfile, const char **cfgfile,
-                         int* double_prec, int* surface_info, int* do_gzip) {
+void phits2mcpl_parse_args( int argc,char **argv, const char** infile,
+                            const char **outfile,  const char **cfgfile,
+                            const char **dumpsummaryfile,
+                            int* double_prec, int* do_gzip ) {
   *cfgfile = 0;
+  *dumpsummaryfile = 0;
   *infile = 0;
   *outfile = 0;
-  *surface_info = 0;
   *double_prec = 0;
   *do_gzip = 1;
   int i;
@@ -16588,19 +16069,20 @@ void ssw2mcpl_parse_args(int argc,char **argv, const char** infile,
       const char * progname = strrchr(argv[0], '/');
       progname = progname ? progname + 1 : argv[0];
       printf("Usage:\n\n");
-      printf("  %s [options] input.ssw [output.mcpl]\n\n",progname);
-      printf("Converts the Monte Carlo particles in the input.ssw file (MCNP Surface\n"
-             "Source Write format) to MCPL format and stores in the designated output\n"
-             "file (defaults to \"output.mcpl\").\n"
+      printf("  %s [options] dumpfile [output.mcpl]\n\n",progname);
+      printf("Converts the Monte Carlo particles in the input dump file (binary PHITS dump\n"
+             "file format in suitable configuration) to MCPL format and stores in the\n"
+             "designated output file (defaults to \"output.mcpl\").\n"
              "\n"
              "Options:\n"
              "\n"
              "  -h, --help   : Show this usage information.\n"
              "  -d, --double : Enable double-precision storage of floating point values.\n"
-             "  -s, --surf   : Store SSW surface IDs in the MCPL userflags.\n"
              "  -n, --nogzip : Do not attempt to gzip output file.\n"
              "  -c FILE      : Embed entire configuration FILE (the input deck)\n"
-             "                 used to produce input.ssw in the MCPL header.\n"
+             "                 used to produce dumpfile in the MCPL header.\n"
+             "  -s FILE      : Embed into the MCPL header the dump summary text file,\n"
+             "                 which was produced along with the dumpfile itself.\n"
              );
       exit(0);
     }
@@ -16617,13 +16099,22 @@ void ssw2mcpl_parse_args(int argc,char **argv, const char** infile,
       *cfgfile = argv[i];
       continue;
     }
+    if (strcmp(argv[i],"-s")==0) {
+      if (i+1==argc||argv[i+1][0]=='-') {
+        printf("Error: Missing argument for -s\n");
+        exit(1);
+      }
+      ++i;
+      if (*dumpsummaryfile) {
+        printf("Error: -s specified more than once\n");
+        exit(1);
+      }
+      *dumpsummaryfile = argv[i];
+      continue;
+    }
 
     if (strcmp(argv[i],"-d")==0||strcmp(argv[i],"--double")==0) {
       *double_prec = 1;
-      continue;
-    }
-    if (strcmp(argv[i],"-s")==0||strcmp(argv[i],"--surf")==0) {
-      *surface_info = 1;
       continue;
     }
     if (strcmp(argv[i],"-n")==0||strcmp(argv[i],"--nogzip")==0) {
@@ -16658,76 +16149,51 @@ void ssw2mcpl_parse_args(int argc,char **argv, const char** infile,
   }
 }
 
-int ssw2mcpl_app(int argc,char** argv)
+int phits2mcpl_app(int argc,char** argv)
 {
   const char * infile;
   const char * outfile;
   const char * cfgfile;
-  int double_prec, surface_info, do_gzip;
-  ssw2mcpl_parse_args(argc,argv,&infile,&outfile,&cfgfile,&double_prec,&surface_info,&do_gzip);
-  int ok = ssw2mcpl2(infile, outfile,double_prec, surface_info, do_gzip,cfgfile);
+  const char * dumphdrfile;
+  int double_prec, do_gzip;
+  phits2mcpl_parse_args(argc,argv,&infile,&outfile,&cfgfile,&dumphdrfile,&double_prec,&do_gzip);
+  int ok = phits2mcpl2(infile, outfile,double_prec, do_gzip,cfgfile,dumphdrfile);
   return ok ? 0 : 1;
 }
 
-void ssw_update_nparticles(FILE* f,
-                           int64_t np1pos, int32_t np1,
-                           int64_t nrsspos, int32_t nrss)
-{
-  //Seek and update np1 and nrss fields at correct location in header:
-  const char * errmsg = "Errors encountered while attempting to update number of particle info in output file.";
-  int64_t savedpos = ftell(f);
-  if (savedpos<0)
-    ssw_error(errmsg);
-  if (fseek( f, np1pos, SEEK_SET ))
-    ssw_error(errmsg);
-  size_t nb = fwrite(&np1, 1, sizeof(np1), f);
-  if (nb != sizeof(np1))
-    ssw_error(errmsg);
-  if (fseek( f, nrsspos, SEEK_SET ))
-    ssw_error(errmsg);
-  nb = fwrite(&nrss, 1, sizeof(nrss), f);
-  if (nb != sizeof(nrss))
-    ssw_error(errmsg);
-  if (fseek( f, savedpos, SEEK_SET ))
-    ssw_error(errmsg);
-}
-
-void ssw_writerecord(FILE* outfile, int reclen, size_t lbuf, char* buf)
+void phits_writerecord(FILE* outfile, int reclen, size_t lbuf, char* buf)
 {
   if (reclen==4) {
     uint32_t rl = lbuf;
     size_t nb = fwrite(&rl, 1, sizeof(rl), outfile);
     if (nb!=sizeof(rl))
-      ssw_error("write error");
+      phits_error("write error");
     nb = fwrite(buf, 1, lbuf, outfile);
     if (nb!=lbuf)
-      ssw_error("write error");
+      phits_error("write error");
     nb = fwrite(&rl, 1, sizeof(rl), outfile);
     if (nb!=sizeof(rl))
-      ssw_error("write error");
+      phits_error("write error");
   } else {
     assert(reclen==8);
     uint64_t rl = lbuf;
     size_t nb = fwrite(&rl, 1, sizeof(rl), outfile);
     if (nb!=sizeof(rl))
-      ssw_error("write error");
+      phits_error("write error");
     nb = fwrite(buf, 1, lbuf, outfile);
     if (nb!=lbuf)
-      ssw_error("write error");
+      phits_error("write error");
     nb = fwrite(&rl, 1, sizeof(rl), outfile);
     if (nb!=sizeof(rl))
-      ssw_error("write error");
+      phits_error("write error");
   }
 }
 
-//Fwd declaration of internal function in sswread.c:
-void ssw_internal_grabhdr( const char * filename, int is_gzip, int64_t hdrlen,
-                           unsigned char * hdrbuf );
-
-
-int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refsswfile,
-             long surface_id, long nparticles_limit)
+int mcpl2phits( const char * inmcplfile, const char * outphitsdumpfile,
+                int use_polarisation, long nparticles_limit, int reclen )
 {
+  if ( reclen != 4 && reclen != 8 )
+    phits_error("Reclen parameter should be 4 (32bit Fortran record markers, recommended) or 8 (64bit Fortran record markers)");
 
   mcpl_file_t fmcpl = mcpl_open_file(inmcplfile);
 
@@ -16735,200 +16201,87 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
           mcpl_hdr_srcname(fmcpl),
           (unsigned long long)mcpl_hdr_nparticles(fmcpl) );
 
-  if (surface_id==0 && !mcpl_hdr_has_userflags(fmcpl))
-    ssw_error("MCPL file contains no userflags so parameter specifying "
-              "resulting SSW surface ID of particles is mandatory (use -s<ID>).");
+  printf("Creating (or overwriting) output PHITS file.\n");
 
-  printf("Opening reference SSW file:\n");
-  ssw_file_t fsswref = ssw_open_file(refsswfile);
-
-  //Open reference file and figure out variables like header length, position of
-  //"nparticles"-like variables, fortran record length and mcnp version.
-  int ssw_reclen;
-  int ssw_ssblen;
-  int64_t ssw_hdrlen;
-  int64_t ssw_np1pos;
-  int64_t ssw_nrsspos;
-  ssw_layout(fsswref, &ssw_reclen, &ssw_ssblen, &ssw_hdrlen, &ssw_np1pos, &ssw_nrsspos);
-  assert(ssw_np1pos<ssw_hdrlen);
-  assert(ssw_nrsspos<ssw_hdrlen);
-
-#define SSW_MCNP6 1
-#define SSW_MCNPX 2
-#define SSW_MCNP5 3
-  int ssw_mcnp_type = 0;
-  if (ssw_is_mcnp6(fsswref)) {
-    ssw_mcnp_type = SSW_MCNP6;
-  } else if (ssw_is_mcnpx(fsswref)) {
-    ssw_mcnp_type = SSW_MCNPX;
-  } else if (ssw_is_mcnp5(fsswref)) {
-    ssw_mcnp_type = SSW_MCNP5;
-  }
-  assert(ssw_mcnp_type>0);
-  char ref_mcnpflavour_str[64];
-  ref_mcnpflavour_str[0] = '\0';
-  strcat(ref_mcnpflavour_str,ssw_mcnpflavour(fsswref));
-
-  int ref_is_gzipped = ssw_is_gzipped(fsswref);
-  ssw_close_file(fsswref);
-
-  //Grab the header:
-  unsigned char * hdrbuf = (unsigned char*)malloc(ssw_hdrlen);
-  assert(hdrbuf);
-  ssw_internal_grabhdr( refsswfile, ref_is_gzipped, ssw_hdrlen, hdrbuf );
-
-  int32_t orig_np1 = * ((int32_t*)(&hdrbuf[ssw_np1pos]));
-
-  //Clear |np1| and nrss in header to to indicate incomplete info (we will
-  //update just before closing the file):
-  *((int32_t*)(&hdrbuf[ssw_np1pos])) = 0;
-  *((int32_t*)(&hdrbuf[ssw_nrsspos])) = 0;
-
-  printf("Creating (or overwriting) output SSW file.\n");
-
-  //Open new ssw file:
-  FILE * fout = fopen(outsswfile,"wb");
+  //Open new phits file:
+  FILE * fout = fopen(outphitsdumpfile,"wb");
 
   if (!fout)
-    ssw_error("Problems opening new SSW file");
-
-  //Write header:
-  int nb = fwrite(hdrbuf, 1, ssw_hdrlen, fout);
-  if (nb!=ssw_hdrlen)
-    ssw_error("Problems writing header to new SSW file");
-
-  free(hdrbuf);
-
-  double ssb[11];
-
-  if ( ssw_ssblen != 10 && ssw_ssblen != 11)
-    ssw_error("Unexpected length of ssb record in reference SSW file");
-  if ( (ssw_mcnp_type == SSW_MCNP6) && ssw_ssblen != 11 )
-    ssw_error("Unexpected length of ssb record in reference SSW file (expected 11 for MCNP6 files)");
-
-  //ssb[0] should be history number (starting from 1), but in our case we always
-  //put nhistories=nparticles, so it is simply incrementing by 1 for each particle.
-  ssb[0] = 0.0;
-
-
-  assert(surface_id>=0&&surface_id<1000000);
+    phits_error("Problems opening new PHITS file");
 
   const mcpl_particle_t* mcpl_p;
 
-  long used = 0;
-  long long skipped_nosswtype = 0;
+  long long used = 0;
+  long long skipped_nophitstype = 0;
 
   printf("Initiating particle conversion loop.\n");
 
+  double dumpdata[13] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};//explicit since gcc 4.1-4.6 might warn on ={0}; syntax
+
   while ( ( mcpl_p = mcpl_read(fmcpl) ) ) {
-    ++ssb[0];
-    ssb[2] = mcpl_p->weight;
-    ssb[3] = mcpl_p->ekin;//already in MeV
-    ssb[4] = mcpl_p->time * 1.0e5;//milliseconds to "shakes"
-    ssb[5] = mcpl_p->position[0];//already in cm
-    ssb[6] = mcpl_p->position[1];//already in cm
-    ssb[7] = mcpl_p->position[2];//already in cm
-    ssb[8] = mcpl_p->direction[0];
-    ssb[9] = mcpl_p->direction[1];
-
-    int32_t isurf = surface_id;
-    if (!isurf)
-      isurf = (int32_t)mcpl_p->userflags;
-
-    if (isurf<=0||isurf>1000000) {
-      if (isurf==0&&surface_id==0)
-        ssw_error("Could not determine surface ID: no global surface id specified and particle had no (or empty) userflags");
-      else
-        ssw_error("Surface id must be in range 1..999999");
-    }
-
-    int64_t rawtype;
-    if (ssw_mcnp_type == SSW_MCNP6) {
-      rawtype = conv_mcnp6_pdg2ssw(mcpl_p->pdgcode);
-    } else if (ssw_mcnp_type == SSW_MCNPX) {
-      rawtype = conv_mcnpx_pdg2ssw(mcpl_p->pdgcode);
-    } else {
-      assert(ssw_mcnp_type == SSW_MCNP5);
-      rawtype = (mcpl_p->pdgcode==2112?1:(mcpl_p->pdgcode==22?2:0));
-    }
-
+    int32_t rawtype =  conv_code_pdg2phits( mcpl_p->pdgcode );
     if (!rawtype) {
-      ++skipped_nosswtype;
-      if (skipped_nosswtype<=100) {
-        printf("WARNING: Found PDG code (%li) in the MCPL file which can not be converted to an %s particle type\n",
-               (long)mcpl_p->pdgcode,ref_mcnpflavour_str);
-        if (skipped_nosswtype==100)
+      ++skipped_nophitstype;
+      if (skipped_nophitstype<=100) {
+        printf("WARNING: Found PDG code (%li) in the MCPL file which can not be converted to a PHITS particle code\n",
+               (long)mcpl_p->pdgcode);
+        if (skipped_nophitstype==100)
           printf("WARNING: Suppressing future warnings regarding non-convertible PDG codes.\n");
       }
       continue;
     }
 
-    assert(rawtype>0);
+    assert(rawtype!=0);
 
-    if (ssw_mcnp_type == SSW_MCNP6) {
-      assert(ssw_ssblen==11);
-      ssb[10] = isurf;//Should we set the sign of ssb[10] to mean something (we take abs(ssb[10]) in sswread.c)?
-      ssb[1] = rawtype*4;//Shift 2 bits (thus we only create files with those two bits zero!)
-    } else if (ssw_mcnp_type == SSW_MCNPX) {
-      ssb[1] = isurf + 1000000*rawtype;
-      if (ssw_ssblen==11)
-        ssb[10] = 1.0;//Cosine of angle at surface? Can't calculate it, so we simply set
-                      //it to 1 (seems to be not used anyway?)
-    } else {
-      assert(ssw_mcnp_type == SSW_MCNP5);
-      ssb[1] = (isurf + 1000000*rawtype)*8;
-      if (ssw_ssblen==11)
-        ssb[10] = 1.0;//Cosine of angle at surface? Can't calculate it, so we simply set
-                      //it to 1 (seems to be not used anyway?)
+    dumpdata[0] = rawtype;
+    dumpdata[1] = mcpl_p->position[0];//Already in cm
+    dumpdata[2] = mcpl_p->position[1];//Already in cm
+    dumpdata[3] = mcpl_p->position[2];//Already in cm
+    dumpdata[4] = mcpl_p->direction[0];
+    dumpdata[5] = mcpl_p->direction[1];
+    dumpdata[6] = mcpl_p->direction[2];
+    dumpdata[7] = mcpl_p->ekin;//Already in MeV
+    dumpdata[8] = mcpl_p->weight;
+    dumpdata[9] = mcpl_p->time * 1.0e-6;//ms->ns
+    dumpdata[10] = mcpl_p->polarisation[0];
+    dumpdata[11] = mcpl_p->polarisation[1];
+    dumpdata[12] = mcpl_p->polarisation[2];
+
+    if (used==INT32_MAX) {
+      printf("WARNING: Writing more than 2147483647 (maximum value of 32 bit integers) particles in the PHITS dump "
+             "file - it is not known whether PHITS will be able to deal with such files correctly.\n");
     }
+    phits_writerecord(fout,reclen,sizeof(double)*(use_polarisation?13:10),(char*)&dumpdata[0]);
 
-    //Sign of ssb[1] is used to store the sign of dirz:
-    assert(ssb[1] >= 1.0);
-    if (mcpl_p->direction[2]<0.0)
-      ssb[1] = - ssb[1];
-
-    ssw_writerecord(fout,ssw_reclen,sizeof(double)*ssw_ssblen,(char*)&ssb[0]);
     if (++used==nparticles_limit) {
-      long long remaining = mcpl_hdr_nparticles(fmcpl) - skipped_nosswtype - used;
+      long long remaining = mcpl_hdr_nparticles(fmcpl) - skipped_nophitstype - used;
       if (remaining)
         printf("Output limit of %li particles reached. Ignoring remaining %lli particles in the MCPL file.\n",
                nparticles_limit,remaining);
       break;
     }
+
+
   }
 
   printf("Ending particle conversion loop.\n");
 
-  if (skipped_nosswtype) {
+  if (skipped_nophitstype) {
     printf("WARNING: Ignored %lli particles in the input MCPL file since their PDG codes"
-           " could not be converted to MCNP types.\n",(long long)skipped_nosswtype);
+           " could not be converted to PHITS codes.\n",(long long)skipped_nophitstype);
   }
-
-  int32_t new_nrss = used;
-  int32_t new_np1 = new_nrss;
-
-  if (new_np1==0) {
-    //SSW files must at least have 1 history (but can have 0 particles)
-    printf("WARNING: Input MCPL file has 0 useful particles but we are setting number"
-           " of histories in new SSW file to 1 to avoid creating an invalid file.\n");
-    new_np1 = 1;
-  }
-  if (orig_np1<0)
-    new_np1 = - new_np1;
-
-  ssw_update_nparticles(fout,ssw_np1pos,new_np1,ssw_nrsspos,new_nrss);
-
   mcpl_close_file(fmcpl);
   fclose(fout);
 
-  printf("Created %s with %lli particles (nrss) and %lli histories (np1).\n",outsswfile,(long long)new_nrss,(long long)labs(new_np1));
+  printf("Created %s with %lli particles.\n",outphitsdumpfile,(long long)used);
+
   return 1;
 
 
 }
 
 
-int mcpl2ssw_app_usage( const char** argv, const char * errmsg ) {
+int mcpl2phits_app_usage( const char** argv, const char * errmsg ) {
   if (errmsg) {
     printf("ERROR: %s\n\n",errmsg);
     printf("Run with -h or --help for usage information\n");
@@ -16937,48 +16290,43 @@ int mcpl2ssw_app_usage( const char** argv, const char * errmsg ) {
   const char * progname = strrchr(argv[0], '/');
   progname =  progname ? progname + 1 : argv[0];
   printf("Usage:\n\n");
-  printf("  %s [options] <input.mcpl> <reference.ssw> [output.ssw]\n\n",progname);
-  printf("Converts the Monte Carlo particles in the input MCPL file to SSW format\n"
-         "(MCNP Surface Source Write) and stores the result in the designated output\n"
-         "file (defaults to \"output.ssw\").\n"
-         "\n"
-         "In order to do so and get the details of the SSW format correct, the user\n"
-         "must also provide a reference SSW file from the same approximate setup\n"
-         "(MCNP version, input deck...) where the new SSW file is to be used. The\n"
-         "reference SSW file can of course be very small, as only the file header is\n"
-         "important (the new file essentially gets a copy of the header found in the\n"
-         "reference file, except for certain fields related to number of particles\n"
-         "whose values are changed).\n"
-         "\n"
-         "Finally, one must pay attention to the Surface ID assigned to the\n"
-         "particles in the resulting SSW file: Either the user specifies a global\n"
-         "one with -s<ID>, or it is assumed that the MCPL userflags field in the\n"
-         "input file is actually intended to become the Surface ID. Note that not\n"
-         "all MCPL files have userflag fields and that valid Surface IDs are\n"
-         "integers in the range 1-999999.\n"
+  printf("  %s [options] <input.mcpl> [phits.dmp]\n\n",progname);
+  printf("Converts the Monte Carlo particles in the input MCPL file to binary PHITS\n"
+         "dump file format and stores the result in the designated output file\n"
+         "(defaults to \"phitsdata_dmp\"). The file can be read in PHITS using\n"
+         "a configuration of (assuming the filename is \"phits.dmp\"):\n"
+         "     dump = 13\n"
+         "     1 2 3 4 5 6 7 8 9 10 14 15 16\n"
+         "     file = phits.dmp\n"
          "\n"
          "Options:\n"
          "\n"
          "  -h, --help   : Show this usage information.\n"
-         "  -s<ID>       : All particles in the SSW file will get this surface ID.\n"
-         "  -l<LIMIT>    : Limit the number of particles transferred to the SSW file\n"
-         "                 (defaults to 2147483647, the maximal SSW capacity).\n"
+         "  -n, --nopol  : Do not write polarisation info (saving ~22%% in file size). The\n"
+         "                 PHITS configuration reading the file must then be (assuming the\n"
+         "                 filename is \"phits.dmp\"):\n"
+         "                                            dump = 10\n"
+         "                                            1 2 3 4 5 6 7 8 9 10\n"
+         "                                            file = phits.dmp\n"
+         "  -f           : Write Fortran records with 64 bit integer markers. Note that\n"
+         "                 the default (32 bit) is almost always the correct choice.\n"
+         "  -l<LIMIT>    : Limit the number of particles transferred to the PHITS file\n"
+         "                 (defaults to 0, meaning no limit).\n"
          );
   return 0;
 }
 
-int mcpl2ssw_parse_args(int argc,const char **argv, const char** inmcplfile,
-                        const char **refsswfile, const char **outsswfile,
-                        long* nparticles_limit, long* surface_id) {
+int mcpl2phits_parse_args( int argc,const char **argv, const char** inmcplfile,
+                           const char **outphitsfile, long* nparticles_limit,
+                           int* use64bitreclen, int* nopolarisation ) {
   //returns: 0 all ok, 1: error, -1: all ok but do nothing (-h/--help mode)
   *inmcplfile = 0;
-  *refsswfile = 0;
-  *outsswfile = 0;
+  *outphitsfile = 0;
   *nparticles_limit = INT32_MAX;
-  *surface_id = 0;
+  *use64bitreclen = 0;
+  *nopolarisation = 0;
 
   int64_t opt_num_limit = -1;
-  int64_t opt_num_isurf = -1;
   int i;
   for (i = 1; i<argc; ++i) {
     const char * a = argv[i];
@@ -16992,78 +16340,71 @@ int mcpl2ssw_parse_args(int argc,const char **argv, const char** inmcplfile,
       for (j=1; j<n; ++j) {
         if (consume_digit) {
           if (a[j]<'0'||a[j]>'9')
-            return mcpl2ssw_app_usage(argv,"Bad option: expected number");
+            return mcpl2phits_app_usage(argv,"Bad option: expected number");
           *consume_digit *= 10;
           *consume_digit += a[j] - '0';
           continue;
         }
         switch(a[j]) {
-        case 'h': mcpl2ssw_app_usage(argv,0); return -1;
+        case 'h': mcpl2phits_app_usage(argv,0); return -1;
         case 'l': consume_digit = &opt_num_limit; break;
-        case 's': consume_digit = &opt_num_isurf; break;
+        case 'f': *use64bitreclen = 1; break;
+        case 'n': *nopolarisation = 1; break;
         default:
-          return mcpl2ssw_app_usage(argv,"Unrecognised option");
+          return mcpl2phits_app_usage(argv,"Unrecognised option");
         }
         if (consume_digit) {
           *consume_digit = 0;
           if (j+1==n)
-            return mcpl2ssw_app_usage(argv,"Bad option: missing number");
+            return mcpl2phits_app_usage(argv,"Bad option: missing number");
         }
       }
 
     } else if (n==6 && strcmp(a,"--help")==0) {
-      mcpl2ssw_app_usage(argv,0);
+      mcpl2phits_app_usage(argv,0);
       return -1;
     } else if (n>=1&&a[0]!='-') {
-      if (*outsswfile)
-        return mcpl2ssw_app_usage(argv,"Too many arguments.");
-      if (*refsswfile) *outsswfile = a;
-      else if (*inmcplfile) *refsswfile = a;
+      if (*outphitsfile)
+        return mcpl2phits_app_usage(argv,"Too many arguments.");
+      else if (*inmcplfile) *outphitsfile = a;
       else *inmcplfile = a;
     } else {
-      return mcpl2ssw_app_usage(argv,"Bad arguments");
+      return mcpl2phits_app_usage(argv,"Bad arguments");
     }
   }
 
   if (!*inmcplfile)
-    return mcpl2ssw_app_usage(argv,"Missing argument : input MCPL file");
-  if (!*refsswfile)
-    return mcpl2ssw_app_usage(argv,"Missing argument : Reference SSW file");
-  if (!*outsswfile)
-    *outsswfile = "output.ssw";
+    return mcpl2phits_app_usage(argv,"Missing argument : input MCPL file");
+  if (!*outphitsfile)
+    *outphitsfile = "phits.dmp";
 
   if (opt_num_limit<=0)
-    opt_num_limit = INT32_MAX;
-  if (opt_num_limit>INT32_MAX)
-    return mcpl2ssw_app_usage(argv,"Parameter out of range : SSW files can only hold up to 2147483647 particles.");
-  *nparticles_limit = opt_num_limit;
+    opt_num_limit = 0;
 
-  if (opt_num_isurf==0||opt_num_isurf>999999)
-    return mcpl2ssw_app_usage(argv,"Parameter out of range : Surface ID must be in range [1,999999].");
-  if (opt_num_isurf<0)
-    opt_num_isurf = 0;
-  *surface_id = opt_num_isurf;
+  //NB: For now we allow unlimited number of particles in the file - but let the
+  //mcpl2phits method emit a WARNING if exceeding INT32_MAX particles.
+  *nparticles_limit = opt_num_limit;
 
   return 0;
 }
 
-int mcpl2ssw_app( int argc, char** argv ) {
+int mcpl2phits_app( int argc, char** argv ) {
 
   const char * inmcplfile;
-  const char * refsswfile;
-  const char * outsswfile;
+  const char * outphitsfile;
   long nparticles_limit;
-  long surface_id;
-  int parse = mcpl2ssw_parse_args( argc, (const char**)argv,
-                                   &inmcplfile, &refsswfile, &outsswfile,
-                                   &nparticles_limit, &surface_id );
+  int use64bitreclen, nopolarisation;
+  int parse = mcpl2phits_parse_args( argc, (const char**)argv, &inmcplfile, &outphitsfile,
+                                     &nparticles_limit, &use64bitreclen, &nopolarisation);
   if (parse==-1)// --help
     return 0;
 
   if (parse)// parse error
     return parse;
 
-  if (mcpl2ssw(inmcplfile, outsswfile, refsswfile,surface_id, nparticles_limit))
+  int reclen = (use64bitreclen?8:4);
+
+  if (mcpl2phits(inmcplfile, outphitsfile, (nopolarisation?0:1), nparticles_limit, reclen))
     return 0;
 
   return 1;
@@ -17071,18 +16412,19 @@ int mcpl2ssw_app( int argc, char** argv ) {
 
 /////////////////////////////////////////////////////////////////////////////////////
 //                                                                                 //
-// ssw2mcpl : a simple command line utility for converting SSW to MCPL.            //
+// mcpl2phits : a simple command line utility for converting MCPL to binary
+//              PHITS dump files.                                                  //
 //                                                                                 //
 // This file can be freely used as per the terms in the LICENSE file.              //
 //                                                                                 //
-// However, note that usage of MCNP(X)-related utilities might require additional  //
+// However, note that usage of PHITS-related utilities might require additional    //
 // permissions and licenses from third-parties, which is not within the scope of   //
 // the MCPL project itself.                                                        //
 //                                                                                 //
-// Written 2015-2016, thomas.kittelmann@esss.se (European Spallation Source).      //
+// Written 2019, thomas.kittelmann@esss.se (European Spallation Source).           //
 //                                                                                 //
 /////////////////////////////////////////////////////////////////////////////////////
 
 int main(int argc,char** argv) {
-  return ssw2mcpl_app(argc,argv);
+  return mcpl2phits_app(argc,argv);
 }

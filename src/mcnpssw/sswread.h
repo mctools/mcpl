@@ -84,6 +84,9 @@ extern "C" {
   // converted. This might not be an error as such, but could indicate an   //
   // exotic particle which has no code assigned in the target MCNP scheme.  //
   //                                                                        //
+  // MCNP5 does not have it's own function as it only supports neutrons     //
+  // (1<->2112) and gammas (2<->22).                                        //
+  //                                                                        //
   ////////////////////////////////////////////////////////////////////////////
 
   int32_t conv_mcnpx_ssw2pdg(int32_t);

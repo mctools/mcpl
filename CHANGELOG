@@ -1,3 +1,10 @@
+v1.3.0 2019-06-19
+      * Introduce support for PHITS. This is done via mcpl2phits and phits2mcpl
+        command line tools for conversions to and from PHITS binary dump
+        files. Thanks to Douglas Di Julio (ESS) for help in adding this new feature.
+      * Fix pymcpltool --stats sum(weights) bug with python3 (github issue 46)
+      * Handle unexpected records at the end of SSW headers gracefully (github issue 45).
+
 v1.2.3 2018-09-26
       * ssw2mcpl: Support MCNP 6.2.
 

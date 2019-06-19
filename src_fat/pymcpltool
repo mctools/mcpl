@@ -32,7 +32,7 @@ _str = lambda s : s.encode('ascii') if (hasattr(s,'encode') and bytes==str) else
 
 __license__ = _str('CC0 1.0 Universal')
 __copyright__ = _str('Copyright 2017')
-__version__ = _str('1.2.3')
+__version__ = _str('1.3.0')
 __status__ = _str('Production')
 __author__ = _str('Thomas Kittelmann')
 __maintainer__ = _str('Thomas Kittelmann')
@@ -1328,10 +1328,7 @@ def collect_stats(mcplfile,stats=_str('all'),bin_data=True):
     if not std_stats and not freq_stats and not cnst_stats:
         raise MCPLError('No stats requested')
 
-    weight_sum = None
-
-    if weight_sum is None and mcplfile.opt_universalweight:
-        weight_sum = mcplfile.nparticles * mcplfile.opt_universalweight
+    weight_sum = mcplfile.nparticles * mcplfile.opt_universalweight if mcplfile.opt_universalweight else None
 
     nbins = 100 if mcplfile.nparticles < 1000 else 200
 
@@ -1353,7 +1350,7 @@ def collect_stats(mcplfile,stats=_str('all'),bin_data=True):
                     sc.add_data(getattr(pb,s),vals_weight)
     ranges={}
     for s,sc in collected_stats.items():
-        if weight_sum is None:
+        if weight_sum is None and s!='weight':
             weight_sum = sc['integral']
         ranges[s] = [max(sc['min'],sc['mean']-2*sc['rms']),
                      min(sc['max'],sc['mean']+2*sc['rms'])]
@@ -1398,8 +1395,9 @@ def collect_stats(mcplfile,stats=_str('all'),bin_data=True):
         for pb in mcplfile.particle_blocks:
             weight_sum += pb.weight.sum()
 
+    assert not weight_sum is None
+
     if cnst_stats:
-        assert not weight_sum is None
         if 'pdgcode' in cnst_stats:
             assert mcplfile.opt_universalpdgcode
             cnst_stats.remove('pdgcode')

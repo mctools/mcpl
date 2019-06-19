@@ -25,6 +25,10 @@ src/mcnpssw/        : MCPL hooks for MCNP in C, in the form of a few .h/.c file
                       pairs and two command line applications which can be used
                       to convert between the MCPL format and the SSW files used
                       by MCNP.
+src/phits/          : MCPL hooks for PHITS in C, in the form of a few .h/.c file
+                      pairs and two command line applications which can be used
+                      to convert between the MCPL format and the binary dump
+                      files used by PHITS.
 src/mcstas/         : No actual code is here, just a small reminder of how the
                       MCPL plugin shipped with McStas can be used.
 src/mcxtrace/       : No actual code is here, just a small reminder of how the
@@ -39,11 +43,12 @@ src_fat/mcpl.c      : Replacement for src/mcpl/mcpl.c which includes zlib
                       sources internally (thus making transparent compression
                       available even when zlib is not available to the build
                       system).
-src_fat/*_app.c     : Single-file versions of the command-line applications
-                      mcpltool, mcpl2ssw and ssw2mcpl. These can be compiled
-                      without the need for any external headers or libraries
-                      (except math-lib: -lm), and includes both MCPL, zlib and
-                      mcnpssw sources internally as needed.
+src_fat/*_app.c :     Single-file versions of the command-line applications
+                      mcpltool, mcpl2ssw, ssw2mcpl, mcpl2phits and phits2mcpl.
+                      These can be compiled without the need for any external
+                      headers or libraries (except math-lib: -lm), and includes
+                      both MCPL, zlib, mcnpssw, and phits sources internally as
+                      needed.
 src_fat/pymcpltool  : The pymcpltool in a single executable file is included
                       for consistency and convenience, although its contents are
                       similar to those of src/python/mcpl.py.

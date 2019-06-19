@@ -2,9 +2,10 @@ The official and supported way in which to build all files in the MCPL
 distribution is via CMake, however, depending on the use-case it might be more
 appropriate to simply integrate MCPL directly into the build system of a given
 simulation framework, or to use a quick compilation of one of the "fat" versions
-of the command line tools: mcpltool, ssw2mcpl or mcpl2ssw. Finally, the python
-module (mcpl.py) and associated tool (pymcpltool) can be used directly without
-any build step. The various options are discussed below.
+of the command line tools: mcpltool, ssw2mcpl, mcpl2ssw, phits2mcpl, or
+mcpl2phits. Finally, the python module (mcpl.py) and associated tool
+(pymcpltool) can be used directly without any build step. The various options
+are discussed below.
 
 
 
@@ -35,12 +36,13 @@ is a quick recipe (using an in-source build for simplicity):
    what will be build by adding one or more of the following flags to the
    command:
 
-   * -DBUILD_WITHZLIB=OFF [whether to link with zlib, default is ON]
-   * -DBUILD_EXAMPLES=OFF [whether to build examples, default is ON]
-   * -DBUILD_FAT=ON       [whether to build "fat" binaries, default is OFF]
-   * -DBUILD_WITHG4=OFF   [whether to build G4 hooks, default is ON]
-   * -DBUILD_WITHSSW=OFF  [whether to build SSW hooks, default is ON]
-   * -DINSTALL_PY=OFF     [whether to install python files, default is ON]
+   * -DBUILD_WITHZLIB=OFF  [whether to link with zlib, default is ON]
+   * -DBUILD_EXAMPLES=OFF  [whether to build examples, default is ON]
+   * -DBUILD_FAT=ON        [whether to build "fat" binaries, default is OFF]
+   * -DBUILD_WITHG4=OFF    [whether to build G4 hooks, default is ON]
+   * -DBUILD_WITHSSW=OFF   [whether to build SSW hooks, default is ON]
+   * -DBUILD_WITHPHITS=OFF [whether to build PHITS hooks, default is ON]
+   * -DINSTALL_PY=OFF      [whether to install python files, default is ON]
 
 3. Perform the build and install in one step with (assuming you are on a
    platform where CMake generates makefiles):
@@ -70,9 +72,9 @@ Building "fat" tools via simple Makefile
 ----------------------------------------
 
 Assuming you are only interested in getting access to the commands mcpltool,
-mcpl2ssw and ssw2mcpl, and that you are on a standard UNIX-like platform such as
-Linux or OS X, you can forego the CMake build described above and simply invoke
-a simple Makefile
+mcpl2ssw, ssw2mcpl, mcpl2phits, or phits2mcpl , and that you are on a standard
+UNIX-like platform such as Linux or OS X, you can forego the CMake build
+described above and simply invoke a simple Makefile
 
 1. Since you are reading this INSTALL file, it is assumed you have already
    unpacked the MCPL source distribution somewhere. Assuming this is in a
@@ -84,10 +86,10 @@ a simple Makefile
 
    make -f src_fat/Makefile
 
-3. The resulting binaries are now in src_fat/mcpltool, src_fat/mcpl2ssw and
-   src_fat/ssw2mcpl. You can copy them somewhere else or use them where they
-   are. For instance, you can immediately invoke the mcpltool with (showing
-   usage instructions):
+3. The resulting binaries are now in src_fat/mcpltool, src_fat/mcpl2ssw,
+   src_fat/ssw2mcpl, src_fat/mcpl2phits, and src_fat/phits2mcpl. You can copy
+   them somewhere else or use them where they are. For instance, you can
+   immediately invoke the mcpltool with (showing usage instructions):
 
    ./src_fat/mcpltool --help
 
@@ -107,8 +109,9 @@ source files).
 
    cd /path/to/mcplsource
 
-2. Assuming you wish to build the mcpltool (exchange "mcpltool" with "ssw2mcpl"
-   or "mcpl2ssw" in the commands below to build a different utility), simply do:
+2. Assuming you wish to build the mcpltool (exchange "mcpltool" with "ssw2mcpl",
+   "mcpl2ssw", "phits2mcpl", or "mcpl2phits" in the commands below to build a
+   different utility), simply do:
 
    gcc -std=c99 -lm src_fat/mcpltool_app_fat.c -o mcpltool
 
@@ -203,7 +206,15 @@ additional advice and feedback, see https://mctools.github.io/mcpl/contact/).
    sswread.c into a library (find instructions regarding flags at the top of the
    two .c files), and subsequently use that library when compiling
    mcpl2ssw_app.c and ssw2mcpl_app.c into the two command line applications.
-6. If applicable, provide your users with pre-written hooks using MCPL, in
+6. If your users use PHITS, or might interact with people who do, you should
+   make sure to provide the mcpl2phits and phits2mcpl commands. This can either
+   be done by simply copying over src_fat/phits2mcpl_app_fat.c and
+   src_fat/mcpl2phits_app_fat.c and compiling them directly, or by copying over
+   files from src/phits/, compiling phitsmcpl.h, phitsmcpl.c, phitsread.h and
+   phitsread.c into a library (find instructions regarding flags at the top of
+   the two .c files), and subsequently use that library when compiling
+   mcpl2phits_app.c and phits2mcpl_app.c into the two command line applications.
+7. If applicable, provide your users with pre-written hooks using MCPL, in
    whatever form is suitable for your framework. For instance, the McStas
    developers added two user-visible McStas components: MCPL_input and
    MCPL_output. Internal code in these two components include and use functions

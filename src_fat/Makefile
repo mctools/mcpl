@@ -21,7 +21,7 @@ SRCDIR        = $(dir $(lastword $(MAKEFILE_LIST)))
 DESTDIR       = $(SRCDIR)
 CC           ?= gcc
 
-TARGETS       = $(DESTDIR)mcpl2ssw $(DESTDIR)ssw2mcpl $(DESTDIR)mcpltool
+TARGETS       = $(DESTDIR)mcpl2phits $(DESTDIR)phits2mcpl $(DESTDIR)mcpl2ssw $(DESTDIR)ssw2mcpl $(DESTDIR)mcpltool
 CFLAGS += $(CFLAGS_EXTRA)
 
 all: release
@@ -45,3 +45,10 @@ $(DESTDIR)ssw2mcpl: $(SRCDIR)ssw2mcpl_app_fat.c
 
 $(DESTDIR)mcpl2ssw: $(SRCDIR)mcpl2ssw_app_fat.c
 	$(CC) $(CFLAGS) $< -o $@
+
+$(DESTDIR)phits2mcpl: $(SRCDIR)phits2mcpl_app_fat.c
+	$(CC) $(CFLAGS) $< -o $@
+
+$(DESTDIR)mcpl2phits: $(SRCDIR)mcpl2phits_app_fat.c
+	$(CC) $(CFLAGS) $< -o $@
+

@@ -591,14 +591,43 @@ ssw_file_t ssw_open_file( const char * filename )
       return ssw_openerror(f,"ssw_open_file error: problems loading record");
   }
 
-  //End of header. Mark the position and return a file handle:
+  //End of header? Mark the position:
+  f->pos = 0;
 #ifdef SSWREAD_HASZLIB
   if (f->filegz)
     f->headlen = gztell(f->filegz);
   else
 #endif
     f->headlen = ftell(f->file);
-  f->pos = 0;
+
+  //Check that it was really the end of the header by preloading the next
+  //record(s) and checking if the length corresponds to that of particle data
+  //(NB: ssw_load_particle knows that the particle at position 0 will have
+  //already been loaded by these checks). See also
+  //https://github.com/mctools/mcpl/issues/45:
+  unsigned nmaxunexpected = 3;
+  while ( nmaxunexpected-- > 0 ) {
+    if (!ssw_loadrecord(f)) {
+      //For files with 0 particles, we assume (this is not guaranteed of
+      //course!) that the failure is due to EOF:
+      if (f->nrss==0)
+        break;
+      //But this is certainly an error for files with >0 particles:
+      return ssw_openerror(f,"ssw_open_file error: problems loading record");
+    }
+    if ( f->nrss > 0 && f->lbuf == (unsigned)8*f->nrcd ) {
+      //Looks like we preloaded the first particle of the file!
+      break;
+    } else {
+      //Looks like this could not be a particle, so we interpret this as if the
+      //header was actually one record longer than previously thought:
+      f->headlen += f->reclen * 2 + f->lbuf;
+      printf("ssw_open_file WARNING: Unexpected %i byte record encountered at end of header. Continuing under the assumption it contains valid configuration data.\n",f->lbuf);
+
+    }
+  }
+
+  //Return handle:
   out.internal = f;
   return out;
 }
@@ -677,15 +706,18 @@ const ssw_particle_t * ssw_load_particle(ssw_file_t ff)
   SSW_FILEDECODE;
   if (f->pos >= f->nrss)
     return 0;
+
   ++f->pos;
 
-  if (!ssw_loadrecord(f)) {
-    ssw_error("ssw_load error: problems loading record\n");
+  //The record of the first particle in the file is always pre-loaded during
+  //initialisation, for the others we must consume another record:
+  if ( f->pos > 1 && !ssw_loadrecord(f) ) {
+    ssw_error("ssw_load error: problems loading particle record\n");
     return 0;
   }
 
   if (f->lbuf != (unsigned)8*f->nrcd) {
-    ssw_error("ssw_load error: unexpected ssb data length");
+    ssw_error("ssw_load error: unexpected particle data length");
     return 0;
   }
 

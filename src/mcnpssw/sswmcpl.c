@@ -555,7 +555,7 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
 
   if (skipped_nosswtype) {
     printf("WARNING: Ignored %lli particles in the input MCPL file since their PDG codes"
-           " could not be converted to MCPL types.\n",(long long)skipped_nosswtype);
+           " could not be converted to MCNP types.\n",(long long)skipped_nosswtype);
   }
 
   int32_t new_nrss = used;
