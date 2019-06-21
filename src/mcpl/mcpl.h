@@ -160,6 +160,16 @@ extern "C" {
   /* Careful usage of this function can be more efficient than mcpl_merge_files.     */
   void mcpl_merge_inplace(const char * file1, const char* file2);
 
+  /* Attempt to merge incompatible files, by throwing away meta-data and otherwise */
+  /* selecting a configuration which is suitable to contain the data of all files. */
+  /* Userflags will be discarded unless keep_userflags=1.                          */
+  /* If called with compatible files, the code will fall back to calling the usual */
+  /* mcpl_merge_files function instead.                                            */
+  mcpl_outfile_t mcpl_forcemerge_files( const char* file_output,
+                                        unsigned nfiles, const char ** files,
+                                        int keep_userflags );
+
+
   /* Attempt to fix number of particles in the header of a file which was never */
   /* properly closed:                                                           */
   void mcpl_repair(const char * file1);
@@ -174,6 +184,14 @@ extern "C" {
   /* Convenience function which transfers all settings, blobs and comments to */
   /* target. Intended to make it easy to filter files via custom C code.      */
   void mcpl_transfer_metadata(mcpl_file_t source, mcpl_outfile_t target);
+
+  /* Function which can be used when transferring particles from one MCPL file  */
+  /* to another. A particle must have been already read from the source file    */
+  /* with a call to mcpl_read(..). This function will transfer the packed par-  */
+  /* ticle data exactly when possible (using mcpl_add_particle can in principle */
+  /* introduce tiny numerical uncertainties due to the internal unpacking and   */
+  /* repacking of direction vectors involved):                                  */
+  void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target);
 
   /******************/
   /* Error handling */

@@ -277,9 +277,6 @@ phits_file_t phits_openerror(phits_fileinternal_t * f, const char* msg) {
                   " producing the file.\n");
     }
 
-    //All ok it seems, copy first particle data into buffer:
-    // memcpy(f->bufdata,&tmpbuf[f->reclen],f->particlesize);
-    // f->particledatabuffer = &(f->bufdata[0]);
     return out;
   }
 
@@ -289,7 +286,6 @@ phits_file_t phits_openerror(phits_fileinternal_t * f, const char* msg) {
       phits_error("phits_open_file called with null string for filename");
 
     //Open, classify and process first record with mcnp type and version info:
-
     phits_file_t out = phits_open_internal( filename );
     phits_fileinternal_t * f = (phits_fileinternal_t *)out.internal; assert(f);
 

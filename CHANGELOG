@@ -1,9 +1,18 @@
-v1.3.0 2019-06-19
+v1.3.0 2019-06-21
       * Introduce support for PHITS. This is done via mcpl2phits and phits2mcpl
         command line tools for conversions to and from PHITS binary dump
         files. Thanks to Douglas Di Julio (ESS) for help in adding this new feature.
+      * Introduce new --forcemerge option for the mcpltool and an associated
+        mcpl_forcemerge_files function in the C API.  This makes it possible to
+        merge particles from otherwise incompatible files, at the heavy price of
+        discarding descriptive metadata like comments and blobs. This is
+        intended as a last-resort solution (github issue 43).
+      * Add new public function mcpl_transfer_last_read_particle, which makes it
+        possible to perform non-lossy filtering or merging of files using custom
+        C code (github issue 18).
       * Fix pymcpltool --stats sum(weights) bug with python3 (github issue 46)
-      * Handle unexpected records at the end of SSW headers gracefully (github issue 45).
+      * Handle unexpected records at the end of SSW headers gracefully (github
+        issue 45).
 
 v1.2.3 2018-09-26
       * ssw2mcpl: Support MCNP 6.2.

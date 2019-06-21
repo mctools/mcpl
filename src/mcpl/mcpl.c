@@ -316,7 +316,7 @@ void mcpl_hdr_set_srcname(mcpl_outfile_t of,const char * spn)
 {
   MCPLIMP_OUTFILEDECODE;
   if (!f->header_notwritten)
-    mcpl_error("mcpl_hdr_set_srcname.");
+    mcpl_error("mcpl_hdr_set_srcname called too late.");
   mcpl_store_string(&(f->hdr_srcprogname),spn);
 }
 
@@ -437,9 +437,8 @@ void mcpl_enable_universal_weight(mcpl_outfile_t of, double w)
   mcpl_recalc_psize(of);
 }
 
-void mcpl_write_header(mcpl_outfile_t of)
+void mcpl_write_header(mcpl_outfileinternal_t * f)
 {
-  MCPLIMP_OUTFILEDECODE;
   if (!f->header_notwritten)
     mcpl_error("Logical error!");
 
@@ -634,12 +633,13 @@ void mcpl_unitvect_unpack_oct(const double* in, double* out) {
   out[0] *= n; out[1] *= n; out[2] *= n;
 }
 
-void mcpl_add_particle(mcpl_outfile_t of,const mcpl_particle_t* particle)
-{
-  MCPLIMP_OUTFILEDECODE;
-  if (f->header_notwritten)
-    mcpl_write_header(of);
-  f->nparticles += 1;
+void mcpl_internal_serialise_particle_to_buffer( const mcpl_particle_t* particle,
+                                                 mcpl_outfileinternal_t * f ) {
+
+  //Serialise the provided particle into the particle_buffer of the output file
+  //(according to the settings of the output file).
+
+  double pack_ekindir[3];
 
   //Sanity check (add more??):
   double dirsq = particle->direction[0] * particle->direction[0]
@@ -649,9 +649,7 @@ void mcpl_add_particle(mcpl_outfile_t of,const mcpl_particle_t* particle)
     mcpl_error("attempting to add particle with non-unit direction vector");
   if (particle->ekin<0.0)
     mcpl_error("attempting to add particle with negative kinetic energy");
-
   //direction and ekin are packed into 3 doubles:
-  double pack_ekindir[3];
   mcpl_unitvect_pack_adaptproj(particle->direction,pack_ekindir);
   //pack_ekindir[2] is now just a sign(1.0 or -1.0), so we can store the
   //ekin in that field as well (since it must be non-negative). We use copysign
@@ -716,12 +714,26 @@ void mcpl_add_particle(mcpl_outfile_t of,const mcpl_particle_t* particle)
 #endif
   }
   assert(ibuf==f->particle_size);
+}
 
-  //Write buffer to file:
+void mcpl_internal_write_particle_buffer_to_file(mcpl_outfileinternal_t * f ) {
+  //Ensure header is written:
+  if (f->header_notwritten)
+    mcpl_write_header(f);
+
+  //Increment nparticles and write buffer to file:
+  f->nparticles += 1;
   size_t nb;
-  nb = fwrite(pbuf, 1, f->particle_size, f->file);
+  nb = fwrite(&(f->particle_buffer[0]), 1, f->particle_size, f->file);
   if (nb!=f->particle_size)
     mcpl_error("Errors encountered while attempting to write particle data.");
+}
+
+void mcpl_add_particle(mcpl_outfile_t of,const mcpl_particle_t* particle)
+{
+  MCPLIMP_OUTFILEDECODE;
+  mcpl_internal_serialise_particle_to_buffer(particle,f);
+  mcpl_internal_write_particle_buffer_to_file(f);
 }
 
 void mcpl_update_nparticles(FILE* f, uint64_t n)
@@ -757,7 +769,7 @@ void mcpl_close_outfile(mcpl_outfile_t of)
 {
   MCPLIMP_OUTFILEDECODE;
   if (f->header_notwritten)
-    mcpl_write_header(of);
+    mcpl_write_header(f);
   if (f->nparticles)
     mcpl_update_nparticles(f->file,f->nparticles);
   fclose(f->file);
@@ -1484,39 +1496,74 @@ int mcpl_hdr_little_endian(mcpl_file_t ff)
 
 void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
 {
-  //TODO: We keep this as an internal function for now, but it would be great to
-  //have it publically available. But first, we should extend it a bit to better
-  //work when source and target have somewhat different settings. When
-  //signatures are different, we should not error but instead revert to slower code
-  //which would only error if the transfer would throw away information
-  //(e.g. polarisation or pdgcode not possible to set in output, but ok to not
-  //enable opt_userflags or double prec).
-
   mcpl_outfileinternal_t * ft = (mcpl_outfileinternal_t *)target.internal; assert(ft);
   mcpl_fileinternal_t * fs = (mcpl_fileinternal_t *)source.internal; assert(fs);
 
-  if (ft->opt_signature!=fs->opt_signature) {
-    mcpl_error("mcpl_transfer_last_read_particle used on files with incompatible options.");
+  if ( fs->current_particle_idx==0 && fs->particle->weight==0.0 && fs->particle->pdgcode==0 ) {
+    mcpl_error("mcpl_transfer_last_read_particle called with source file in invalid state"
+               " (did you forget to first call mcpl_read() on the source file before calling this function?)");
+    return;
   }
 
-  if (fs->format_version==2) {
-    //source file is in old format with different unit vector packing. Thus, we
-    //can not avoid a repacking, but this is unavoidable when we want to keep
-    //older files as fully functioning as possible:
+  //Sanity checks for universal fields here (but not in mcpl_add_particle since users are allowed to create files by setting just the universal fields):
+  if ( ft->opt_universalpdgcode && fs->particle->pdgcode != ft->opt_universalpdgcode) {
+    printf("MCPL ERROR: mcpl_transfer_last_read_particle asked to transfer particle with pdgcode %li into a file with universal pdgcode of %li\n",
+           (long)fs->particle->pdgcode,(long)ft->opt_universalpdgcode);
+    mcpl_error("mcpl_transfer_last_read_particle got incompatible pdgcode\n");
+    return;
+  }
+  if ( ft->opt_universalweight && fs->particle->weight != ft->opt_universalweight) {
+    printf("MCPL ERROR: mcpl_transfer_last_read_particle asked to transfer particle with weight %g into a file with universal weight of %g\n",
+               fs->particle->weight,ft->opt_universalweight);
+    mcpl_error("mcpl_transfer_last_read_particle got incompatible weight\n");
+    return;
+  }
+  //NB: We don't sanity check that polarisation/userflags are enabled if present
+  //in the input particle, since it is a valid use-case to use this function to
+  //discard such info.
+
+  if ( fs->format_version == 2 || ( fs->opt_singleprec && !ft->opt_singleprec ) ) {
+    //source file is in old format with different unit vector packing, or the
+    //floating point precision is increasing. In these scenarious we can not
+    //reuse the 3 floats representing packed direction+ekin but must proceed via
+    //a full unpacking+repacking.
     mcpl_add_particle(target,fs->particle);
     return;
   }
 
-  if (ft->header_notwritten)
-    mcpl_write_header(target);
+  if ( ft->opt_signature == fs->opt_signature ) {
+    //Particle data is encoded in exactly the same manner in src and target (a
+    //common scenario for many merge or extraction scenarios) -> simply transfer
+    //the bytes and be done with it:
+    assert(fs->particle_size==ft->particle_size);
+    memcpy(ft->particle_buffer,fs->particle_buffer,fs->particle_size);
+    mcpl_internal_write_particle_buffer_to_file(ft);
+    return;
+  }
 
-  assert(fs->particle_size==ft->particle_size);
-  ft->nparticles += 1;
+  //The hard way - first serialise the source particle into the output buffer:
+  mcpl_internal_serialise_particle_to_buffer( fs->particle, ft );
 
-  size_t nb;
-  nb = fwrite(fs->particle_buffer, 1, fs->particle_size, ft->file);
-  if (nb!=fs->particle_size)
-    mcpl_error("Errors encountered while attempting to write particle data.");
+  //If possible, override the 3 FP representing packed ekin+dir from the packing
+  //in the source, thus avoiding potentially lossy unpacking+packing:
+  size_t fpsize_target = ft->opt_singleprec ? sizeof(float) : sizeof(double);
+  size_t idx_packekindir_target = (ft->opt_polarisation ? 6 : 3) * fpsize_target;
+  size_t idx_packekindir_src = (fs->opt_polarisation ? 6 : 3) * fpsize_target;
+  if (fs->opt_singleprec == ft->opt_singleprec) {
+    memcpy( &(ft->particle_buffer[idx_packekindir_target]),
+            &(fs->particle_buffer[idx_packekindir_src]),
+            fpsize_target * 3);
+  } else if ( ft->opt_singleprec && !fs->opt_singleprec ) {
+    //For the case of double precision -> single precision, we can simply
+    //perform a narrowing conversion:
+    double * packekindir_src = (double*)&(fs->particle_buffer[idx_packekindir_src]);
+    float * packekindir_target = (float*)&(ft->particle_buffer[idx_packekindir_target]);
+    for (unsigned i = 0; i < 3; ++i) {
+      packekindir_target[i] = (float)packekindir_src[i];
+    }
+  }
+
+  mcpl_internal_write_particle_buffer_to_file(ft);
 }
 
 void mcpl_dump_header(mcpl_file_t f)
@@ -1815,8 +1862,122 @@ void mcpl_transfer_particle_contents(FILE * fo, mcpl_file_t ffi, uint64_t nparti
 }
 
 
+mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
+                                      unsigned nfiles,
+                                      const char ** files,
+                                      int keep_userflags )
+{
+  ////////////////////////////////////
+  // Initial sanity check of input: //
+  ////////////////////////////////////
+
+  if (!nfiles)
+    mcpl_error("mcpl_forcemerge_files must be called with at least one input file");
+
+  //Warn user if they are merging a file with itself:
+  mcpl_warn_duplicates(nfiles,files);
+
+  //Create new file:
+  if (mcpl_file_certainly_exists(file_output))
+    mcpl_error("requested output file of mcpl_forcemerge_files already exists");
+
+  ///////////////////////////////////////////
+  // Fallback to normal merge if possible: //
+  ///////////////////////////////////////////
+
+  //Check all files for compatibility before we start (for robustness, we check
+  //again when actually merging each file).
+  unsigned ifile;
+  int normal_merge_ok = 1;
+  for (ifile = 1; ifile < nfiles; ++ifile) {
+    if (!mcpl_can_merge(files[0],files[ifile])) {
+      normal_merge_ok = 0;
+      break;
+    }
+  }
+  if (normal_merge_ok) {
+    printf("MCPL mcpl_forcemerge_files called with %i files that are compatible for a standard merge => falling back to standard mcpl_merge_files function\n",nfiles);
+    return mcpl_merge_files(file_output,nfiles,files);
+  }
+
+  /////////////////////////////
+  // Actual forcemerge code: //
+  /////////////////////////////
+
+  //Run through files and collect meta-data:
+  int opt_dp = 0;
+  int opt_pol = 0;
+  int opt_uf = 0;
+  int lastseen_universalpdg = 0;
+  int disallow_universalpdg = 0;
+  double lastseen_universalweight = 0;
+  int disallow_universalweight = 0;
+
+  for (ifile = 0; ifile < nfiles; ++ifile) {
+    mcpl_file_t f = mcpl_open_file(files[ifile]);
+    if (!mcpl_hdr_nparticles(f)) {
+      mcpl_close_file(f);
+      continue;//won't affect anything
+    }
+
+    if (mcpl_hdr_has_userflags(f))
+      opt_uf = 1;//enable if any
+
+    if (mcpl_hdr_has_polarisation(f))
+      opt_pol = 1;//enable if any
+
+    if (mcpl_hdr_has_doubleprec(f))
+      opt_dp = 1;
+
+    int32_t updg = mcpl_hdr_universal_pdgcode(f);
+    if ( !updg || ( lastseen_universalpdg && lastseen_universalpdg != updg ) ) {
+      disallow_universalpdg = 1;
+    } else {
+      lastseen_universalpdg = updg;
+    }
+    double uw = mcpl_hdr_universal_weight(f);
+    if ( !uw || ( lastseen_universalweight && lastseen_universalweight != uw ) ) {
+      disallow_universalweight = 1;
+    } else {
+      lastseen_universalweight = uw;
+    }
+    mcpl_close_file(f);
+  }
+  if (!keep_userflags)
+    opt_uf = 0;
+
+  mcpl_outfile_t out = mcpl_create_outfile(file_output);
+  mcpl_hdr_set_srcname(out,"mcpl_forcemerge_files (from MCPL v" MCPL_VERSION_STR ")");
+  if ( opt_uf )
+    mcpl_enable_userflags(out);
+  if ( opt_pol )
+    mcpl_enable_polarisation(out);
+  if (opt_dp)
+    mcpl_enable_doubleprec(out);
+  if ( !disallow_universalpdg && lastseen_universalpdg )
+    mcpl_enable_universal_pdgcode(out,lastseen_universalpdg);
+  if ( !disallow_universalweight && lastseen_universalweight )
+    mcpl_enable_universal_weight(out,lastseen_universalweight);
+
+  //Finally, perform the transfer:
+  for (ifile = 0; ifile < nfiles; ++ifile) {
+    mcpl_file_t f = mcpl_open_file(files[ifile]);
+    uint64_t np = mcpl_hdr_nparticles(f);
+    printf("MCPL force-merge: Transferring %" PRIu64 " particle%s from file %s\n",np,(np==1?"":"s"),files[ifile]);
+    const mcpl_particle_t* particle;
+    while ( ( particle = mcpl_read(f) ) )
+      mcpl_transfer_last_read_particle(f, out);//lossless transfer when possible
+    mcpl_close_file(f);
+  }
+
+  mcpl_outfileinternal_t * out_internal = (mcpl_outfileinternal_t *)out.internal;
+  uint64_t np = out_internal->nparticles;
+  printf("MCPL force-merge: Transferred a total of %" PRIu64 " particle%s to new file %s\n",np,(np==1?"":"s"),file_output);
+  return out;
+}
+
 mcpl_outfile_t mcpl_merge_files( const char* file_output,
-                                 unsigned nfiles, const char ** files)
+                                 unsigned nfiles, const char ** files )
 {
   mcpl_outfile_t out;
   out.internal = 0;
@@ -1836,7 +1997,6 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
   mcpl_warn_duplicates(nfiles,files);
 
   //Create new file:
-
   if (mcpl_file_certainly_exists(file_output))
     mcpl_error("requested output file of mcpl_merge_files already exists");
 
@@ -1854,7 +2014,7 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
       //Add metadata from the first file:
       mcpl_transfer_metadata(fi, out);
       if (out_internal->header_notwritten)
-        mcpl_write_header(out);
+        mcpl_write_header(out_internal);
       f1 = fi;
     } else {
       //Check file is still compatible with first file
@@ -2012,6 +2172,10 @@ int mcpl_tool_usage( char** argv, const char * errmsg ) {
   printf("  -m, --merge --inplace FILE1 FILE2 ... FILEN\n");
   printf("                    Appends the particle contents in FILE2 ... FILEN into\n");
   printf("                    FILE1. Note that this action modifies FILE1!\n");
+  printf("  --forcemerge [--keepuserflags] FILEOUT FILE1 FILE2 ... FILEN\n");
+  printf("               Like --merge but works with incompatible files as well, at the\n");
+  printf("               heavy price of discarding most metadata like comments and blobs.\n");
+  printf("               Userflags will be discarded unless --keepuserflags is specified.\n");
   printf("\n");
   printf("Extract options:\n");
   printf("  -e, --extract FILE1 FILE2\n");
@@ -2074,6 +2238,8 @@ int mcpl_tool(int argc,char** argv) {
   int64_t opt_num_limit = -1;
   int64_t opt_num_skip = -1;
   int opt_merge = 0;
+  int opt_forcemerge = 0;
+  int opt_keepuserflags = 0;
   int opt_inplace = 0;
   int opt_extract = 0;
   int opt_preventcomment = 0;//undocumented unoffical flag for mcpl unit tests
@@ -2149,12 +2315,16 @@ int mcpl_tool(int argc,char** argv) {
       const char * lo_repair = "repair";
       const char * lo_version = "version";
       const char * lo_text = "text";
+      const char * lo_forcemerge = "forcemerge";
+      const char * lo_keepuserflags = "keepuserflags";
       //Use strstr instead of "strcmp(a,"--help")==0" to support shortened
       //versions (works since all our long-opts start with unique char).
       if (strstr(lo_help,a)==lo_help) return free(filenames), mcpl_tool_usage(argv,0);
       else if (strstr(lo_justhead,a)==lo_justhead) opt_justhead = 1;
       else if (strstr(lo_nohead,a)==lo_nohead) opt_nohead = 1;
       else if (strstr(lo_merge,a)==lo_merge) opt_merge = 1;
+      else if (strstr(lo_forcemerge,a)==lo_forcemerge) opt_forcemerge = 1;
+      else if (strstr(lo_keepuserflags,a)==lo_keepuserflags) opt_keepuserflags = 1;
       else if (strstr(lo_inplace,a)==lo_inplace) opt_inplace = 1;
       else if (strstr(lo_extract,a)==lo_extract) opt_extract = 1;
       else if (strstr(lo_repair,a)==lo_repair) opt_repair = 1;
@@ -2179,12 +2349,18 @@ int mcpl_tool(int argc,char** argv) {
   if ( opt_merge==0 && opt_inplace!=0 )
     return free(filenames),mcpl_tool_usage(argv,"--inplace can only be used with --merge.");
 
+  if ( opt_forcemerge==0 && opt_keepuserflags!=0 )
+    return free(filenames),mcpl_tool_usage(argv,"--keepuserflags can only be used with --forcemerge.");
+
+  if ( opt_merge!=0 && opt_forcemerge!=0 )
+    return free(filenames),mcpl_tool_usage(argv,"--merge and --forcemerge can not both be specified .");
+
   int number_dumpopts = (opt_justhead + opt_nohead + (blobkey!=0));
   if (opt_extract==0)
     number_dumpopts += (opt_num_limit!=-1) + (opt_num_skip!=-1);
   int any_dumpopts = number_dumpopts != 0;
   int any_extractopts = (opt_extract!=0||pdgcode_str!=0);
-  int any_mergeopts = (opt_merge!=0);
+  int any_mergeopts = (opt_merge!=0||opt_forcemerge!=0);
   int any_textopts = (opt_text!=0);
   if (any_dumpopts+any_mergeopts+any_extractopts+any_textopts+opt_repair+opt_version>1)
     return free(filenames),mcpl_tool_usage(argv,"Conflicting options specified.");
@@ -2200,17 +2376,21 @@ int mcpl_tool(int argc,char** argv) {
     return 0;
   }
 
-  if (opt_merge) {
+  if (any_mergeopts) {
 
     if (nfilenames<2)
-      return free(filenames),mcpl_tool_usage(argv,"Too few arguments for --merge.");
+      return free(filenames),mcpl_tool_usage(argv,
+                                             (opt_forcemerge?"Too few arguments for --forcemerge.":"Too few arguments for --merge.") );
 
     int ifirstinfile = (opt_inplace ? 0 : 1);
-    for (i = ifirstinfile+1; i < nfilenames; ++i)
-      if (!mcpl_can_merge(filenames[ifirstinfile],filenames[i]))
-        return free(filenames),mcpl_tool_usage(argv,"Requested files are incompatible for merge as they have different header info.");
+    if (!opt_forcemerge) {
+      for (i = ifirstinfile+1; i < nfilenames; ++i)
+        if (!mcpl_can_merge(filenames[ifirstinfile],filenames[i]))
+          return free(filenames),mcpl_tool_usage(argv,"Requested files are incompatible for merge as they have different header info.");
+    }
 
     if (opt_inplace) {
+      assert( !opt_forcemerge && opt_merge );
       for (i = ifirstinfile+1; i < nfilenames; ++i)
         mcpl_merge_inplace(filenames[ifirstinfile],filenames[i]);
     } else {
@@ -2234,7 +2414,9 @@ int mcpl_tool(int argc,char** argv) {
         return free(filenames),mcpl_tool_usage(argv,"Requested output file should not have .gz extension (unless it is .mcpl.gz).");
       }
 
-      mcpl_outfile_t mf = mcpl_merge_files( outfn, nfilenames-1, (const char**)filenames + 1);
+      mcpl_outfile_t mf = ( opt_forcemerge ?
+                            mcpl_forcemerge_files( outfn, nfilenames-1, (const char**)filenames + 1, opt_keepuserflags) :
+                            mcpl_merge_files( outfn, nfilenames-1, (const char**)filenames + 1) );
       if (attempt_gzip) {
         if (!mcpl_closeandgzip_outfile(mf))
           printf("MCPL WARNING: Failed to gzip output. Non-gzipped output is found in %s\n",outfn);

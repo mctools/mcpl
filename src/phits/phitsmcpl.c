@@ -190,7 +190,7 @@ int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
     mcpl_particle->polarisation[0] = p->polx;
     mcpl_particle->polarisation[1] = p->poly;
     mcpl_particle->polarisation[2] = p->polz;
-    mcpl_particle->time = p->time * 1.0e6;//nanoseconds to milliseconds
+    mcpl_particle->time = p->time * 1.0e6;//nanoseconds (PHITS) to milliseconds (MCPL)
     mcpl_particle->weight = p->weight;
     mcpl_particle->ekin = p->ekin;//already in MeV
     mcpl_add_particle(mcplfh,mcpl_particle);
