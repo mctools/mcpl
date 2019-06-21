@@ -9,9 +9,9 @@ weight: 15
 
 The PHITS–MCPL interface has been tested with PHITS v3.1 and exploits the
 existing PHITS capability to stop and subsequently restart simulations via
-intermediate binary files, the so-called PHITS dump files. The PHITS-MCPL
-interface is thus implemented as two standalone commandline converters:
-`phits2mcpl` and `mcpl2phits`.
+intermediate binary files, the so-called PHITS dump files. Available since MCPL
+release v1.3.0, the PHITS-MCPL interface is thus implemented as two standalone
+commandline converters: `phits2mcpl` and `mcpl2phits`.
 
 A detailed description of PHITS dump files can be found in [the PHITS
 manual](https://phits.jaea.go.jp/manual/manualE-phits.pdf), but as the dump
@@ -28,8 +28,8 @@ framework already have access to the commands.
 
 # Producing binary dump files with PHITS
 
-Binary dump files can be produced by PHITS in either of the so-called t-cross,
-t-product or t-time tallies. In all cases, lines like the following must be
+Binary dump files can be produced by PHITS in either of the so-called `t-cross`,
+`t-product` or `t-time` tallies. In all cases, lines like the following must be
 added in the relevant tally section:
 
 ```
@@ -41,7 +41,7 @@ added in the relevant tally section:
 Which will result in the binary dump files being produced with the name
 `myout_dmp` alongside a dump summary text file named `myout`. The configuration
 with 13 parameters given above includes polarisation (spin-direction)
-information. Another supported variant does not write polarisation information
+information. The other supported variant foregoes polarisation information
 and thus saves 22% on the resulting file size:
 
 ```
@@ -70,7 +70,7 @@ going from region 1 to region 2 in a particular PHITS setup, is:
 ```
 
 If one wishes to be more selective about the particle types captured, one can
-change to `part` parameter, for example to: `part = proton neutron photon`.
+change the `part` parameter, for example to: `part = proton neutron photon`.
 
 Refer to the PHITS manual (linked above) for more details.
 
@@ -82,7 +82,7 @@ file. Note that the dump configuration must be listed exactly as below in order
 to consume the dump files produced by default when using `mcpl2phits`:
 
 ```
-[ S o u r c e ]
+[ Source ]
    s-type =  17
     file = phits.dmp
     dump = 13
@@ -93,7 +93,7 @@ If files without polarisation info are produced by `mcpl2phits --nopol`, then
 the format changes slightly:
 
 ```
-[ S o u r c e ]
+[ Source ]
    s-type =  17
     file = phits.dmp
     dump = 10
@@ -218,7 +218,6 @@ Options:
                  used to produce dumpfile in the MCPL header.
   -s FILE      : Embed into the MCPL header the dump summary text file,
                  which was produced along with the dumpfile itself.
-```
 ```
 and
 
