@@ -11,6 +11,7 @@ in the indicated areas:
 * Esben Klinkby ([DTU](http://www.dtu.dk/)): MCNP hooks
 * Erik Bergbäck Knudsen ([DTU](http://www.dtu.dk/)): McStas & McXtrace hooks
 * Peter Willendrup ([DTU](http://www.dtu.dk/)): McStas & McXtrace hooks
+* Douglas Di Julio ([ESS](https://europeanspallationsource.se/)): PHITS hooks
 
 A substantial effort went into developing MCPL. If you use it for your work, we
 would appreciate it if you would use the following reference in your work:
