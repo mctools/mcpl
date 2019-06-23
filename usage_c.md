@@ -133,8 +133,13 @@ int main(int argc,char**argv) {
 
   const mcpl_particle_t* particle;
   while ( ( particle = mcpl_read(fi) ) ) {
-    if ( particle->pdgcode == 2112 && particle->ekin < 0.1 )
+    if ( particle->pdgcode == 2112 && particle->ekin < 0.1 ) {
       mcpl_add_particle(fo,particle);
+      //Note that a guaranteed non-lossy alternative to mcpl_add_particle(fo,particle)
+      //would be mcpl_transfer_last_read_particle(fi,fo) which can work directly on
+      //the serialised on-disk particle data.
+    }
+
   }
 
   //Close up files:
