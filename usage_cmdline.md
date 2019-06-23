@@ -97,7 +97,28 @@ Using the `--merge` flag to `mcpltool`, it is possible to merge contents from a 
 mcpltool --merge newfile.mcpl file1.mcpl file2.mcpl file3.mcpl file4.mcpl
 ```
 
-Note that files are currently compatible if and only if they have similar settings and meta-data.
+Note that files are considered compatible if and only if they have similar
+settings and meta-data such as comments and binary blobs. Thus, the resulting
+file will have the same such settings and meta-data as the originals.
+
+### Merging other files
+
+Occasionally, the compatiblity requirements for the --merge option can not be
+satisfied. At the expense of discarding descriptive meta-data such as comments and binary
+blobs, a brute-force merge of the files can be instead performed with the
+`--forcemerge` flag:
+
+```shell
+mcpltool --forcemerge newfile.mcpl file1.mcpl file2.mcpl file3.mcpl file4.mcpl
+```
+
+The settings and per-particle storage requirements of the resulting file will
+automatically be adapted to be such that particles from all the input files can
+be safely represented (e.g. if just one file use double-precision storage, the
+new file will as well).
+
+Due to the loss of meta-data, the usage of the `--forcemerge` option should be
+considered as a last-resort only and is in general not recommended.
 
 ### Get full usage instructions
 
