@@ -101,7 +101,7 @@ Note that files are considered compatible if and only if they have similar
 settings and meta-data such as comments and binary blobs. Thus, the resulting
 file will have the same such settings and meta-data as the originals.
 
-### Merging other files
+### Merging incompatible files ("forcemerge")
 
 Occasionally, the compatiblity requirements for the --merge option can not be
 satisfied. At the expense of discarding descriptive meta-data such as comments and binary
