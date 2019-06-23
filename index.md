@@ -21,6 +21,10 @@ both quick recipes and updated information where needed. You can [download](LOCA
 and try out the MCPL distribution right away, or use the
 menu above to navigate to more information.
 
+* June 21, 2019:
+  [v1.3.0](https://github.com/mctools/mcpl/releases/tag/v1.3.0)
+  released. In addition to general maintenance, this release brings support for
+  [PHITS](https://phits.jaea.go.jp/) and a new `mcpltool --forcemerge` option.
 * September 26, 2018:
   [v1.2.3](https://github.com/mctools/mcpl/releases/tag/v1.2.3)
   released. This release brings support for MCNP 6.2.
