@@ -81,12 +81,12 @@ Note that the output file is currently always compressed into .mcpl.gz when poss
 You can also use the `-l` and `-s` flags to extract particles according to their position in the file, which might for instance be useful to extract a specific interesting particle from a huge file. Here we extract 1 particle starting from position 123:
 
 ```shell
-mcpltool --extract -l1 -s123  examples/example.mcpl justneutrons.mcpl
+mcpltool --extract -l1 -s123  examples/example.mcpl selected.mcpl
 ```
 ```
-MCPL: Attempting to compress file justneutrons.mcpl with gzip
-MCPL: Succesfully compressed file into justneutrons.mcpl.gz
-MCPL: Succesfully extracted 1 / 1006 particles from examples/example.mcpl into justneutrons.mcpl.gz
+MCPL: Attempting to compress file selected.mcpl with gzip
+MCPL: Succesfully compressed file into selected.mcpl.gz
+MCPL: Succesfully extracted 1 / 1006 particles from examples/example.mcpl into selected.mcpl.gz
 ```
 
 ### Merging compatible files
@@ -295,7 +295,7 @@ And you are ready to run! For instance you can inspect an MCPL file with:
 ### ... or just download and run the pymcpltool
 
 Assuming your machine has Python and [NumPy](http://www.numpy.org/) available,
-one can simply download the MCPL python module, which is a single file with no
+one can simply download the MCPL Python module, which is a single file with no
 compiled dependencies, and which if executed as a script actually _is_ the `pymcpltool`. So download and save the file: {% include linkfile.html file="src_fat/pymcpltool" download=true %}, and make it executable with `chmod +x ./pymcpltool`. Then you are all set, for instance you can inspect an MCPL file with:
 
 ```shell
@@ -303,6 +303,6 @@ compiled dependencies, and which if executed as a script actually _is_ the `pymc
 ```
 
 An alternative (and possibly simpler) option, is to install the pymcpltool via `python
--mpip install mcpl`, as discussed [here](LOCAL:usage_python#install-it-via-pip).
+-mpip install mcpl`, as discussed [here](LOCAL:usage_python#-install-it-via-pip).
 
 Note that as described above, the `pymcpltool` only provides read-only access to MCPL files, but on the other hand it has the advantage of providing statistics and plotting capabilities which are not currently available when using the compiled `mcpltool`. Use `pymcpltool --help` for details.

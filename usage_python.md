@@ -84,7 +84,7 @@ python -c "import mcpl;help(mcpl.MCPLParticle)" # get documentation of MCPLParti
 python -c "import mcpl;help(mcpl)"              # get all documentation
 ```
 
-## How to install the MCPL python module
+## How to install the MCPL Python module
 
 The `mcpl.py` file is a pure Python module implemented in a single file, which
 in addition to Python itself (both Python 2 and 3 are supported) only needs the
@@ -104,7 +104,7 @@ your Python scripts.
 
 ### ... install it via pip
 
-The MCPL python module and pymcpltool was added to [Python Package
+The MCPL Python module and pymcpltool was added to [Python Package
 Index](https://pypi.python.org/pypi/mcpl), and therefore it (and the
 [pymcpltool](LOCAL:usage_cmdline#extract-statistics-from-a-file) commandline utility) can be installed via `pip`. Typically the
 command to invoke to install MCPL via pip is therefore something as simple as:
@@ -117,7 +117,7 @@ Of course, tweaks might apply: For instance one will typically either run the
 command under `sudo` or by adding the `--user` flag in order to carry out
 single-user installations. Furthermore, it might be necessary to replace the
 word `python` in the command with either `python2` or `python3`, if a specific
-python version must be targetted.
+Python version must be targetted.
 
 ### ... or use it as part of the MCPL distribution
 

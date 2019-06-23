@@ -34,7 +34,7 @@ menu above to navigate to more information.
 * January 26, 2018:
   MCPL is now available on the [Python Package Index](https://pypi.python.org/pypi/mcpl)!
   Thus, `pip install mcpl` now gives access to the [pymcpltool](LOCAL:usage_cmdline#extract-statistics-from-a-file)
-  and the [mcpl python module](LOCAL:usage_python).
+  and the [mcpl Python module](LOCAL:usage_python).
 * January 23, 2018:
   [v1.2.1](https://github.com/mctools/mcpl/releases/tag/v1.2.1)
   released. This is a pure maintenance release.
