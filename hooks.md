@@ -13,6 +13,7 @@ While more details about such plugins and converters can be found in {% include 
 * [MCPL hooks for McStas](LOCAL:hooks_mcstas/)
 * [MCPL hooks for McXtrace](LOCAL:hooks_mcxtrace/)
 * [MCPL hooks for MCNP](LOCAL:hooks_mcnp/)
+* [MCPL hooks for PHITS](LOCAL:hooks_phits/)
 
 Please [get in touch](LOCAL:contact/) if you are interested in helping out with providing hooks for applications not listed above, or to provide feedback on the existing hooks.
 

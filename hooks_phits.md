@@ -7,7 +7,7 @@ weight: 15
 - two magic lines for toc
 {:toc}
 
-The PHITS–MCPL interface has been tested with PHITS v3.1 and exploits the
+The PHITS–MCPL interface has been tested with [PHITS](https://phits.jaea.go.jp/) v3.10 and exploits the
 existing PHITS capability to stop and subsequently restart simulations via
 intermediate binary files, the so-called PHITS dump files. Available since MCPL
 release v1.3.0, the PHITS-MCPL interface is thus implemented as two standalone
