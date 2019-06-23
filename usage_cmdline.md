@@ -114,8 +114,9 @@ mcpltool --forcemerge newfile.mcpl file1.mcpl file2.mcpl file3.mcpl file4.mcpl
 
 The settings and per-particle storage requirements of the resulting file will
 automatically be adapted to be such that particles from all the input files can
-be safely represented (e.g. if just one file use double-precision storage, the
-new file will as well).
+be safely represented. For example, even if just one input file use
+double-precision storage for its particles, the merged output file will use
+double-precision for all of its particles.
 
 Due to the loss of meta-data, the usage of the `--forcemerge` option should be
 considered as a last-resort only and is in general not recommended.
