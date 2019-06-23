@@ -17,7 +17,7 @@ unpack it somewhere and follow the instructions in the
 [INSTALL]({{"/raw/master/INSTALL" | prepend: site.github.repository_url }})
 file for how to proceed to build and install using either CMake (to build
 everything including examples) or a simple Makefile or compilation command (to
-build just "fat" versions of [mcpltool](LOCAL:usage_cmdline/), ssw2mcpl and
-mcpl2ssw executables). Additional information can also be found in {% include linkpaper.html subsection=2.5 %}.
+build just "fat" versions of [mcpltool](LOCAL:usage_cmdline/), ssw2mcpl,
+mcpl2ssw, phits2mcpl, or mcpl2phits executables). Additional information can also be found in {% include linkpaper.html subsection=2.5 %}.
 
 To start playing around with the [mcpltool](LOCAL:usage_cmdline/), we also provide a small sample MCPL file with the distribution: [example.mcpl]({{"/raw/master/examples/example.mcpl" | prepend: site.github.repository_url }}).

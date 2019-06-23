@@ -161,6 +161,10 @@ Merge options:
   -m, --merge --inplace FILE1 FILE2 ... FILEN
                     Appends the particle contents in FILE2 ... FILEN into
                     FILE1. Note that this action modifies FILE1!
+  --forcemerge [--keepuserflags] FILEOUT FILE1 FILE2 ... FILEN
+               Like --merge but works with incompatible files as well, at the
+               heavy price of discarding most metadata like comments and blobs.
+               Userflags will be discarded unless --keepuserflags is specified.
 
 Extract options:
   -e, --extract FILE1 FILE2
