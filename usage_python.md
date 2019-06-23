@@ -102,6 +102,23 @@ Naturally, one can simply use the following link to download and save the file:
 it anywhere in the PYTHONPATH, such as the directory from which you plan to run
 your Python scripts.
 
+### ... install it via pip
+
+The MCPL python module and pymcpltool was added to [Python Package
+Index](https://pypi.python.org/pypi/mcpl), and therefore it (and the
+[pymcpltool](LOCAL:usage_cmdline#extract-statistics-from-a-file) commandline utility) can be installed via `pip`. Typically the
+command to invoke to install MCPL via pip is therefore something as simple as:
+
+```shell
+python -mpip install mcpl
+```
+
+Of course, tweaks might apply: For instance one will typically either run the
+command under `sudo` or by adding the `--user` flag in order to carry out
+single-user installations. Furthermore, it might be necessary to replace the
+word `python` in the command with either `python2` or `python3`, if a specific
+python version must be targetted.
+
 ### ... or use it as part of the MCPL distribution
 
 The `mcpl.py` file is part of the MCPL distribution starting with release

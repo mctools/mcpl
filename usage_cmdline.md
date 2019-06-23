@@ -302,4 +302,7 @@ compiled dependencies, and which if executed as a script actually _is_ the `pymc
 ./pymcpltool <my-mcpl-file>
 ```
 
+An alternative (and possibly simpler) option, is to install the pymcpltool via `python
+-mpip install mcpl`, as discussed [here](LOCAL:usage_python#install-it-via-pip).
+
 Note that as described above, the `pymcpltool` only provides read-only access to MCPL files, but on the other hand it has the advantage of providing statistics and plotting capabilities which are not currently available when using the compiled `mcpltool`. Use `pymcpltool --help` for details.
