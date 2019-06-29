@@ -158,11 +158,12 @@ enough to copy mcpl.py into your run directory.
 Use MCPL from an existing environment
 -------------------------------------
 
-Presently (July 2017), MCPL is known to be integrated into McStas, McXtrace and
-the coding framework of the ESS detector group. Users of these environments will
-have already access to MCPL, as it is integrated and distributed along with
-them. For the two former, refer to src/mcstas/README and src/mcxtrace/README
-respectively for how to proceed.
+Presently (June 2019), MCPL is known to be integrated into McStas, McXtrace,
+VITESS, RESTRAX/SIMRES and the coding framework of the ESS detector group. Users
+of these environments will have already access to MCPL, as it is integrated and
+distributed along with them. For the two former, refer to src/mcstas/README and
+src/mcxtrace/README respectively for how to proceed (instructions for VITESS,
+RESTRAX and SIMRES will be added at a later time).
 
 
 

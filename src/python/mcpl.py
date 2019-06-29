@@ -21,7 +21,7 @@ would appreciate it if you would use the following reference in your work:
    T. Kittelmann, et al., Monte Carlo Particle Lists: MCPL, Computer Physics
    Communications 218, 17-42 (2017), https://doi.org/10.1016/j.cpc.2017.04.012
 
-mcpl.py written by Thomas Kittelmann, 2017. The work was supported by the
+mcpl.py written by Thomas Kittelmann, 2017-2019. The work was supported by the
 European Union's Horizon 2020 research and innovation programme under grant
 agreement No 676548 (the BrightnESS project)
 """
@@ -31,8 +31,8 @@ from __future__ import division, print_function, absolute_import,unicode_literal
 _str = lambda s : s.encode('ascii') if (hasattr(s,'encode') and bytes==str) else s
 
 __license__ = _str('CC0 1.0 Universal')
-__copyright__ = _str('Copyright 2017')
-__version__ = _str('1.3.0')
+__copyright__ = _str('Copyright 2017-2019')
+__version__ = _str('1.3.1')
 __status__ = _str('Production')
 __author__ = _str('Thomas Kittelmann')
 __maintainer__ = _str('Thomas Kittelmann')
@@ -156,6 +156,11 @@ else:
     def _np_add_at(a,indices,b):
         for ib,i in enumerate(indices):
             a[i] += b[ib]
+
+try:
+    import pathlib as _pathlib
+except ImportError:
+    _pathlib = None
 
 class MCPLError(Exception):
     """Common exception class for all exceptions raised by module"""
@@ -310,7 +315,7 @@ class MCPLParticleBlock:
            for p in theblock.particles:
                print p.x,p.y,p.z
         """
-        for i in range(len(self)):
+        for i in range(len(self._data)):
             yield self[i]
 
     def __len__(self):
@@ -323,34 +328,69 @@ class MCPLParticleBlock:
 
     @property
     def polx(self):
-        if self._polx[1] is None:
-            self._polx[1] = self._data['polx'].astype(float) if self._polx[0] else np.zeros(len(self),dtype=float)
-        return self._polx[1]
+        x = self._polx
+        if x[0]:
+            if x[1] is None:
+                x[1] = self._data['polx'].astype(float)
+            return x[1]
+        if x[1] is None or len(x[1]) != len(self._data):
+            x[1] = np.zeros(len(self._data),dtype=float)
+        return x[1]
+
     @property
     def poly(self):
-        if self._poly[1] is None:
-            self._poly[1] = self._data['poly'].astype(float) if self._poly[0] else self.polx#poly=polx when no polarisation info
-        return self._poly[1]
+        x = self._poly
+        if x[0]:
+            if x[1] is None:
+                x[1] = self._data['poly'].astype(float)
+            return x[1]
+        if x[1] is None or len(x[1]) != len(self._data):
+            x[1] = np.zeros(len(self._data),dtype=float)
+        return x[1]
+
     @property
     def polz(self):
-        if self._polz[1] is None:
-            self._polz[1] = self._data['polz'].astype(float) if self._polz[0] else self.polx#polz=polx when no polarisation info
-        return self._polz[1]
+        x = self._polz
+        if x[0]:
+            if x[1] is None:
+                x[1] = self._data['polz'].astype(float)
+            return x[1]
+        if x[1] is None or len(x[1]) != len(self._data):
+            x[1] = np.zeros(len(self._data),dtype=float)
+        return x[1]
+
     @property
     def pdgcode(self):
-        if self._pdg[1] is None:
-            self._pdg[1] = self._data['pdg'] if self._pdg[0] else self._opt_globalpdg*np.ones(len(self),dtype=int)
-        return self._pdg[1]
+        x = self._pdg
+        if x[0]:
+            if x[1] is None:
+                x[1] = self._data['pdg']
+            return x[1]
+        if x[1] is None or len(x[1]) != len(self._data):
+            x[1] = self._opt_globalpdg * np.ones(len(self._data),dtype=int)
+        return x[1]
+
     @property
     def weight(self):
-        if self._w[1] is None:
-            self._w[1] = self._data['w'].astype(float) if self._w[0] else self._opt_globalw*np.ones(len(self),dtype=float)
-        return self._w[1]
+        x = self._w
+        if x[0]:
+            if x[1] is None:
+                x[1] = self._data['w'].astype(float)
+            return x[1]
+        if x[1] is None or len(x[1]) != len(self._data):
+            x[1] = self._opt_globalw * np.ones(len(self._data),dtype=float)
+        return x[1]
+
     @property
     def userflags(self):
-        if self._uf[1] is None:
-            self._uf[1] = self._data['uf'] if self._uf[0] else np.zeros(len(self),dtype=np.uint32)
-        return self._uf[1]
+        x = self._uf
+        if x[0]:
+            if x[1] is None:
+                x[1] = self._data['uf']
+            return x[1]
+        if x[1] is None or len(x[1]) != len(self._data):
+            x[1] = np.zeros(len(self._data),dtype=np.uint32)
+        return x[1]
 
     @property
     def position(self):
@@ -360,7 +400,7 @@ class MCPLParticleBlock:
 
     @property
     def polarisation(self):
-        if self._view_pol is None:
+        if self._view_pol is None or len(self._view_pol) != len(self._data):
             self._view_pol = np_stack((self.polx,self.poly,self.polz),axis=1)
         return self._view_pol
 
@@ -466,6 +506,13 @@ class MCPLFile:
 
         self._py3_str_decode = (not raw_strings) if (pyversion >= (3,0,0)) else False
 
+        if hasattr(os,'fspath'):
+            #python >= 3.6, work with all pathlike objects (including str and pathlib.Path):
+            filename = os.fspath(filename)
+        elif _pathlib and hasattr(_pathlib,'PurePath') and isinstance(filename,_pathlib.PurePath):
+            #work with pathlib.Path in python 3.4 and 3.5:
+            filename = str(filename)
+
         #prepare file i/o (opens file):
         self._open_file(filename)
         #load info from mcpl header:
@@ -524,8 +571,9 @@ class MCPLFile:
 
     def _open_file(self,filename):
         self._fileclose = lambda : None
+
         if not hasattr(filename,'endswith'):
-            raise MCPLError('Unsupported type of filename object (should be a string or similar)')
+            raise MCPLError('Unsupported type of filename object (should be path-like, a string or similar)')
         #Try to mimic checks and capabilities of mcpl.c as closely as possible
         #here (including the ability of gzopen to open uncompressed files),
         #which is why the slightly odd order of some checks below.
@@ -1251,6 +1299,7 @@ class _StatCollector:
 
     def add_data(self,a,w = None):
         amin,amax = a.min(),a.max()
+        assert w is None or len(w)==len(a)
         assert not np.isnan(amin),"input array has NaN's!"
         self.__min = min(amin,amin if self.__min is None else self.__min)
         self.__max = max(amax,amax if self.__max is None else self.__max)

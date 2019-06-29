@@ -708,9 +708,11 @@ int mcpl2ssw_app( int argc, char** argv ) {
   const char * outsswfile;
   long nparticles_limit;
   long surface_id;
+
   int parse = mcpl2ssw_parse_args( argc, (const char**)argv,
                                    &inmcplfile, &refsswfile, &outsswfile,
                                    &nparticles_limit, &surface_id );
+
   if (parse==-1)// --help
     return 0;
 

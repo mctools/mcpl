@@ -8,7 +8,7 @@
 #                                                                                #
 # Refer to the INSTALL file from the MCPL distribution for more details.         #
 #                                                                                #
-# Written 2017 by T. Kittelmann.                                                 #
+# Written 2017-2019 by T. Kittelmann.                                            #
 #                                                                                #
 ##################################################################################
 

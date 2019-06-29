@@ -14,11 +14,12 @@ from standalone C code, are also provided. Refer to the FILES file for more
 information about included files, and refer to the INSTALL file for build
 instructions.
 
-MCPL and most code distributed here was written 2015-2017 by Thomas Kittelmann
+MCPL and most code distributed here was written 2015-2019 by Thomas Kittelmann
 (thomas.kittelmann@esss.se). The MCNP-SSW converters were written in close
 collaboration with Esben Klinkby (esbe@dtu.dk), and the McStas and McXtrace
 converters were written by Erik B. Knudsen (erkn@fysik.dtu.dk) and Peter
-Willendrup (pkwi@fysik.dtu.dk).
+Willendrup (pkwi@fysik.dtu.dk). The PHITS converters were written in close
+collaboration with Douglas Di Julio (douglas.dijulio@esss.se).
 
 See the file LICENSE for usage conditions.
 

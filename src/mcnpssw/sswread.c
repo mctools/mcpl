@@ -881,7 +881,6 @@ int32_t conv_mcnp6_pdg2ssw( int32_t c )
         return 1 + 2*i;
     }
   }
-
   if (absc>1000000000&&absc<=1009999990) {
     //Ions. PDG format for ions is 10LZZZAAAI, where L!=0 indicates strangeness
     //and I!=0 indicates exited nuclei. We only allow L=0 ions here.

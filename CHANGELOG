@@ -1,3 +1,10 @@
+v1.3.1 2019-06-29
+      * Fix length of all data arrays in Python API in the last particle block
+        in all files, making pymcpltool --stats work again for files with more
+        than blocklength particles (github issue 49).
+      * Python API accepts pathlib.Path objects introduced in Python 3.4 (github
+        issue 50).
+
 v1.3.0 2019-06-21
       * Introduce support for PHITS. This is done via mcpl2phits and phits2mcpl
         command line tools for conversions to and from PHITS binary dump

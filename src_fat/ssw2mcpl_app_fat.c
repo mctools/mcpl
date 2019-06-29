@@ -117,9 +117,9 @@
 
 #define MCPL_VERSION_MAJOR 1
 #define MCPL_VERSION_MINOR 3
-#define MCPL_VERSION_PATCH 0
-#define MCPL_VERSION   10300 /* (10000*MAJOR+100*MINOR+PATCH)   */
-#define MCPL_VERSION_STR "1.3.0"
+#define MCPL_VERSION_PATCH 1
+#define MCPL_VERSION   10301 /* (10000*MAJOR+100*MINOR+PATCH)   */
+#define MCPL_VERSION_STR "1.3.1"
 #define MCPL_FORMATVERSION 3 /* Format version of written files */
 
 #ifdef __cplusplus
@@ -16526,7 +16526,6 @@ int32_t conv_mcnp6_pdg2ssw( int32_t c )
         return 1 + 2*i;
     }
   }
-
   if (absc>1000000000&&absc<=1009999990) {
     //Ions. PDG format for ions is 10LZZZAAAI, where L!=0 indicates strangeness
     //and I!=0 indicates exited nuclei. We only allow L=0 ions here.
@@ -17254,9 +17253,11 @@ int mcpl2ssw_app( int argc, char** argv ) {
   const char * outsswfile;
   long nparticles_limit;
   long surface_id;
+
   int parse = mcpl2ssw_parse_args( argc, (const char**)argv,
                                    &inmcplfile, &refsswfile, &outsswfile,
                                    &nparticles_limit, &surface_id );
+
   if (parse==-1)// --help
     return 0;
 

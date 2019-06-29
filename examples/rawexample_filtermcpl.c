@@ -30,15 +30,18 @@ int main(int argc,char**argv) {
   mcpl_file_t fi = mcpl_open_file(infilename);
   mcpl_outfile_t fo = mcpl_create_outfile(outfilename);
   mcpl_transfer_metadata(fi, fo);
-  mcpl_hdr_add_comment(fo,"Applied custom filter to select neutrons with ekin<100keV");
+  mcpl_hdr_add_comment(fo,"Applied custom filter to select neutrons with ekin<0.1MeV");
 
-  //Loop over particles from input, only triggering mcpl_add_particle calls for
-  //the chosen particles:
+  //Loop over particles from input, only adding the chosen particles to the output file:
 
   const mcpl_particle_t* particle;
   while ( ( particle = mcpl_read(fi) ) ) {
-    if ( particle->pdgcode == 2112 && particle->ekin < 0.1 )
+    if ( particle->pdgcode == 2112 && particle->ekin < 0.1 ) {
       mcpl_add_particle(fo,particle);
+      //Note that a guaranteed non-lossy alternative to mcpl_add_particle(fo,particle)
+      //would be mcpl_transfer_last_read_particle(fi,fo) which can work directly on
+      //the serialised on-disk particle data.
+    }
   }
 
   //Close up files:
