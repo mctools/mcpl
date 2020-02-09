@@ -26,7 +26,8 @@ menu above to navigate to more information.
   released, fixing the time conversion in phits2mcpl and mcpl2phits.
 * June 29, 2019:
   [v1.3.1](https://github.com/mctools/mcpl/releases/tag/v1.3.1)
-  released, with important bug-fixes for the Python API and the pymcpltool.
+  released, with important bug-fixes for the [Python API](LOCAL:usage_python)
+  and the [pymcpltool](LOCAL:usage_cmdline#extract-statistics-from-a-file).
 * June 21, 2019:
   [v1.3.0](https://github.com/mctools/mcpl/releases/tag/v1.3.0)
   released. In addition to general maintenance, this release brings support for
@@ -46,7 +47,7 @@ menu above to navigate to more information.
   released. This is a pure maintenance release.
 * July 4, 2017:
   [v1.2.0](https://github.com/mctools/mcpl/releases/tag/v1.2.0)
-  released, bringing native [python](LOCAL:usage_python) support and
+  released, bringing native [Python](LOCAL:usage_python) support and
   [pymcpltool](LOCAL:usage_cmdline#extract-statistics-from-a-file) to MCPL!
 * April 20, 2017: The MCPL paper (describing MCPL v1.1.0) was accepted for publication in Computer
   Physics Communications with full Open Access:
