@@ -23,7 +23,8 @@ menu above to navigate to more information.
 
 * February 9, 2002:
   [v1.3.2](https://github.com/mctools/mcpl/releases/tag/v1.3.2)
-  released, fixing the time conversion in phits2mcpl and mcpl2phits.
+  released, fixing the time conversion in [phits2mcpl](LOCAL:hooks_phits)
+  and [mcpl2phits](LOCAL:hooks_phits).
 * June 29, 2019:
   [v1.3.1](https://github.com/mctools/mcpl/releases/tag/v1.3.1)
   released, with important bug-fixes for the [Python API](LOCAL:usage_python)
