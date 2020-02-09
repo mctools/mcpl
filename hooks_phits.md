@@ -263,8 +263,8 @@ Next, go to a terminal and compile them with two commands (exchange "gcc" with t
 "clang" on OSX):
 
 ```shell
-gcc -std=c99 -lm phits2mcpl_app_fat.c -o phits2mcpl
-gcc -std=c99 -lm mcpl2phits_app_fat.c -o mcpl2phits
+gcc -std=c99 phits2mcpl_app_fat.c -lm -o phits2mcpl
+gcc -std=c99 mcpl2phits_app_fat.c -lm -o mcpl2phits
 ```
 
 And you are ready to run! For instance:

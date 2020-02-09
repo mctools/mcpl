@@ -283,7 +283,7 @@ Next, compile it with the command (exchange "gcc" with the name of your compiler
 "clang" on OS X):
 
 ```shell
-gcc -std=c99 -lm mcpltool_app_fat.c -o mcpltool
+gcc -std=c99 mcpltool_app_fat.c -lm -o mcpltool
 ```
 
 And you are ready to run! For instance you can inspect an MCPL file with:

@@ -212,8 +212,8 @@ Next, go to a terminal and compile them with two commands (exchange "gcc" with t
 "clang" on OSX):
 
 ```shell
-gcc -std=c99 -lm ssw2mcpl_app_fat.c -o ssw2mcpl
-gcc -std=c99 -lm mcpl2ssw_app_fat.c -o mcpl2ssw
+gcc -std=c99 ssw2mcpl_app_fat.c -lm -o ssw2mcpl
+gcc -std=c99 mcpl2ssw_app_fat.c -lm -o mcpl2ssw
 ```
 
 And you are ready to run! For instance:
