@@ -7,7 +7,7 @@
 //                                                                   //
 // Compile into executable using C99 with libm:                      //
 //                                                                   //
-//   $CC -std=c99 -lm mcpl2ssw_app_fat.c -o mcpl2ssw                 //
+//   $CC -std=c99 mcpl2ssw_app_fat.c -lm -o mcpl2ssw                 //
 //                                                                   //
 // Where $CC is a C99 capable C-compiler like gcc or clang.          //
 //                                                                   //
@@ -117,9 +117,9 @@
 
 #define MCPL_VERSION_MAJOR 1
 #define MCPL_VERSION_MINOR 3
-#define MCPL_VERSION_PATCH 1
-#define MCPL_VERSION   10301 /* (10000*MAJOR+100*MINOR+PATCH)   */
-#define MCPL_VERSION_STR "1.3.1"
+#define MCPL_VERSION_PATCH 2
+#define MCPL_VERSION   10302 /* (10000*MAJOR+100*MINOR+PATCH)   */
+#define MCPL_VERSION_STR "1.3.2"
 #define MCPL_FORMATVERSION 3 /* Format version of written files */
 
 #ifdef __cplusplus
@@ -5432,6 +5432,7 @@ int _mcpl_custom_gzip(const char *filename, const char *mode)
   //remove input file and return success:
   unlink(filename);
   return 1;
+
 }
 
 #endif
@@ -17268,6 +17269,7 @@ int mcpl2ssw_app( int argc, char** argv ) {
     return 0;
 
   return 1;
+
 }
 
 /////////////////////////////////////////////////////////////////////////////////////

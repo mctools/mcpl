@@ -7,7 +7,7 @@
 //                                                                   //
 // Compile into executable using C99 with libm:                      //
 //                                                                   //
-//   $CC -std=c99 -lm mcpl2phits_app_fat.c -o mcpl2phits             //
+//   $CC -std=c99 mcpl2phits_app_fat.c -lm -o mcpl2phits             //
 //                                                                   //
 // Where $CC is a C99 capable C-compiler like gcc or clang.          //
 //                                                                   //
@@ -117,9 +117,9 @@
 
 #define MCPL_VERSION_MAJOR 1
 #define MCPL_VERSION_MINOR 3
-#define MCPL_VERSION_PATCH 1
-#define MCPL_VERSION   10301 /* (10000*MAJOR+100*MINOR+PATCH)   */
-#define MCPL_VERSION_STR "1.3.1"
+#define MCPL_VERSION_PATCH 2
+#define MCPL_VERSION   10302 /* (10000*MAJOR+100*MINOR+PATCH)   */
+#define MCPL_VERSION_STR "1.3.2"
 #define MCPL_FORMATVERSION 3 /* Format version of written files */
 
 #ifdef __cplusplus
@@ -5449,6 +5449,7 @@ int _mcpl_custom_gzip(const char *filename, const char *mode)
   //remove input file and return success:
   unlink(filename);
   return 1;
+
 }
 
 #endif
@@ -16223,7 +16224,7 @@ int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
     mcpl_particle->polarisation[0] = p->polx;
     mcpl_particle->polarisation[1] = p->poly;
     mcpl_particle->polarisation[2] = p->polz;
-    mcpl_particle->time = p->time * 1.0e6;//nanoseconds (PHITS) to milliseconds (MCPL)
+    mcpl_particle->time = p->time * 1.0e-6;//nanoseconds (PHITS) to milliseconds (MCPL)
     mcpl_particle->weight = p->weight;
     mcpl_particle->ekin = p->ekin;//already in MeV
     mcpl_add_particle(mcplfh,mcpl_particle);
@@ -16438,7 +16439,7 @@ int mcpl2phits( const char * inmcplfile, const char * outphitsdumpfile,
     dumpdata[6] = mcpl_p->direction[2];
     dumpdata[7] = mcpl_p->ekin;//Already in MeV
     dumpdata[8] = mcpl_p->weight;
-    dumpdata[9] = mcpl_p->time * 1.0e-6;//ms->ns
+    dumpdata[9] = mcpl_p->time * 1.0e6;//ms->ns
     dumpdata[10] = mcpl_p->polarisation[0];
     dumpdata[11] = mcpl_p->polarisation[1];
     dumpdata[12] = mcpl_p->polarisation[2];
@@ -16590,8 +16591,10 @@ int mcpl2phits_app( int argc, char** argv ) {
   const char * outphitsfile;
   long nparticles_limit;
   int use64bitreclen, nopolarisation;
+
   int parse = mcpl2phits_parse_args( argc, (const char**)argv, &inmcplfile, &outphitsfile,
                                      &nparticles_limit, &use64bitreclen, &nopolarisation);
+
   if (parse==-1)// --help
     return 0;
 

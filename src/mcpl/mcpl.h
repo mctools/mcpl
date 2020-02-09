@@ -21,9 +21,9 @@
 
 #define MCPL_VERSION_MAJOR 1
 #define MCPL_VERSION_MINOR 3
-#define MCPL_VERSION_PATCH 1
-#define MCPL_VERSION   10301 /* (10000*MAJOR+100*MINOR+PATCH)   */
-#define MCPL_VERSION_STR "1.3.1"
+#define MCPL_VERSION_PATCH 2
+#define MCPL_VERSION   10302 /* (10000*MAJOR+100*MINOR+PATCH)   */
+#define MCPL_VERSION_STR "1.3.2"
 #define MCPL_FORMATVERSION 3 /* Format version of written files */
 
 #ifdef __cplusplus

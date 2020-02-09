@@ -1,9 +1,17 @@
+v1.3.2 2020-02-09
+      * Fix time conversion bug in phits2mcpl and mcpl2phits, where ms<->ns
+        factors had been mistakenly inverted (github issue #53). Thanks to
+        Douglas Di Julio (ESS) for reporting.
+      * Reorder link flags in documentation and "fat" Makefile to be correctly
+        placed after the compilation objects. This fixes modern GCC compilation
+        using as-needed flag, which is the default on Ubuntu (github issue #51).
+
 v1.3.1 2019-06-29
       * Fix length of all data arrays in Python API in the last particle block
         in all files, making pymcpltool --stats work again for files with more
-        than blocklength particles (github issue 49).
+        than blocklength particles (github issue #49).
       * Python API accepts pathlib.Path objects introduced in Python 3.4 (github
-        issue 50).
+        issue #50).
 
 v1.3.0 2019-06-21
       * Introduce support for PHITS. This is done via mcpl2phits and phits2mcpl
@@ -13,13 +21,13 @@ v1.3.0 2019-06-21
         mcpl_forcemerge_files function in the C API.  This makes it possible to
         merge particles from otherwise incompatible files, at the heavy price of
         discarding descriptive metadata like comments and blobs. This is
-        intended as a last-resort solution (github issue 43).
+        intended as a last-resort solution (github issue #43).
       * Add new public function mcpl_transfer_last_read_particle, which makes it
         possible to perform non-lossy filtering or merging of files using custom
-        C code (github issue 18).
-      * Fix pymcpltool --stats sum(weights) bug with python3 (github issue 46)
+        C code (github issue #18).
+      * Fix pymcpltool --stats sum(weights) bug with python3 (github issue #46)
       * Handle unexpected records at the end of SSW headers gracefully (github
-        issue 45).
+        issue #45).
 
 v1.2.3 2018-09-26
       * ssw2mcpl: Support MCNP 6.2.

@@ -10,7 +10,7 @@
 //                                                                   //
 // Compile into executable using C99 with libm:                      //
 //                                                                   //
-//   $CC -std=c99 -O2 -lm mcpltool_app.c -o mcpltool                 //
+//   $CC -std=c99 -O2 mcpltool_app.c -lm -o mcpltool                 //
 //                                                                   //
 // Where $CC is a C99 capable C-compiler like gcc or clang.          //
 //                                                                   //
@@ -203,9 +203,9 @@
 
 #define MCPL_VERSION_MAJOR 1
 #define MCPL_VERSION_MINOR 3
-#define MCPL_VERSION_PATCH 1
-#define MCPL_VERSION   10301 /* (10000*MAJOR+100*MINOR+PATCH)   */
-#define MCPL_VERSION_STR "1.3.1"
+#define MCPL_VERSION_PATCH 2
+#define MCPL_VERSION   10302 /* (10000*MAJOR+100*MINOR+PATCH)   */
+#define MCPL_VERSION_STR "1.3.2"
 #define MCPL_FORMATVERSION 3 /* Format version of written files */
 
 #ifdef __cplusplus
@@ -5356,6 +5356,7 @@ int _mcpl_custom_gzip(const char *filename, const char *mode)
   //remove input file and return success:
   unlink(filename);
   return 1;
+
 }
 
 #endif

@@ -13,8 +13,10 @@
 ##################################################################################
 
 SHELL         = /bin/sh
-CFLAGS        = -std=c99 -lm
+CFLAGS        = -std=c99
 CFLAGS_EXTRA ?=
+LDFLAGS        = -lm
+LDFLAGS_EXTRA ?=
 DEBUGFLAGS    = -g -O0
 RELEASEFLAGS  = -O2 -DNDEBUG
 SRCDIR        = $(dir $(lastword $(MAKEFILE_LIST)))
@@ -23,6 +25,7 @@ CC           ?= gcc
 
 TARGETS       = $(DESTDIR)mcpl2phits $(DESTDIR)phits2mcpl $(DESTDIR)mcpl2ssw $(DESTDIR)ssw2mcpl $(DESTDIR)mcpltool
 CFLAGS += $(CFLAGS_EXTRA)
+LDFLAGS += $(LDFLAGS_EXTRA)
 
 all: release
 
@@ -38,17 +41,17 @@ clean:
 	rm -f $(TARGETS)
 
 $(DESTDIR)mcpltool: $(SRCDIR)mcpltool_app_fat.c
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $< $(LDFLAGS) -o $@
 
 $(DESTDIR)ssw2mcpl: $(SRCDIR)ssw2mcpl_app_fat.c
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $< $(LDFLAGS) -o $@
 
 $(DESTDIR)mcpl2ssw: $(SRCDIR)mcpl2ssw_app_fat.c
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $< $(LDFLAGS) -o $@
 
 $(DESTDIR)phits2mcpl: $(SRCDIR)phits2mcpl_app_fat.c
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $< $(LDFLAGS) -o $@
 
 $(DESTDIR)mcpl2phits: $(SRCDIR)mcpl2phits_app_fat.c
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $< $(LDFLAGS) -o $@
 

@@ -5120,6 +5120,7 @@ int _mcpl_custom_gzip(const char *filename, const char *mode)
   //remove input file and return success:
   unlink(filename);
   return 1;
+
 }
 
 #endif

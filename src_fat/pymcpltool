@@ -28,11 +28,15 @@ agreement No 676548 (the BrightnESS project)
 
 from __future__ import division, print_function, absolute_import,unicode_literals#enable py3 behaviour in py2.6+
 
-_str = lambda s : s.encode('ascii') if (hasattr(s,'encode') and bytes==str) else s
+try:
+    _str = lambda s : s.encode('ascii') if (hasattr(s,'encode') and bytes==str) else s
+except SyntaxError:
+    print('MCPL ERROR: Unsupported obsolete Python detected')
+    raise SystemExit(1)
 
 __license__ = _str('CC0 1.0 Universal')
 __copyright__ = _str('Copyright 2017-2019')
-__version__ = _str('1.3.1')
+__version__ = _str('1.3.2')
 __status__ = _str('Production')
 __author__ = _str('Thomas Kittelmann')
 __maintainer__ = _str('Thomas Kittelmann')
@@ -506,7 +510,7 @@ class MCPLFile:
 
         self._py3_str_decode = (not raw_strings) if (pyversion >= (3,0,0)) else False
 
-        if hasattr(os,'fspath'):
+        if hasattr(os,'fspath') and hasattr(filename,'__fspath__'):
             #python >= 3.6, work with all pathlike objects (including str and pathlib.Path):
             filename = os.fspath(filename)
         elif _pathlib and hasattr(_pathlib,'PurePath') and isinstance(filename,_pathlib.PurePath):

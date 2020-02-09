@@ -113,7 +113,7 @@ source files).
    "mcpl2ssw", "phits2mcpl", or "mcpl2phits" in the commands below to build a
    different utility), simply do:
 
-   gcc -std=c99 -lm src_fat/mcpltool_app_fat.c -o mcpltool
+   gcc -std=c99 src_fat/mcpltool_app_fat.c -lm -o mcpltool
 
    If you have a different compiler than gcc (such as "clang"), of course
    put that instead of "gcc" in the command above.
