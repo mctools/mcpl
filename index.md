@@ -21,7 +21,7 @@ both quick recipes and updated information where needed. You can [download](LOCA
 and try out the MCPL distribution right away, or use the
 menu above to navigate to more information.
 
-* February 9, 2002:
+* February 9, 2020:
   [v1.3.2](https://github.com/mctools/mcpl/releases/tag/v1.3.2)
   released, fixing the time conversion in [phits2mcpl](LOCAL:hooks_phits)
   and [mcpl2phits](LOCAL:hooks_phits).
