@@ -26,10 +26,18 @@ src/mcnpssw/        : MCPL hooks for MCNP in C, in the form of a few .h/.c file
                       pairs and two command line applications which can be used
                       to convert between the MCPL format and the SSW files used
                       by MCNP.
+src/mcnpptrac/      : MCPL hooks for MCNP in C, in the form of a few .h/.c file
+                      pairs and two command line applications which can be used
+                      to convert between the MCPL format and the PTRAC files used
+                      by MCNP.
 src/phits/          : MCPL hooks for PHITS in C, in the form of a few .h/.c file
                       pairs and two command line applications which can be used
                       to convert between the MCPL format and the binary dump
                       files used by PHITS.
+src/tripolistock/   : MCPL hooks for TRIPOLI-4 in C, in the form of a few .h/.c
+                      file pairs and two command line applications which can be
+                      used to convert between the MCPL format and the .stock
+                      files used by TRIPOLI-4 (STORAGE).
 src/mcstas/         : No actual code is here, just a small reminder of how the
                       MCPL plugin shipped with McStas can be used.
 src/mcxtrace/       : No actual code is here, just a small reminder of how the
