@@ -53,7 +53,7 @@ stock_file_t stock_open_internal( const char * filename )
   stock_file_t out;
   out.internal = f;
 
-  f->file = fopen(filename,"rb");
+  f->file = fopen(filename,"r");
   if (!f->file)
     stock_error("Unable to open file!");
 

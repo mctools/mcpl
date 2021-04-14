@@ -125,8 +125,8 @@ void stock2mcpl_parse_args(int argc,char **argv, const char** infile,
       progname = progname ? progname + 1 : argv[0];
       printf("Usage:\n\n");
       printf("  %s [options] input.stock [output.mcpl]\n\n",progname);
-      printf("Converts the Monte Carlo particles in the input.stock file (MCNP Surface\n"
-             "Source Write format) to MCPL format and stores in the designated output\n"
+      printf("Converts the Monte Carlo particles in the input.stock file (TRIPOLI-4\n"
+             "STORAGE format) to MCPL format and stores in the designated output\n"
              "file (defaults to \"output.mcpl\").\n"
              "\n"
              "Options:\n"

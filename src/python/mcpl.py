@@ -47,6 +47,8 @@ __all__ = [_str('MCPLFile'),
            _str('MCPLError'),
            _str('dump_file'),
            _str('convert2ascii'),
+           _str('save2ascii'),
+           _str('append2ascii'),
            _str('app_pymcpltool'),
            _str('collect_stats'),
            _str('dump_stats'),
@@ -1017,6 +1019,62 @@ def convert2ascii(mcplfile,outfile):
     fmtstr="%5i %11i %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g 0x%08x\n"
     for idx,p in enumerate(fin.particles):
         fout.write(fmtstr%(idx,p.pdgcode,p.ekin,p.x,p.y,p.z,p.ux,p.uy,p.uz,p.time,p.weight,p.polx,p.poly,p.polz,p.userflags))
+
+def save2ascii(particles, outfile):
+    """
+    Save numpy array particles into outfile using a simple ASCII-based SSV format.
+
+    This function is equivalent to convert2ascii from mcpl, and uses the
+    same format as 'mcpl2ssv' and 'mcpltool --text' commands. Generated
+    SSV file can be converted to MCPL format with 'ssv2mcpl' command.
+
+    Parameters
+    ----------
+    particles: array-like
+        Array of particle parameters. Must have shape (nparticles, 13),
+        with the following column order:
+            pdgcode ekin[MeV] x[cm] y[cm] z[cm] ux uy uz time[ms] weight pol-x pol-y pol-z
+        Unused parameters should be filled with 0.
+    outfile: str
+        Name of ASCII-SSV file. If it exist, its content will be overwritten.
+    """
+    if(particles.shape[1] != 13):
+        raise MCPLError('Particle array should have shape (nparticles,13).')
+    nparticles = len(particles)
+    with open(outfile, "w") as fout:
+        fout.write("#MCPL-ASCII\n#ASCII-FORMAT: v1\n#NPARTICLES: %i\n#END-HEADER\n"%nparticles)
+        fout.write("index     pdgcode               ekin[MeV]                   x[cm]          "
+                   +"         y[cm]                   z[cm]                      ux                  "
+                   +"    uy                      uz                time[ms]                  weight  "
+                   +"                 pol-x                   pol-y                   pol-z  userflags\n")
+        fmtstr="%5i %11i %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g\n"
+        for idx,p in enumerate(particles):
+            fout.write(fmtstr%(idx,*p))
+
+
+def append2ascii(particles, outfile):
+    """
+    Append numpy array particles into outfile using a simple ASCII-based SSV format.
+
+    This function uses the same format as save2ascii, but appends particles
+    without writing a header.
+
+    Parameters
+    ----------
+    particles: array-like
+        Array of particle parameters. Must have shape (nparticles, 13),
+        with the following column order:
+            pdgcode ekin[MeV] x[cm] y[cm] z[cm] ux uy uz time[ms] weight pol-x pol-y pol-z
+        Unused parameters should be filled with 0.
+    outfile: str
+        Name of ASCII-SSV file where to append particles.
+    """
+    if(particles.shape[1] != 13):
+        raise MCPLError('Particle array should have shape (nparticles,13).')
+    with open(outfile, "a") as fout:
+        fmtstr="%5i %11i %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g\n"
+        for idx,p in enumerate(particles):
+            fout.write(fmtstr%(idx,*p))
 
 def _pymcpltool_usage(progname,errmsg=None):
     if errmsg:

@@ -63,7 +63,7 @@ ptrac_file_t ptrac_open_internal( const char * filename )
   ptrac_file_t out;
   out.internal = f;
 
-  f->file = fopen(filename,"rb");
+  f->file = fopen(filename,"r");
   if (!f->file)
     ptrac_error("Unable to open file!");
 
