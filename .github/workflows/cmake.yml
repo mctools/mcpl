@@ -1,0 +1,79 @@
+name: CMake
+
+on:
+  push:
+    branches: [ develop, master ]
+  pull_request:
+    branches: [ develop, master ]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release Debug
+
+jobs:
+  build:
+    # The CMake configure and build commands are platform agnostic and should work equally
+    # well on Windows or Mac.  You can convert this to a matrix build if you need
+    # cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ '3.6', '3.9' ]
+    name: Ubuntu with Python ${{ matrix.python-version }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        path: src
+
+    - name: Setup python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Pip install
+      run: |
+           python3 -m pip install numpy
+           python3 -m pip install matplotlib
+
+    - name: Check versions
+      run: |
+           which python3
+           python3 --version
+           which cmake
+           cmake --version
+
+    - name: Configure CMake
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      run: >
+        cmake
+        -S ${{github.workspace}}/src
+        -B ${{github.workspace}}/build
+        -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+        -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
+        -DBUILD_EXAMPLES=ON
+
+    - name: Build
+      run: >
+        cmake
+        --build ${{github.workspace}}/build
+        --config ${{env.BUILD_TYPE}}
+
+    - name: Install
+      run: cmake --install ${{github.workspace}}/build
+
+    - name: Look around
+      run: ls -l ${{github.workspace}}
+
+    - name: Tests without environment setup
+      run: |
+           ${{github.workspace}}/install/bin/mcpltool --help
+           ${{github.workspace}}/install/bin/pymcpltool --help
+           ${{github.workspace}}/install/bin/ssw2mcpl --help
+           ${{github.workspace}}/install/bin/mcpl2ssw --help
+           ${{github.workspace}}/install/bin/phits2mcpl --help
+           ${{github.workspace}}/install/bin/mcpl2phits --help
+
