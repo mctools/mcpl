@@ -6,10 +6,8 @@ on:
   pull_request:
     branches: [ develop, master ]
 
-#env:
-#  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-#  matrix:
-#    BUILD_TYPE: [ Release,  Debug ]
+env:
+  BUILD_TYPE: Release
 
 jobs:
   build:
@@ -21,8 +19,6 @@ jobs:
     strategy:
       matrix:
         python-version: [ '3.6', '3.9' ]
-        env:
-          BUILD_TYPE: [ Release,  Debug ]
     name: Ubuntu with Python ${{ matrix.python-version }}
 
     steps:
