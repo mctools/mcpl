@@ -21,6 +21,10 @@ both quick recipes and updated information where needed. You can [download](LOCA
 and try out the MCPL distribution right away, or use the
 menu above to navigate to more information.
 
+* August 16, 2022:
+  [v1.4.0](https://github.com/mctools/mcpl/releases/tag/v1.4.0)
+  released, updating the CMake code to support integration with
+  downstream CMake-based projects.
 * February 9, 2020:
   [v1.3.2](https://github.com/mctools/mcpl/releases/tag/v1.3.2)
   released, fixing the time conversion in [phits2mcpl](LOCAL:hooks_phits)
