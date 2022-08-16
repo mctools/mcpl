@@ -188,27 +188,6 @@ that exampleapp.c below includes the mcpl.h header:
   target_link_libraries( exampleapp MCPL::mcpl )
   install( TARGETS exampleapp DESTINATION bin )
 
-With CMake v3.14 and later, it might even be possible to use the FetchContent
-module to enable installing MCPL directly, and thus not requiring MCPL to be
-installed beforehand. So a more advanced version of the above example which
-should work even without MCPL preinstalled would be:
-
-  cmake_minimum_required(VERSION 3.14...3.24)
-  project(MyExampleProject LANGUAGES C)
-  find_package( MCPL )
-  if( NOT MCPL_Found )
-    include(FetchContent)
-    FetchContent_Declare(
-      mcplgithub
-      GIT_REPOSITORY https://github.com/mctools/mcpl.git
-      GIT_TAG        master
-      )
-    FetchContent_MakeAvailable( mcplgithub )
-  endif()
-  add_executable(exampleapp "${CMAKE_CURRENT_SOURCE_DIR}/exampleapp.c")
-  target_link_libraries( exampleapp MCPL::mcpl )
-  install( TARGETS exampleapp DESTINATION bin )
-
 
 Integrating MCPL into an existing environment
 ---------------------------------------------
@@ -222,10 +201,9 @@ additional advice and feedback, see https://mctools.github.io/mcpl/contact/).
 
 Note that as of MCPL CMake-based projects might wish to ignore the instructions
 below and simply add a find_package(MCPL REQUIRED) statement to their CMake code
-(possibly falling back to FetchContent as described above). However, that comes
-with the potential complication of putting an extra potential complication on
-your users, so what is the correct solution most likely depend on the exact
-use-case.
+(possibly using the FetchContent CMake module). However, that comes with the
+potential complication of putting an extra potential complication on your users,
+so what is the correct solution most likely depend on the exact use-case.
 
 1. If your users need code-level access to functionality provided in mcpl.h, you
    should copy src/mcpl/mcpl.h and src/mcpl/mcpl.c into a suitable location in your
