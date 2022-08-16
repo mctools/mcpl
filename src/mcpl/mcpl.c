@@ -150,7 +150,10 @@ void mcpl_store_string(char** dest, const char * src)
     free(*dest);
   *dest = (char*)calloc(n+1,1);
   assert(*dest);
-  strncpy( *dest,src,n );
+  //Usage of strncpy cause compiler warning on newer gcc, so we use memcpy
+  //instead (should be safe, we just checked strlen above!):
+  //strncpy( *dest,src,n );
+  memcpy( *dest,src,n );
   (*dest)[n] = '\0';
   return;
 }

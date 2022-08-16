@@ -13,7 +13,7 @@
 // permissions and licenses from third-parties, which is not within the scope of    //
 // the MCPL project itself.                                                         //
 //                                                                                  //
-// Written 2015-2017 by Thomas.Kittelmann@esss.se.                                  //
+// Written 2015-2017 by Thomas.Kittelmann@ess.eu                                    //
 //                                                                                  //
 //////////////////////////////////////////////////////////////////////////////////////
 

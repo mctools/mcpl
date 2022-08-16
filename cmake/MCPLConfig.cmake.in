@@ -1,0 +1,72 @@
+##################################################################################
+#                                                                                #
+# Exports MCPL targets, and provides a few PATHS and values of a few build       #
+# options.                                                                       #
+#                                                                                #
+# Geant4 targets will not be exported from this file. If Geant4 targets are      #
+# needed, one should use find_package(G4MCPL) instead of                         #
+# find_package(MCPL) (the former will also provide targets and variables         #
+# from the latter).                                                              #
+#                                                                                #
+##################################################################################
+
+
+#Export a few directory paths (relocatable):
+set( MCPL_CMAKEDIR "${CMAKE_CURRENT_LIST_DIR}" )
+get_filename_component( MCPL_DIR "${MCPL_CMAKEDIR}/@MCPL_relpath_CMAKEDIR2ROOT@" ABSOLUTE )
+get_filename_component( MCPL_DATAROOT "${MCPL_DIR}/@MCPL_DATAROOT@" ABSOLUTE )
+
+get_filename_component( MCPL_BINDIR "${MCPL_CMAKEDIR}/@MCPL_relpath_CMAKEDIR2BINDIR@" ABSOLUTE )
+get_filename_component( MCPL_LIBDIR "${MCPL_CMAKEDIR}/@MCPL_relpath_CMAKEDIR2LIBDIR@" ABSOLUTE )
+get_filename_component( MCPL_INCDIR "${MCPL_CMAKEDIR}/@MCPL_relpath_CMAKEDIR2INCDIR@" ABSOLUTE )
+if ( @INSTALL_PY@ )
+  get_filename_component( MCPL_PYPATH "${MCPL_CMAKEDIR}/@MCPL_relpath_CMAKEDIR2PYPATH@" ABSOLUTE )
+endif()
+
+#The MCPL targets (not including the g4mcpl target):
+if(NOT TARGET MCPL::MCPL)
+  include( "${MCPL_CMAKEDIR}/MCPLTargets.cmake" )
+endif()
+
+#Config variables:
+set( MCPL_OPTION_BUILD_EXAMPLES   @BUILD_EXAMPLES@ )
+set( MCPL_OPTION_BUILD_WITHG4     @BUILD_WITHG4@ )
+set( MCPL_OPTION_BUILD_WITHZLIB   @BUILD_WITHZLIB@ )
+set( MCPL_OPTION_BUILD_WITHSSW    @BUILD_WITHSSW@ )
+set( MCPL_OPTION_BUILD_WITHPHITS  @BUILD_WITHPHITS@ )
+set( MCPL_OPTION_BUILD_FAT        @BUILD_FAT@ )
+set( MCPL_OPTION_INSTALL_PY       @INSTALL_PY@ )
+set( MCPL_OPTION_MODIFY_RPATH     @MODIFY_RPATH@ )
+
+#Libname:
+set( MCPL_LIBNAME @MCPL_libname@ )
+
+#Various scripts:
+set( MCPL_CMD_MCPLTOOL ${MCPL_BINDIR}/mcpltool )
+if ( NOT EXISTS MCPL_CMD_MCPLTOOL )
+  set( MCPL_CMD_MCPLTOOL "")
+endif()
+set( MCPL_CMD_PYMCPLTOOL ${MCPL_BINDIR}/pymcpltool )
+if ( NOT EXISTS MCPL_CMD_PYMCPLTOOL )
+  set( MCPL_CMD_MCPLTOOL "")
+endif()
+if ( @BUILD_WITHSSW@ )
+  set( MCPL_CMD_SSW2MCPL ${MCPL_BINDIR}/ssw2mcpl )
+  if ( NOT EXISTS MCPL_CMD_SSW2MCPL )
+    set( MCPL_CMD_SSW2MCPL "")
+  endif()
+  set( MCPL_CMD_MCPL2SSW ${MCPL_BINDIR}/mcpl2ssw )
+  if ( NOT EXISTS MCPL_CMD_MCPL2SSW )
+    set( MCPL_CMD_MCPL2SSW "")
+  endif()
+endif()
+if ( @BUILD_WITHPHITS@ )
+  set( MCPL_CMD_PHITS2MCPL ${MCPL_BINDIR}/phits2mcpl )
+  if ( NOT EXISTS MCPL_CMD_PHITS2MCPL )
+    set( MCPL_CMD_PHITS2MCPL "")
+  endif()
+  set( MCPL_CMD_MCPL2PHITS ${MCPL_BINDIR}/mcpl2phits )
+  if ( NOT EXISTS MCPL_CMD_MCPL2PHITS )
+    set( MCPL_CMD_MCPL2PHITS "")
+  endif()
+endif()

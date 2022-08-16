@@ -13,6 +13,7 @@ examples/           : Small standalone examples for reading and writing MCPL
                       sample MCPL file.
 CMakeLists.txt      : Configuration file for optionally building and installing
                       via CMake (cf. the INSTALL file for instructions).
+cmake/              : More files needed to support the CMake configuration.
 src/mcpl/           : Implementation of MCPL itself in C, along with the mcpltool
                       command line application. The file mcpl.h is the public
                       interface of MCPL and mcpl.c is the implementation.

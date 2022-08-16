@@ -1,3 +1,34 @@
+v1.4.0 2022-08-16
+      * Major update to CMake code, which first and foremost makes it possible
+        for downstream CMake-based projects to use find_package( MCPL ) and
+        through that get access to variables MCPL-related variables and build
+        targets (i.e. the MCPL::mcpl target for projects needing to include
+        mcpl.h and link against the compiled mcpl library). This is done in
+        response to a request from Paul Romano (github issue #58).
+      * The new minimum CMake version required is 3.10. Users having issues with
+        this or other of the new CMake-related changes are recommended to stick
+        with release 1.3.2 for now (and open issues in the tracker at
+        https://github.com/mctools/mcpl/issues in case the problem is suspected
+        to be on the MCPL side of things).
+      * Now using the GNUInstallDirs module to determine locations of files in
+        the installation. This is considered best practice, and also provides
+        a fine-grained control to users who might need it.
+      * Changed the default to NOT build and install the examples and Geant4
+        hooks. These can still be enabled explicitly as needed of course with
+        -DBUILD_EXAMPLES=ON and/or -DBUILD_WITHG4=ON.
+      * Now attempting to use RPATH's in mcpltool and other installed examples
+        (to potentially help users avoid messing with LD_LIBRARY_PATH to run
+        commands such as mcpltool). To prevent this, set -DMODIFY_RPATH=OFF.
+      * All shebangs (#!/usr/bin/env python3) in Python scripts now refer to
+        python3 rather than merely python (github issue #55). Users having
+        issues with this due to being on very old platforms are recommended to
+        stick with release 1.3.2 for now (and open issues in the tracker at
+        https://github.com/mctools/mcpl/issues in case the problem is suspected
+        to not be related to having an ancient platform).
+      * Replaced a strncpy call in mcpl.c with memcpy, to avoid a compilation
+        warning under some conditions. Beyond fixing a potential compilation
+        warning, there should be no changes to functionality.
+
 v1.3.2 2020-02-09
       * Fix time conversion bug in phits2mcpl and mcpl2phits, where ms<->ns
         factors had been mistakenly inverted (github issue #53). Thanks to

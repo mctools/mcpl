@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """Python module for accessing MCPL files.
 
 The MCPL (Monte Carlo Particle Lists) format is thoroughly documented on the
@@ -21,7 +21,7 @@ would appreciate it if you would use the following reference in your work:
    T. Kittelmann, et al., Monte Carlo Particle Lists: MCPL, Computer Physics
    Communications 218, 17-42 (2017), https://doi.org/10.1016/j.cpc.2017.04.012
 
-mcpl.py written by Thomas Kittelmann, 2017-2019. The work was supported by the
+mcpl.py written by Thomas Kittelmann, 2017-2022. The work was supported by the
 European Union's Horizon 2020 research and innovation programme under grant
 agreement No 676548 (the BrightnESS project)
 """
@@ -35,12 +35,12 @@ except SyntaxError:
     raise SystemExit(1)
 
 __license__ = _str('CC0 1.0 Universal')
-__copyright__ = _str('Copyright 2017-2019')
-__version__ = _str('1.3.2')
+__copyright__ = _str('Copyright 2017-2022')
+__version__ = _str('1.4.0')
 __status__ = _str('Production')
 __author__ = _str('Thomas Kittelmann')
 __maintainer__ = _str('Thomas Kittelmann')
-__email__ = _str('thomas.kittelmann@esss.se')
+__email__ = _str('thomas.kittelmann@ess.eu')
 __all__ = [_str('MCPLFile'),
            _str('MCPLParticle'),
            _str('MCPLParticleBlock'),

@@ -15,7 +15,7 @@ information about included files, and refer to the INSTALL file for build
 instructions.
 
 MCPL and most code distributed here was written 2015-2019 by Thomas Kittelmann
-(thomas.kittelmann@esss.se). The MCNP-SSW converters were written in close
+(thomas.kittelmann@ess.eu). The MCNP-SSW converters were written in close
 collaboration with Esben Klinkby (esbe@dtu.dk), and the McStas and McXtrace
 converters were written by Erik B. Knudsen (erkn@fysik.dtu.dk) and Peter
 Willendrup (pkwi@fysik.dtu.dk). The PHITS converters were written in close

@@ -1,0 +1,25 @@
+#########################################################################
+#                                                                       #
+#  Config file used by clients wanting G4MCPL targets (and Geant4), in  #
+#  addition to the MCPL targets. A call to find_package(G4MCPL ...) is  #
+#  enough in that case, a separate find_package(MCPL) is not needed.    #
+#                                                                       #
+#########################################################################
+
+set(G4MCPL_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}")
+
+include( CMakeFindDependencyMacro )
+
+#Require Geant4 in the exact same version as was used when building G4MCPL:
+find_dependency( Geant4 @Geant4_VERSION@ EXACT REQUIRED )
+
+#Require MCPL from the same directory (the version matching is really just an extra check):
+set(MCPL_DIR "${G4MCPL_CMAKE_DIR}")
+find_dependency( MCPL @MCPL_VERSION@ EXACT REQUIRED NO_DEFAULT_PATH )
+
+#The G4MCPL targets:
+if(NOT TARGET G4MCPL::G4MCPL)
+  include( "${G4MCPL_CMAKE_DIR}/G4MCPLTargets.cmake" )
+endif()
+
+set( G4MCPL_LIBNAME @G4MCPL_LIBNAME@ )

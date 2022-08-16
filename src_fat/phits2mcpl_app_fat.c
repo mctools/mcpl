@@ -116,10 +116,10 @@
 /***********************************************************************************/
 
 #define MCPL_VERSION_MAJOR 1
-#define MCPL_VERSION_MINOR 3
-#define MCPL_VERSION_PATCH 2
-#define MCPL_VERSION   10302 /* (10000*MAJOR+100*MINOR+PATCH)   */
-#define MCPL_VERSION_STR "1.3.2"
+#define MCPL_VERSION_MINOR 4
+#define MCPL_VERSION_PATCH 0
+#define MCPL_VERSION   10400 /* (10000*MAJOR+100*MINOR+PATCH)   */
+#define MCPL_VERSION_STR "1.4.0"
 #define MCPL_FORMATVERSION 3 /* Format version of written files */
 
 #ifdef __cplusplus
@@ -331,7 +331,7 @@ extern "C" {
 // permissions and licenses from third-parties, which is not within the scope of    //
 // the MCPL project itself.                                                         //
 //                                                                                  //
-// Written 2019 by Thomas.Kittelmann@esss.se.                                       //
+// Written 2019 by Thomas.Kittelmann@ess.eu                                         //
 //                                                                                  //
 //////////////////////////////////////////////////////////////////////////////////////
 
@@ -2901,7 +2901,10 @@ void mcpl_store_string(char** dest, const char * src)
     free(*dest);
   *dest = (char*)calloc(n+1,1);
   assert(*dest);
-  strncpy( *dest,src,n );
+  //Usage of strncpy cause compiler warning on newer gcc, so we use memcpy
+  //instead (should be safe, we just checked strlen above!):
+  //strncpy( *dest,src,n );
+  memcpy( *dest,src,n );
   (*dest)[n] = '\0';
   return;
 }
@@ -15586,7 +15589,7 @@ void ZLIB_INTERNAL zcfree (opaque, ptr)
 // permissions and licenses from third-parties, which is not within the scope of   //
 // the MCPL project itself.                                                        //
 //                                                                                 //
-// Written 2019, thomas.kittelmann@esss.se (European Spallation Source).           //
+// Written 2019, thomas.kittelmann@ess.eu (European Spallation Source).            //
 //                                                                                 //
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -15613,7 +15616,7 @@ void ZLIB_INTERNAL zcfree (opaque, ptr)
 // permissions and licenses from third-parties, which is not within the scope of   //
 // the MCPL project itself.                                                        //
 //                                                                                 //
-// Written 2019, thomas.kittelmann@esss.se (European Spallation Source).           //
+// Written 2019, thomas.kittelmann@ess.eu (European Spallation Source).            //
 //                                                                                 //
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -16058,7 +16061,7 @@ void phits_close_file(phits_file_t ff) {
 // permissions and licenses from third-parties, which is not within the scope of   //
 // the MCPL project itself.                                                        //
 //                                                                                 //
-// Written 2019, thomas.kittelmann@esss.se (European Spallation Source).           //
+// Written 2019, thomas.kittelmann@ess.eu (European Spallation Source).            //
 //                                                                                 //
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -16620,7 +16623,7 @@ int mcpl2phits_app( int argc, char** argv ) {
 // permissions and licenses from third-parties, which is not within the scope of   //
 // the MCPL project itself.                                                        //
 //                                                                                 //
-// Written 2019, thomas.kittelmann@esss.se (European Spallation Source).           //
+// Written 2019, thomas.kittelmann@ess.eu (European Spallation Source).            //
 //                                                                                 //
 /////////////////////////////////////////////////////////////////////////////////////
 

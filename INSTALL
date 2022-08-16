@@ -12,7 +12,7 @@ are discussed below.
 Building via CMake
 ------------------
 
-The MCPL distribution requires CMake version 3.0.0 or later. If you do not have
+The MCPL distribution requires CMake version 3.10.0 or later. If you do not have
 CMake installed, or if your platform has an older version installed, you have to
 visit http://cmake.org/ and acquire a recent version. CMake is a very powerful
 cross-platform configuration and build tool and a complete discussion of it is
@@ -43,6 +43,7 @@ is a quick recipe (using an in-source build for simplicity):
    * -DBUILD_WITHSSW=OFF   [whether to build SSW hooks, default is ON]
    * -DBUILD_WITHPHITS=OFF [whether to build PHITS hooks, default is ON]
    * -DINSTALL_PY=OFF      [whether to install python files, default is ON]
+   * -DMODIFY_RPATH=OFF    [do not do any special rpath treatment for binaries]
 
 3. Perform the build and install in one step with (assuming you are on a
    platform where CMake generates makefiles):
@@ -166,6 +167,48 @@ src/mcxtrace/README respectively for how to proceed (instructions for VITESS,
 RESTRAX and SIMRES will be added at a later time).
 
 
+Use MCPL from CMake-based projects
+----------------------------------
+
+Assuming MCPL was built and installed via CMake, it is since MCPL v1.4.0
+possible for client projects to simply use MCPL as a CMake package in order to
+correctly build their C/C++ code which depends on the inclusion of include mcpl.h.
+
+Depending on where MCPL was installed on the system, it might be necessary to
+let CMake know about it via the usual mechanisms (for instance passing
+-DMCPL_DIR=/path/to/mcplinstall as an argument to cmake on the command line).
+
+CMake code for a small project using MCPL might look like the following (assume
+that exampleapp.c below includes the mcpl.h header:
+
+  cmake_minimum_required(VERSION 3.10...3.24)
+  project(MyExampleProject LANGUAGES C)
+  find_package(MCPL REQUIRED)
+  add_executable(exampleapp "${PROJECT_SOURCE_DIR}/exampleapp.c")
+  target_link_libraries( exampleapp MCPL::mcpl )
+  install( TARGETS exampleapp DESTINATION bin )
+
+With CMake v3.14 and later, it might even be possible to use the FetchContent
+module to enable installing MCPL directly, and thus not requiring MCPL to be
+installed beforehand. So a more advanced version of the above example which
+should work even without MCPL preinstalled would be:
+
+  cmake_minimum_required(VERSION 3.14...3.24)
+  project(MyExampleProject LANGUAGES C)
+  find_package( MCPL )
+  if( NOT MCPL_Found )
+    include(FetchContent)
+    FetchContent_Declare(
+      mcplgithub
+      GIT_REPOSITORY https://github.com/mctools/mcpl.git
+      GIT_TAG        master
+      )
+    FetchContent_MakeAvailable( mcplgithub )
+  endif()
+  add_executable(exampleapp "${CMAKE_CURRENT_SOURCE_DIR}/exampleapp.c")
+  target_link_libraries( exampleapp MCPL::mcpl )
+  install( TARGETS exampleapp DESTINATION bin )
+
 
 Integrating MCPL into an existing environment
 ---------------------------------------------
@@ -176,6 +219,13 @@ MCPL support and integration out of the box. How to best perform such
 integration will naturally depend on the particular use-case, but a few general
 pieces of advice are provided here (feel free to contact the MCPL team for
 additional advice and feedback, see https://mctools.github.io/mcpl/contact/).
+
+Note that as of MCPL CMake-based projects might wish to ignore the instructions
+below and simply add a find_package(MCPL REQUIRED) statement to their CMake code
+(possibly falling back to FetchContent as described above). However, that comes
+with the potential complication of putting an extra potential complication on
+your users, so what is the correct solution most likely depend on the exact
+use-case.
 
 1. If your users need code-level access to functionality provided in mcpl.h, you
    should copy src/mcpl/mcpl.h and src/mcpl/mcpl.c into a suitable location in your

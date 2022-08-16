@@ -6,7 +6,7 @@
 //                                                                               //
 // This file can be freely used as per the terms in the LICENSE file.            //
 //                                                                               //
-// Written 2015-2016 by Thomas.Kittelmann@esss.se                                //
+// Written 2015-2016 by Thomas.Kittelmann@ess.eu                                 //
 //                                                                               //
 ///////////////////////////////////////////////////////////////////////////////////
 

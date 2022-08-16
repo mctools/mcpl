@@ -202,10 +202,10 @@
 /***********************************************************************************/
 
 #define MCPL_VERSION_MAJOR 1
-#define MCPL_VERSION_MINOR 3
-#define MCPL_VERSION_PATCH 2
-#define MCPL_VERSION   10302 /* (10000*MAJOR+100*MINOR+PATCH)   */
-#define MCPL_VERSION_STR "1.3.2"
+#define MCPL_VERSION_MINOR 4
+#define MCPL_VERSION_PATCH 0
+#define MCPL_VERSION   10400 /* (10000*MAJOR+100*MINOR+PATCH)   */
+#define MCPL_VERSION_STR "1.4.0"
 #define MCPL_FORMATVERSION 3 /* Format version of written files */
 
 #ifdef __cplusplus
@@ -2808,7 +2808,10 @@ void mcpl_store_string(char** dest, const char * src)
     free(*dest);
   *dest = (char*)calloc(n+1,1);
   assert(*dest);
-  strncpy( *dest,src,n );
+  //Usage of strncpy cause compiler warning on newer gcc, so we use memcpy
+  //instead (should be safe, we just checked strlen above!):
+  //strncpy( *dest,src,n );
+  memcpy( *dest,src,n );
   (*dest)[n] = '\0';
   return;
 }
