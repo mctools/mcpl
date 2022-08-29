@@ -1047,9 +1047,9 @@ def save2ascii(particles, outfile):
                    +"         y[cm]                   z[cm]                      ux                  "
                    +"    uy                      uz                time[ms]                  weight  "
                    +"                 pol-x                   pol-y                   pol-z  userflags\n")
-        fmtstr="%5i %11i %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g\n"
+        fmtstr="%5i %11i %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g 0x%08x\n"
         for idx,p in enumerate(particles):
-            fout.write(fmtstr%(idx,*p))
+            fout.write(fmtstr%(idx, *p, 0))
 
 
 def append2ascii(particles, outfile):
@@ -1072,9 +1072,9 @@ def append2ascii(particles, outfile):
     if(particles.shape[1] != 13):
         raise MCPLError('Particle array should have shape (nparticles,13).')
     with open(outfile, "a") as fout:
-        fmtstr="%5i %11i %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g\n"
+        fmtstr="%5i %11i %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g 0x%08x\n"
         for idx,p in enumerate(particles):
-            fout.write(fmtstr%(idx,*p))
+            fout.write(fmtstr%(idx, *p, 0))
 
 def _pymcpltool_usage(progname,errmsg=None):
     if errmsg:

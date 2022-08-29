@@ -298,7 +298,7 @@ if (BUILD_WITHSSV)
   endif()
   install(TARGETS ssv2mcpl mcpl2ssv ssvmcpl ${INSTDEST})
   if (BUILD_EXAMPLES)
-    install(FILES "${SRCEX}/example_ascii.ssv" DESTINATION examples)
+    install(FILES "${SRCEX}/example_ascii.ssv" "${SRCEX}/example_writessv.ipynb" DESTINATION examples)
   endif()
 endif()
 
