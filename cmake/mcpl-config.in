@@ -1,0 +1,163 @@
+#!/usr/bin/env python3
+
+import sys
+
+pyversion = sys.version_info[0:3]
+_minpyversion = (3,6,0)
+if pyversion < (3,0,0):
+    raise SystemExit('mcpl-config does not support Python2.')
+if pyversion < _minpyversion:
+    raise SystemExit('ERROR: Unsupported python version %i.%i.%i detected (needs %i.%i.%i or later).'%(pyversion+_minpyversion))
+
+import pathlib
+import argparse
+import os
+import shlex
+import shutil
+
+#fs-path aware quote:
+shell_quote = lambda s : shlex.quote(str(s) if hasattr(s,'__fspath__') else s)
+
+cmakebool = lambda s : bool(s.lower() in ['1','on','yes','y','true'] or (s.isdigit() and int(s)>1))
+
+#Information filled out by CMake (todo: put all logic below on cmake-side?):
+installation_info = dict( libdir = '@MCPL_relpath_BINDIR2LIBDIR@',
+                          pythonpath = '@MCPL_relpath_BINDIR2PYPATH@' if cmakebool('@INSTALL_PY@') else None,
+                          cmakedir = '@MCPL_relpath_BINDIR2CMAKEDIR@',
+                          includedir = '@MCPL_relpath_BINDIR2INCDIR@',
+                          prefix = '@MCPL_relpath_BINDIR2ROOT@',
+                          bindir = '.',#by definition, since mcpl-config is always installed in this directory
+                          libname = '@MCPL_LIBNAME@',
+                          libnameg4 = '@G4MCPL_LIBNAME@',
+                          libpath = '@MCPL_relpath_BINDIR2LIBDIR@/@MCPL_LIBNAME@',
+                          libpathg4 = '@MCPL_relpath_BINDIR2LIBDIR@/@G4MCPL_LIBNAME@' if cmakebool('@BUILD_WITHG4@') else None,
+                          version = '@MCPL_VERSION@',
+                          build_type = '@CMAKE_BUILD_TYPE@',
+                          opt_examples = cmakebool('@BUILD_EXAMPLES@'),
+                          opt_python = cmakebool('@INSTALL_PY@'),
+                          opt_geant4 = cmakebool('@BUILD_WITHG4@'),
+                          opt_modify_rpath = cmakebool('@MODIFY_RPATH@'),
+                          ldflags = '-Wl,-rpath,<LIBDIR> -L<LIBDIR> -l@MCPL_LIBNAME@'.strip(),#expand LIBDIR dynamically below
+                          cflags = '-I<INCLUDEDIR>',#expand INCLUDEDIR dynamically below
+                         )
+
+__version__ = installation_info['version']
+
+if installation_info.get('libdir','@').startswith('@'):
+    raise SystemExit('ERROR: mcpl-config script can only be used after installation via CMake')
+
+def hasopt(optname):
+    return installation_info['opt_%s'%optname]
+
+_options = list(sorted(e[4:] for e in installation_info.keys() if e.startswith('opt_')))
+_infos_nonoptions = list(sorted(e for e in installation_info.keys() if not e.startswith('opt_')))
+
+def lookup_choice(name):
+    info=installation_info[name]
+    if info is None:
+        #represent missing info with empty string.
+        return ''
+    if name in ['libname','libnameg4','build_type','version','builtin_plugins']:
+        #not a resolvable path
+        return info
+    elif name == 'ldflags':
+        return info.replace('<LIBDIR>',shell_quote(lookup_choice('libdir')))
+    elif name == 'cflags':
+        return info.replace('<INCLUDEDIR>',shell_quote(lookup_choice('includedir')))
+    _ = pathlib.Path(__file__).parent.joinpath(info).absolute()
+    if not _.exists():
+        raise SystemExit('Could not find path to %s (expected it in %s)'%(name,_))
+    return _.resolve()
+
+def unique_list(seq):
+    seen = set()
+    return [x for x in seq if not (x in seen or seen.add(x))]
+
+def modify_path_var(varname,apath,remove=False):
+    """Create new value suitable for an environment path variable (varname can for
+    instance be "PATH", "LD_LIBRARY_PATH", etc.). If remove is False, it will add
+    apath to the front of the list. If remove is True, all references to apath will
+    be removed. In any case, duplicate entries are removed (keeping the first entry).
+    """
+    apath = str(apath.absolute().resolve())
+    others = list(e for e in os.environ.get(varname,'').split(':') if (e and e!=apath))
+    return ':'.join(unique_list(others if remove else ([apath]+others)))
+
+def print_shell_setup(remove=False):
+    out=[]
+
+    def export_quoted(varname,value):
+        return 'export %s'%shell_quote('%s=%s'%(varname,value))
+
+    #Handle path-like variables:
+    def handle_var(varname,dirname):
+        return export_quoted(varname,modify_path_var(varname,lookup_choice(dirname),remove=remove))
+    out.append(handle_var('PATH', 'bindir'))
+    out.append(handle_var('LD_LIBRARY_PATH', 'libdir'))
+    if sys.platform=='darwin' or lookup_choice('libname').endswith('.dylib'):
+        out.append(handle_var('DYLD_LIBRARY_PATH', 'libdir'))
+    out.append(handle_var('PYTHONPATH','pythonpath'))
+    out.append(handle_var('CMAKE_PREFIX_PATH','cmakedir'))
+
+    print('\n'.join(out))
+
+def print_summary():
+    print('==> MCPL v%s with configuration:\n'%__version__)
+    for opt in _options:
+        print('  %20s : %s'%(opt,'ON' if installation_info['opt_%s'%opt] else 'OFF'))
+    for info in [e for e in _infos_nonoptions if not e=='version']:
+        print('  %20s : %s'%(info,lookup_choice(info)))
+    print()
+
+def parse_cmdline():
+    parser = argparse.ArgumentParser()
+    #TODO: show builtin plugins
+
+    parser.add_argument('-v','--version', action='version', version=__version__,help='show the MCPL version number and exit')
+    parser.add_argument('--intversion', action='store_true',
+                        help='show mcpl version encoded into single integral number (e.g. v1.3.2 is 10302) and exit')
+    parser.add_argument('-s','--summary', action='store_true',
+                        help='print summary information about installation and exit')
+    parser.add_argument('--show',type=str,choices=[e for e in _infos_nonoptions if not e in ['version']],
+                        help='print requested information about MCPL installation and exit')
+    parser.add_argument('--option',type=str,choices=_options,
+                       help='print value of build option used in current installation and exit (prints "on" or "off")')
+
+    parser.add_argument('--setup', action='store_true',
+                        help="""emit shell code which can be used to setup environment for MCPL usage and exit
+                        (type "eval $(%(prog)s --setup)" in a shell to apply to current environment).""")
+
+    parser.add_argument('--unsetup', action='store_true',
+                        help="""emit shell code which can be used to undo the effect of --setup and exit (type
+                        "eval $(%(prog)s --unsetup)" in a shell to apply to current environment). This might
+                        have unwanted side-effects if the directories of the MCPL installation are mixed
+                        up with files from other software packages.""")
+
+    args=parser.parse_args()
+
+    nargs=sum(int(bool(e)) for e in (args.show,args.summary,args.option,args.setup,args.unsetup,args.intversion))
+    if nargs == 0:
+        parser.error('Missing arguments. Run with --help for usage instructions.')
+    if nargs > 1:
+        parser.error('Too many options specified.')
+    return args
+
+def main():
+    args = parse_cmdline()
+    if args.summary:
+        print_summary()
+    elif args.show:
+        print(lookup_choice(args.show))
+    elif args.intversion:
+        print(sum(a*b for a,b in zip((int(e) for e in __version__.split('.')), (10000, 100, 1))))
+    elif args.option:
+        print('1' if installation_info['opt_%s'%args.option] else '0')
+    elif args.setup:
+        print_shell_setup()
+    elif args.unsetup:
+        print_shell_setup(remove=True)
+    else:
+        raise SystemExit('ERROR: Missing choice (should not happen).')
+
+if __name__ == '__main__':
+    main()

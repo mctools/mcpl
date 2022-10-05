@@ -69,7 +69,7 @@ option( BUILD_WITHSSW   "Whether to build the MCPL-SSW converters (for MCNP)." O
 option( BUILD_WITHPHITS "Whether to build the MCPL-PHITS converters." ON )
 option( BUILD_WITHG4    "Whether to build Geant4 plugins." OFF )
 option( BUILD_FAT       "Whether to also build the fat binaries." OFF )
-option( INSTALL_PY      "Whether to also install mcpl python files." ON )
+option( INSTALL_PY      "Whether to also install MCPL python files." ON )
 option( MODIFY_RPATH    "Whether to try to set RPATH in installed binaries (if disabled all special RPATH handling is skipped)." ON )
 
 #Installation directories (try to follow standard conventions):
@@ -88,7 +88,8 @@ set(MCPL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")#e.g. <prefix>
 #as it is an absolute path):
 #file(RELATIVE_PATH MCPL_relpath_PYMODDIR2LIBDIR "${PROJECT_BINARY_DIR}/${MCPL_PYMODDIR}" "${PROJECT_BINARY_DIR}/${MCPL_LIBDIR}")
 file(RELATIVE_PATH MCPL_relpath_BINDIR2LIBDIR   "${PROJECT_BINARY_DIR}/${MCPL_BINDIR}"   "${PROJECT_BINARY_DIR}/${MCPL_LIBDIR}")
-file(RELATIVE_PATH MCPL_relpath_BINDIR2DATAROOT "${PROJECT_BINARY_DIR}/${MCPL_BINDIR}"   "${PROJECT_BINARY_DIR}/${MCPL_DATAROOT}")
+file(RELATIVE_PATH MCPL_relpath_BINDIR2PYPATH   "${PROJECT_BINARY_DIR}/${MCPL_BINDIR}"   "${PROJECT_BINARY_DIR}/${MCPL_PYPATH}")
+#file(RELATIVE_PATH MCPL_relpath_BINDIR2DATAROOT "${PROJECT_BINARY_DIR}/${MCPL_BINDIR}"   "${PROJECT_BINARY_DIR}/${MCPL_DATAROOT}")
 file(RELATIVE_PATH MCPL_relpath_BINDIR2CMAKEDIR "${PROJECT_BINARY_DIR}/${MCPL_BINDIR}"   "${PROJECT_BINARY_DIR}/${MCPL_CMAKEDIR}")
 file(RELATIVE_PATH MCPL_relpath_BINDIR2INCDIR   "${PROJECT_BINARY_DIR}/${MCPL_BINDIR}"   "${PROJECT_BINARY_DIR}/${MCPL_INCDIR}")
 file(RELATIVE_PATH MCPL_relpath_BINDIR2ROOT     "${PROJECT_BINARY_DIR}/${MCPL_BINDIR}"   "${PROJECT_BINARY_DIR}/")
@@ -355,3 +356,7 @@ if (Geant4_FOUND)
     install(TARGETS mcplexample_geant4read mcplexample_geant4write ${INSTDEST})
   endif()
 endif()
+
+#Always provide mcpl-config:
+configure_file( "${PROJECT_SOURCE_DIR}/cmake/mcpl-config.in" "${PROJECT_BINARY_DIR}/mcpl-config" @ONLY )
+install( PROGRAMS "${PROJECT_BINARY_DIR}/mcpl-config" DESTINATION ${MCPL_BINDIR} )
