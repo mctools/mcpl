@@ -36,14 +36,14 @@ is a quick recipe (using an in-source build for simplicity):
    what will be build by adding one or more of the following flags to the
    command:
 
-   * -DBUILD_WITHZLIB=OFF  [whether to link with zlib, default is ON]
-   * -DBUILD_EXAMPLES=OFF  [whether to build examples, default is ON]
+   * -DBUILD_WITHZLIB=OFF  [whether to link with zlib if available, default is ON]
+   * -DBUILD_EXAMPLES=ON   [whether to build examples, default is OFF]
    * -DBUILD_FAT=ON        [whether to build "fat" binaries, default is OFF]
-   * -DBUILD_WITHG4=OFF    [whether to build G4 hooks, default is ON]
+   * -DBUILD_WITHG4=ON     [whether to build G4 hooks, default is OFF]
    * -DBUILD_WITHSSW=OFF   [whether to build SSW hooks, default is ON]
    * -DBUILD_WITHPHITS=OFF [whether to build PHITS hooks, default is ON]
    * -DINSTALL_PY=OFF      [whether to install python files, default is ON]
-   * -DMODIFY_RPATH=OFF    [do not do any special rpath treatment for binaries]
+   * -DMODIFY_RPATH=OFF    [whether to provide special rpath treatment for binaries, default is ON]
 
 3. Perform the build and install in one step with (assuming you are on a
    platform where CMake generates makefiles):
@@ -170,9 +170,10 @@ RESTRAX and SIMRES will be added at a later time).
 Use MCPL from CMake-based projects
 ----------------------------------
 
-Assuming MCPL was built and installed via CMake, it is since MCPL v1.4.0
+Assuming MCPL was built and installed via CMake, it is since MCPL v1.4.0/v1.5.0
 possible for client projects to simply use MCPL as a CMake package in order to
-correctly build their C/C++ code which depends on the inclusion of include mcpl.h.
+correctly build their C/C++ code which depends on the inclusion of include
+mcpl.h.
 
 Depending on where MCPL was installed on the system, it might be necessary to
 let CMake know about it via the usual mechanisms (for instance passing
@@ -188,6 +189,14 @@ that exampleapp.c below includes the mcpl.h header:
   target_link_libraries( exampleapp MCPL::mcpl )
   install( TARGETS exampleapp DESTINATION bin )
 
+If the MCPL-Geant4 bindings are needed, they must be explicitly requested, and
+the MCPL::g4mcpl target added as a dependency for downstream code:
+
+  find_package(MCPL REQUIRED COMPONENTS GEANT4BINDINGS )
+  target_link_libraries( exampleapp MCPL::g4mcpl )
+
+This will of course fail if MCPL was not build with Geant4 support
+(i.e. configured with -DBUILD_WITHG4=ON).
 
 Integrating MCPL into an existing environment
 ---------------------------------------------

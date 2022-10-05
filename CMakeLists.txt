@@ -54,7 +54,7 @@ if(NOT DEFINED MCPL_NOTOUCH_CMAKE_BUILD_TYPE)
 endif()
 
 #Setup project:
-project(MCPL VERSION 1.4.0 LANGUAGES CXX C)
+project(MCPL VERSION 1.5.0 LANGUAGES CXX C)
 if(NOT DEFINED MCPL_NOTOUCH_CMAKE_BUILD_TYPE)
   if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
     #This can happen if parent project called the project(..) function before
@@ -72,10 +72,6 @@ option( BUILD_FAT       "Whether to also build the fat binaries." OFF )
 option( INSTALL_PY      "Whether to also install mcpl python files." ON )
 option( MODIFY_RPATH    "Whether to try to set RPATH in installed binaries (if disabled all special RPATH handling is skipped)." ON )
 
-if ( DEFINED MCPL_FORCE_GEANT4_SUPPORT AND MCPL_FORCE_GEANT4_SUPPORT )
-  set( BUILD_WITHG4 ON )
-endif()
-
 #Installation directories (try to follow standard conventions):
 include(GNUInstallDirs)
 set(MCPL_BINDIR "${CMAKE_INSTALL_BINDIR}")#e.g. <prefix>/bin>
@@ -85,7 +81,7 @@ set(MCPL_DATAROOT "${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}")#e.g. <prefix>/shar
 #set(MCPL_DATAFILESDIR "${MCPL_DATAROOT}/data")#e.g. <prefix>/share/MCPL/data>
 set(MCPL_PYPATH "${MCPL_DATAROOT}/python")#e.g. <prefix>/share/MCPL/python
 #set(MCPL_PYMODDIR "${MCPL_PYPATH}/mcpl")#e.g. <prefix>/share/MCPL/python/mcpl
-set(MCPL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake")#e.g. <prefix>/lib/cmake>
+set(MCPL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")#e.g. <prefix>/lib/cmake/MCPL>
 
 #Get a few relative paths, mostly for expansion in various installed files (we
 #use PROJECT_BINARY_DIR as prefix here, but it should not matter which as long
@@ -343,14 +339,8 @@ if (Geant4_FOUND)
     set_target_properties(g4mcpl PROPERTIES ${binaryprops})
   endif()
   install( TARGETS g4mcpl EXPORT G4MCPLTargets ${INSTDEST} )
-  install( EXPORT G4MCPLTargets FILE G4MCPLTargets.cmake NAMESPACE G4MCPL:: DESTINATION ${MCPL_CMAKEDIR} )
-  add_library(G4MCPL::g4mcpl ALIAS g4mcpl)#always alias namespaces locally
-  write_basic_package_version_file( "${PROJECT_BINARY_DIR}/G4MCPLConfigVersion.cmake"
-    VERSION ${MCPL_VERSION} COMPATIBILITY SameMajorVersion )
-  configure_file( "${PROJECT_SOURCE_DIR}/cmake/G4MCPLConfig.cmake.in"
-    "${PROJECT_BINARY_DIR}/G4MCPLConfig.cmake" @ONLY )
-  install( FILES "${PROJECT_BINARY_DIR}/G4MCPLConfigVersion.cmake" "${PROJECT_BINARY_DIR}/G4MCPLConfig.cmake"
-    DESTINATION ${MCPL_CMAKEDIR} )
+  install( EXPORT G4MCPLTargets FILE G4MCPLTargets.cmake NAMESPACE MCPL:: DESTINATION ${MCPL_CMAKEDIR} )
+  add_library(MCPL::g4mcpl ALIAS g4mcpl)#always alias namespaces locally
 
   install(FILES "${SRC}/geant4/G4MCPLGenerator.hh" "${SRC}/geant4/G4MCPLWriter.hh" DESTINATION ${MCPL_INCDIR})
   if (BUILD_EXAMPLES)

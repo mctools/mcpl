@@ -1,3 +1,14 @@
+v1.5.0 2022-10-05
+      * Modify location of CMake config files provided by an MCPL installation,
+        to hopefully make it easier for downstream projects to locate an existing
+        MCPL installation (more details on github issue #58).
+      * Modify manner in which Geant4 bindings must be activated. Previously
+        they were enabled via a dedicated "find_package(G4MCPL)" call, but now
+        they are instead provided as an optional COMPONENT when requesting the
+        MCPL package: "find_package(MCPL COMPONENTS GEANT4BINDINGS )".
+        The Geant4 bindings will not be enabled unless this component is
+        explicitly requested.
+
 v1.4.0 2022-08-16
       * Major update to CMake code, which first and foremost makes it possible
         for downstream CMake-based projects to use find_package( MCPL ) and
