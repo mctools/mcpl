@@ -21,6 +21,10 @@ both quick recipes and updated information where needed. You can [download](LOCA
 and try out the MCPL distribution right away, or use the
 menu above to navigate to more information.
 
+* October 5, 2022:
+  [v1.5.0](https://github.com/mctools/mcpl/releases/tag/v1.5.0)
+  Introduce `mcpl-config` command. Make it easier for downstream
+  CMake-based projects to locate MCPL.
 * August 16, 2022:
   [v1.4.0](https://github.com/mctools/mcpl/releases/tag/v1.4.0)
   released, updating the CMake code to support integration with
