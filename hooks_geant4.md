@@ -70,18 +70,15 @@ For advanced use-cases, it is possible to fine-tune the way the particles are ca
 
 Note that in order to actually use the `G4MCPLGenerator` and `G4MCPLWriter` classes, the simplest approach might be to copy the [C++ files in which they reside]({{"/raw/master/src/geant4/" | prepend: site.github.repository_url }}) into your existing build system (along with [mcpl.h and mcpl.c]({{"/raw/master/src/mcpl/" | prepend: site.github.repository_url }})).
 
-Alternatively, a perhaps more "clean" approach would be to first build and install the MCPL distribution itself via the provided CMake script after first installing Geant4 and making sure Geant4 is noticed correctly during the configuration (more [here](LOCAL:get/)). This should, after the build and install is completed (with `make install`) result in an installation which includes files like the following (actual contents might depend a bit on your platform and setup, for instance the extension `.so` will usually be `.dylib` on OS X):
+Alternatively, an arguably more "clean" approach would be to first build and install the MCPL distribution itself via CMake script, after first installing Geant4 and making sure Geant4 is noticed correctly during the configuration (more [here](LOCAL:get/)). This should, after the build and install is completed (with `make install`) result in an installation which can be used in your downstream CMake code by finding MCPL and adding the MCPL::g4mcpl target:
 
 ```
-├── bin/
-│   └── mcpltool
-├── include/
-│   ├── G4MCPLGenerator.hh
-│   ├── G4MCPLWriter.hh
-│   └── mcpl.h
-└── lib/
-    ├── libg4mcpl.so
-    └── libmcpl.so
+
+  # ... my other CMake code up here, defining some "myexampleapp" binary target ...
+
+  find_package(MCPL REQUIRED COMPONENTS GEANT4BINDINGS )
+  target_link_libraries( myexampleapp MCPL::g4mcpl )
+
 ```
 
-Next, make sure that the build system in which you work on your Geant4 code will include the `include/` directory above in the compiler's include path (so you can for instance do `#include "G4MCPLGenerator.hh"` in your code), and that your application is linked with the two libraries in the `lib/` directory above. It might also be a good idea to add the `bin/` directory above to your `PATH` environmental variable, so you have access to the `mcpltool` in order to easily inspect and modify MCPL files from [the command line](LOCAL:usage_cmdline/).
+That should be all that is required configuration-wise. In any case, it might also be a good idea to add the `bin/` directory above to your `PATH` environmental variable, so you have access to the `mcpltool` in order to easily inspect and modify MCPL files from [the command line](LOCAL:usage_cmdline/).
