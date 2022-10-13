@@ -74,7 +74,8 @@ Alternatively, an arguably more "clean" approach would be to first build and ins
 
 ```
 
-  # ... my other CMake code up here, defining some "myexampleapp" binary target ...
+  # ... my other CMake code up here, defining
+  #     some "myexampleapp" binary target ...
 
   find_package(MCPL REQUIRED COMPONENTS GEANT4BINDINGS )
   target_link_libraries( myexampleapp MCPL::g4mcpl )
