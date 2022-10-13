@@ -45,11 +45,13 @@ for p in myfile.particle_blocks:
    print( p.x, p.y, p.z, p.ekin )
 ```
 
-The code looks similar to the non-block case above, but each field like `p.x` or
+The code looks similar to the non-block case above, but fields like `p.x` or
 `p.ekin` are now actually [NumPy](http://www.numpy.org/) arrays rather than
 single numbers. By default each block encompasses 10000 particles, a number
 which can be tuned by adding a `blocklength` parameter when instantiating a new
-`MCPLFile` object.
+`MCPLFile` object. Of course, unless the number of particles in the file is a
+multiple of `blocklength`, the last block in the file will have fewer particles
+(and shorter arrays).
 
 ### Access file-level meta-data
 
