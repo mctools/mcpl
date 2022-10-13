@@ -23,6 +23,17 @@ Carlo applications (c.f. [hooks](LOCAL:hooks/)).
 
 For inspiration, please find here a few code examples dealing with MCPL files. Note that units on the fields  of the  `mcpl_particle_t` struct are MeV (ekin), cm (position) and milliseconds (time). The particle type is given by the pdgcode field, which must follow the [PDG code standard](http://pdg.lbl.gov/2014/reviews/rpp2014-rev-monte-carlo-numbering.pdf) (2112=neutron, 22=gamma, etc.).
 
+Also note that the code below should normally be compiled and linked with appropriate flags, in order to include the mcpl.h header and link against the MCPL library. One simple way to do that in CMake based projects are (assuming MCPL was installed via CMake and your example programme is in a file called `mymcplapp.c`), to use a small CMakeLists.txt file (in the same dir):
+
+```c
+ cmake_minimum_required(VERSION 3.10...3.24)
+ project(MyExampleProject LANGUAGES C)
+ find_package(MCPL REQUIRED)
+ add_executable(mymcplapp "${PROJECT_SOURCE_DIR}/mymcplapp.c")
+ target_link_libraries( mymcplapp MCPL::mcpl )
+ install( TARGETS mymcplapp DESTINATION bin )
+```
+
 ### Reading MCPL files
 
 ```c
