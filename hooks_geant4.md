@@ -81,5 +81,3 @@ Alternatively, an arguably more "clean" approach would be to first build and ins
   target_link_libraries( myexampleapp MCPL::g4mcpl )
 
 ```
-
-That should be all that is required configuration-wise. In any case, it might also be a good idea to add the `bin/` directory above to your `PATH` environmental variable, so you have access to the `mcpltool` in order to easily inspect and modify MCPL files from [the command line](LOCAL:usage_cmdline/).
