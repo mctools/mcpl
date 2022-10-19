@@ -2,10 +2,22 @@
 title: Get MCPL
 weight: 9999
 ---
-You can use the [tar.gz]({{site.github.tar_url|replace: "/gh-pages","/master"}}),
+If using conda, you can simply install MCPL from the [conda-forge](https://conda-forge.org/)
+channel.  Thus, `conda install -c conda_forge mcpl` gives access to all the various
+[command-line tools](LOCAL:usage_cmdline), and API's for [C/C++](LOCAL:usage_c),
+[Python](LOCAL:usage_python), and CMake APIs.
+
+Alternatively you can also install MCPL via, `pip install mcpl`, which gives
+access to only the
+[pymcpltool](LOCAL:usage_cmdline#extract-statistics-from-a-file) and the [mcpl
+Python module](LOCAL:usage_python). If possible, the installation via conda is
+recommended.
+
+
+Finally, you can of course also use the [tar.gz]({{site.github.tar_url|replace: "/gh-pages","/master"}}),
  [zip]({{site.github.zip_url|replace: "/gh-pages","/master"}})
  or [github]({{site.github.repository_url}}) links
-to download the latest MCPL distribution. But take note that if you are a user
+to download source files for the latest MCPL distribution. But take note that if you are a user
 of [McStas](LOCAL:hooks_mcstas/), [McXtrace](LOCAL:hooks_mcxtrace/) or the
 [ESS-dgcode framework](https://confluence.esss.lu.se/x/lgDD), you likely
 already have MCPL available through the framework you are using.
