@@ -5,7 +5,7 @@ weight: 9999
 If using conda, you can simply install MCPL from the [conda-forge](https://conda-forge.org/)
 channel.  Thus, `conda install -c conda-forge mcpl` gives access to all the various
 [command-line tools](LOCAL:usage_cmdline), and API's for [C/C++](LOCAL:usage_c),
-[Python](LOCAL:usage_python), and CMake APIs.
+[Python](LOCAL:usage_python), and CMake.
 
 Alternatively you can also install MCPL via, `pip install mcpl`, which gives
 access to only the

@@ -25,7 +25,7 @@ menu above to navigate to more information.
   MCPL is now available on conda! Specifically in the [conda-forge](https://conda-forge.org/)
   channel.  Thus, `conda install -c conda-forge mcpl` now gives access to all the various
   [command-line tools](LOCAL:usage_cmdline), and API's for [C/C++](LOCAL:usage_c),
-  [Python](LOCAL:usage_python), and CMake APIs.
+  [Python](LOCAL:usage_python), and CMake.
 * October 5, 2022:
   [v1.5.0](https://github.com/mctools/mcpl/releases/tag/v1.5.0)
   released, introducing the `mcpl-config` command and making it easier
