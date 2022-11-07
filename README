@@ -7,12 +7,12 @@ utilities include both command line tools and programming interfaces for C/C++
 and python.
 
 MCPL I/O hooks for Geant4 (geant4.cern.ch) and MCNP (SSW files) are included in
-this distribution as well. Hooks for McStas (mcstas.org) and McXtrace
-(mcxtrace.org) are already included directly upstream in those applications. A
-few examples of how to use the Geant4 hooks, or how to interact with MCPL files
-from standalone C code, are also provided. Refer to the FILES file for more
-information about included files, and refer to the INSTALL file for build
-instructions.
+this distribution. Basic hooks for TRIPOLI-4 (STORAGE) and MCNP (PTRAC) are
+included as well. Hooks for McStas (mcstas.org) and McXtrace (mcxtrace.org) are
+already included directly upstream in those applications. Afew examples of how
+to use the Geant4 hooks, or how to interact with MCPL filesfrom standalone C
+code, are also provided. Refer to the FILES file for moreinformation about
+included files, and refer to the INSTALL file for build instructions.
 
 MCPL and most code distributed here was written 2015-2019 by Thomas Kittelmann
 (thomas.kittelmann@ess.eu). The MCNP-SSW converters were written in close

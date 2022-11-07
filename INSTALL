@@ -41,7 +41,9 @@ is a quick recipe (using an in-source build for simplicity):
    * -DBUILD_FAT=ON        [whether to build "fat" binaries, default is OFF]
    * -DBUILD_WITHG4=ON     [whether to build G4 hooks, default is OFF]
    * -DBUILD_WITHSSW=OFF   [whether to build SSW hooks, default is ON]
+   * -DBUILD_WITHPTRAC=OFF [whether to build PTRAC hooks, default is ON]
    * -DBUILD_WITHPHITS=OFF [whether to build PHITS hooks, default is ON]
+   * -DBUILD_WITHSTOCK=OFF [whether to build STOCK hooks, default is ON]
    * -DINSTALL_PY=OFF      [whether to install python files, default is ON]
    * -DMODIFY_RPATH=OFF    [whether to provide special rpath treatment for binaries, default is ON]
 

@@ -2,7 +2,7 @@ name: CMake
 
 on:
   push:
-    branches: [ develop, master ]
+    #branches: [ develop, master ]
   pull_request:
     branches: [ develop, master ]
 
@@ -73,6 +73,10 @@ jobs:
            ${{github.workspace}}/install/bin/pymcpltool --help
            ${{github.workspace}}/install/bin/ssw2mcpl --help
            ${{github.workspace}}/install/bin/mcpl2ssw --help
+           ${{github.workspace}}/install/bin/ptrac2mcpl --help
            ${{github.workspace}}/install/bin/phits2mcpl --help
            ${{github.workspace}}/install/bin/mcpl2phits --help
+           ${{github.workspace}}/install/bin/stock2mcpl --help
+           ${{github.workspace}}/install/bin/ssv2mcpl --help
+           ${{github.workspace}}/install/bin/mcpl2ssv --help
 
