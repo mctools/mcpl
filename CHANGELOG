@@ -1,3 +1,9 @@
+v1.5.1 2022-11-07
+      * Allow MCPL_PYPATH and MCPL_CMAKEDIR to be modified by users.
+      * Avoid CMake warnings when setting MCPL_NOTOUCH_CMAKE_BUILD_TYPE.
+      * Rename CMake target "common" to "mcpl_common" to avoid clashes when
+        project is build as a subproject (mctools/mcpl#65).
+
 v1.5.0 2022-10-05
       * Add mcpl-config script which can be queried for details about a given
         installation, or even used to setup the user environment by typing

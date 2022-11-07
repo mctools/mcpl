@@ -43,7 +43,7 @@ cmake_minimum_required(VERSION 3.10...3.24)
 # Respect value of CMAKE_BUILD_TYPE if already defined, otherwise fall back to
 # Release. In any case, expose CMAKE_BUILD_TYPE as an explicit cache variable
 # (gives drop-down list in gui). This must come before the call to project(..).
-if(NOT DEFINED MCPL_NOTOUCH_CMAKE_BUILD_TYPE)
+if( NOT MCPL_NOTOUCH_CMAKE_BUILD_TYPE )
   if(DEFINED CMAKE_BUILD_TYPE)
     set(_def_cbt ${CMAKE_BUILD_TYPE})
   else()
@@ -54,8 +54,8 @@ if(NOT DEFINED MCPL_NOTOUCH_CMAKE_BUILD_TYPE)
 endif()
 
 #Setup project:
-project(MCPL VERSION 1.5.0 LANGUAGES CXX C)
-if(NOT DEFINED MCPL_NOTOUCH_CMAKE_BUILD_TYPE)
+project(MCPL VERSION 1.5.1 LANGUAGES CXX C)
+if( NOT MCPL_NOTOUCH_CMAKE_BUILD_TYPE )
   if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
     #This can happen if parent project called the project(..) function before
     #doing the song and dance we did above.
@@ -79,9 +79,13 @@ set(MCPL_LIBDIR "${CMAKE_INSTALL_LIBDIR}")#e.g. <prefix>/lib>
 set(MCPL_INCDIR "${CMAKE_INSTALL_INCLUDEDIR}")#e.g. <prefix>/include>
 set(MCPL_DATAROOT "${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}")#e.g. <prefix>/share/MCPL>
 #set(MCPL_DATAFILESDIR "${MCPL_DATAROOT}/data")#e.g. <prefix>/share/MCPL/data>
-set(MCPL_PYPATH "${MCPL_DATAROOT}/python")#e.g. <prefix>/share/MCPL/python
+if ( NOT MCPL_PYPATH )
+  set(MCPL_PYPATH "${MCPL_DATAROOT}/python")#e.g. <prefix>/share/MCPL/python
+endif()
 #set(MCPL_PYMODDIR "${MCPL_PYPATH}/mcpl")#e.g. <prefix>/share/MCPL/python/mcpl
-set(MCPL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")#e.g. <prefix>/lib/cmake/MCPL>
+if ( NOT MCPL_CMAKEDIR )
+  set(MCPL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")#e.g. <prefix>/lib/cmake/MCPL>
+endif()
 
 #Get a few relative paths, mostly for expansion in various installed files (we
 #use PROJECT_BINARY_DIR as prefix here, but it should not matter which as long
