@@ -22,7 +22,7 @@ cmakebool = lambda s : bool(s.lower() in ['1','on','yes','y','true'] or (s.isdig
 
 #Information filled out by CMake (todo: put all logic below on cmake-side?):
 installation_info = dict( libdir = '@MCPL_relpath_BINDIR2LIBDIR@',
-                          pythonpath = '@MCPL_relpath_BINDIR2PYPATH@' if cmakebool('@INSTALL_PY@') else None,
+                          pythonpath = '@MCPL_relpath_BINDIR2PYPATH@' if cmakebool('@MCPL_ENABLE_PYTHON@') else None,
                           cmakedir = '@MCPL_relpath_BINDIR2CMAKEDIR@',
                           includedir = '@MCPL_relpath_BINDIR2INCDIR@',
                           prefix = '@MCPL_relpath_BINDIR2ROOT@',
@@ -30,13 +30,14 @@ installation_info = dict( libdir = '@MCPL_relpath_BINDIR2LIBDIR@',
                           libname = '@MCPL_LIBNAME@',
                           libnameg4 = '@G4MCPL_LIBNAME@',
                           libpath = '@MCPL_relpath_BINDIR2LIBDIR@/@MCPL_LIBNAME@',
-                          libpathg4 = '@MCPL_relpath_BINDIR2LIBDIR@/@G4MCPL_LIBNAME@' if cmakebool('@BUILD_WITHG4@') else None,
+                          libpathg4 = '@MCPL_relpath_BINDIR2LIBDIR@/@G4MCPL_LIBNAME@' if cmakebool('@MCPL_ENABLE_GEANT4@') else None,
                           version = '@MCPL_VERSION@',
                           build_type = '@CMAKE_BUILD_TYPE@',
-                          opt_examples = cmakebool('@BUILD_EXAMPLES@'),
-                          opt_python = cmakebool('@INSTALL_PY@'),
-                          opt_geant4 = cmakebool('@BUILD_WITHG4@'),
+                          opt_examples = cmakebool('@MCPL_ENABLE_EXAMPLES@'),
+                          opt_python = cmakebool('@MCPL_ENABLE_PYTHON@'),
+                          opt_geant4 = cmakebool('@MCPL_ENABLE_GEANT4@'),
                           opt_modify_rpath = cmakebool('@MODIFY_RPATH@'),
+                          opt_zlib = cmakebool('@MCPL_ZLIB_ONOFF@'),
                           ldflags = '-Wl,-rpath,<LIBDIR> -L<LIBDIR> -l@MCPL_LIBNAME@'.strip(),#expand LIBDIR dynamically below
                           cflags = '-I<INCLUDEDIR>',#expand INCLUDEDIR dynamically below
                          )

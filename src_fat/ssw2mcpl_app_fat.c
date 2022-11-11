@@ -111,15 +111,15 @@
 /*                                                                                 */
 /*  This file can be freely used as per the terms in the LICENSE file.             */
 /*                                                                                 */
-/*  Written by Thomas Kittelmann, 2015-2017.                                       */
+/*  Written by Thomas Kittelmann, 2015-2022.                                       */
 /*                                                                                 */
 /***********************************************************************************/
 
 #define MCPL_VERSION_MAJOR 1
-#define MCPL_VERSION_MINOR 5
-#define MCPL_VERSION_PATCH 1
-#define MCPL_VERSION   10501 /* (10000*MAJOR+100*MINOR+PATCH)   */
-#define MCPL_VERSION_STR "1.5.1"
+#define MCPL_VERSION_MINOR 6
+#define MCPL_VERSION_PATCH 0
+#define MCPL_VERSION   10600 /* (10000*MAJOR+100*MINOR+PATCH)   */
+#define MCPL_VERSION_STR "1.6.0"
 #define MCPL_FORMATVERSION 3 /* Format version of written files */
 
 #ifdef __cplusplus

@@ -33,22 +33,16 @@ is a quick recipe (using an in-source build for simplicity):
 
    This will fail if your system is missing basic build tools, such as a C/C++
    capable compiler. In addition to generic CMake options, you can fine-tune
-   what will be build by adding one or more of the following flags to the
-   command:
+   what will be build by adding flags to the command. For instance
+   -DMCPL_ENABLE_EXAMPLES=ON would cause the included examples to be built, or
+   -DMCPL_ENABLE_GEANT4 would enable the Geant4 hooks. For a full list of
+   available high-level options, one can simply peek into the file
+   cmake/modules/mcpl_options.cmake, although depending on your CMake client the
+   options might also be available there.
 
-   * -DBUILD_WITHZLIB=OFF  [whether to link with zlib if available, default is ON]
-   * -DBUILD_EXAMPLES=ON   [whether to build examples, default is OFF]
-   * -DBUILD_FAT=ON        [whether to build "fat" binaries, default is OFF]
-   * -DBUILD_WITHG4=ON     [whether to build G4 hooks, default is OFF]
-   * -DBUILD_WITHSSW=OFF   [whether to build SSW hooks, default is ON]
-   * -DBUILD_WITHPHITS=OFF [whether to build PHITS hooks, default is ON]
-   * -DINSTALL_PY=OFF      [whether to install python files, default is ON]
-   * -DMODIFY_RPATH=OFF    [whether to provide special rpath treatment for binaries, default is ON]
+3. Next, perform the build and install in one step with:
 
-3. Perform the build and install in one step with (assuming you are on a
-   platform where CMake generates makefiles):
-
-   make install
+   cmake --build . --target install --config Release
 
 4. Now you can use the installed files from /path/to/mcplinstall. For instance,
    you can invoke the mcpltool with (showing usage instructions):

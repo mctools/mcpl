@@ -1,3 +1,33 @@
+v1.6.0 2022-11-11
+      * Updated all MCPL CMake options to have named prefixed with MCPL_ and use
+        a more consistent naming scheme (mctools/mcpl#67). For example
+        BUILD_EXAMPLES is now instead MCPL_ENABLE_EXAMPLES. See the file
+        cmake/modules/mcpl_options.cmake for details.
+      * The default behaviour was until now to try to locate ZLIB and let the
+        configuration fail if not succesful, unless the old option
+        BUILD_WITHZLIB was explicitly set to OFF. The new option
+        MCPL_ENABLE_ZLIB is more flexible and supports one of several values:
+        IFAVAILABLE, FETCH, USEPREINSTALLED, ALWAYS, OFF, or NEVER.  The default
+        value of IFAVAILABLE will try to locate ZLIB, but will simply disable
+        ZLIB support if unsuccesful. The aliased options OFF and NEVER are
+        obviously simply disabling ZLIB support irrespective of presence on the
+        system. The option ALWAYS will attempt to find ZLIB on the system, and
+        if it fails it will instead fetch the zlib sources from the official
+        zlib location at github, and build the appropriate capabilities right
+        into the MCPL binaries. The option, USEPREINSTALLED is actually like the
+        old default behaviour: look for ZLIB on the system and fail if it it is
+        not available. Finally, the option FETCH will always fetch sources
+        online, ignoring any ZLIB already present on the system.
+      * Add (hidden) option MCPL_ENABLE_CPACK. If set, a few CPACK-related
+        variables will be set and an "include(CPack)" statement is triggered
+        just after the "project(..)" statement (mctools/mcpl#68).
+      * We now newer fiddle with CMAKE_BUILD_TYPE if a multi-cfg generator is
+        detected.
+      * Add (hidden) option MCPL_DISABLE_CXX.. If set, C++ support is not
+        requested from CMake, potentially removing an unnecessary
+        dependency. This option should obviously not be used with
+        MCPL_ENABLE_GEANT4=ON.
+
 v1.5.1 2022-11-07
       * Allow MCPL_PYPATH and MCPL_CMAKEDIR to be modified by users.
       * Avoid CMake warnings when setting MCPL_NOTOUCH_CMAKE_BUILD_TYPE.
