@@ -1,3 +1,7 @@
+Work in progress:
+      * Attempt to improve MCPL_ENABLE_ZLIB=FETCH mode by applying correct
+        private compilation definitions.
+
 v1.6.0 2022-11-11
       * Updated all MCPL CMake options to have named prefixed with MCPL_ and use
         a more consistent naming scheme (mctools/mcpl#67). For example
