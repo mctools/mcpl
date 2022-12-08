@@ -18,15 +18,19 @@
 #Make this example work with both python2 and python3:
 from __future__ import print_function
 
-import sys, os
+import sys
+import os
+import pathlib
 
 #Import mcpl module (with a fall-back sys.path edit, so the example can be run
 #from an MCPL installation even though the user did not set PYTHONPATH correctly):
 try:
     import mcpl
 except ImportError:
+    _ = pathlib.Path(__file__).parent / '..' / 'share' / 'MCPL' / 'python'
+    if _.exists():
+        sys.path.insert(0,str(_))
     try:
-        sys.path.insert(0,os.path.join(os.path.dirname(__file__),'..','python'))
         import mcpl
     except ImportError:
         sys.path.insert(0,os.path.join(os.path.dirname(__file__),'..','src','python'))

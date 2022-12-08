@@ -36,7 +36,7 @@ except SyntaxError:
 
 __license__ = _str('CC0 1.0 Universal')
 __copyright__ = _str('Copyright 2017-2022')
-__version__ = _str('1.6.0')
+__version__ = _str('1.6.1')
 __status__ = _str('Production')
 __author__ = _str('Thomas Kittelmann')
 __maintainer__ = _str('Thomas Kittelmann')

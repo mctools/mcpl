@@ -39,6 +39,7 @@
 # cmake policies, depending on which version introduced them.
 
 cmake_minimum_required(VERSION 3.10...3.24)
+cmake_policy(SET CMP0054 NEW)
 
 # Respect value of CMAKE_BUILD_TYPE if already defined, otherwise fall back to
 # Release. In any case, expose CMAKE_BUILD_TYPE as an explicit cache variable
@@ -73,7 +74,7 @@ endif()
 
 cmake_policy( SET CMP0048 NEW )#Not sure if this is really needed
 
-project( MCPL VERSION 1.6.0 ${_project_metadata} )
+project( MCPL VERSION 1.6.1 ${_project_metadata} )
 
 unset( _project_metadata )
 
@@ -86,7 +87,7 @@ endif()
 
 if( NOT MCPL_NOTOUCH_CMAKE_BUILD_TYPE )
   if ( NOT gen_is_multicfg )
-    if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
+    if ( "x${CMAKE_BUILD_TYPE}" STREQUAL "x" )
       #This can happen if parent project called the project(..) function before
       #doing the song and dance we did above.
       set( CMAKE_BUILD_TYPE Release )

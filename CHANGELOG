@@ -1,4 +1,7 @@
-Work in progress:
+v1.6.1 2022-12-08
+      * Fixed mcplexample_pyread so it is able to work without the user setting
+        PYTHONPATH (this is still not very robust as it for now assumes that the
+        user did not modify the default installation location).
       * Attempt to improve MCPL_ENABLE_ZLIB=FETCH mode by applying correct
         private compilation definitions.
 
