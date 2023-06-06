@@ -1,3 +1,8 @@
+v1.6.2 2023-06-06
+      * Work again with latest numpy by removing usage of deprecated numpy.float
+        and numpy.int aliases (Thanks Milan Klausz and Jose Robledo, see also
+        github issue #72).
+
 v1.6.1 2022-12-08
       * Fixed mcplexample_pyread so it is able to work without the user setting
         PYTHONPATH (this is still not very robust as it for now assumes that the

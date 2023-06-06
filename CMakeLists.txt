@@ -74,7 +74,7 @@ endif()
 
 cmake_policy( SET CMP0048 NEW )#Not sure if this is really needed
 
-project( MCPL VERSION 1.6.1 ${_project_metadata} )
+project( MCPL VERSION 1.6.2 ${_project_metadata} )
 
 unset( _project_metadata )
 
