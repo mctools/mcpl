@@ -10,7 +10,7 @@
 #include <io.h>
 // TODO: In case of cl.exe on Windows, set compile-time include to pick
 // up path to conda-provided getopt.h!
-#include "c:/install_mcstas/miniconda3/Library/include/getopt.h"
+#include <getopt.h>
 #include <process.h> /* for getpid() and the exec..() family */
 #include <direct.h> /* for _getcwd() and _chdir() */
 
