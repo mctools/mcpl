@@ -34,7 +34,7 @@
 //                                                                                 //
 //  Find more information and updates at https://mctools.github.io/mcpl/           //
 //                                                                                 //
-//  Written by Thomas Kittelmann, 2015-2017.                                       //
+//  Written by Thomas Kittelmann, 2015-2025.                                       //
 //                                                                                 //
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -47,6 +47,9 @@
 //  2: First public release.                                                       //
 //  1: Format used during early development. No longer supported.                  //
 /////////////////////////////////////////////////////////////////////////////////////
+
+#define MCPL_HASZLIB //fixme
+
 
 //Rough platform detection (could be much more fine-grained):
 #if defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__))
@@ -2183,7 +2186,7 @@ int mcpl_tool_usage( char** argv, const char * errmsg ) {
   printf("  -e, --extract FILE1 FILE2\n");
   printf("                    Extracts particles from FILE1 into a new FILE2.\n");
   printf("  -lN, -sN        : Select range of particles in FILE1 (as above).\n");
-  printf("  -pPDGCODE       : select particles of type given by PDGCODE.\n");
+  printf("  -pPDGCODE       : Select particles of type given by PDGCODE.\n");
   printf("\n");
   printf("Other options:\n");
   printf("  -r, --repair FILE\n");

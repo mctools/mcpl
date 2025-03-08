@@ -1,3 +1,11 @@
+/mcpl_core/skbld_autogen/
+/mcpl_core/dist/
+/mcpl_core/build/
+/dist/
+/build/
+/venv/
+
+
 # Compiled Object files
 *.slo
 *.lo

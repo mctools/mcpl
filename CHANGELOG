@@ -1,3 +1,7 @@
+v1.9.80 (work in progress)
+      * Completely redesigning package layouts.
+      * Removing "fat" installation options.
+
 v1.6.2 2023-06-06
       * Work again with latest numpy by removing usage of deprecated numpy.float
         and numpy.int aliases (Thanks Milan Klausz and Jose Robledo, see also

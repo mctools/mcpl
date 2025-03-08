@@ -1,0 +1,46 @@
+################################################################################
+#                                                                              #
+# Exports the MCPL::MCPL target, and provides a few PATHS and values of a few  #
+# build options.                                                               #
+#                                                                              #
+################################################################################
+
+
+#First make sure our file work when CMake is new enough, but the user have a
+#very old version in their cmake_minimum_required statements (cf. github
+#discussion/issue #137):
+cmake_policy(PUSH)#NB: We POP at the end of this file.
+cmake_policy(VERSION 3.16...3.30)
+
+#Export a few directory paths (relocatable):
+set( MCPL_CMAKEDIR "${CMAKE_CURRENT_LIST_DIR}" )
+get_filename_component( MCPL_DIR "${MCPL_CMAKEDIR}/@MCPL_relpath_CMAKEDIR2ROOT@" ABSOLUTE )
+get_filename_component( MCPL_BINDIR "${MCPL_CMAKEDIR}/@MCPL_relpath_CMAKEDIR2BINDIR@" ABSOLUTE )
+get_filename_component( MCPL_LIBDIR "${MCPL_CMAKEDIR}/@MCPL_relpath_CMAKEDIR2LIBDIR@" ABSOLUTE )
+get_filename_component( MCPL_INCDIR "${MCPL_CMAKEDIR}/@MCPL_relpath_CMAKEDIR2INCDIR@" ABSOLUTE )
+
+#Config variables:
+set( MCPL_OPTION_MODIFY_RPATH       @MODIFY_RPATH@ )
+
+#Libname:
+set( MCPL_LIBNAME @MCPL_libname@ )
+
+#Various scripts:
+set( MCPL_CMD_MCPLTOOL ${MCPL_BINDIR}/mcpltool )
+if ( NOT EXISTS MCPL_CMD_MCPLTOOL )
+  set( MCPL_CMD_MCPLTOOL "")
+endif()
+
+#Various scripts:
+set( MCPL_CMD_MCPLCONFIG ${MCPL_BINDIR}/mcpl-config )
+if ( NOT EXISTS MCPL_CMD_MCPLCONFIG )
+  set( MCPL_CMD_MCPLCONFIG "")
+endif()
+
+#The MCPL targets:
+if(NOT TARGET MCPL::MCPL)
+  include( "${MCPL_CMAKEDIR}/MCPLTargets.cmake" )
+endif()
+
+#Undo the policy changes we did above:
+cmake_policy(POP)

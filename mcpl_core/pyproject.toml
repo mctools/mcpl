@@ -1,0 +1,54 @@
+
+#################################################################################
+##                                                                             ##
+##  Monte Carlo Particle Lists : MCPL                                          ##
+##                                                                             ##
+##  Utilities for reading and writing .mcpl files: A binary format with lists  ##
+##  of particle state information, for interchanging and reshooting events     ##
+##  between various Monte Carlo simulation applications.                       ##
+##                                                                             ##
+##  Find more information and updates at https://mctools.github.io/mcpl/       ##
+##                                                                             ##
+##  This file can be freely used as per the terms in the LICENSE file.         ##
+##                                                                             ##
+##  Written by Thomas Kittelmann, 2015-2025.                                   ##
+##                                                                             ##
+#################################################################################
+
+[project]
+name = "mcpl-core"
+version = "1.6.80"
+requires-python = ">=3.8"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+  { name="MCPL developers (Thomas Kittelmann, et. al.)" },
+]
+description = "Utilities and API for accessing MCPL (.mcpl) files"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
+]
+
+[project.urls]
+"Homepage" = "https://mctools.github.io/mcpl/"
+"Bug Tracker" = "https://github.com/mctools/mcpl/issues"
+
+[project.scripts]
+mcpl-config = "_mcpl_core.info:_mcpl_config_cli_wrapper"
+mcpltool = "_mcpl_core.info:_mcpl_tool_cli_wrapper"
+
+[build-system]
+requires = ["scikit-build-core>=0.10"]
+build-backend = "scikit_build_core.build"
+
+[tool.scikit-build]
+logging.level = "INFO"
+minimum-version = "build-system.requires"
+wheel.packages = ['skbld_autogen/_mcpl_core']
+sdist.include = ["/src/","/include/","/cmake/",
+                 '/app_config/','/CMakeLists.txt','/pyproject.toml',
+                 '/skbld_autogen/'
+                 ]
+sdist.cmake = true
+wheel.py-api = "py3" # as close to "noarch" as possible (ABI3)
