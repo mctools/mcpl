@@ -14,8 +14,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: src
+
+      - name: Enable parallel cmake
+        run: python ./src/devel/bin/mcpldevtool nprocs --enable-github-parallel
+
       - name: Pip install packages for mcpldevtool
         run: pip install -r ./src/devel/reqs/requirements_devel.txt
+
       - name: mcpldevtool checks
         run: ./src/devel/bin/mcpldevtool check -n "fix""me"
 
@@ -50,7 +55,11 @@ jobs:
       with:
         python-version: ${{ matrix.python }}
 
-    - run: pip install numpy
+    - name: Enable parallel cmake
+      run: python ./src/devel/bin/mcpldevtool nprocs --enable-github-parallel
+
+    - name: pip install deps
+      run: pip install -r ./src/devel/reqs/requirements_devel.txt
 
     - name: Make test dirs
       run: mkdir ./testdir_pymcpltool ./testdir_enc

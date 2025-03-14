@@ -5,6 +5,7 @@ on:
   pull_request:
   schedule:
     - cron: '30 19 * * 0'  # 19:30 every Sunday
+
 jobs:
   build:
     runs-on: ubuntu-latest
