@@ -7,20 +7,20 @@ on:
     - cron: '30 12 * * 1'  # 12:30 every Monday
 
 jobs:
-#  mcpldevtool_check:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v4
-#        with:
-#          path: src
-#      - name: Pip install packages for mcpldevtool
-#        run: pip install -r ./src/devel/reqs/requirements_devel.txt
-#      - name: mcpldevtool checks
-#        run: ./src/devel/bin/mcpldevtool check -n "fix""me"
+  mcpldevtool_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: src
+      - name: Pip install packages for mcpldevtool
+        run: pip install -r ./src/devel/reqs/requirements_devel.txt
+      - name: mcpldevtool checks
+        run: ./src/devel/bin/mcpldevtool check -n "fix""me"
 
   build:
-#    needs: [ mcpldevtool_check ]
+    needs: [ mcpldevtool_check ]
     strategy:
       matrix:
         include:
