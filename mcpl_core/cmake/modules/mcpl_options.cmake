@@ -6,8 +6,19 @@ include( mcpl_utils )
 #corresponding deprecated variable below, the default value should be modified
 #in the add_deprecated_boolvar(..) call as well!
 
+enum_option( MCPL_ENABLE_ZLIB "Whether to enable zlib support" DEFAULT FETCH USEPREINSTALLED )
 bool_option( MCPL_ENABLE_RPATHMOD "Whether to try to set RPATH in installed binaries (if disabled all special RPATH handling is skipped)." "ON" )
-bool_option( MCPL_ENABLE_CFGAPP    "Whether to build and install the ncrystal-config command" "ON" )
+bool_option( MCPL_ENABLE_CFGAPP    "Whether to build and install the mcpl-config command" "ON" )
+bool_option( MCPL_ENABLE_CORE_TESTING "Enable the few CTests fully contained within the mcpl_core project." "OFF" )
+enum_option( MCPL_BUILD_STRICT     "Stricter build (primarily for testing). Can optionally select specific C standard." "OFF" "ON" "99" "11" "14" "17" "23" )
+
+if ( MCPL_ENABLE_ZLIB STREQUAL "DEFAULT" )
+  if ( WIN32 )
+    set( MCPL_ENABLE_ZLIB "FETCH")
+  else()
+    set( MCPL_ENABLE_ZLIB "USEPREINSTALLED")
+  endif()
+endif()
 
 #if ( DEFINED MCPL_ENABLE_RPATHMOD )
 #  message( FATAL_ERROR
@@ -15,12 +26,6 @@ bool_option( MCPL_ENABLE_CFGAPP    "Whether to build and install the ncrystal-co
 #    " project no longer provides any binaries needing RPATH handling."
 #  )
 #endif()
-if ( DEFINED MCPL_ENABLE_ZLIB )
-  message( FATAL_ERROR
-    "MCPL_ENABLE_ZLIB not supported: MCPL now always"
-    " requires a preinstalled zlib that CMake can locate."
-  )
-endif()
 if ( DEFINED MCPL_BUILD_FATBINARIES )
   message( FATAL_ERROR
     "MCPL_ENABLE_PYTHON not supported: The mcpl-core"

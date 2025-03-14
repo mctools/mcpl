@@ -19,45 +19,38 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-// A small standalone example of how to one might extract a subset of particles
-// from an existing MCPL file in order to create a new smaller file.
-
 #include "mcpl.h"
 #include <stdio.h>
+#include <memory.h>
 
 int main(int argc,char**argv) {
+  (void)argc;
+  (void)argv;
 
-  if (argc!=3) {
-    printf("Please supply input and output filenames\n");
-    return 1;
+  //Create file with some rather fake content:
+  mcpl_outfile_t f = mcpl_create_outfile("out.mcpl");
+  mcpl_hdr_set_srcname(f,"CustomTest");
+  mcpl_enable_universal_pdgcode(f,2112);//all particles are neutrons
+  mcpl_hdr_add_comment(f,"Some comment.");
+  mcpl_hdr_add_comment(f,"Another comment.");
+  mcpl_particle_t * particle = mcpl_get_empty_particle(f);
+  for (int i = 0; i < 50000; ++i) {
+    particle->position[0] = i*1.0;
+    particle->position[1] = i*2.0;
+    particle->position[2] = i*3.0;
+    particle->ekin = i*0.1;
+    particle->direction[0] = 0.0;
+    particle->direction[1] = 0.0;
+    particle->direction[2] = 1.0;
+    particle->time = i*0.01;
+    particle->weight = 1.0;
+    mcpl_add_particle(f,particle);
   }
 
-  const char * infilename = argv[1];
-  const char * outfilename = argv[2];
+  //close up and gzip:
+  mcpl_closeandgzip_outfile(f);
 
-  // Initialisation, open existing file and create output file handle. Transfer
-  // all meta-data from existing file, and add an extra comment in the output
-  // file to document the process:
+  //Check file:
+  mcpl_dump("out.mcpl.gz", 0,0,20);
 
-  mcpl_file_t fi = mcpl_open_file(infilename);
-  mcpl_outfile_t fo = mcpl_create_outfile(outfilename);
-  mcpl_transfer_metadata(fi, fo);
-  mcpl_hdr_add_comment(fo,"Applied custom filter to select neutrons with ekin<0.1MeV");
-
-  //Loop over particles from input, only adding the chosen particles to the output file:
-
-  const mcpl_particle_t* particle;
-  while ( ( particle = mcpl_read(fi) ) ) {
-    if ( particle->pdgcode == 2112 && particle->ekin < 0.1 ) {
-      mcpl_add_particle(fo,particle);
-      //Note that a guaranteed non-lossy alternative to mcpl_add_particle(fo,particle)
-      //would be mcpl_transfer_last_read_particle(fi,fo) which can work directly on
-      //the serialised on-disk particle data.
-    }
-  }
-
-  //Close up files:
-  mcpl_closeandgzip_outfile(fo);
-  mcpl_close_file(fi);
 }
-

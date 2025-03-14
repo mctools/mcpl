@@ -17,7 +17,7 @@
 
 [project]
 name = "mcpl-core"
-version = "1.6.80"
+version = "1.9.80"
 requires-python = ">=3.8"
 readme = "README.md"
 license = {file = "LICENSE"}

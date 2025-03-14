@@ -1,4 +1,5 @@
-This is a source distribution of MCPL - Monte Carlo Particle Lists.
+MCPL - Monte Carlo Particle Lists
+=================================
 
 Included are the core utilities for reading and writing .mcpl files: A binary
 format with lists of particle state information, for interchanging and

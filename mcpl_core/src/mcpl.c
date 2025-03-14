@@ -1,4 +1,24 @@
 
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//  This file is part of MCPL (see https://mctools.github.io/mcpl/)           //
+//                                                                            //
+//  Copyright 2015-2025 MCPL developers.                                      //
+//                                                                            //
+//  Licensed under the Apache License, Version 2.0 (the "License");           //
+//  you may not use this file except in compliance with the License.          //
+//  You may obtain a copy of the License at                                   //
+//                                                                            //
+//      http://www.apache.org/licenses/LICENSE-2.0                            //
+//                                                                            //
+//  Unless required by applicable law or agreed to in writing, software       //
+//  distributed under the License is distributed on an "AS IS" BASIS,         //
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  //
+//  See the License for the specific language governing permissions and       //
+//  limitations under the License.                                            //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
 /////////////////////////////////////////////////////////////////////////////////////
 //                                                                                 //
 //  Monte Carlo Particle Lists : MCPL                                              //
@@ -48,8 +68,9 @@
 //  1: Format used during early development. No longer supported.                  //
 /////////////////////////////////////////////////////////////////////////////////////
 
-#define MCPL_HASZLIB //fixme
-
+#ifndef MCPL_HASZLIB
+#  define MCPL_HASZLIB //fixme
+#endif
 
 //Rough platform detection (could be much more fine-grained):
 #if defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__))
@@ -91,20 +112,20 @@
 #  endif
 #endif
 
-#ifdef MCPL_HEADER_INCPATH
-#  include MCPL_HEADER_INCPATH
-#else
-#  include "mcpl.h"
-#endif
-
-#ifdef MCPL_HASZLIB
-#  ifdef MCPL_ZLIB_INCPATH
-#    include MCPL_ZLIB_INCPATH
-#  else
-#    include "zlib.h"
-#  endif
-#endif
-
+// #ifdef MCPL_HEADER_INCPATH
+// #  include MCPL_HEADER_INCPATH
+// #else
+// #  include "mcpl.h"
+// #endif
+// #ifdef MCPL_HASZLIB
+// #  ifdef MCPL_ZLIB_INCPATH
+// #    include MCPL_ZLIB_INCPATH
+// #  else
+// #    include "zlib.h"
+// #  endif
+// #endif
+#include "mcpl.h"
+#include "zlib.h"
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -119,20 +140,20 @@
 #define MCPLIMP_NPARTICLES_POS 8
 #define MCPLIMP_MAX_PARTICLE_SIZE 96
 
-int mcpl_platform_is_little_endian() {
+MCPL_LOCAL int mcpl_platform_is_little_endian() {
   //Return 0 for big endian, 1 for little endian.
   volatile uint32_t i=0x01234567;
   return (*((uint8_t*)(&i))) == 0x67;
 }
 
-void mcpl_default_error_handler(const char * msg) {
+MCPL_LOCAL void mcpl_default_error_handler(const char * msg) {
   printf("MCPL ERROR: %s\n",msg);
   exit(1);
 }
 
 static void (*mcpl_error_handler)(const char *) = &mcpl_default_error_handler;
 
-void mcpl_error(const char * msg) {
+MCPL_LOCAL void mcpl_error(const char * msg) {
   mcpl_error_handler(msg);
   //Error handler should not return, but in case it does anyway, we at least
   //ensure a hard exit!
@@ -145,7 +166,7 @@ void mcpl_set_error_handler(void (*handler)(const char *))
   mcpl_error_handler = handler;
 }
 
-void mcpl_store_string(char** dest, const char * src)
+MCPL_LOCAL void mcpl_store_string(char** dest, const char * src)
 {
   size_t n = strlen(src);
   if (n>65535) n = 65535;
@@ -161,7 +182,7 @@ void mcpl_store_string(char** dest, const char * src)
   return;
 }
 
-void mcpl_write_buffer(FILE* f, uint32_t n, const char * data, const char * errmsg)
+MCPL_LOCAL void mcpl_write_buffer(FILE* f, uint32_t n, const char * data, const char * errmsg)
 {
   size_t nb = fwrite(&n, 1, sizeof(n), f);
   if (nb!=sizeof(n))
@@ -170,13 +191,14 @@ void mcpl_write_buffer(FILE* f, uint32_t n, const char * data, const char * errm
   if (nb!=n)
     mcpl_error(errmsg);
 }
-void mcpl_write_string(FILE* f, const char * str, const char * errmsg)
+
+MCPL_LOCAL void mcpl_write_string(FILE* f, const char * str, const char * errmsg)
 {
   size_t n = strlen(str);
   mcpl_write_buffer(f,n,str,errmsg);//nb: we don't write the terminating null-char
 }
 
-typedef struct {
+typedef struct MCPL_LOCAL {
   char * filename;
   FILE * file;
   char * hdr_srcprogname;
@@ -201,7 +223,7 @@ typedef struct {
 
 #define MCPLIMP_OUTFILEDECODE mcpl_outfileinternal_t * f = (mcpl_outfileinternal_t *)of.internal; assert(f)
 
-void mcpl_recalc_psize(mcpl_outfile_t of)
+MCPL_LOCAL void mcpl_recalc_psize(mcpl_outfile_t of)
 {
   MCPLIMP_OUTFILEDECODE;
   unsigned fp = f->opt_singleprec ? sizeof(float) : sizeof(double);
@@ -223,7 +245,7 @@ void mcpl_recalc_psize(mcpl_outfile_t of)
     + 16 * f->opt_userflags;
 }
 
-void mcpl_platform_compatibility_check() {
+MCPL_LOCAL void mcpl_platform_compatibility_check() {
   static int first = 1;
   if (!first)
     return;
@@ -443,7 +465,7 @@ void mcpl_enable_universal_weight(mcpl_outfile_t of, double w)
   mcpl_recalc_psize(of);
 }
 
-void mcpl_write_header(mcpl_outfileinternal_t * f)
+MCPL_LOCAL void mcpl_write_header(mcpl_outfileinternal_t * f)
 {
   if (!f->header_notwritten)
     mcpl_error("Logical error!");
@@ -538,7 +560,7 @@ void mcpl_write_header(mcpl_outfileinternal_t * f)
 #  define  INFINITY (__builtin_inf())
 #endif
 
-void mcpl_unitvect_pack_adaptproj(const double* in, double* out) {
+MCPL_LOCAL void mcpl_unitvect_pack_adaptproj(const double* in, double* out) {
 
   //Precise packing of unit vector into 2 floats + 1 bit using the "Adaptive
   //Projection Packing" method (T. Kittelmann, 2017).
@@ -584,7 +606,7 @@ void mcpl_unitvect_pack_adaptproj(const double* in, double* out) {
   out[2] = copysign(1.0,out[2]);
 }
 
-void mcpl_unitvect_unpack_adaptproj( const double* in, double* out ) {
+MCPL_LOCAL void mcpl_unitvect_unpack_adaptproj( const double* in, double* out ) {
 
   //Unpacking for the "Adaptive Projection Packing" method (T. Kittelmann, 2017).
   //See mcpl_unitvect_pack_adaptproj for more information.
@@ -609,7 +631,7 @@ void mcpl_unitvect_unpack_adaptproj( const double* in, double* out ) {
   }
 }
 
-void mcpl_unitvect_unpack_oct(const double* in, double* out) {
+MCPL_LOCAL void mcpl_unitvect_unpack_oct(const double* in, double* out) {
 
   //Octahedral packing inspired by http://jcgt.org/published/0003/02/01/
   //
@@ -639,8 +661,8 @@ void mcpl_unitvect_unpack_oct(const double* in, double* out) {
   out[0] *= n; out[1] *= n; out[2] *= n;
 }
 
-void mcpl_internal_serialise_particle_to_buffer( const mcpl_particle_t* particle,
-                                                 mcpl_outfileinternal_t * f ) {
+MCPL_LOCAL void mcpl_internal_serialise_particle_to_buffer( const mcpl_particle_t* particle,
+                                                            mcpl_outfileinternal_t * f ) {
 
   //Serialise the provided particle into the particle_buffer of the output file
   //(according to the settings of the output file).
@@ -722,7 +744,7 @@ void mcpl_internal_serialise_particle_to_buffer( const mcpl_particle_t* particle
   assert(ibuf==f->particle_size);
 }
 
-void mcpl_internal_write_particle_buffer_to_file(mcpl_outfileinternal_t * f ) {
+MCPL_LOCAL void mcpl_internal_write_particle_buffer_to_file(mcpl_outfileinternal_t * f ) {
   //Ensure header is written:
   if (f->header_notwritten)
     mcpl_write_header(f);
@@ -742,7 +764,7 @@ void mcpl_add_particle(mcpl_outfile_t of,const mcpl_particle_t* particle)
   mcpl_internal_write_particle_buffer_to_file(f);
 }
 
-void mcpl_update_nparticles(FILE* f, uint64_t n)
+MCPL_LOCAL void mcpl_update_nparticles(FILE* f, uint64_t n)
 {
   //Seek and update nparticles at correct location in header:
   const char * errmsg = "Errors encountered while attempting to update number of particles in file.";
@@ -874,7 +896,7 @@ typedef struct {
 
 #define MCPLIMP_FILEDECODE mcpl_fileinternal_t * f = (mcpl_fileinternal_t *)ff.internal; assert(f)
 
-void mcpl_read_buffer(mcpl_fileinternal_t* f, unsigned* n, char ** buf, const char * errmsg)
+MCPL_LOCAL void mcpl_read_buffer(mcpl_fileinternal_t* f, unsigned* n, char ** buf, const char * errmsg)
 {
   size_t nb;
 #ifdef MCPL_HASZLIB
@@ -896,7 +918,7 @@ void mcpl_read_buffer(mcpl_fileinternal_t* f, unsigned* n, char ** buf, const ch
     mcpl_error(errmsg);
 }
 
-void mcpl_read_string(mcpl_fileinternal_t* f, char ** dest, const char* errmsg)
+MCPL_LOCAL void mcpl_read_string(mcpl_fileinternal_t* f, char ** dest, const char* errmsg)
 {
   size_t nb;
   uint32_t n;
@@ -921,7 +943,7 @@ void mcpl_read_string(mcpl_fileinternal_t* f, char ** dest, const char* errmsg)
   *dest = s;
 }
 
-mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair_status)
+MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair_status)
 {
   int caller_is_mcpl_repair = *repair_status;
   *repair_status = 0;//file not broken
@@ -1682,7 +1704,7 @@ void mcpl_dump(const char * filename, int parts, uint64_t nskip, uint64_t nlimit
   mcpl_close_file(f);
 }
 
-int mcpl_actual_can_merge(mcpl_file_t ff1, mcpl_file_t ff2)
+MCPL_LOCAL int mcpl_actual_can_merge(mcpl_file_t ff1, mcpl_file_t ff2)
 {
   mcpl_fileinternal_t * f1 = (mcpl_fileinternal_t *)ff1.internal;
   mcpl_fileinternal_t * f2 = (mcpl_fileinternal_t *)ff2.internal;
@@ -1732,7 +1754,7 @@ int mcpl_can_merge(const char * file1, const char* file2)
 #  include <sys/stat.h>
 #endif
 
-int mcpl_file_certainly_exists(const char * filename)
+MCPL_LOCAL int mcpl_file_certainly_exists(const char * filename)
 {
 #if defined MCPL_THIS_IS_UNIX || defined MCPL_THIS_IS_MS
   if( access( filename, F_OK ) != -1 )
@@ -1755,7 +1777,7 @@ int mcpl_file_certainly_exists(const char * filename)
 #  include <sys/stat.h>
 #endif
 
-void mcpl_warn_duplicates(unsigned n, const char ** filenames)
+MCPL_LOCAL void mcpl_warn_duplicates(unsigned n, const char ** filenames)
 {
   //Checks that no filenames in provided list represent the same file (the
   //detection is not 100% certain on non-POSIX platforms). If duplicates are
@@ -2134,7 +2156,7 @@ void mcpl_merge_inplace(const char * file1, const char* file2)
 #define MCPLIMP_TOOL_DEFAULT_NLIMIT 10
 #define MCPLIMP_TOOL_DEFAULT_NSKIP 0
 
-int mcpl_tool_usage( char** argv, const char * errmsg ) {
+MCPL_LOCAL int mcpl_tool_usage( char** argv, const char * errmsg ) {
   if (errmsg) {
     printf("ERROR: %s\n\n",errmsg);
     printf("Run with -h or --help for usage information\n");
@@ -2201,7 +2223,7 @@ int mcpl_tool_usage( char** argv, const char * errmsg ) {
   return 0;
 }
 
-int mcpl_str2int(const char* str, size_t len, int64_t* res)
+MCPL_LOCAL int mcpl_str2int(const char* str, size_t len, int64_t* res)
 {
   //portable 64bit str2int with error checking (only INT64_MIN might not be
   //possible to specify).
@@ -2659,7 +2681,7 @@ int mcpl_gzip_file(const char * filename)
 
 #ifdef MCPLIMP_HAS_CUSTOM_GZIP
 
-int _mcpl_custom_gzip(const char *filename, const char *mode)
+MCPL_LOCAL int _mcpl_custom_gzip(const char *filename, const char *mode)
 {
   //Open input file:
   FILE *handle_in = fopen(filename, "rb");

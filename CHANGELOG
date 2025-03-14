@@ -1,6 +1,18 @@
 v1.9.80 (work in progress)
+      * Change license to the Apache 2.0 license.
       * Completely redesigning package layouts.
       * Removing "fat" installation options.
+      * Fall back to statically embedding of zlib into binaries (currently
+        v1.3.1). Only envisioned to be used for windows builds.
+      * MCPL will no longer be available for building without zlib support, and
+        going forward all MCPL builds will be able to produce and read with
+        gzipped MCPL files. Accordingly, the MCPL_ENABLE_ZLIB flag will now only
+        have the options: USEPREINSTALLED, FETCH and DEFAULT. The DEFAULT value
+        will in general imply USEPREINSTALLED, except on WINDOWS where it will
+        imply FETCH.
+
+
+
 
 v1.6.2 2023-06-06
       * Work again with latest numpy by removing usage of deprecated numpy.float

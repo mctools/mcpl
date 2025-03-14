@@ -1,0 +1,30 @@
+# A pyproject.toml for injecting an empty ncrystal-core package. In case
+# ncrystal-core is installed in a non-python aware fashion, installing this
+# empty ncrystal-core package can be used to ensure that subsequent pip
+# installations of packages needing ncrystal-core (like plugins for ncrystal)
+# will not cause pip to pull down ncrystal-core from pypi. Of course, this is
+# not bullet-proof, since "pip uninstall ncrystal-core" will only uninstall the
+# empty package, not all of ncrystal-core content.
+
+[build-system]
+requires = ["setuptools>=64.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcpl-core"
+version = "1.9.80"
+requires-python = ">=3.8"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+  { name="MCPL developers (Thomas Kittelmann, et. al.)" },
+]
+description = "Utilities and API for accessing MCPL (.mcpl) files"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
+]
+
+[project.urls]
+"Homepage" = "https://mctools.github.io/mcpl/"
+"Bug Tracker" = "https://github.com/mctools/mcpl/issues"

@@ -11,7 +11,7 @@ endif()
 # Release. In any case, expose CMAKE_BUILD_TYPE as an explicit cache variable
 # (gives drop-down list in gui). This must come before the call to
 # project(..). We do not do this in case the generator is multi-cfg, and we also
-# provide the hidden NCRYSTAL_NOTOUCH_CMAKE_BUILD_TYPE option to not do it.
+# provide the hidden MCPL_NOTOUCH_CMAKE_BUILD_TYPE option to not do it.
 #
 
 if( NOT MCPL_NOTOUCH_CMAKE_BUILD_TYPE )
@@ -22,7 +22,7 @@ if( NOT MCPL_NOTOUCH_CMAKE_BUILD_TYPE )
     else()
       set( _def_cbt Release )
     endif()
-    set( CMAKE_BUILD_TYPE ${_def_cbt}  CACHE STRING
+    set( CMAKE_BUILD_TYPE ${_def_cbt} CACHE STRING
       "Choose the type of build, options are: Debug Release RelWithDebInfo and MinSizeRel." )
     set_property( CACHE CMAKE_BUILD_TYPE
       PROPERTY STRINGS Debug Release RelWithDebInfo MinSizeRel None )
@@ -90,6 +90,53 @@ if ( MCPL_ENABLE_CPACK )
   include(CPack)
 endif()
 
+
+if ( MCPL_ENABLE_TESTING AND MCPL_ENABLE_CORE_TESTING )
+  message( FATAL_ERROR
+    "Enabling both MCPL_ENABLE_TESTING"
+    " and MCPL_ENABLE_CORE_TESTING is not supported" )
+endif()
+
+if ( MCPL_ENABLE_CORE_TESTING )
+  enable_testing()
+  include(mcpl_coretests)
+endif()
+
+if ( MCPL_ENABLE_TESTING )
+  #When testing we require a namespace of "test" which is intended to ensure
+  #that we never clash with a system-installed NCrystal version (for instance we
+  #had problems when a ctest executable picked up libNCrystal.so from the conda
+  #installed NCrystal, resulting in hard to debug errors).
+  #
+  #Additionally on windows we need to use MCPL_WINEXPORTALL=ON so the ctest
+  #binaries can access internal symbols in the NCrystal library.
+  #
+  #For both of these reasons we will for safety forbid actual installations with
+  #these settings, to avoid potential weird installations.
+  if( "${CMAKE_VERSION}" VERSION_LESS "3.28" )
+    #NB: Keep this minimum version value synchronised with the one on the top of
+    #tests/CMakeLists.txt
+    message( FATAL_ERROR "MCPL_ENABLE_TESTING requires cmake >= 3.28" )
+  endif()
+#  if ( MCPL_NAMESPACE AND NOT "x${MCPL_NAMESPACE}" STREQUAL "xtest" )
+#    message(
+#      FATAL_ERROR
+#      "Do not set MCPL_NAMESPACE with MCPL_ENABLE_TESTING."
+#    )
+#  endif()
+#  _ncrystal_option_force( MCPL_NAMESPACE "test" )
+else()
+  #Make sure the namespace "test" is only ever used by the
+  #MCPL_ENABLE_TESTING option (so no installation out there can have that
+  #namespace).
+#  if ( "x${MCPL_NAMESPACE}" STREQUAL "xtest" )
+#    message(
+#      FATAL_ERROR
+#      "The MCPL_NAMESPACE value \"test\" is reserved for internal usage."
+#    )
+#  endif()
+endif()
+
 #Installation directories (try to follow standard conventions):
 include(GNUInstallDirs)
 set(MCPL_BINDIR "${CMAKE_INSTALL_BINDIR}")#e.g. <prefix>/bin>
@@ -148,49 +195,46 @@ mcplfind_relinstpath( MCPL_relpath_CMAKEDIR2INCDIR "${MCPL_INCDIR}" "" )
 
 #FIXME: Make sure we exercise strict build flags in CI!
 
-#include(CheckCCompilerFlag)
+include(CheckCCompilerFlag)
 #
-#if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
-#  set( NC_STRICT_COMP_FLAGS "/WX" "/W4" "/WD4324" )
-#else()
-#  set( NC_STRICT_COMP_FLAGS -Wall -Wextra -pedantic -Werror )
-#endif()
-#
-#if ( MCPL_BUILD_STRICT )
-#  set( "CMAKE_COMPILE_WARNING_AS_ERROR" "ON" )
-#  # turn list into space separted string for check_c_compiler_flag:
-#  string( REPLACE ";" " " tmp "${NC_STRICT_COMP_FLAGS}" )
-#  check_c_compiler_flag( "${tmp}" mcpl_compiler_supports_strict_comp_flags )
-#endif()
-#
-#set( STRICT_CSTD OFF )
-#if ( MCPL_BUILD_STRICT )
-#  #We also want to test the C-example with strict C standard (90, 99, 11). For
-#  #simplicity we simply pick a C standard value based on the provided c++
-#  #standard, in a way which allows us to cover the various C standards.
-#  if ( MCPL_BUILD_STRICT STREQUAL "11"
-#      OR MCPL_BUILD_STRICT STREQUAL "ON" )
-#    set( STRICT_CSTD 90 )
-#  elseif ( MCPL_BUILD_STRICT STREQUAL "14" )
-#    set( STRICT_CSTD 99 )
-#  elseif ( MCPL_BUILD_STRICT STREQUAL "17" )
-#    set( STRICT_CSTD 11 )
-#  elseif ( MCPL_BUILD_STRICT STREQUAL "20" )
-#    if( "${CMAKE_VERSION}" VERSION_LESS "3.21" )
-#      message(FATAL_ERROR "MCPL_BUILD_STRICT=20 requires cmake 3.21")
-#    endif()
-#    set( STRICT_CSTD 17 )#needs cmake 3.21
-#  elseif ( MCPL_BUILD_STRICT STREQUAL "23" )
-#    if( "${CMAKE_VERSION}" VERSION_LESS "3.21" )
-#      message(FATAL_ERROR "MCPL_BUILD_STRICT=23 requires cmake 3.21")
-#    endif()
-#    set( STRICT_CSTD 17 )#needs cmake 3.21
-#  else()
-#    #should have been caught earlier:
-#    message( FATAL_ERROR "Unexpected value of MCPL_BUILD_STRICT" )
-#  endif()
-#endif()
-#
+if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
+  set( MCPL_STRICT_COMP_FLAGS "/WX" "/W4" "/WD4324" )
+else()
+  set( MCPL_STRICT_COMP_FLAGS -Wall -Wextra -pedantic -Werror )
+endif()
+
+if ( MCPL_BUILD_STRICT )
+  set( "CMAKE_COMPILE_WARNING_AS_ERROR" "ON" )
+  # turn list into space separated string for check_c_compiler_flag:
+  string( REPLACE ";" " " tmp "${MCPL_STRICT_COMP_FLAGS}" )
+  check_c_compiler_flag( "${tmp}" mcpl_compiler_supports_strict_comp_flags )
+endif()
+
+set( STRICT_CSTD OFF )
+if ( MCPL_BUILD_STRICT )
+  #We also want to test the C-example with strict C standard (90, 99, 11). For
+  #simplicity we simply pick a C standard value based on the provided c++
+  #standard, in a way which allows us to cover the various C standards.
+  if ( MCPL_BUILD_STRICT STREQUAL "99" OR MCPL_BUILD_STRICT STREQUAL "ON" )
+    set( STRICT_CSTD 99 )
+  elseif ( MCPL_BUILD_STRICT STREQUAL "11" )
+    set( STRICT_CSTD 11 )
+  elseif ( MCPL_BUILD_STRICT STREQUAL "17" )
+    if( "${CMAKE_VERSION}" VERSION_LESS "3.21" )
+      message(FATAL_ERROR "MCPL_BUILD_STRICT=17 requires cmake 3.21")
+    endif()
+    set( STRICT_CSTD 17 )
+  elseif ( MCPL_BUILD_STRICT STREQUAL "23" )
+    if( "${CMAKE_VERSION}" VERSION_LESS "3.21" )
+      message(FATAL_ERROR "MCPL_BUILD_STRICT=17 requires cmake 3.21")
+    endif()
+    set( STRICT_CSTD 23 )
+  else()
+    #should have been caught earlier:
+    message( FATAL_ERROR "Unexpected value of MCPL_BUILD_STRICT" )
+  endif()
+endif()
+
 set( mcpl_extra_private_compile_options "" )
 if ( "x${CMAKE_C_COMPILER_ID}" STREQUAL "xIntelLLVM" )
   #Intel defaults to the equivalent of -ffast-math, revert back to proper math:
@@ -205,7 +249,23 @@ elseif( "${CMAKE_VERSION}" VERSION_LESS "3.20" AND "x${CMAKE_C_COMPILER_ID}" STR
     set( mcpl_extra_private_compile_options -fp-model=precise )
   endif()
 endif()
-#
+
+function(set_target_common_props targetname)
+  #Set private non-transitive properties. If strict builds are enabled, this can
+  #enforce no warnings and compilation with a specific standards.
+  if ( MCPL_BUILD_STRICT AND mcpl_compiler_supports_strict_comp_flags )
+    target_compile_options( ${targetname} PRIVATE ${MCPL_STRICT_COMP_FLAGS} )
+  endif()
+  if ( STRICT_CSTD )
+    set_target_properties (
+      ${targetname} PROPERTIES
+      C_STANDARD ${STRICT_CSTD}
+      C_STANDARD_REQUIRED ON C_EXTENSIONS OFF
+    )
+  endif()
+endfunction()
+
+
 #function(set_target_common_props targetname)
 #  #Set private non-transitive properties. If strict builds are enabled, this can
 #  #enforce no warnings and compilation with a specific standards.
@@ -220,6 +280,14 @@ add_library(
   mcpl SHARED
   "src/mcpl.c" "src/mcpl_fileutils.c" "src/mcpl_fileutils.h"
 )
+
+set_source_files_properties(
+  "src/mcpl.c" "src/mcpl_fileutils.c" "src/mcpl_fileutils.h"
+  PROPERTIES C_VISIBILITY_PRESET "hidden"
+)
+#
+set_target_properties( mcpl PROPERTIES C_VISIBILITY_PRESET "hidden" )
+
 add_executable(
   mcpltool
   "app_tool/mcpltool_app.c"
@@ -255,7 +323,9 @@ add_executable(
 #  target_compile_definitions( MCPL PRIVATE MCPL_DISABLE_DYNLOAD )
 #endif()
 
-#set_target_common_props( MCPL )
+
+set_target_common_props( mcpl )
+set_target_common_props( mcpltool )
 target_compile_features( mcpl PUBLIC c_std_99 )
 target_compile_options( mcpl PRIVATE ${mcpl_extra_private_compile_options} )
 target_compile_features( mcpltool PRIVATE c_std_99 ${mcpl_extra_private_compile_options} )
@@ -274,26 +344,17 @@ target_include_directories(
 )
 
 #Zlib:
-find_package( ZLIB REQUIRED )
-target_link_libraries( mcpl PRIVATE ZLIB::ZLIB )
-target_link_libraries( mcpltool PRIVATE ZLIB::ZLIB )
 
-#Make sure we link in math functions correctly (typically the linker needs libm on unix, but nothing on Windows).
-set(TMP_TESTLIBMSRC "#include <math.h>\nint main(int argc,char** argv) { (void)argv;double a=(exp)(argc+1.0); return (int)(a*0.1); }\n")
-set(TMP_TESTDIR ${PROJECT_BINARY_DIR}/test_libm)
-file(WRITE ${TMP_TESTDIR}/test.c "${TMP_TESTLIBMSRC}")
-try_compile(ALWAYS_HAS_MATH "${TMP_TESTDIR}" "${TMP_TESTDIR}/test.c")
-if (NOT ALWAYS_HAS_MATH)
-  set(TMP_TESTDIR ${PROJECT_BINARY_DIR}/test_libm2)
-  file(WRITE ${TMP_TESTDIR}/test.c "${TMP_TESTLIBMSRC}")
-  try_compile(MATH_NEEDS_LIBM "${TMP_TESTDIR}" "${TMP_TESTDIR}/test.c" LINK_LIBRARIES m)
-  if (MATH_NEEDS_LIBM)
-    target_link_libraries(mcpl PRIVATE m)
-    target_link_libraries(mcpltool PRIVATE m)
-  else()
-    message( FATAL_ERROR "Could not figure out link flags needed to enable math functions" )
-  endif()
-endif()
+##ZLib support:
+include( mcpl_zlib )
+add_zlib_dependency( mcpl )
+add_zlib_dependency( mcpltool )
+
+include( "mcpl_detectmathlibs" )
+detect_math_libs()
+
+target_link_libraries(mcpl PRIVATE ${MCPL_MATH_LIBRARIES} )
+target_link_libraries(mcpltool PRIVATE ${MCPL_MATH_LIBRARIES} )
 
 install(
   TARGETS mcpl

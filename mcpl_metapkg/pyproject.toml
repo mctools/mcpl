@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=64.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcpl"
+dependencies = [ 'mcpl-core==1.9.80', 'mcpl-python==1.9.80' ]
+version = "1.9.80"
+requires-python = ">=3.8"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+  { name="MCPL developers (Thomas Kittelmann, et. al.)" },
+]
+description = "Utilities and API for accessing MCPL (.mcpl) files"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
+]
+
+
+[project.urls]
+"Homepage" = "https://mctools.github.io/mcpl/"
+"Bug Tracker" = "https://github.com/mctools/mcpl/issues"
