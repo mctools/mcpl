@@ -1,0 +1,164 @@
+Opened MCPL file reffile_2.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 94 bytes
+    Data storage       : 320 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 64 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112       1.234           0           0           0           0           1           0           0           1
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1
+Opened MCPL file reffile_5.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 94 bytes
+    Data storage       : 360 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 72 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1 0xdeadbeef
+Opened MCPL file reffile_empty.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 0
+    Header storage     : 94 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+Opened MCPL file reffile_2.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-2
+    No. of particles   : 5
+    Header storage     : 94 bytes
+    Data storage       : 320 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 64 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112       1.234           0           0           0           0           1           0           0           1
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1
+Opened MCPL file reffile_5.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-2
+    No. of particles   : 5
+    Header storage     : 94 bytes
+    Data storage       : 360 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 72 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1 0xdeadbeef
+Opened MCPL file reffile_empty.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-2
+    No. of particles   : 0
+    Header storage     : 94 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags

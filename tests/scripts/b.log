@@ -1,0 +1,80 @@
+Testing ref/difficult_unitvector.mcpl.gz
+Testing ref/gammas_uw.mcpl.gz
+Testing ref/miscphys.mcpl.gz
+Testing ref/reffile_1.mcpl
+Testing ref/reffile_10.mcpl
+Testing ref/reffile_11.mcpl
+Testing ref/reffile_12.mcpl
+Testing ref/reffile_13.mcpl
+Testing ref/reffile_14.mcpl
+Testing ref/reffile_15.mcpl
+Testing ref/reffile_16.mcpl
+Testing ref/reffile_2.mcpl
+Testing ref/reffile_2.mcpl.gz
+Testing ref/reffile_3.mcpl
+Testing ref/reffile_4.mcpl
+Testing ref/reffile_5.mcpl
+Testing ref/reffile_5.mcpl.gz
+Testing ref/reffile_6.mcpl
+Testing ref/reffile_7.mcpl
+Testing ref/reffile_8.mcpl
+Testing ref/reffile_9.mcpl
+Testing ref/reffile_bad1.mcpl
+ -- assuming this is a broken file which can't be read without errors
+Testing ref/reffile_bad1.mcpl.gz
+ -- assuming this is a broken file which can't be read without errors
+Testing ref/reffile_bad2.mcpl
+ -- assuming this is a broken file which can't be read without errors
+Testing ref/reffile_bad2.mcpl.gz
+ -- assuming this is a broken file which can't be read without errors
+Testing ref/reffile_bad3.mcpl
+ -- assuming this is a broken file which can't be read without errors
+Testing ref/reffile_bad3.mcpl.gz
+ -- assuming this is a broken file which can't be read without errors
+Testing ref/reffile_bad4.mcpl
+ -- assuming this is a broken file which can't be read without errors
+Testing ref/reffile_bad4.mcpl.gz
+ -- assuming this is a broken file which can't be read without errors
+Testing ref/reffile_crash.mcpl
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+Testing ref/reffile_crash.mcpl.gz
+ -- assuming this is a broken file which can't be read without errors
+Testing ref/reffile_empty.mcpl
+Testing ref/reffile_empty.mcpl.gz
+Testing ref/reffile_encodings.mcpl.gz
+Testing ref/reffile_notreallygz.mcpl.gz
+Testing ref/reffile_skip123.mcpl
+Testing ref/reffile_skip123.mcpl.gz
+Testing ref/reffile_truncated.mcpl
+ -- assuming this is a broken file which can't be read without errors
+Testing ref/reffile_truncated.mcpl.gz
+ -- assuming this is a broken file which can't be read without errors
+Testing ref/reffile_userflags_is_pos.mcpl.gz
+Testing ref/reffile_uw.mcpl.gz
+Testing reffmt2/miscphys.mcpl.gz
+Testing reffmt2/reffile_1.mcpl
+Testing reffmt2/reffile_10.mcpl
+Testing reffmt2/reffile_11.mcpl
+Testing reffmt2/reffile_12.mcpl
+Testing reffmt2/reffile_13.mcpl
+Testing reffmt2/reffile_14.mcpl
+Testing reffmt2/reffile_15.mcpl
+Testing reffmt2/reffile_16.mcpl
+Testing reffmt2/reffile_2.mcpl
+Testing reffmt2/reffile_2.mcpl.gz
+Testing reffmt2/reffile_3.mcpl
+Testing reffmt2/reffile_4.mcpl
+Testing reffmt2/reffile_5.mcpl
+Testing reffmt2/reffile_5.mcpl.gz
+Testing reffmt2/reffile_6.mcpl
+Testing reffmt2/reffile_7.mcpl
+Testing reffmt2/reffile_8.mcpl
+Testing reffmt2/reffile_9.mcpl
+Testing reffmt2/reffile_crash.mcpl
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+Testing reffmt2/reffile_crash.mcpl.gz
+ -- assuming this is a broken file which can't be read without errors
+Testing reffmt2/reffile_empty.mcpl
+Testing reffmt2/reffile_empty.mcpl.gz
+Testing reffmt2/reffile_skip123.mcpl
+Testing reffmt2/reffile_skip123.mcpl.gz

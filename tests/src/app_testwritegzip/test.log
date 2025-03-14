@@ -1,0 +1,47 @@
+MCPL: Attempting to compress file out.mcpl with gzip
+MCPL: Succesfully compressed file into out.mcpl.gz
+Opened MCPL file out.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 50000
+    Header storage     : 99 bytes
+    Data storage       : 1600000 bytes
+
+  Custom meta data
+    Source             : "CustomTest"
+    Number of comments : 2
+          -> comment 0 : "Some comment."
+          -> comment 1 : "Another comment."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 32 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112           0           0           0           0           0           0           1           0           1
+    1        2112         0.1           1           2           3           0           0           1        0.01           1
+    2        2112         0.2           2           4           6           0           0           1        0.02           1
+    3        2112         0.3           3           6           9           0           0           1        0.03           1
+    4        2112         0.4           4           8          12           0           0           1        0.04           1
+    5        2112         0.5           5          10          15           0           0           1        0.05           1
+    6        2112         0.6           6          12          18           0           0           1        0.06           1
+    7        2112         0.7           7          14          21           0           0           1        0.07           1
+    8        2112         0.8           8          16          24           0           0           1        0.08           1
+    9        2112         0.9           9          18          27           0           0           1        0.09           1
+   10        2112           1          10          20          30           0           0           1         0.1           1
+   11        2112         1.1          11          22          33           0           0           1        0.11           1
+   12        2112         1.2          12          24          36           0           0           1        0.12           1
+   13        2112         1.3          13          26          39           0           0           1        0.13           1
+   14        2112         1.4          14          28          42           0           0           1        0.14           1
+   15        2112         1.5          15          30          45           0           0           1        0.15           1
+   16        2112         1.6          16          32          48           0           0           1        0.16           1
+   17        2112         1.7          17          34          51           0           0           1        0.17           1
+   18        2112         1.8          18          36          54           0           0           1        0.18           1
+   19        2112         1.9          19          38          57           0           0           1        0.19           1

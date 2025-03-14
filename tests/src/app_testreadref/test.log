@@ -1,0 +1,1114 @@
+Opened MCPL file reffile_1.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 59 bytes
+    Data storage       : 340 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 68 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112       1.234           0           0           0           0           1           0           0           1
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1
+Opened MCPL file reffile_2.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 94 bytes
+    Data storage       : 320 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 64 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112       1.234           0           0           0           0           1           0           0           1
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1
+Opened MCPL file reffile_3.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 76 bytes
+    Data storage       : 180 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 1
+          -> comment 0 : "Some comment."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112       1.234           0           0           0           0           1           0           0           1
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1
+Opened MCPL file reffile_4.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 59 bytes
+    Data storage       : 160 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 32 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112       1.234           0           0           0           0           1           0           0           1
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1
+Opened MCPL file reffile_5.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 94 bytes
+    Data storage       : 360 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 72 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1 0xdeadbeef
+Opened MCPL file reffile_6.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 155 bytes
+    Data storage       : 340 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 4
+          -> comment 0 : "Some comment."
+          -> comment 1 : "Some comment2."
+          -> comment 2 : "Some comment3."
+          -> comment 3 : "Some comment4444."
+    Number of blobs    : 1
+          -> 6 bytes of data with key "LalaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : no
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 68 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1 0xdeadbeef
+Opened MCPL file reffile_7.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 59 bytes
+    Data storage       : 200 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 40 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1 0xdeadbeef
+Opened MCPL file reffile_8.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 94 bytes
+    Data storage       : 180 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : no
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1 0xdeadbeef
+Opened MCPL file reffile_9.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 76 bytes
+    Data storage       : 460 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 1
+          -> comment 0 : "Some comment."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 92 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0
+Opened MCPL file reffile_10.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 59 bytes
+    Data storage       : 440 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 88 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0
+Opened MCPL file reffile_11.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 94 bytes
+    Data storage       : 240 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 48 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0
+Opened MCPL file reffile_12.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 190 bytes
+    Data storage       : 220 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 4
+          -> comment 0 : "Some comment."
+          -> comment 1 : "Some comment2."
+          -> comment 2 : "Some comment3."
+          -> comment 3 : "Some comment4444."
+    Number of blobs    : 2
+          -> 20 bytes of data with key "BlaData"
+          -> 6 bytes of data with key "LalaData"
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 44 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0
+Opened MCPL file reffile_13.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 59 bytes
+    Data storage       : 480 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+Opened MCPL file reffile_14.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 94 bytes
+    Data storage       : 460 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 92 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+Opened MCPL file reffile_15.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 76 bytes
+    Data storage       : 260 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 1
+          -> comment 0 : "Some comment."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 52 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+Opened MCPL file reffile_16.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 59 bytes
+    Data storage       : 240 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 48 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+Opened MCPL file reffile_crash.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 4
+    Header storage     : 155 bytes
+    Data storage       : 272 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 4
+          -> comment 0 : "Some comment."
+          -> comment 1 : "Some comment2."
+          -> comment 2 : "Some comment3."
+          -> comment 3 : "Some comment4444."
+    Number of blobs    : 1
+          -> 6 bytes of data with key "LalaData"
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 68 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112       1.234           0           0           0           0           1           0           0           1
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
+Opened MCPL file reffile_empty.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 0
+    Header storage     : 94 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+Opened MCPL file reffile_7_copy.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 10
+    Header storage     : 59 bytes
+    Data storage       : 400 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 40 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1 0xdeadbeef
+    5        2112       1.234           0           0           0           0           1           0           0           1 0xdeadbeef
+    6        2112           0           0           0        0.01        0.01           0    -0.99995           0           1 0xdeadbeef
+    7        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1 0xdeadbeef
+    8        2112           0           0           0        0.03        0.03    -0.99955           0           0           1 0xdeadbeef
+    9        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1 0xdeadbeef
+Opened MCPL file reffile_1.mcpl:
+
+  Basic info
+    Format             : MCPL-2
+    No. of particles   : 5
+    Header storage     : 59 bytes
+    Data storage       : 340 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 68 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112       1.234           0           0           0           0           1           0           0           1
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1
+Opened MCPL file reffile_2.mcpl:
+
+  Basic info
+    Format             : MCPL-2
+    No. of particles   : 5
+    Header storage     : 94 bytes
+    Data storage       : 320 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 64 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112       1.234           0           0           0           0           1           0           0           1
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1
+Opened MCPL file reffile_3.mcpl:
+
+  Basic info
+    Format             : MCPL-2
+    No. of particles   : 5
+    Header storage     : 76 bytes
+    Data storage       : 180 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 1
+          -> comment 0 : "Some comment."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112       1.234           0           0           0           0           1           0           0           1
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1
+Opened MCPL file reffile_4.mcpl:
+
+  Basic info
+    Format             : MCPL-2
+    No. of particles   : 5
+    Header storage     : 59 bytes
+    Data storage       : 160 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 32 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112       1.234           0           0           0           0           1           0           0           1
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1
+Opened MCPL file reffile_5.mcpl:
+
+  Basic info
+    Format             : MCPL-2
+    No. of particles   : 5
+    Header storage     : 94 bytes
+    Data storage       : 360 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 72 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1 0xdeadbeef
+Opened MCPL file reffile_6.mcpl:
+
+  Basic info
+    Format             : MCPL-2
+    No. of particles   : 5
+    Header storage     : 155 bytes
+    Data storage       : 340 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 4
+          -> comment 0 : "Some comment."
+          -> comment 1 : "Some comment2."
+          -> comment 2 : "Some comment3."
+          -> comment 3 : "Some comment4444."
+    Number of blobs    : 1
+          -> 6 bytes of data with key "LalaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : no
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 68 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1 0xdeadbeef
+Opened MCPL file reffile_7.mcpl:
+
+  Basic info
+    Format             : MCPL-2
+    No. of particles   : 5
+    Header storage     : 59 bytes
+    Data storage       : 200 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 40 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1 0xdeadbeef
+Opened MCPL file reffile_8.mcpl:
+
+  Basic info
+    Format             : MCPL-2
+    No. of particles   : 5
+    Header storage     : 94 bytes
+    Data storage       : 180 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : no
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1 0xdeadbeef
+Opened MCPL file reffile_9.mcpl:
+
+  Basic info
+    Format             : MCPL-2
+    No. of particles   : 5
+    Header storage     : 76 bytes
+    Data storage       : 460 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 1
+          -> comment 0 : "Some comment."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 92 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0
+Opened MCPL file reffile_10.mcpl:
+
+  Basic info
+    Format             : MCPL-2
+    No. of particles   : 5
+    Header storage     : 59 bytes
+    Data storage       : 440 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 88 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0
+Opened MCPL file reffile_11.mcpl:
+
+  Basic info
+    Format             : MCPL-2
+    No. of particles   : 5
+    Header storage     : 94 bytes
+    Data storage       : 240 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 48 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0
+Opened MCPL file reffile_12.mcpl:
+
+  Basic info
+    Format             : MCPL-2
+    No. of particles   : 5
+    Header storage     : 190 bytes
+    Data storage       : 220 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 4
+          -> comment 0 : "Some comment."
+          -> comment 1 : "Some comment2."
+          -> comment 2 : "Some comment3."
+          -> comment 3 : "Some comment4444."
+    Number of blobs    : 2
+          -> 20 bytes of data with key "BlaData"
+          -> 6 bytes of data with key "LalaData"
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 44 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0
+Opened MCPL file reffile_13.mcpl:
+
+  Basic info
+    Format             : MCPL-2
+    No. of particles   : 5
+    Header storage     : 59 bytes
+    Data storage       : 480 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+Opened MCPL file reffile_14.mcpl:
+
+  Basic info
+    Format             : MCPL-2
+    No. of particles   : 5
+    Header storage     : 94 bytes
+    Data storage       : 460 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 92 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+Opened MCPL file reffile_15.mcpl:
+
+  Basic info
+    Format             : MCPL-2
+    No. of particles   : 5
+    Header storage     : 76 bytes
+    Data storage       : 260 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 1
+          -> comment 0 : "Some comment."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 52 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+Opened MCPL file reffile_16.mcpl:
+
+  Basic info
+    Format             : MCPL-2
+    No. of particles   : 5
+    Header storage     : 59 bytes
+    Data storage       : 240 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 48 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+Opened MCPL file reffile_crash.mcpl:
+
+  Basic info
+    Format             : MCPL-2
+    No. of particles   : 4
+    Header storage     : 155 bytes
+    Data storage       : 272 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 4
+          -> comment 0 : "Some comment."
+          -> comment 1 : "Some comment2."
+          -> comment 2 : "Some comment3."
+          -> comment 3 : "Some comment4444."
+    Number of blobs    : 1
+          -> 6 bytes of data with key "LalaData"
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 68 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112       1.234           0           0           0           0           1           0           0           1
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
+Opened MCPL file reffile_empty.mcpl:
+
+  Basic info
+    Format             : MCPL-2
+    No. of particles   : 0
+    Header storage     : 94 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+Opened MCPL file reffile_7_copy.mcpl:
+
+  Basic info
+    Format             : MCPL-2
+    No. of particles   : 10
+    Header storage     : 59 bytes
+    Data storage       : 400 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 40 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1 0xdeadbeef
+    5        2112       1.234           0           0           0           0           1           0           0           1 0xdeadbeef
+    6        2112           0           0           0        0.01        0.01           0    -0.99995           0           1 0xdeadbeef
+    7        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1 0xdeadbeef
+    8        2112           0           0           0        0.03        0.03    -0.99955           0           0           1 0xdeadbeef
+    9        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1 0xdeadbeef

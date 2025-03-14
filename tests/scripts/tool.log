@@ -1,0 +1,1830 @@
+----------------------------------------------
+Running mcpltool -h
+----------------------------------------------
+Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.
+
+The default behaviour is to display the contents of the FILE in human readable
+format (see Dump Options below for how to modify what is displayed).
+
+This installation supports direct reading of gzipped files (.mcpl.gz).
+
+Usage:
+  mcpltool [dump-options] FILE
+  mcpltool --merge [merge-options] FILE1 FILE2
+  mcpltool --extract [extract-options] FILE1 FILE2
+  mcpltool --repair FILE
+  mcpltool --version
+  mcpltool --help
+
+Dump options:
+  By default include the info in the FILE header plus the first ten contained
+  particles. Modify with the following options:
+  -j, --justhead  : Dump just header info and no particle info.
+  -n, --nohead    : Dump just particle info and no header info.
+  -lN             : Dump up to N particles from the file (default 10). You
+                    can specify -l0 to disable this limit.
+  -sN             : Skip past the first N particles in the file (default 0).
+  -bKEY           : Dump binary blob stored under KEY to standard output.
+
+Merge options:
+  -m, --merge FILEOUT FILE1 FILE2 ... FILEN
+                    Creates new FILEOUT with combined particle contents from
+                    specified list of N existing and compatible files.
+  -m, --merge --inplace FILE1 FILE2 ... FILEN
+                    Appends the particle contents in FILE2 ... FILEN into
+                    FILE1. Note that this action modifies FILE1!
+  --forcemerge [--keepuserflags] FILEOUT FILE1 FILE2 ... FILEN
+               Like --merge but works with incompatible files as well, at the
+               heavy price of discarding most metadata like comments and blobs.
+               Userflags will be discarded unless --keepuserflags is specified.
+
+Extract options:
+  -e, --extract FILE1 FILE2
+                    Extracts particles from FILE1 into a new FILE2.
+  -lN, -sN        : Select range of particles in FILE1 (as above).
+  -pPDGCODE       : Select particles of type given by PDGCODE.
+
+Other options:
+  -r, --repair FILE
+                    Attempt to repair FILE which was not properly closed, by up-
+                    dating the file header with the correct number of particles.
+  -t, --text MCPLFILE OUTFILE
+                    Read particle contents of MCPLFILE and write into OUTFILE
+                    using a simple ASCII-based format.
+  -v, --version   : Display version of MCPL installation.
+  -h, --help      : Display this usage information (ignores all other options).
+----------------------------------------------
+Running mcpltool --help
+----------------------------------------------
+Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.
+
+The default behaviour is to display the contents of the FILE in human readable
+format (see Dump Options below for how to modify what is displayed).
+
+This installation supports direct reading of gzipped files (.mcpl.gz).
+
+Usage:
+  mcpltool [dump-options] FILE
+  mcpltool --merge [merge-options] FILE1 FILE2
+  mcpltool --extract [extract-options] FILE1 FILE2
+  mcpltool --repair FILE
+  mcpltool --version
+  mcpltool --help
+
+Dump options:
+  By default include the info in the FILE header plus the first ten contained
+  particles. Modify with the following options:
+  -j, --justhead  : Dump just header info and no particle info.
+  -n, --nohead    : Dump just particle info and no header info.
+  -lN             : Dump up to N particles from the file (default 10). You
+                    can specify -l0 to disable this limit.
+  -sN             : Skip past the first N particles in the file (default 0).
+  -bKEY           : Dump binary blob stored under KEY to standard output.
+
+Merge options:
+  -m, --merge FILEOUT FILE1 FILE2 ... FILEN
+                    Creates new FILEOUT with combined particle contents from
+                    specified list of N existing and compatible files.
+  -m, --merge --inplace FILE1 FILE2 ... FILEN
+                    Appends the particle contents in FILE2 ... FILEN into
+                    FILE1. Note that this action modifies FILE1!
+  --forcemerge [--keepuserflags] FILEOUT FILE1 FILE2 ... FILEN
+               Like --merge but works with incompatible files as well, at the
+               heavy price of discarding most metadata like comments and blobs.
+               Userflags will be discarded unless --keepuserflags is specified.
+
+Extract options:
+  -e, --extract FILE1 FILE2
+                    Extracts particles from FILE1 into a new FILE2.
+  -lN, -sN        : Select range of particles in FILE1 (as above).
+  -pPDGCODE       : Select particles of type given by PDGCODE.
+
+Other options:
+  -r, --repair FILE
+                    Attempt to repair FILE which was not properly closed, by up-
+                    dating the file header with the correct number of particles.
+  -t, --text MCPLFILE OUTFILE
+                    Read particle contents of MCPLFILE and write into OUTFILE
+                    using a simple ASCII-based format.
+  -v, --version   : Display version of MCPL installation.
+  -h, --help      : Display this usage information (ignores all other options).
+----------------------------------------------
+Running mcpltool --h
+----------------------------------------------
+Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.
+
+The default behaviour is to display the contents of the FILE in human readable
+format (see Dump Options below for how to modify what is displayed).
+
+This installation supports direct reading of gzipped files (.mcpl.gz).
+
+Usage:
+  mcpltool [dump-options] FILE
+  mcpltool --merge [merge-options] FILE1 FILE2
+  mcpltool --extract [extract-options] FILE1 FILE2
+  mcpltool --repair FILE
+  mcpltool --version
+  mcpltool --help
+
+Dump options:
+  By default include the info in the FILE header plus the first ten contained
+  particles. Modify with the following options:
+  -j, --justhead  : Dump just header info and no particle info.
+  -n, --nohead    : Dump just particle info and no header info.
+  -lN             : Dump up to N particles from the file (default 10). You
+                    can specify -l0 to disable this limit.
+  -sN             : Skip past the first N particles in the file (default 0).
+  -bKEY           : Dump binary blob stored under KEY to standard output.
+
+Merge options:
+  -m, --merge FILEOUT FILE1 FILE2 ... FILEN
+                    Creates new FILEOUT with combined particle contents from
+                    specified list of N existing and compatible files.
+  -m, --merge --inplace FILE1 FILE2 ... FILEN
+                    Appends the particle contents in FILE2 ... FILEN into
+                    FILE1. Note that this action modifies FILE1!
+  --forcemerge [--keepuserflags] FILEOUT FILE1 FILE2 ... FILEN
+               Like --merge but works with incompatible files as well, at the
+               heavy price of discarding most metadata like comments and blobs.
+               Userflags will be discarded unless --keepuserflags is specified.
+
+Extract options:
+  -e, --extract FILE1 FILE2
+                    Extracts particles from FILE1 into a new FILE2.
+  -lN, -sN        : Select range of particles in FILE1 (as above).
+  -pPDGCODE       : Select particles of type given by PDGCODE.
+
+Other options:
+  -r, --repair FILE
+                    Attempt to repair FILE which was not properly closed, by up-
+                    dating the file header with the correct number of particles.
+  -t, --text MCPLFILE OUTFILE
+                    Read particle contents of MCPLFILE and write into OUTFILE
+                    using a simple ASCII-based format.
+  -v, --version   : Display version of MCPL installation.
+  -h, --help      : Display this usage information (ignores all other options).
+----------------------------------------------
+Running mcpltool --version
+----------------------------------------------
+MCPL version 1.6.2
+----------------------------------------------
+Running mcpltool --v
+----------------------------------------------
+MCPL version 1.6.2
+----------------------------------------------
+Running mcpltool rf16cp.mcpl --justhead
+----------------------------------------------
+Opened MCPL file rf16cp.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 59 bytes
+    Data storage       : 240 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 48 bytes/particle
+
+----------------------------------------------
+Running mcpltool rf16cp.mcpl --ju
+----------------------------------------------
+Opened MCPL file rf16cp.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 59 bytes
+    Data storage       : 240 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 48 bytes/particle
+
+----------------------------------------------
+Running mcpltool rf16cp.mcpl -j
+----------------------------------------------
+Opened MCPL file rf16cp.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 59 bytes
+    Data storage       : 240 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 48 bytes/particle
+
+----------------------------------------------
+Running mcpltool rf16cp.mcpl --nohead
+----------------------------------------------
+Opened MCPL file rf16cp.mcpl:
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+----------------------------------------------
+Running mcpltool rf16cp.mcpl --n
+----------------------------------------------
+Opened MCPL file rf16cp.mcpl:
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+----------------------------------------------
+Running mcpltool rf16cp.mcpl --n -m --inplace
+----------------------------------------------
+ERROR: Conflicting options specified.
+
+Run with -h or --help for usage information
+===> Command failed!
+----------------------------------------------
+Running mcpltool rf16cp.mcpl --ju -l2
+----------------------------------------------
+ERROR: Do not specify -l or -s with --justhead
+
+Run with -h or --help for usage information
+===> Command failed!
+----------------------------------------------
+Running mcpltool rf16cp.mcpl --ju -s1
+----------------------------------------------
+ERROR: Do not specify -l or -s with --justhead
+
+Run with -h or --help for usage information
+===> Command failed!
+----------------------------------------------
+Running mcpltool rf16cp.mcpl -l2 -r
+----------------------------------------------
+ERROR: Conflicting options specified.
+
+Run with -h or --help for usage information
+===> Command failed!
+----------------------------------------------
+Running mcpltool rf16cp.mcpl --v --h
+----------------------------------------------
+Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.
+
+The default behaviour is to display the contents of the FILE in human readable
+format (see Dump Options below for how to modify what is displayed).
+
+This installation supports direct reading of gzipped files (.mcpl.gz).
+
+Usage:
+  mcpltool [dump-options] FILE
+  mcpltool --merge [merge-options] FILE1 FILE2
+  mcpltool --extract [extract-options] FILE1 FILE2
+  mcpltool --repair FILE
+  mcpltool --version
+  mcpltool --help
+
+Dump options:
+  By default include the info in the FILE header plus the first ten contained
+  particles. Modify with the following options:
+  -j, --justhead  : Dump just header info and no particle info.
+  -n, --nohead    : Dump just particle info and no header info.
+  -lN             : Dump up to N particles from the file (default 10). You
+                    can specify -l0 to disable this limit.
+  -sN             : Skip past the first N particles in the file (default 0).
+  -bKEY           : Dump binary blob stored under KEY to standard output.
+
+Merge options:
+  -m, --merge FILEOUT FILE1 FILE2 ... FILEN
+                    Creates new FILEOUT with combined particle contents from
+                    specified list of N existing and compatible files.
+  -m, --merge --inplace FILE1 FILE2 ... FILEN
+                    Appends the particle contents in FILE2 ... FILEN into
+                    FILE1. Note that this action modifies FILE1!
+  --forcemerge [--keepuserflags] FILEOUT FILE1 FILE2 ... FILEN
+               Like --merge but works with incompatible files as well, at the
+               heavy price of discarding most metadata like comments and blobs.
+               Userflags will be discarded unless --keepuserflags is specified.
+
+Extract options:
+  -e, --extract FILE1 FILE2
+                    Extracts particles from FILE1 into a new FILE2.
+  -lN, -sN        : Select range of particles in FILE1 (as above).
+  -pPDGCODE       : Select particles of type given by PDGCODE.
+
+Other options:
+  -r, --repair FILE
+                    Attempt to repair FILE which was not properly closed, by up-
+                    dating the file header with the correct number of particles.
+  -t, --text MCPLFILE OUTFILE
+                    Read particle contents of MCPLFILE and write into OUTFILE
+                    using a simple ASCII-based format.
+  -v, --version   : Display version of MCPL installation.
+  -h, --help      : Display this usage information (ignores all other options).
+----------------------------------------------
+Running mcpltool rf16cp.mcpl --v --m --inplace
+----------------------------------------------
+ERROR: Conflicting options specified.
+
+Run with -h or --help for usage information
+===> Command failed!
+----------------------------------------------
+Running mcpltool rf16cp.mcpl -l0 -s2
+----------------------------------------------
+Opened MCPL file rf16cp.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 59 bytes
+    Data storage       : 240 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 48 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+----------------------------------------------
+Running mcpltool rf16cp.mcpl -l2 -s0
+----------------------------------------------
+Opened MCPL file rf16cp.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 59 bytes
+    Data storage       : 240 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 48 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+----------------------------------------------
+Running mcpltool rf16cp.mcpl -m --inplace '<TESTDATADIR>/ref/reffile_16.mcpl'
+----------------------------------------------
+----------------------------------------------
+Running mcpltool rf16cp.mcpl -l0
+----------------------------------------------
+Opened MCPL file rf16cp.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 10
+    Header storage     : 59 bytes
+    Data storage       : 480 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 48 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+    5        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    6        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+    7        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+    8        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    9        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+----------------------------------------------
+Running mcpltool rf16cp.mcpl --mer --inpl rf16cp.mcpl
+----------------------------------------------
+MCPL WARNING: Merging file with itself (rf16cp.mcpl).
+----------------------------------------------
+Running mcpltool rf16cp.mcpl -l0
+----------------------------------------------
+Opened MCPL file rf16cp.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 20
+    Header storage     : 59 bytes
+    Data storage       : 960 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 48 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+    5        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    6        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+    7        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+    8        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    9        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+   10        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+   11        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+   12        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+   13        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+   14        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+   15        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+   16        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+   17        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+   18        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+   19        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+----------------------------------------------
+Running mcpltool rf16cp.mcpl --m --inplac rf16cp.mcpl
+----------------------------------------------
+MCPL WARNING: Merging file with itself (rf16cp.mcpl).
+----------------------------------------------
+Running mcpltool rf16cp.mcpl -l0
+----------------------------------------------
+Opened MCPL file rf16cp.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 40
+    Header storage     : 59 bytes
+    Data storage       : 1920 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 48 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+    5        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    6        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+    7        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+    8        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    9        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+   10        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+   11        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+   12        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+   13        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+   14        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+   15        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+   16        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+   17        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+   18        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+   19        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+   20        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+   21        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+   22        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+   23        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+   24        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+   25        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+   26        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+   27        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+   28        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+   29        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+   30        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+   31        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+   32        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+   33        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+   34        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+   35        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+   36        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+   37        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+   38        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+   39        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+----------------------------------------------
+Running mcpltool rf16cp.mcpl --merge --inplace rf16cp.mcpl
+----------------------------------------------
+MCPL WARNING: Merging file with itself (rf16cp.mcpl).
+----------------------------------------------
+Running mcpltool -m dupmerge.mcpl rf16cp.mcpl ./rf16cp.mcpl ../tmprundir/rf16cp.mcpl rf16cp_sl.mcpl rf16cp_hl.mcpl rf16_sl.mcpl rf16_sl.mcpl
+----------------------------------------------
+MCPL WARNING: Merging file with itself (rf16cp.mcpl and ./rf16cp.mcpl are the same file).
+MCPL WARNING: Merging file with itself (rf16cp.mcpl and ../tmprundir/rf16cp.mcpl are the same file).
+MCPL WARNING: Merging file with itself (./rf16cp.mcpl and ../tmprundir/rf16cp.mcpl are the same file).
+MCPL WARNING: Merging file with itself (rf16cp.mcpl and rf16cp_sl.mcpl are the same file).
+MCPL WARNING: Merging file with itself (./rf16cp.mcpl and rf16cp_sl.mcpl are the same file).
+MCPL WARNING: Merging file with itself (../tmprundir/rf16cp.mcpl and rf16cp_sl.mcpl are the same file).
+MCPL WARNING: Merging file with itself (rf16cp.mcpl and rf16cp_hl.mcpl are the same file).
+MCPL WARNING: Merging file with itself (./rf16cp.mcpl and rf16cp_hl.mcpl are the same file).
+MCPL WARNING: Merging file with itself (../tmprundir/rf16cp.mcpl and rf16cp_hl.mcpl are the same file).
+MCPL WARNING: Merging file with itself (rf16cp_sl.mcpl and rf16cp_hl.mcpl are the same file).
+MCPL WARNING: Merging file with itself (rf16_sl.mcpl).
+----------------------------------------------
+Running mcpltool -m --inplace dupmerge.mcpl ./dupmerge.mcpl
+----------------------------------------------
+MCPL WARNING: Merging file with itself (dupmerge.mcpl and ./dupmerge.mcpl are the same file).
+----------------------------------------------
+Running mcpltool -m --inplace dupmerge.mcpl dupmerge.mcpl
+----------------------------------------------
+MCPL WARNING: Merging file with itself (dupmerge.mcpl).
+----------------------------------------------
+Running mcpltool rf16cp.mcpl -l0
+----------------------------------------------
+Opened MCPL file rf16cp.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 80
+    Header storage     : 59 bytes
+    Data storage       : 3840 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 48 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+    5        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    6        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+    7        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+    8        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    9        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+   10        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+   11        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+   12        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+   13        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+   14        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+   15        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+   16        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+   17        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+   18        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+   19        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+   20        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+   21        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+   22        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+   23        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+   24        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+   25        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+   26        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+   27        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+   28        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+   29        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+   30        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+   31        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+   32        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+   33        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+   34        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+   35        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+   36        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+   37        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+   38        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+   39        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+   40        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+   41        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+   42        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+   43        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+   44        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+   45        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+   46        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+   47        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+   48        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+   49        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+   50        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+   51        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+   52        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+   53        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+   54        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+   55        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+   56        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+   57        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+   58        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+   59        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+   60        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+   61        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+   62        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+   63        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+   64        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+   65        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+   66        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+   67        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+   68        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+   69        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+   70        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+   71        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+   72        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+   73        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+   74        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+   75        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+   76        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+   77        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+   78        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+   79        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+----------------------------------------------
+Running mcpltool -l0 -s2 '<TESTDATADIR>/ref/reffile_5.mcpl.gz'
+----------------------------------------------
+Opened MCPL file reffile_5.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 94 bytes
+    Data storage       : 360 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 72 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userflags
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1 0xdeadbeef
+----------------------------------------------
+Running mcpltool -l0 -s2 '<TESTDATADIR>/ref/reffile_5.mcpl'
+----------------------------------------------
+Opened MCPL file reffile_5.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 94 bytes
+    Data storage       : 360 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 72 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userflags
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1 0xdeadbeef
+----------------------------------------------
+Running mcpltool -l0 -s2 '<TESTDATADIR>/ref/reffile_empty.mcpl'
+----------------------------------------------
+Opened MCPL file reffile_empty.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 0
+    Header storage     : 94 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+----------------------------------------------
+Running mcpltool -l0 -s2 '<TESTDATADIR>/ref/reffile_empty.mcpl.gz'
+----------------------------------------------
+Opened MCPL file reffile_empty.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 0
+    Header storage     : 94 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+----------------------------------------------
+Running mcpltool -m --inplace rf5cp.mcpl '<TESTDATADIR>/ref/reffile_5.mcpl.gz'
+----------------------------------------------
+----------------------------------------------
+Running mcpltool -m --inpla rf5cp.mcpl.gz '<TESTDATADIR>/ref/reffile_5.mcpl'
+----------------------------------------------
+MCPL ERROR: direct modification of gzipped files is not supported.
+===> Command failed!
+----------------------------------------------
+Running mcpltool -m --inplac rf5cp.mcpl.gz '<TESTDATADIR>/ref/reffile_5.mcpl.gz'
+----------------------------------------------
+MCPL ERROR: direct modification of gzipped files is not supported.
+===> Command failed!
+----------------------------------------------
+Running mcpltool rfcrash.mcpl
+----------------------------------------------
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+Opened MCPL file rfcrash.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 4
+    Header storage     : 155 bytes
+    Data storage       : 272 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 4
+          -> comment 0 : "Some comment."
+          -> comment 1 : "Some comment2."
+          -> comment 2 : "Some comment3."
+          -> comment 3 : "Some comment4444."
+    Number of blobs    : 1
+          -> 6 bytes of data with key "LalaData"
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 68 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112       1.234           0           0           0           0           1           0           0           1
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
+----------------------------------------------
+Running mcpltool --repair rfcrash.mcpl
+----------------------------------------------
+MCPL: Succesfully repaired file with 4 particles.
+----------------------------------------------
+Running mcpltool rfcrash.mcpl
+----------------------------------------------
+Opened MCPL file rfcrash.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 4
+    Header storage     : 155 bytes
+    Data storage       : 272 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 4
+          -> comment 0 : "Some comment."
+          -> comment 1 : "Some comment2."
+          -> comment 2 : "Some comment3."
+          -> comment 3 : "Some comment4444."
+    Number of blobs    : 1
+          -> 6 bytes of data with key "LalaData"
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 68 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112       1.234           0           0           0           0           1           0           0           1
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
+----------------------------------------------
+Running mcpltool --r rfcrash.mcpl
+----------------------------------------------
+MCPL ERROR: File does not appear to be broken.
+===> Command failed!
+----------------------------------------------
+Running mcpltool rfcrash.mcpl
+----------------------------------------------
+Opened MCPL file rfcrash.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 4
+    Header storage     : 155 bytes
+    Data storage       : 272 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 4
+          -> comment 0 : "Some comment."
+          -> comment 1 : "Some comment2."
+          -> comment 2 : "Some comment3."
+          -> comment 3 : "Some comment4444."
+    Number of blobs    : 1
+          -> 6 bytes of data with key "LalaData"
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 68 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112       1.234           0           0           0           0           1           0           0           1
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
+----------------------------------------------
+Running mcpltool -r rfcrash.mcpl.gz
+----------------------------------------------
+MCPL ERROR: Input file is indeed broken, but must be gunzipped before it can be repaired.
+===> Command failed!
+----------------------------------------------
+Running mcpltool rfcrash.mcpl
+----------------------------------------------
+Opened MCPL file rfcrash.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 4
+    Header storage     : 155 bytes
+    Data storage       : 272 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 4
+          -> comment 0 : "Some comment."
+          -> comment 1 : "Some comment2."
+          -> comment 2 : "Some comment3."
+          -> comment 3 : "Some comment4444."
+    Number of blobs    : 1
+          -> 6 bytes of data with key "LalaData"
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 68 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112       1.234           0           0           0           0           1           0           0           1
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
+----------------------------------------------
+Running mcpltool -r rf16cp.mcpl
+----------------------------------------------
+MCPL ERROR: File does not appear to be broken.
+===> Command failed!
+----------------------------------------------
+Running mcpltool rfempty.mcpl
+----------------------------------------------
+Opened MCPL file rfempty.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 0
+    Header storage     : 94 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+----------------------------------------------
+Running mcpltool -r rfempty.mcpl
+----------------------------------------------
+MCPL ERROR: File does not appear to be broken.
+===> Command failed!
+----------------------------------------------
+Running mcpltool rfempty.mcpl
+----------------------------------------------
+Opened MCPL file rfempty.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 0
+    Header storage     : 94 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+----------------------------------------------
+Running mcpltool rfempty.mcpl.gz
+----------------------------------------------
+Opened MCPL file rfempty.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 0
+    Header storage     : 94 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+----------------------------------------------
+Running mcpltool -r rfempty.mcpl.gz
+----------------------------------------------
+MCPL ERROR: File does not appear to be broken.
+===> Command failed!
+----------------------------------------------
+Running mcpltool rfempty.mcpl.gz
+----------------------------------------------
+Opened MCPL file rfempty.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 0
+    Header storage     : 94 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+----------------------------------------------
+Running mcpltool -r rftrunc.mcpl.gz
+----------------------------------------------
+MCPL ERROR: File must be gunzipped before it can be checked and possibly repaired.
+===> Command failed!
+----------------------------------------------
+Running mcpltool -r rftrunc.mcpl
+----------------------------------------------
+MCPL: Succesfully repaired file with 7 particles.
+----------------------------------------------
+Running mcpltool rftrunc.mcpl
+----------------------------------------------
+Opened MCPL file rftrunc.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 7
+    Header storage     : 148 bytes
+    Data storage       : 224 bytes
+
+  Custom meta data
+    Source             : "ESS/dgcode/MCPLTests/genisotrop"
+    Number of comments : 1
+          -> comment 0 : "A simple file with isotropically generated particles."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : yes (weight 1)
+    FP precision       : single
+    Endianness         : little
+    Storage            : 32 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]
+    0        2112           0           0           0           0     0.69673    -0.32571    -0.63913           0
+    1          22           0           0           0           0    -0.43755    -0.27624     0.85571           0
+    2        2112           0           0           0           0     0.61152     0.73811    -0.28504           0
+    3          22           0           0           0           0     0.76301   -0.046213     0.64473           0
+    4        2112           0           0           0           0    -0.89736    -0.39549     0.19578           0
+    5          22           0           0           0           0     0.27755    -0.37388     0.88497           0
+    6        2112           0           0           0           0     0.93106    0.033764    -0.36331           0
+----------------------------------------------
+Running mcpltool fake.mcpl
+----------------------------------------------
+MCPL ERROR: File is not an MCPL file!
+===> Command failed!
+----------------------------------------------
+Running mcpltool fake.mcpl.gz
+----------------------------------------------
+MCPL ERROR: File is not an MCPL file!
+===> Command failed!
+----------------------------------------------
+Running mcpltool fake2.mcpl.gz
+----------------------------------------------
+MCPL ERROR: File is not an MCPL file!
+===> Command failed!
+----------------------------------------------
+Running mcpltool -e miscphys.mcpl.gz extracted_1
+----------------------------------------------
+MCPL: Attempting to compress file extracted_1.mcpl with gzip
+MCPL: Succesfully compressed file into extracted_1.mcpl.gz
+MCPL: Succesfully extracted 195 / 195 particles from miscphys.mcpl.gz into extracted_1.mcpl.gz
+----------------------------------------------
+Running mcpltool --extract -p2112 miscphys.mcpl.gz extracted_1
+----------------------------------------------
+MCPL: Attempting to compress file extracted_1.mcpl with gzip
+MCPL: Succesfully compressed file into extracted_1.mcpl.gz
+MCPL: Succesfully extracted 15 / 195 particles from miscphys.mcpl.gz into extracted_1.mcpl.gz
+----------------------------------------------
+Running mcpltool --extract -p-11 miscphys.mcpl.gz extracted_2
+----------------------------------------------
+MCPL: Attempting to compress file extracted_2.mcpl with gzip
+MCPL: Succesfully compressed file into extracted_2.mcpl.gz
+MCPL: Succesfully extracted 10 / 195 particles from miscphys.mcpl.gz into extracted_2.mcpl.gz
+----------------------------------------------
+Running mcpltool -ep-1000020040 miscphysnogz.mcpl extracted_3
+----------------------------------------------
+MCPL: Attempting to compress file extracted_3.mcpl with gzip
+MCPL: Succesfully compressed file into extracted_3.mcpl.gz
+MCPL: Succesfully extracted 5 / 195 particles from miscphysnogz.mcpl into extracted_3.mcpl.gz
+----------------------------------------------
+Running mcpltool -e -p1000922350 miscphys.mcpl.gz extracted_4
+----------------------------------------------
+MCPL: Attempting to compress file extracted_4.mcpl with gzip
+MCPL: Succesfully compressed file into extracted_4.mcpl.gz
+MCPL: Succesfully extracted 5 / 195 particles from miscphys.mcpl.gz into extracted_4.mcpl.gz
+----------------------------------------------
+Running mcpltool -e -p111 -l999999 -s150 miscphysnogz.mcpl extracted_5
+----------------------------------------------
+MCPL: Attempting to compress file extracted_5.mcpl with gzip
+MCPL: Succesfully compressed file into extracted_5.mcpl.gz
+MCPL: Succesfully extracted 5 / 195 particles from miscphysnogz.mcpl into extracted_5.mcpl.gz
+----------------------------------------------
+Running mcpltool -l0 extracted_1.mcpl.gz
+----------------------------------------------
+Opened MCPL file extracted_1.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 15
+    Header storage     : 214 bytes
+    Data storage       : 780 bytes
+
+  Custom meta data
+    Source             : "ESS/dgcode/MCPLTests/miscphys"
+    Number of comments : 2
+          -> comment 0 : "A simple file with various particle species intended as test input."
+          -> comment 1 : "mcpltool: extracted particles from file with 195 particles"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 52 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112        6000           0          10           0           1           0           0           0           1           0           0           0 0x00000000
+    1        2112        6000           0           0          10           0          -1           0           0           1           0           1           0 0x00000000
+    2        2112        6000          10           0           0           0           0           1       60000           1           0           0           0 0x00000000
+    3        2112        6000           0          10           0          -1           0           0           0         0.1           0           0           0 0x00000000
+    4        2112        6000           0           0          10           0           1           0           0           1           0           0           0 0xdeadbeef
+    5        2112  2.5248e-08          10           0           0           0           0          -1           0           1           0           0           0 0x00000000
+    6        2112  2.5248e-08           0          10           0           1           0           0           0           1           1           0           0 0x00000000
+    7        2112  2.5248e-08           0           0          10           0          -1           0       60000           1           0           0           0 0x00000000
+    8        2112  2.5248e-08          10           0           0           0           0           1           0         0.1           0           0           0 0x00000000
+    9        2112  2.5248e-08           0          10           0          -1           0           0           0           1           0           0           0 0xdeadbeef
+   10        2112     2.5e-08           0           0          10           0           1           0           0           1           0           0           0 0x00000000
+   11        2112     2.5e-08          10           0           0           0           0          -1           0           1           0           0           1 0x00000000
+   12        2112     2.5e-08           0          10           0           1           0           0       60000           1           0           0           0 0x00000000
+   13        2112     2.5e-08           0           0          10           0          -1           0           0         0.1           0           0           0 0x00000000
+   14        2112     2.5e-08          10           0           0           0           0           1           0           1           0           0           0 0xdeadbeef
+----------------------------------------------
+Running mcpltool -l0 extracted_2.mcpl.gz
+----------------------------------------------
+Opened MCPL file extracted_2.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 10
+    Header storage     : 214 bytes
+    Data storage       : 520 bytes
+
+  Custom meta data
+    Source             : "ESS/dgcode/MCPLTests/miscphys"
+    Number of comments : 2
+          -> comment 0 : "A simple file with various particle species intended as test input."
+          -> comment 1 : "mcpltool: extracted particles from file with 195 particles"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 52 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0         -11         0.5          10           0           0           0           0          -1           0           1           0           0           0 0x00000000
+    1         -11         0.5           0          10           0           1           0           0           0           1           1           0           0 0x00000000
+    2         -11         0.5           0           0          10           0          -1           0       60000           1           0           0           0 0x00000000
+    3         -11         0.5          10           0           0           0           0           1           0         0.1           0           0           0 0x00000000
+    4         -11         0.5           0          10           0          -1           0           0           0           1           0           0           0 0xdeadbeef
+    5         -11        6000           0           0          10           0           1           0           0           1           0           0           0 0x00000000
+    6         -11        6000          10           0           0           0           0          -1           0           1           0           0           1 0x00000000
+    7         -11        6000           0          10           0           1           0           0       60000           1           0           0           0 0x00000000
+    8         -11        6000           0           0          10           0          -1           0           0         0.1           0           0           0 0x00000000
+    9         -11        6000          10           0           0           0           0           1           0           1           0           0           0 0xdeadbeef
+----------------------------------------------
+Running mcpltool -l0 extracted_3.mcpl.gz
+----------------------------------------------
+Opened MCPL file extracted_3.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 214 bytes
+    Data storage       : 260 bytes
+
+  Custom meta data
+    Source             : "ESS/dgcode/MCPLTests/miscphys"
+    Number of comments : 2
+          -> comment 0 : "A simple file with various particle species intended as test input."
+          -> comment 1 : "mcpltool: extracted particles from file with 195 particles"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 52 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0 -1000020040        6000           0           0          10           0           1           0           0           1           0           0           0 0x00000000
+    1 -1000020040        6000          10           0           0           0           0          -1           0           1           0           0           1 0x00000000
+    2 -1000020040        6000           0          10           0           1           0           0       60000           1           0           0           0 0x00000000
+    3 -1000020040        6000           0           0          10           0          -1           0           0         0.1           0           0           0 0x00000000
+    4 -1000020040        6000          10           0           0           0           0           1           0           1           0           0           0 0xdeadbeef
+----------------------------------------------
+Running mcpltool -l0 extracted_4.mcpl.gz
+----------------------------------------------
+Opened MCPL file extracted_4.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 214 bytes
+    Data storage       : 260 bytes
+
+  Custom meta data
+    Source             : "ESS/dgcode/MCPLTests/miscphys"
+    Number of comments : 2
+          -> comment 0 : "A simple file with various particle species intended as test input."
+          -> comment 1 : "mcpltool: extracted particles from file with 195 particles"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 52 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0  1000922350        6000          10           0           0           0           0           1           0           1           0           0           0 0x00000000
+    1  1000922350        6000           0          10           0          -1           0           0           0           1           1           0           0 0x00000000
+    2  1000922350        6000           0           0          10           0           1           0       60000           1           0           0           0 0x00000000
+    3  1000922350        6000          10           0           0           0           0          -1           0         0.1           0           0           0 0x00000000
+    4  1000922350        6000           0          10           0           1           0           0           0           1           0           0           0 0xdeadbeef
+----------------------------------------------
+Running mcpltool -l0 extracted_5.mcpl.gz
+----------------------------------------------
+Opened MCPL file extracted_5.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 214 bytes
+    Data storage       : 260 bytes
+
+  Custom meta data
+    Source             : "ESS/dgcode/MCPLTests/miscphys"
+    Number of comments : 2
+          -> comment 0 : "A simple file with various particle species intended as test input."
+          -> comment 1 : "mcpltool: extracted particles from file with 195 particles"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 52 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0         111        6000           0          10           0           1           0           0           0           1           0           0           0 0x00000000
+    1         111        6000           0           0          10           0          -1           0           0           1           0           1           0 0x00000000
+    2         111        6000          10           0           0           0           0           1       60000           1           0           0           0 0x00000000
+    3         111        6000           0          10           0          -1           0           0           0         0.1           0           0           0 0x00000000
+    4         111        6000           0           0          10           0           1           0           0           1           0           0           0 0xdeadbeef
+----------------------------------------------
+Running mcpltool --merge merged_new_file.mcpl extracted_1.mcpl.gz extracted_2.mcpl.gz
+----------------------------------------------
+----------------------------------------------
+Running mcpltool --merge merged_1to5_new_filea.mcpl extracted_1.mcpl.gz extracted_2.mcpl.gz extracted_3.mcpl.gz extracted_4.mcpl.gz extracted_5.mcpl.gz
+----------------------------------------------
+----------------------------------------------
+Running mcpltool --merge merged_1to5_new_fileb.mcpl extracted_1.mcpl extracted_2.mcpl extracted_3.mcpl.gz extracted_4.mcpl.gz extracted_5.mcpl.gz
+----------------------------------------------
+===> Checking that merged_1to5_new_filea.mcpl and merged_1to5_new_fileb.mcpl have identical contents.
+----------------------------------------------
+Running mcpltool --merge --inplace extracted_1.mcpl extracted_2.mcpl
+----------------------------------------------
+----------------------------------------------
+Running mcpltool extracted_1.mcpl
+----------------------------------------------
+Opened MCPL file extracted_1.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 25
+    Header storage     : 214 bytes
+    Data storage       : 1300 bytes
+
+  Custom meta data
+    Source             : "ESS/dgcode/MCPLTests/miscphys"
+    Number of comments : 2
+          -> comment 0 : "A simple file with various particle species intended as test input."
+          -> comment 1 : "mcpltool: extracted particles from file with 195 particles"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 52 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112        6000           0          10           0           1           0           0           0           1           0           0           0 0x00000000
+    1        2112        6000           0           0          10           0          -1           0           0           1           0           1           0 0x00000000
+    2        2112        6000          10           0           0           0           0           1       60000           1           0           0           0 0x00000000
+    3        2112        6000           0          10           0          -1           0           0           0         0.1           0           0           0 0x00000000
+    4        2112        6000           0           0          10           0           1           0           0           1           0           0           0 0xdeadbeef
+    5        2112  2.5248e-08          10           0           0           0           0          -1           0           1           0           0           0 0x00000000
+    6        2112  2.5248e-08           0          10           0           1           0           0           0           1           1           0           0 0x00000000
+    7        2112  2.5248e-08           0           0          10           0          -1           0       60000           1           0           0           0 0x00000000
+    8        2112  2.5248e-08          10           0           0           0           0           1           0         0.1           0           0           0 0x00000000
+    9        2112  2.5248e-08           0          10           0          -1           0           0           0           1           0           0           0 0xdeadbeef
+===> Checking that merged_new_file.mcpl and extracted_1.mcpl have identical contents.
+===> Checking that miscphys.mcpl.gz and miscphysnogz.mcpl have identical contents.
+----------------------------------------------
+Running mcpltool --merge --inplace extracted_1.mcpl extracted_3.mcpl.gz extracted_4.mcpl.gz extracted_5.mcpl.gz
+----------------------------------------------
+===> Checking that extracted_1.mcpl and merged_1to5_new_fileb.mcpl have identical contents.
+----------------------------------------------
+Running mcpltool --extract -p2112 miscphysnogz.mcpl extracted_1_new.mcpl
+----------------------------------------------
+MCPL: Attempting to compress file extracted_1_new.mcpl with gzip
+MCPL: Succesfully compressed file into extracted_1_new.mcpl.gz
+MCPL: Succesfully extracted 15 / 195 particles from miscphysnogz.mcpl into extracted_1_new.mcpl.gz
+----------------------------------------------
+Running mcpltool --extract -p-11 miscphysnogz.mcpl extracted_2_new.mcpl
+----------------------------------------------
+MCPL: Attempting to compress file extracted_2_new.mcpl with gzip
+MCPL: Succesfully compressed file into extracted_2_new.mcpl.gz
+MCPL: Succesfully extracted 10 / 195 particles from miscphysnogz.mcpl into extracted_2_new.mcpl.gz
+----------------------------------------------
+Running mcpltool -e -p1000922350 miscphysnogz.mcpl extracted_4_new.mcpl
+----------------------------------------------
+MCPL: Attempting to compress file extracted_4_new.mcpl with gzip
+MCPL: Succesfully compressed file into extracted_4_new.mcpl.gz
+MCPL: Succesfully extracted 5 / 195 particles from miscphysnogz.mcpl into extracted_4_new.mcpl.gz
+----------------------------------------------
+Running mcpltool --merge merged_1to5_new_filec.mcpl extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
+----------------------------------------------
+----------------------------------------------
+Running mcpltool --merge merged_1to5_new_filec.mcpl.gz extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
+----------------------------------------------
+ERROR: Requested output file already exists (without .gz extension).
+
+Run with -h or --help for usage information
+===> Command failed!
+----------------------------------------------
+Running mcpltool --merge merged_1to5_new_filec.gz extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
+----------------------------------------------
+ERROR: Requested output file should not have .gz extension (unless it is .mcpl.gz).
+
+Run with -h or --help for usage information
+===> Command failed!
+----------------------------------------------
+Running mcpltool --merge merged_1to5_new_filec_unique.mcpl.gz extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
+----------------------------------------------
+MCPL: Attempting to compress file merged_1to5_new_filec_unique.mcpl with gzip
+MCPL: Succesfully compressed file into merged_1to5_new_filec_unique.mcpl.gz
+===> Checking that merged_1to5_new_filec.mcpl and merged_1to5_new_filec_unique.mcpl.gz have identical contents.
+----------------------------------------------
+Running mcpltool --merge --inplace extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
+----------------------------------------------
+===> Checking that merged_1to5_new_filec.mcpl and extracted_1_new.mcpl have identical contents.
+===> Checking that merged_1to5_new_filea.mcpl and merged_1to5_new_filec.mcpl have identical contents.
+----------------------------------------------
+Running mcpltool --merge extracted_1.mcpl extracted_2.mcpl
+----------------------------------------------
+ERROR: Requested output file already exists.
+
+Run with -h or --help for usage information
+===> Command failed!
+----------------------------------------------
+Running mcpltool --merge --inplace extracted_1.mcpl
+----------------------------------------------
+ERROR: Too few arguments for --merge.
+
+Run with -h or --help for usage information
+===> Command failed!
+----------------------------------------------
+Running mcpltool --merge newfile.mcpl
+----------------------------------------------
+ERROR: Too few arguments for --merge.
+
+Run with -h or --help for usage information
+===> Command failed!
+----------------------------------------------
+Running mcpltool --merge --inplace rf16cp_fmt2.mcpl '<TESTDATADIR>/ref/reffile_16.mcpl'
+----------------------------------------------
+MCPL ERROR: Attempting to merge incompatible files (can not mix MCPL format versions when merging inplace)
+===> Command failed!
+----------------------------------------------
+Running mcpltool --merge --inplace '<TESTDATADIR>/ref/reffile_16.mcpl' rf16cp_fmt2.mcpl
+----------------------------------------------
+MCPL ERROR: Attempting to merge incompatible files (can not mix MCPL format versions when merging inplace)
+===> Command failed!
+----------------------------------------------
+Running mcpltool --merge mix.mcpl rf16cp_fmt2.mcpl '<TESTDATADIR>/ref/reffile_16.mcpl'
+----------------------------------------------
+MCPL WARNING: Merging files from older MCPL format. Output will be in latest format.
+----------------------------------------------
+Running mcpltool -l0 mix.mcpl
+----------------------------------------------
+Opened MCPL file mix.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 10
+    Header storage     : 59 bytes
+    Data storage       : 480 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 48 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+    5        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    6        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+    7        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+    8        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    9        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+----------------------------------------------
+Running mcpltool -e difficult_unitvector.mcpl extracted_all -l0 --preventcomment
+----------------------------------------------
+MCPL: Attempting to compress file extracted_all.mcpl with gzip
+MCPL: Succesfully compressed file into extracted_all.mcpl.gz
+MCPL: Succesfully extracted 10 / 10 particles from difficult_unitvector.mcpl into extracted_all.mcpl.gz
+----------------------------------------------
+Running mcpltool -e difficult_unitvector.mcpl extracted_none -s999999999 --preventcomment
+----------------------------------------------
+MCPL: Attempting to compress file extracted_none.mcpl with gzip
+MCPL: Succesfully compressed file into extracted_none.mcpl.gz
+MCPL: Succesfully extracted 0 / 10 particles from difficult_unitvector.mcpl into extracted_none.mcpl.gz
+----------------------------------------------
+Running mcpltool -m extracted_recombined extracted_none.mcpl extracted_all.mcpl
+----------------------------------------------
+----------------------------------------------
+Running mcpltool -m --inplace extracted_none.mcpl extracted_all.mcpl
+----------------------------------------------
+===> Checking that difficult_unitvector.mcpl and extracted_recombined.mcpl have identical contents.
+===> Checking that difficult_unitvector.mcpl and extracted_none.mcpl have identical contents.
+===> Checking that extracted_recombined.mcpl and extracted_none.mcpl have identical contents.
+----------------------------------------------
+Running mcpltool '<TESTDATADIR>/ref/reffile_bad1.mcpl'
+----------------------------------------------
+MCPL ERROR: File is not an MCPL file!
+===> Command failed!
+----------------------------------------------
+Running mcpltool '<TESTDATADIR>/ref/reffile_bad2.mcpl'
+----------------------------------------------
+MCPL ERROR: File is in an unsupported MCPL version!
+===> Command failed!
+----------------------------------------------
+Running mcpltool '<TESTDATADIR>/ref/reffile_bad3.mcpl'
+----------------------------------------------
+MCPL ERROR: File is in an unsupported MCPL version!
+===> Command failed!
+----------------------------------------------
+Running mcpltool '<TESTDATADIR>/ref/reffile_bad4.mcpl'
+----------------------------------------------
+MCPL ERROR: Unexpected value in endianness field!
+===> Command failed!
+----------------------------------------------
+Running mcpltool '<TESTDATADIR>/ref/reffile_bad1.mcpl.gz'
+----------------------------------------------
+MCPL ERROR: File is not an MCPL file!
+===> Command failed!
+----------------------------------------------
+Running mcpltool '<TESTDATADIR>/ref/reffile_bad2.mcpl.gz'
+----------------------------------------------
+MCPL ERROR: File is in an unsupported MCPL version!
+===> Command failed!
+----------------------------------------------
+Running mcpltool '<TESTDATADIR>/ref/reffile_bad3.mcpl.gz'
+----------------------------------------------
+MCPL ERROR: File is in an unsupported MCPL version!
+===> Command failed!
+----------------------------------------------
+Running mcpltool '<TESTDATADIR>/ref/reffile_bad4.mcpl.gz'
+----------------------------------------------
+MCPL ERROR: Unexpected value in endianness field!
+===> Command failed!
+----------------------------------------------
+Running mcpltool bla.txt
+----------------------------------------------
+MCPL ERROR: Unable to open file!
+===> Command failed!
+----------------------------------------------
+Running mcpltool bla.txt
+----------------------------------------------
+MCPL ERROR: File is not an MCPL file!
+===> Command failed!
+----------------------------------------------
+Running mcpltool '<TESTDATADIR>/ref/reffile_truncated.mcpl.gz'
+----------------------------------------------
+Opened MCPL file reffile_truncated.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 15
+    Header storage     : 148 bytes
+    Data storage       : 480 bytes
+
+  Custom meta data
+    Source             : "ESS/dgcode/MCPLTests/genisotrop"
+    Number of comments : 1
+          -> comment 0 : "A simple file with isotropically generated particles."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : yes (weight 1)
+    FP precision       : single
+    Endianness         : little
+    Storage            : 32 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]
+    0        2112           0           0           0           0     0.69673    -0.32571    -0.63913           0
+    1          22           0           0           0           0    -0.43755    -0.27624     0.85571           0
+    2        2112           0           0           0           0     0.61152     0.73811    -0.28504           0
+    3          22           0           0           0           0     0.76301   -0.046213     0.64473           0
+MCPL ERROR: Errors encountered while attempting to read particle data.
+===> Command failed!
+----------------------------------------------
+Running mcpltool '<TESTDATADIR>/ref/reffile_truncated.mcpl'
+----------------------------------------------
+Opened MCPL file reffile_truncated.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 15
+    Header storage     : 148 bytes
+    Data storage       : 480 bytes
+
+  Custom meta data
+    Source             : "ESS/dgcode/MCPLTests/genisotrop"
+    Number of comments : 1
+          -> comment 0 : "A simple file with isotropically generated particles."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : yes (weight 1)
+    FP precision       : single
+    Endianness         : little
+    Storage            : 32 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]
+    0        2112           0           0           0           0     0.69673    -0.32571    -0.63913           0
+    1          22           0           0           0           0    -0.43755    -0.27624     0.85571           0
+    2        2112           0           0           0           0     0.61152     0.73811    -0.28504           0
+    3          22           0           0           0           0     0.76301   -0.046213     0.64473           0
+    4        2112           0           0           0           0    -0.89736    -0.39549     0.19578           0
+    5          22           0           0           0           0     0.27755    -0.37388     0.88497           0
+    6        2112           0           0           0           0     0.93106    0.033764    -0.36331           0
+MCPL ERROR: Errors encountered while attempting to read particle data.
+===> Command failed!
+----------------------------------------------
+Running mcpltool '<TESTDATADIR>/ref/reffile_notreallygz.mcpl.gz'
+----------------------------------------------
+Opened MCPL file reffile_notreallygz.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 59 bytes
+    Data storage       : 340 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 68 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112       1.234           0           0           0           0           1           0           0           1
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1
+----------------------------------------------
+Running mcpltool '<TESTDATADIR>/ref/reffile_uw.mcpl.gz'
+----------------------------------------------
+Opened MCPL file reffile_uw.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 15
+    Header storage     : 148 bytes
+    Data storage       : 480 bytes
+
+  Custom meta data
+    Source             : "ESS/dgcode/MCPLTests/genisotrop"
+    Number of comments : 1
+          -> comment 0 : "A simple file with isotropically generated particles."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : yes (weight 1)
+    FP precision       : single
+    Endianness         : little
+    Storage            : 32 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]
+    0        2112           0           0           0           0     0.69673    -0.32571    -0.63913           0
+    1          22           0           0           0           0    -0.43755    -0.27624     0.85571           0
+    2        2112           0           0           0           0     0.61152     0.73811    -0.28504           0
+    3          22           0           0           0           0     0.76301   -0.046213     0.64473           0
+    4        2112           0           0           0           0    -0.89736    -0.39549     0.19578           0
+    5          22           0           0           0           0     0.27755    -0.37388     0.88497           0
+    6        2112           0           0           0           0     0.93106    0.033764    -0.36331           0
+    7          22           0           0           0           0   -0.096567     0.81408     0.57267           0
+    8        2112           0           0           0           0     0.43938     0.81005    -0.38829           0
+    9          22           0           0           0           0    -0.37821     0.14513     0.91427           0
+----------------------------------------------
+Running mcpltool '<TESTDATADIR>/ref/reffile_encodings.mcpl.gz'
+----------------------------------------------
+Opened MCPL file reffile_encodings.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 2
+    Header storage     : 628 bytes
+    Data storage       : 72 bytes
+
+  Custom meta data
+    Source             : "ESS/dgcøde/MCPLTests/genisøtrøp"
+    Number of comments : 4
+          -> comment 0 : "A simple file with isotropically generated particles."
+          -> comment 1 : "A comment with utf8 chars: rødgrød med fløde."
+          -> comment 2 : "A comment which contains bytes not valid in utf8: Bad bytes are "\xff" and "\xfe"."
+          -> comment 3 : "md5sums of blobs: d3475b3d8393e4041df7fa22ade054d3,d41d8cd98f00b204e9800998ecf8427e,de7a6d4a3a291d0d67b3657e62ffcb37,a04637816e7436951f0512d38d48f212(*3)"
+    Number of blobs    : 6
+          -> 31 bytes of data with key "asciidata"
+          -> 0 bytes of data with key "asciidata_empty"
+          -> 22 bytes of data with key "utf8data"
+          -> 9 bytes of data with key "binarydata"
+          -> 9 bytes of data with key "utf8bløbkey"
+          -> 9 bytes of data with key "notutf8key_\xff\xfe_"
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0          22           0           0           0           0     0.69673    -0.32571    -0.63913           0           1
+    1        2112           0           0           0           0    -0.43755    -0.27624     0.85571           0           1
+====> extracting and calculating md5sum of blob with key "asciidata":
+----------------------------------------------
+Running mcpltool '<TESTDATADIR>/ref/reffile_encodings.mcpl.gz' -basciidata
+----------------------------------------------
+d3475b3d8393e4041df7fa22ade054d3
+====> extracting and calculating md5sum of blob with key "asciidata_empty":
+----------------------------------------------
+Running mcpltool '<TESTDATADIR>/ref/reffile_encodings.mcpl.gz' -basciidata_empty
+----------------------------------------------
+d41d8cd98f00b204e9800998ecf8427e
+====> extracting and calculating md5sum of blob with key "utf8data":
+----------------------------------------------
+Running mcpltool '<TESTDATADIR>/ref/reffile_encodings.mcpl.gz' -butf8data
+----------------------------------------------
+de7a6d4a3a291d0d67b3657e62ffcb37
+====> extracting and calculating md5sum of blob with key "binarydata":
+----------------------------------------------
+Running mcpltool '<TESTDATADIR>/ref/reffile_encodings.mcpl.gz' -bbinarydata
+----------------------------------------------
+a04637816e7436951f0512d38d48f212
+====> extracting and calculating md5sum of blob with key "utf8bløbkey":
+----------------------------------------------
+Running mcpltool '<TESTDATADIR>/ref/reffile_encodings.mcpl.gz' '-butf8bløbkey'
+----------------------------------------------
+a04637816e7436951f0512d38d48f212

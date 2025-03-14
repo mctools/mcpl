@@ -1,0 +1,79 @@
+MCPL: Attempting to compress file out.mcpl with gzip
+MCPL: Succesfully compressed file into out.mcpl.gz
+Opened MCPL file out.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 100
+    Header storage     : 633 bytes
+    Data storage       : 8400 bytes
+
+  Custom meta data
+    Source             : "mctools/mcpltøsts/genisøtrøp"
+    Number of comments : 4
+          -> comment 0 : "A simple file with isotropically generated particles."
+          -> comment 1 : "A comment with utf8 chars: rødgrød med fløde."
+          -> comment 2 : "A comment which contains bytes not valid in utf8: Bad bytes are "\xff" and "\xfe"."
+          -> comment 3 : "md5sums of blobs: d3475b3d8393e4041df7fa22ade054d3,d41d8cd98f00b204e9800998ecf8427e,de7a6d4a3a291d0d67b3657e62ffcb37,a04637816e7436951f0512d38d48f212(*3)"
+    Number of blobs    : 6
+          -> 31 bytes of data with key "asciidata"
+          -> 0 bytes of data with key "asciidata_empty"
+          -> 22 bytes of data with key "utf8data"
+          -> 9 bytes of data with key "binarydata"
+          -> 9 bytes of data with key "utf8bløbkey"
+          -> 9 bytes of data with key "notutf8key_\xff\xfe_"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : yes (weight 1)
+    FP precision       : double
+    Endianness         : little
+    Storage            : 84 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]       pol-x       pol-y       pol-z  userflags
+    0        2112           0           0           0           0    -0.71974     0.66202     0.20907           0           0           0         0.5 0xdeadbeaf
+    1        2112           0           0           0           0     0.22349     0.97451   -0.019534           0           0           0         0.5 0xdeadbeaf
+    2        2112           0           0           0           0     -0.5048   -0.048981    -0.86185           0           0           0         0.5 0xdeadbeaf
+    3        2112           0           0           0           0    0.022685    -0.86799    -0.49606           0           0           0         0.5 0xdeadbeaf
+    4        2112           0           0           0           0    -0.76158     0.36146     0.53791           0           0           0         0.5 0xdeadbeaf
+    5        2112           0           0           0           0    -0.40496    -0.24329    -0.88137           0           0           0         0.5 0xdeadbeaf
+    6        2112           0           0           0           0    -0.79769    -0.42091     -0.4319           0           0           0         0.5 0xdeadbeaf
+    7        2112           0           0           0           0     0.84017    -0.38393    -0.38303           0           0           0         0.5 0xdeadbeaf
+    8        2112           0           0           0           0    -0.72816    -0.50542    -0.46296           0           0           0         0.5 0xdeadbeaf
+    9        2112           0           0           0           0    -0.98153     0.19087   -0.013095           0           0           0         0.5 0xdeadbeaf
+Opened MCPL file out2.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 100
+    Header storage     : 137 bytes
+    Data storage       : 4000 bytes
+
+  Custom meta data
+    Source             : "mctools/mcpltests/genisotrop"
+    Number of comments : 1
+          -> comment 0 : "A simple file with isotropically generated particles."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 40 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userflags
+    0          22           0           0           0           0    -0.71974     0.66202     0.20907           0         0.1 0x00000001
+    1        2112           0           0           0           0     0.22349     0.97451   -0.019534           0     0.10101 0x00000002
+    2          22           0           0           0           0     -0.5048   -0.048981    -0.86185           0     0.10204 0x00000003
+    3        2112           0           0           0           0    0.022685    -0.86799    -0.49606           0     0.10309 0x00000004
+    4          22           0           0           0           0    -0.76158     0.36146     0.53791           0     0.10417 0x00000005
+    5        2112           0           0           0           0    -0.40496    -0.24329    -0.88137           0     0.10526 0x00000006
+    6          22           0           0           0           0    -0.79769    -0.42091     -0.4319           0     0.10638 0x00000007
+    7        2112           0           0           0           0     0.84017    -0.38393    -0.38303           0     0.10753 0x00000008
+    8          22           0           0           0           0    -0.72816    -0.50542    -0.46296           0      0.1087 0x00000009
+    9        2112           0           0           0           0    -0.98153     0.19087   -0.013095           0     0.10989 0x0000000a

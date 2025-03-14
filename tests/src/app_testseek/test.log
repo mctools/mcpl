@@ -1,0 +1,732 @@
+**** Opened file reffile_1.mcpl with 5 particles
+  position is now: 0
+::mcpl_read
+  got particle(z=0)
+  position is now: 1
+::mcpl_read
+  got particle(z=0.01)
+  position is now: 2
+::mcpl_skipforward 2 -> 1
+  position is now: 4
+::mcpl_read
+  got particle(z=0.04)
+  position is now: 5
+::mcpl_rewind -> 1
+  position is now: 0
+::mcpl_read
+  got particle(z=0)
+  position is now: 1
+::mcpl_seek np-3 -> 1
+  position is now: 2
+::mcpl_read
+  got particle(z=0.02)
+  position is now: 3
+::mcpl_read
+  got particle(z=0.03)
+  position is now: 4
+::mcpl_read
+  got particle(z=0.04)
+  position is now: 5
+::mcpl_read
+  got particle(NULL)!
+  position is now: 5
+::mcpl_read
+  got particle(NULL)!
+  position is now: 5
+::mcpl_rewind -> 1
+  position is now: 0
+::mcpl_read
+  got particle(z=0)
+  position is now: 1
+::mcpl_read
+  got particle(z=0.01)
+  position is now: 2
+::mcpl_skipforward 9999999 -> 0
+  position is now: 5
+::mcpl_read
+  got particle(NULL)!
+  position is now: 5
+::mcpl_read
+  got particle(NULL)!
+  position is now: 5
+::mcpl_seek np-1 -> 1
+  position is now: 4
+::mcpl_read
+  got particle(z=0.04)
+  position is now: 5
+::mcpl_read
+  got particle(NULL)!
+  position is now: 5
+::mcpl_read
+  got particle(NULL)!
+  position is now: 5
+::mcpl_read
+  got particle(NULL)!
+  position is now: 5
+::mcpl_seek 2 -> 1
+  position is now: 2
+::mcpl_read
+  got particle(z=0.02)
+  position is now: 3
+::mcpl_read
+  got particle(z=0.03)
+  position is now: 4
+**** Opened file reffile_skip123.mcpl with 123 particles
+  position is now: 0
+::mcpl_read
+  got particle(z=0)
+  position is now: 1
+::mcpl_read
+  got particle(z=0.01)
+  position is now: 2
+::mcpl_skipforward 2 -> 1
+  position is now: 4
+::mcpl_read
+  got particle(z=0.04)
+  position is now: 5
+::mcpl_rewind -> 1
+  position is now: 0
+::mcpl_read
+  got particle(z=0)
+  position is now: 1
+::mcpl_seek np-3 -> 1
+  position is now: 120
+::mcpl_read
+  got particle(z=1.2)
+  position is now: 121
+::mcpl_read
+  got particle(z=1.21)
+  position is now: 122
+::mcpl_read
+  got particle(z=1.22)
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_rewind -> 1
+  position is now: 0
+::mcpl_read
+  got particle(z=0)
+  position is now: 1
+::mcpl_read
+  got particle(z=0.01)
+  position is now: 2
+::mcpl_skipforward 9999999 -> 0
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_seek np-1 -> 1
+  position is now: 122
+::mcpl_read
+  got particle(z=1.22)
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_seek 61 -> 1
+  position is now: 61
+::mcpl_read
+  got particle(z=0.61)
+  position is now: 62
+::mcpl_read
+  got particle(z=0.62)
+  position is now: 63
+**** Opened file reffile_skip123.mcpl.gz with 123 particles
+  position is now: 0
+::mcpl_read
+  got particle(z=0)
+  position is now: 1
+::mcpl_read
+  got particle(z=0.01)
+  position is now: 2
+::mcpl_skipforward 2 -> 1
+  position is now: 4
+::mcpl_read
+  got particle(z=0.04)
+  position is now: 5
+::mcpl_rewind -> 1
+  position is now: 0
+::mcpl_read
+  got particle(z=0)
+  position is now: 1
+::mcpl_seek np-3 -> 1
+  position is now: 120
+::mcpl_read
+  got particle(z=1.2)
+  position is now: 121
+::mcpl_read
+  got particle(z=1.21)
+  position is now: 122
+::mcpl_read
+  got particle(z=1.22)
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_rewind -> 1
+  position is now: 0
+::mcpl_read
+  got particle(z=0)
+  position is now: 1
+::mcpl_read
+  got particle(z=0.01)
+  position is now: 2
+::mcpl_skipforward 9999999 -> 0
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_seek np-1 -> 1
+  position is now: 122
+::mcpl_read
+  got particle(z=1.22)
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_seek 61 -> 1
+  position is now: 61
+::mcpl_read
+  got particle(z=0.61)
+  position is now: 62
+::mcpl_read
+  got particle(z=0.62)
+  position is now: 63
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+**** Opened file reffile_crash.mcpl with 4 particles
+  position is now: 0
+::mcpl_read
+  got particle(z=0)
+  position is now: 1
+::mcpl_read
+  got particle(z=0.01)
+  position is now: 2
+::mcpl_skipforward 2 -> 0
+  position is now: 4
+::mcpl_read
+  got particle(NULL)!
+  position is now: 4
+::mcpl_rewind -> 1
+  position is now: 0
+::mcpl_read
+  got particle(z=0)
+  position is now: 1
+::mcpl_seek np-3 -> 1
+  position is now: 1
+::mcpl_read
+  got particle(z=0.01)
+  position is now: 2
+::mcpl_read
+  got particle(z=0.02)
+  position is now: 3
+::mcpl_read
+  got particle(z=0.03)
+  position is now: 4
+::mcpl_read
+  got particle(NULL)!
+  position is now: 4
+::mcpl_read
+  got particle(NULL)!
+  position is now: 4
+::mcpl_rewind -> 1
+  position is now: 0
+::mcpl_read
+  got particle(z=0)
+  position is now: 1
+::mcpl_read
+  got particle(z=0.01)
+  position is now: 2
+::mcpl_skipforward 9999999 -> 0
+  position is now: 4
+::mcpl_read
+  got particle(NULL)!
+  position is now: 4
+::mcpl_read
+  got particle(NULL)!
+  position is now: 4
+::mcpl_seek np-1 -> 1
+  position is now: 3
+::mcpl_read
+  got particle(z=0.03)
+  position is now: 4
+::mcpl_read
+  got particle(NULL)!
+  position is now: 4
+::mcpl_read
+  got particle(NULL)!
+  position is now: 4
+::mcpl_read
+  got particle(NULL)!
+  position is now: 4
+::mcpl_seek 2 -> 1
+  position is now: 2
+::mcpl_read
+  got particle(z=0.02)
+  position is now: 3
+::mcpl_read
+  got particle(z=0.03)
+  position is now: 4
+**** Opened file reffile_empty.mcpl with 0 particles
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_skipforward 2 -> 0
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_rewind -> 0
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_seek np-3 -> 0
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_rewind -> 0
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_skipforward 9999999 -> 0
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_seek np-1 -> 0
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_seek 0 -> 0
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+**** Opened file reffile_1.mcpl with 5 particles
+  position is now: 0
+::mcpl_read
+  got particle(z=0)
+  position is now: 1
+::mcpl_read
+  got particle(z=0.01)
+  position is now: 2
+::mcpl_skipforward 2 -> 1
+  position is now: 4
+::mcpl_read
+  got particle(z=0.04)
+  position is now: 5
+::mcpl_rewind -> 1
+  position is now: 0
+::mcpl_read
+  got particle(z=0)
+  position is now: 1
+::mcpl_seek np-3 -> 1
+  position is now: 2
+::mcpl_read
+  got particle(z=0.02)
+  position is now: 3
+::mcpl_read
+  got particle(z=0.03)
+  position is now: 4
+::mcpl_read
+  got particle(z=0.04)
+  position is now: 5
+::mcpl_read
+  got particle(NULL)!
+  position is now: 5
+::mcpl_read
+  got particle(NULL)!
+  position is now: 5
+::mcpl_rewind -> 1
+  position is now: 0
+::mcpl_read
+  got particle(z=0)
+  position is now: 1
+::mcpl_read
+  got particle(z=0.01)
+  position is now: 2
+::mcpl_skipforward 9999999 -> 0
+  position is now: 5
+::mcpl_read
+  got particle(NULL)!
+  position is now: 5
+::mcpl_read
+  got particle(NULL)!
+  position is now: 5
+::mcpl_seek np-1 -> 1
+  position is now: 4
+::mcpl_read
+  got particle(z=0.04)
+  position is now: 5
+::mcpl_read
+  got particle(NULL)!
+  position is now: 5
+::mcpl_read
+  got particle(NULL)!
+  position is now: 5
+::mcpl_read
+  got particle(NULL)!
+  position is now: 5
+::mcpl_seek 2 -> 1
+  position is now: 2
+::mcpl_read
+  got particle(z=0.02)
+  position is now: 3
+::mcpl_read
+  got particle(z=0.03)
+  position is now: 4
+**** Opened file reffile_skip123.mcpl with 123 particles
+  position is now: 0
+::mcpl_read
+  got particle(z=0)
+  position is now: 1
+::mcpl_read
+  got particle(z=0.01)
+  position is now: 2
+::mcpl_skipforward 2 -> 1
+  position is now: 4
+::mcpl_read
+  got particle(z=0.04)
+  position is now: 5
+::mcpl_rewind -> 1
+  position is now: 0
+::mcpl_read
+  got particle(z=0)
+  position is now: 1
+::mcpl_seek np-3 -> 1
+  position is now: 120
+::mcpl_read
+  got particle(z=1.2)
+  position is now: 121
+::mcpl_read
+  got particle(z=1.21)
+  position is now: 122
+::mcpl_read
+  got particle(z=1.22)
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_rewind -> 1
+  position is now: 0
+::mcpl_read
+  got particle(z=0)
+  position is now: 1
+::mcpl_read
+  got particle(z=0.01)
+  position is now: 2
+::mcpl_skipforward 9999999 -> 0
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_seek np-1 -> 1
+  position is now: 122
+::mcpl_read
+  got particle(z=1.22)
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_seek 61 -> 1
+  position is now: 61
+::mcpl_read
+  got particle(z=0.61)
+  position is now: 62
+::mcpl_read
+  got particle(z=0.62)
+  position is now: 63
+**** Opened file reffile_skip123.mcpl.gz with 123 particles
+  position is now: 0
+::mcpl_read
+  got particle(z=0)
+  position is now: 1
+::mcpl_read
+  got particle(z=0.01)
+  position is now: 2
+::mcpl_skipforward 2 -> 1
+  position is now: 4
+::mcpl_read
+  got particle(z=0.04)
+  position is now: 5
+::mcpl_rewind -> 1
+  position is now: 0
+::mcpl_read
+  got particle(z=0)
+  position is now: 1
+::mcpl_seek np-3 -> 1
+  position is now: 120
+::mcpl_read
+  got particle(z=1.2)
+  position is now: 121
+::mcpl_read
+  got particle(z=1.21)
+  position is now: 122
+::mcpl_read
+  got particle(z=1.22)
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_rewind -> 1
+  position is now: 0
+::mcpl_read
+  got particle(z=0)
+  position is now: 1
+::mcpl_read
+  got particle(z=0.01)
+  position is now: 2
+::mcpl_skipforward 9999999 -> 0
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_seek np-1 -> 1
+  position is now: 122
+::mcpl_read
+  got particle(z=1.22)
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_read
+  got particle(NULL)!
+  position is now: 123
+::mcpl_seek 61 -> 1
+  position is now: 61
+::mcpl_read
+  got particle(z=0.61)
+  position is now: 62
+::mcpl_read
+  got particle(z=0.62)
+  position is now: 63
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+**** Opened file reffile_crash.mcpl with 4 particles
+  position is now: 0
+::mcpl_read
+  got particle(z=0)
+  position is now: 1
+::mcpl_read
+  got particle(z=0.01)
+  position is now: 2
+::mcpl_skipforward 2 -> 0
+  position is now: 4
+::mcpl_read
+  got particle(NULL)!
+  position is now: 4
+::mcpl_rewind -> 1
+  position is now: 0
+::mcpl_read
+  got particle(z=0)
+  position is now: 1
+::mcpl_seek np-3 -> 1
+  position is now: 1
+::mcpl_read
+  got particle(z=0.01)
+  position is now: 2
+::mcpl_read
+  got particle(z=0.02)
+  position is now: 3
+::mcpl_read
+  got particle(z=0.03)
+  position is now: 4
+::mcpl_read
+  got particle(NULL)!
+  position is now: 4
+::mcpl_read
+  got particle(NULL)!
+  position is now: 4
+::mcpl_rewind -> 1
+  position is now: 0
+::mcpl_read
+  got particle(z=0)
+  position is now: 1
+::mcpl_read
+  got particle(z=0.01)
+  position is now: 2
+::mcpl_skipforward 9999999 -> 0
+  position is now: 4
+::mcpl_read
+  got particle(NULL)!
+  position is now: 4
+::mcpl_read
+  got particle(NULL)!
+  position is now: 4
+::mcpl_seek np-1 -> 1
+  position is now: 3
+::mcpl_read
+  got particle(z=0.03)
+  position is now: 4
+::mcpl_read
+  got particle(NULL)!
+  position is now: 4
+::mcpl_read
+  got particle(NULL)!
+  position is now: 4
+::mcpl_read
+  got particle(NULL)!
+  position is now: 4
+::mcpl_seek 2 -> 1
+  position is now: 2
+::mcpl_read
+  got particle(z=0.02)
+  position is now: 3
+::mcpl_read
+  got particle(z=0.03)
+  position is now: 4
+**** Opened file reffile_empty.mcpl with 0 particles
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_skipforward 2 -> 0
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_rewind -> 0
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_seek np-3 -> 0
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_rewind -> 0
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_skipforward 9999999 -> 0
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_seek np-1 -> 0
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_seek 0 -> 0
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0
+::mcpl_read
+  got particle(NULL)!
+  position is now: 0

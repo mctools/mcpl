@@ -1,0 +1,1382 @@
+
+ERROR: For reasons of efficiency, this MCPL python module requires numpy (www.numpy.org)
+ERROR: to be installed. You can perhaps install it using using your software manager and
+ERROR: searching for "numpy" or "python-numpy", or it might come bundled with software
+ERROR: such as scientific python or anaconda, depending on your platform. Alternatively,
+ERROR: if you are using the pip package manager, you should be able to install it with
+ERROR: the command "pip install numpy".
+
+Caught expected error: fake error
+ERROR: No input file specified
+
+Run with -h or --help for usage information
+===> mcpltool ended with exit code 1
+ERROR: No input file specified
+
+Run with -h or --help for usage information
+===> mcpltool ended with exit code 1
+Opened MCPL file reffile_12.mcpl:
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0
+===> mcpltool ended with exit code 0
+ERROR: Do not supply both --justhead and --nohead.
+
+Run with -h or --help for usage information
+===> mcpltool ended with exit code 1
+ERROR: Do not specify -l or -s with --justhead
+
+Run with -h or --help for usage information
+===> mcpltool ended with exit code 1
+ERROR: -l specified more than once
+
+Run with -h or --help for usage information
+===> mcpltool ended with exit code 1
+ERROR: Do not specify -l or -s with --justhead
+
+Run with -h or --help for usage information
+===> mcpltool ended with exit code 1
+ERROR: -s specified more than once
+
+Run with -h or --help for usage information
+===> mcpltool ended with exit code 1
+Tool for inspecting Monte Carlo Particle List (.mcpl) files.
+
+The default behaviour is to display the contents of the FILE in human readable
+format (see Dump Options below for how to modify what is displayed).
+
+This is the read-only python version of the tool, and as such a lot of
+functionality is missing compared to the compiled C version of the tool.
+
+This installation supports direct reading of gzipped files (.mcpl.gz).
+
+Usage:
+  mcpltool [dump-options] FILE
+  mcpltool --stats [stat-options] FILE
+  mcpltool --version
+  mcpltool --help
+
+Dump options:
+  By default include the info in the FILE header plus the first ten contained
+  particles. Modify with the following options:
+  -j, --justhead  : Dump just header info and no particle info.
+  -n, --nohead    : Dump just particle info and no header info.
+  -lN             : Dump up to N particles from the file (default 10). You
+                    can specify -l0 to disable this limit.
+  -sN             : Skip past the first N particles in the file (default 0).
+  -bKEY           : Dump binary blob stored under KEY to standard output.
+
+Stat options:
+  --stats FILE    : Print statistics summary of particle state data from FILE.
+  --stats --pdf FILE
+                  : Produce PDF file mcpl.pdf with histograms of particle state
+                    data from FILE.
+  --stats --gui FILE
+                  : Like --pdf, but opens interactive histogram views directly.
+
+Other options:
+  -t, --text MCPLFILE OUTFILE
+                    Read particle contents of MCPLFILE and write into OUTFILE
+                    using a simple ASCII-based format.
+  -v, --version   : Display version of MCPL installation.
+  -h, --help      : Display this usage information (ignores all other options).
+===> mcpltool ended with exit code 0
+MCPL version 1.9.80
+===> mcpltool ended with exit code 0
+ERROR: Unrecognised option : -y
+
+Run with -h or --help for usage information
+===> mcpltool ended with exit code 1
+ERROR: Unrecognised arguments for --version.
+
+Run with -h or --help for usage information
+===> mcpltool ended with exit code 1
+Tool for inspecting Monte Carlo Particle List (.mcpl) files.
+
+The default behaviour is to display the contents of the FILE in human readable
+format (see Dump Options below for how to modify what is displayed).
+
+This is the read-only python version of the tool, and as such a lot of
+functionality is missing compared to the compiled C version of the tool.
+
+This installation supports direct reading of gzipped files (.mcpl.gz).
+
+Usage:
+  mcpltool [dump-options] FILE
+  mcpltool --stats [stat-options] FILE
+  mcpltool --version
+  mcpltool --help
+
+Dump options:
+  By default include the info in the FILE header plus the first ten contained
+  particles. Modify with the following options:
+  -j, --justhead  : Dump just header info and no particle info.
+  -n, --nohead    : Dump just particle info and no header info.
+  -lN             : Dump up to N particles from the file (default 10). You
+                    can specify -l0 to disable this limit.
+  -sN             : Skip past the first N particles in the file (default 0).
+  -bKEY           : Dump binary blob stored under KEY to standard output.
+
+Stat options:
+  --stats FILE    : Print statistics summary of particle state data from FILE.
+  --stats --pdf FILE
+                  : Produce PDF file mcpl.pdf with histograms of particle state
+                    data from FILE.
+  --stats --gui FILE
+                  : Like --pdf, but opens interactive histogram views directly.
+
+Other options:
+  -t, --text MCPLFILE OUTFILE
+                    Read particle contents of MCPLFILE and write into OUTFILE
+                    using a simple ASCII-based format.
+  -v, --version   : Display version of MCPL installation.
+  -h, --help      : Display this usage information (ignores all other options).
+===> mcpltool ended with exit code 0
+ERROR: Too many arguments.
+
+Run with -h or --help for usage information
+===> mcpltool ended with exit code 1
+ERROR: Conflicting options specified.
+
+Run with -h or --help for usage information
+===> mcpltool ended with exit code 1
+ERROR: Do not specify other dump options with -b.
+
+Run with -h or --help for usage information
+===> mcpltool ended with exit code 1
+ERROR: Missing argument for -b
+
+Run with -h or --help for usage information
+===> mcpltool ended with exit code 1
+ERROR: -b specified more than once
+
+Run with -h or --help for usage information
+===> mcpltool ended with exit code 1
+ERROR: Unrecognised option : --lala
+
+Run with -h or --help for usage information
+===> mcpltool ended with exit code 1
+ERROR: No input file specified
+
+Run with -h or --help for usage information
+===> mcpltool ended with exit code 1
+Opened MCPL file reffile_12.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 190 bytes
+    Data storage       : 220 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 4
+          -> comment 0 : "Some comment."
+          -> comment 1 : "Some comment2."
+          -> comment 2 : "Some comment3."
+          -> comment 3 : "Some comment4444."
+    Number of blobs    : 2
+          -> 20 bytes of data with key "BlaData"
+          -> 6 bytes of data with key "LalaData"
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 44 bytes/particle
+
+===> mcpltool ended with exit code 0
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+Opened MCPL file reffile_crash.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 4
+    Header storage     : 155 bytes
+    Data storage       : 272 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 4
+          -> comment 0 : "Some comment."
+          -> comment 1 : "Some comment2."
+          -> comment 2 : "Some comment3."
+          -> comment 3 : "Some comment4444."
+    Number of blobs    : 1
+          -> 6 bytes of data with key "LalaData"
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 68 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112       1.234           0           0           0           0           1           0           0           1
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
+===> mcpltool ended with exit code 0
+Opened MCPL file miscphys.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 195
+    Header storage     : 152 bytes
+    Data storage       : 10140 bytes
+
+  Custom meta data
+    Source             : "ESS/dgcode/MCPLTests/miscphys"
+    Number of comments : 1
+          -> comment 0 : "A simple file with various particle species intended as test input."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 52 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112        6000           0          10           0           1           0           0           0           1           0           0           0 0x00000000
+    1        2112        6000           0           0          10           0          -1           0           0           1           0           1           0 0x00000000
+    2        2112        6000          10           0           0           0           0           1       60000           1           0           0           0 0x00000000
+    3        2112        6000           0          10           0          -1           0           0           0         0.1           0           0           0 0x00000000
+    4        2112        6000           0           0          10           0           1           0           0           1           0           0           0 0xdeadbeef
+    5        2112  2.5248e-08          10           0           0           0           0          -1           0           1           0           0           0 0x00000000
+    6        2112  2.5248e-08           0          10           0           1           0           0           0           1           1           0           0 0x00000000
+    7        2112  2.5248e-08           0           0          10           0          -1           0       60000           1           0           0           0 0x00000000
+    8        2112  2.5248e-08          10           0           0           0           0           1           0         0.1           0           0           0 0x00000000
+    9        2112  2.5248e-08           0          10           0          -1           0           0           0           1           0           0           0 0xdeadbeef
+===> mcpltool ended with exit code 0
+Opened MCPL file reffile_8.mcpl:
+
+  Basic info
+    Format             : MCPL-2
+    No. of particles   : 5
+    Header storage     : 94 bytes
+    Data storage       : 180 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : no
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1 0xdeadbeef
+===> mcpltool ended with exit code 0
+Opened MCPL file reffile_uw.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 15
+    Header storage     : 148 bytes
+    Data storage       : 480 bytes
+
+  Custom meta data
+    Source             : "ESS/dgcode/MCPLTests/genisotrop"
+    Number of comments : 1
+          -> comment 0 : "A simple file with isotropically generated particles."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : yes (weight 1)
+    FP precision       : single
+    Endianness         : little
+    Storage            : 32 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]
+    0        2112           0           0           0           0     0.69673    -0.32571    -0.63913           0
+    1          22           0           0           0           0    -0.43755    -0.27624     0.85571           0
+    2        2112           0           0           0           0     0.61152     0.73811    -0.28504           0
+    3          22           0           0           0           0     0.76301   -0.046213     0.64473           0
+    4        2112           0           0           0           0    -0.89736    -0.39549     0.19578           0
+    5          22           0           0           0           0     0.27755    -0.37388     0.88497           0
+    6        2112           0           0           0           0     0.93106    0.033764    -0.36331           0
+    7          22           0           0           0           0   -0.096567     0.81408     0.57267           0
+    8        2112           0           0           0           0     0.43938     0.81005    -0.38829           0
+    9          22           0           0           0           0    -0.37821     0.14513     0.91427           0
+===> mcpltool ended with exit code 0
+Opened MCPL file reffile_empty.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 0
+    Header storage     : 94 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+===> mcpltool ended with exit code 0
+Opened MCPL file reffile_empty.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 0
+    Header storage     : 94 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+===> mcpltool ended with exit code 0
+Opened MCPL file reffile_truncated.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 15
+    Header storage     : 148 bytes
+    Data storage       : 480 bytes
+
+  Custom meta data
+    Source             : "ESS/dgcode/MCPLTests/genisotrop"
+    Number of comments : 1
+          -> comment 0 : "A simple file with isotropically generated particles."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : yes (weight 1)
+    FP precision       : single
+    Endianness         : little
+    Storage            : 32 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]
+===> mcpltool ended with MCPLError exception: Errors encountered while attempting to read particle data.
+Opened MCPL file reffile_truncated.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 15
+    Header storage     : 148 bytes
+    Data storage       : 480 bytes
+
+  Custom meta data
+    Source             : "ESS/dgcode/MCPLTests/genisotrop"
+    Number of comments : 1
+          -> comment 0 : "A simple file with isotropically generated particles."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : yes (weight 1)
+    FP precision       : single
+    Endianness         : little
+    Storage            : 32 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]
+===> mcpltool ended with MCPLError exception: Errors encountered while attempting to read particle data.
+Just plain ascii.
+Second line.
+===> mcpltool ended with exit code 0
+Rødgrød med
+fløde.
+===> mcpltool ended with exit code 0
+0x410x00x50xa0xd0x420x6c0x610x7f0x3d0x3d0x3d0x3e0x200x6d0x630x700x6c0x740x6f0x6f0x6c0x200x650x6e0x640x650x640x200x770x690x740x680x200x650x780x690x740x200x630x6f0x640x650x200x300xaERROR: Can not calculate statistics for an empty file
+
+Run with -h or --help for usage information
+===> mcpltool ended with exit code 1
+------------------------------------------------------------------------------
+nparticles   : 15
+sum(weights) : 15
+------------------------------------------------------------------------------
+             :            mean             rms             min             max
+------------------------------------------------------------------------------
+ekin   [MeV] :               0               0               0               0
+x       [cm] :               0               0               0               0
+y       [cm] :               0               0               0               0
+z       [cm] :               0               0               0               0
+ux           :        0.162236         0.51056       -0.897362        0.931058
+uy           :       0.0465362         0.56959        -0.74432        0.969813
+uz           :        0.246546         0.57063       -0.643018        0.914273
+time    [ms] :               0               0               0               0
+weight       :               1               0               1               1
+polx         :               0               0               0               0
+poly         :               0               0               0               0
+polz         :               0               0               0               0
+------------------------------------------------------------------------------
+pdgcode      :        2112 (n)                     8 (53.33%)
+                        22 (gamma)                 7 (46.67%)
+                     [ values ]             [ weighted counts ]
+------------------------------------------------------------------------------
+userflags    :           0 (0x00000000)           15 (100.00%)
+                     [ values ]             [ weighted counts ]
+------------------------------------------------------------------------------
+===> mcpltool ended with exit code 0
+------------------------------------------------------------------------------
+nparticles   : 5
+sum(weights) : 5
+------------------------------------------------------------------------------
+             :            mean             rms             min             max
+------------------------------------------------------------------------------
+ekin   [MeV] :          0.7404         0.60453               0           1.234
+x       [cm] :               0               0               0               0
+y       [cm] :               0               0               0               0
+z       [cm] :            0.02        0.014142               0            0.04
+ux           :            0.02        0.014142               0            0.04
+uy           :     9.00201e-05         0.63231        -0.99955               1
+uz           :         0.19981          0.7481        -0.99995          0.9998
+time    [ms] :               0               0               0               0
+weight       :               1               0               1               1
+polx         :           -0.02        0.014142           -0.04              -0
+poly         :               0               0               0               0
+polz         :               0               0               0               0
+------------------------------------------------------------------------------
+pdgcode      :        2112 (n)                     5 (100.00%)
+                     [ values ]             [ weighted counts ]
+------------------------------------------------------------------------------
+userflags    :           0 (0x00000000)            5 (100.00%)
+                     [ values ]             [ weighted counts ]
+------------------------------------------------------------------------------
+===> mcpltool ended with exit code 0
+------------------------------------------------------------------------------
+nparticles   : 195
+sum(weights) : 159.9
+------------------------------------------------------------------------------
+             :            mean             rms             min             max
+------------------------------------------------------------------------------
+ekin   [MeV] :         3384.74          2975.1               0            6000
+x       [cm] :         3.33333           4.714               0              10
+y       [cm] :         3.33333           4.714               0              10
+z       [cm] :         3.33333           4.714               0              10
+ux           :       0.0118824         0.57723              -1               1
+uy           :    -0.000625391         0.57735              -1               1
+uz           :     0.000625391         0.57735              -1               1
+time    [ms] :         14634.1           25766               0           60000
+weight       :            0.82            0.36             0.1               1
+polx         :       0.0813008          0.2733               0               1
+poly         :       0.0813008          0.2733               0               1
+polz         :       0.0813008          0.2733               0               1
+------------------------------------------------------------------------------
+pdgcode      :        2112 (n)                  12.3 ( 7.69%)
+                        22 (gamma)              12.3 ( 7.69%)
+                        13 (mu-)                12.3 ( 7.69%)
+                       -13 (mu+)                12.3 ( 7.69%)
+                     -2112 (n-bar)              12.3 ( 7.69%)
+                       211 (pi+)                 8.2 ( 5.13%)
+                       111 (pi0)                 8.2 ( 5.13%)
+                        16 (nu_tau)              8.2 ( 5.13%)
+                        11 (e-)                  8.2 ( 5.13%)
+                       -11 (e+)                  8.2 ( 5.13%)
+                       -16 (nu_tau-bar)          8.2 ( 5.13%)
+                      -211 (pi-)                 8.2 ( 5.13%)
+                1000922350 (U235)                4.1 ( 2.56%)
+                1000130270 (Al27)                4.1 ( 2.56%)
+                1000020040 (alpha)               4.1 ( 2.56%)
+                1000020030 (He3)                 4.1 ( 2.56%)
+                1000010020 (D)                   4.1 ( 2.56%)
+                      2212 (p)                   4.1 ( 2.56%)
+                     -2212 (p-bar)               4.1 ( 2.56%)
+               -1000010020 (D-bar)               4.1 ( 2.56%)
+               -1000020030                       4.1 ( 2.56%)
+               -1000020040 (alpha-bar)           4.1 ( 2.56%)
+                     [ values ]             [ weighted counts ]
+------------------------------------------------------------------------------
+userflags    :           0 (0x00000000)        120.9 (75.61%)
+                3735928559 (0xdeadbeef)           39 (24.39%)
+                     [ values ]             [ weighted counts ]
+------------------------------------------------------------------------------
+===> mcpltool ended with exit code 0
+MCPL ERROR: Unable to open file!
+MCPL ERROR: Unable to open file!
+MCPL ERROR: Unsupported type of filename object (should be path-like, a string or similar)
+MCPL ERROR: Unsupported type of filename object (should be path-like, a string or similar)
+MCPL ERROR: File is not an MCPL file!
+MCPL ERROR: File is not an MCPL file!
+MCPL ERROR: File is in an unsupported MCPL version!
+MCPL ERROR: File is in an unsupported MCPL version!
+MCPL ERROR: File is in an unsupported MCPL version!
+MCPL ERROR: File is in an unsupported MCPL version!
+MCPL ERROR: Unexpected value in endianness field!
+MCPL ERROR: Unexpected value in endianness field!
+---> testing array access
+position: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+polarisation: (-0, 0, 0), [ -0  0  0 ], <type 'numpy.ndarray'>, (-0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (0, 0, 0.01), [ 0  0  0.0099999998 ], <type 'numpy.ndarray'>, (0, 0, 0.01)
+polarisation: (-0.01, 0, 0), [ -0.0099999998  0  0 ], <type 'numpy.ndarray'>, (-0.01, 0, 0)
+direction: (0.00999998, 0, -0.99995), [ 0.009999983  0  -0.99995 ], <type 'numpy.ndarray'>, (0.00999998, 0, -0.99995)
+position: (0, 0, 0.02), [ 0  0  0.02 ], <type 'numpy.ndarray'>, (0, 0, 0.02)
+polarisation: (-0.02, 0, 0), [ -0.02  0  0 ], <type 'numpy.ndarray'>, (-0.02, 0, 0)
+direction: (0.02, 0, 0.9998), [ 0.02  0  0.99979998 ], <type 'numpy.ndarray'>, (0.02, 0, 0.9998)
+position: (0, 0, 0.03), [ 0  0  0.029999999 ], <type 'numpy.ndarray'>, (0, 0, 0.03)
+polarisation: (-0.03, 0, 0), [ -0.029999999  0  0 ], <type 'numpy.ndarray'>, (-0.03, 0, 0)
+direction: (0.03, -0.99955, 0), [ 0.029999975  -0.9995499  0 ], <type 'numpy.ndarray'>, (0.03, -0.99955, 0)
+position: (0, 0, 0.04), [ 0  0  0.039999999 ], <type 'numpy.ndarray'>, (0, 0, 0.04)
+polarisation: (-0.04, 0, 0), [ -0.039999999  0  0 ], <type 'numpy.ndarray'>, (-0.04, 0, 0)
+direction: (0.04, 0, 0.9992), [ 0.039999999  0  0.99919968 ], <type 'numpy.ndarray'>, (0.04, 0, 0.9992)
+---> testing array access
+position: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (0, 0, 0.01), [ 0  0  0.01 ], <type 'numpy.ndarray'>, (0, 0, 0.01)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0.01, 0, -0.99995), [ 0.01  0  -0.99995 ], <type 'numpy.ndarray'>, (0.01, 0, -0.99995)
+position: (0, 0, 0.02), [ 0  0  0.02 ], <type 'numpy.ndarray'>, (0, 0, 0.02)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0.02, 0, 0.9998), [ 0.02  0  0.99979998 ], <type 'numpy.ndarray'>, (0.02, 0, 0.9998)
+position: (0, 0, 0.03), [ 0  0  0.03 ], <type 'numpy.ndarray'>, (0, 0, 0.03)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0.03, -0.99955, 0), [ 0.03  -0.9995499  0 ], <type 'numpy.ndarray'>, (0.03, -0.99955, 0)
+position: (0, 0, 0.04), [ 0  0  0.04 ], <type 'numpy.ndarray'>, (0, 0, 0.04)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0.04, 0, 0.9992), [ 0.04  0  0.99919968 ], <type 'numpy.ndarray'>, (0.04, 0, 0.9992)
+---> testing array access
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (-1, 0, 0), [ -1  0  0 ], <type 'numpy.ndarray'>, (-1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 1, 0), [ 0  1  0 ], <type 'numpy.ndarray'>, (0, 1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+direction: (0, 0, -1), [ 0  0  -1 ], <type 'numpy.ndarray'>, (0, 0, -1)
+position: (0, 10, 0), [ 0  10  0 ], <type 'numpy.ndarray'>, (0, 10, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (1, 0, 0), [ 1  0  0 ], <type 'numpy.ndarray'>, (1, 0, 0)
+position: (0, 0, 10), [ 0  0  10 ], <type 'numpy.ndarray'>, (0, 0, 10)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, -1, 0), [ 0  -1  0 ], <type 'numpy.ndarray'>, (0, -1, 0)
+position: (10, 0, 0), [ 10  0  0 ], <type 'numpy.ndarray'>, (10, 0, 0)
+polarisation: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
+direction: (0, 0, 1), [ 0  0  1 ], <type 'numpy.ndarray'>, (0, 0, 1)
+MyMCApp
+3
+comment #0: Some comment.
+comment #1: Some comment2.
+comment #2: Some comment3.
+comment #3: Some comment4444.
+BlaData[20],LalaData[6]
+indices in file: 0,1,2,3,4
+indices in block starting at 0 a: 0,1,2
+indices in block starting at 0 b: 0,1,2
+indices in block starting at 3 a: 3,4
+indices in block starting at 3 b: 3,4
+Requested skip is not in the forward direction
+======================> Test stats(reffile_12.mcpl,bin_data=True,stats=all)
+------------------------------------------------------------------------------
+nparticles   : 5
+sum(weights) : 5
+------------------------------------------------------------------------------
+             :            mean             rms             min             max
+------------------------------------------------------------------------------
+ekin   [MeV] :          0.7404         0.60453               0           1.234
+x       [cm] :               0               0               0               0
+y       [cm] :               0               0               0               0
+z       [cm] :            0.02        0.014142               0            0.04
+ux           :            0.02        0.014142               0            0.04
+uy           :     9.00201e-05         0.63231        -0.99955               1
+uz           :         0.19981          0.7481        -0.99995          0.9998
+time    [ms] :               0               0               0               0
+weight       :               1               0               1               1
+polx         :           -0.02        0.014142           -0.04              -0
+poly         :               0               0               0               0
+polz         :               0               0               0               0
+------------------------------------------------------------------------------
+pdgcode      :        2112 (n)                     5 (100.00%)
+                     [ values ]             [ weighted counts ]
+------------------------------------------------------------------------------
+userflags    :           0 (0x00000000)            5 (100.00%)
+                     [ values ]             [ weighted counts ]
+------------------------------------------------------------------------------
+======================> Test stats(MCPLFILE,bin_data=False,stats=all)
+------------------------------------------------------------------------------
+nparticles   : 5
+sum(weights) : 5
+------------------------------------------------------------------------------
+             :            mean             rms             min             max
+------------------------------------------------------------------------------
+ekin   [MeV] :          0.7404         0.60453               0           1.234
+x       [cm] :               0               0               0               0
+y       [cm] :               0               0               0               0
+z       [cm] :            0.02        0.014142               0            0.04
+ux           :            0.02        0.014142               0            0.04
+uy           :     9.00201e-05         0.63231        -0.99955               1
+uz           :         0.19981          0.7481        -0.99995          0.9998
+time    [ms] :               0               0               0               0
+weight       :               1               0               1               1
+polx         :           -0.02        0.014142           -0.04              -0
+poly         :               0               0               0               0
+polz         :               0               0               0               0
+------------------------------------------------------------------------------
+pdgcode      :        2112 (n)                     5 (100.00%)
+                     [ values ]             [ weighted counts ]
+------------------------------------------------------------------------------
+userflags    :           0 (0x00000000)            5 (100.00%)
+                     [ values ]             [ weighted counts ]
+------------------------------------------------------------------------------
+======================> Test stats(reffile_userflags_is_pos.mcpl.gz,bin_data=True,stats=['polx', 'userflags'])
+------------------------------------------------------------------------------
+nparticles   : 100
+sum(weights) : 100
+------------------------------------------------------------------------------
+             :            mean             rms             min             max
+------------------------------------------------------------------------------
+polx         :               0               0               0               0
+------------------------------------------------------------------------------
+userflags    :         100 (0x00000064)            1 ( 1.00%)
+                        99 (0x00000063)            1 ( 1.00%)
+                        98 (0x00000062)            1 ( 1.00%)
+                        97 (0x00000061)            1 ( 1.00%)
+                        96 (0x00000060)            1 ( 1.00%)
+                        95 (0x0000005f)            1 ( 1.00%)
+                        94 (0x0000005e)            1 ( 1.00%)
+                        93 (0x0000005d)            1 ( 1.00%)
+                        92 (0x0000005c)            1 ( 1.00%)
+                        91 (0x0000005b)            1 ( 1.00%)
+                        90 (0x0000005a)            1 ( 1.00%)
+                        89 (0x00000059)            1 ( 1.00%)
+                        88 (0x00000058)            1 ( 1.00%)
+                        87 (0x00000057)            1 ( 1.00%)
+                        86 (0x00000056)            1 ( 1.00%)
+                        85 (0x00000055)            1 ( 1.00%)
+                        84 (0x00000054)            1 ( 1.00%)
+                        83 (0x00000053)            1 ( 1.00%)
+                        82 (0x00000052)            1 ( 1.00%)
+                        81 (0x00000051)            1 ( 1.00%)
+                        80 (0x00000050)            1 ( 1.00%)
+                        79 (0x0000004f)            1 ( 1.00%)
+                        78 (0x0000004e)            1 ( 1.00%)
+                        77 (0x0000004d)            1 ( 1.00%)
+                        76 (0x0000004c)            1 ( 1.00%)
+                        75 (0x0000004b)            1 ( 1.00%)
+                        74 (0x0000004a)            1 ( 1.00%)
+                        73 (0x00000049)            1 ( 1.00%)
+                        72 (0x00000048)            1 ( 1.00%)
+                        71 (0x00000047)            1 ( 1.00%)
+                        70 (0x00000046)            1 ( 1.00%)
+                        69 (0x00000045)            1 ( 1.00%)
+                        68 (0x00000044)            1 ( 1.00%)
+                        67 (0x00000043)            1 ( 1.00%)
+                        66 (0x00000042)            1 ( 1.00%)
+                        65 (0x00000041)            1 ( 1.00%)
+                        64 (0x00000040)            1 ( 1.00%)
+                        63 (0x0000003f)            1 ( 1.00%)
+                        62 (0x0000003e)            1 ( 1.00%)
+                        61 (0x0000003d)            1 ( 1.00%)
+                        60 (0x0000003c)            1 ( 1.00%)
+                        59 (0x0000003b)            1 ( 1.00%)
+                        58 (0x0000003a)            1 ( 1.00%)
+                        57 (0x00000039)            1 ( 1.00%)
+                        56 (0x00000038)            1 ( 1.00%)
+                        55 (0x00000037)            1 ( 1.00%)
+                        54 (0x00000036)            1 ( 1.00%)
+                        53 (0x00000035)            1 ( 1.00%)
+                        52 (0x00000034)            1 ( 1.00%)
+                     other                        51 (51.00%)
+                     [ values ]             [ weighted counts ]
+------------------------------------------------------------------------------
+======================> Test stats(reffile_12.mcpl,bin_data=True,stats=['userflags'])
+------------------------------------------------------------------------------
+nparticles   : 5
+sum(weights) : 5
+------------------------------------------------------------------------------
+userflags    :           0 (0x00000000)            5 (100.00%)
+                     [ values ]             [ weighted counts ]
+------------------------------------------------------------------------------
+======================> Test stats(reffile_empty.mcpl,bin_data=True,stats=['x', 'y'])
+MCPL WARNING: Can not calculate stats on an empty file
+======================> Test stats(reffile_uw.mcpl.gz)
+------------------------------------------------------------------------------
+nparticles   : 15
+sum(weights) : 15
+------------------------------------------------------------------------------
+             :            mean             rms             min             max
+------------------------------------------------------------------------------
+ekin   [MeV] :               0               0               0               0
+x       [cm] :               0               0               0               0
+y       [cm] :               0               0               0               0
+z       [cm] :               0               0               0               0
+ux           :        0.162236         0.51056       -0.897362        0.931058
+uy           :       0.0465362         0.56959        -0.74432        0.969813
+uz           :        0.246546         0.57063       -0.643018        0.914273
+time    [ms] :               0               0               0               0
+weight       :               1               0               1               1
+polx         :               0               0               0               0
+poly         :               0               0               0               0
+polz         :               0               0               0               0
+------------------------------------------------------------------------------
+pdgcode      :        2112 (n)                     8 (53.33%)
+                        22 (gamma)                 7 (46.67%)
+                     [ values ]             [ weighted counts ]
+------------------------------------------------------------------------------
+userflags    :           0 (0x00000000)           15 (100.00%)
+                     [ values ]             [ weighted counts ]
+------------------------------------------------------------------------------
+======================> Test stats(reffile_12.mcpl,stats=[])
+MCPL ERROR: No stats requested
+======================> Test stats(reffile_12.mcpl,stats=['blabla'])
+MCPL ERROR: Unknown stat names requested: "blabla"
+======================> Test stats(miscphys.mcpl.gz)
+------------------------------------------------------------------------------
+nparticles   : 195
+sum(weights) : 159.9
+------------------------------------------------------------------------------
+             :            mean             rms             min             max
+------------------------------------------------------------------------------
+ekin   [MeV] :         3384.74          2975.1               0            6000
+x       [cm] :         3.33333           4.714               0              10
+y       [cm] :         3.33333           4.714               0              10
+z       [cm] :         3.33333           4.714               0              10
+ux           :       0.0118824         0.57723              -1               1
+uy           :    -0.000625391         0.57735              -1               1
+uz           :     0.000625391         0.57735              -1               1
+time    [ms] :         14634.1           25766               0           60000
+weight       :            0.82            0.36             0.1               1
+polx         :       0.0813008          0.2733               0               1
+poly         :       0.0813008          0.2733               0               1
+polz         :       0.0813008          0.2733               0               1
+------------------------------------------------------------------------------
+pdgcode      :        2112 (n)                  12.3 ( 7.69%)
+                        22 (gamma)              12.3 ( 7.69%)
+                        13 (mu-)                12.3 ( 7.69%)
+                       -13 (mu+)                12.3 ( 7.69%)
+                     -2112 (n-bar)              12.3 ( 7.69%)
+                       211 (pi+)                 8.2 ( 5.13%)
+                       111 (pi0)                 8.2 ( 5.13%)
+                        16 (nu_tau)              8.2 ( 5.13%)
+                        11 (e-)                  8.2 ( 5.13%)
+                       -11 (e+)                  8.2 ( 5.13%)
+                       -16 (nu_tau-bar)          8.2 ( 5.13%)
+                      -211 (pi-)                 8.2 ( 5.13%)
+                1000922350 (U235)                4.1 ( 2.56%)
+                1000130270 (Al27)                4.1 ( 2.56%)
+                1000020040 (alpha)               4.1 ( 2.56%)
+                1000020030 (He3)                 4.1 ( 2.56%)
+                1000010020 (D)                   4.1 ( 2.56%)
+                      2212 (p)                   4.1 ( 2.56%)
+                     -2212 (p-bar)               4.1 ( 2.56%)
+               -1000010020 (D-bar)               4.1 ( 2.56%)
+               -1000020030                       4.1 ( 2.56%)
+               -1000020040 (alpha-bar)           4.1 ( 2.56%)
+                     [ values ]             [ weighted counts ]
+------------------------------------------------------------------------------
+userflags    :           0 (0x00000000)        120.9 (75.61%)
+                3735928559 (0xdeadbeef)           39 (24.39%)
+                     [ values ]             [ weighted counts ]
+------------------------------------------------------------------------------
