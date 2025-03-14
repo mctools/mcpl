@@ -5,20 +5,20 @@ on:
   pull_request:
 
 jobs:
-#  mcpldevtool_check:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v4
-#        with:
-#          path: src
-#      - name: Pip install packages for mcpldevtool
-#        run: pip install -r ./src/devel/reqs/requirements_devel.txt
-#      - name: mcpldevtool checks
-#        run: ./src/devel/bin/mcpldevtool check -n "fix""me"
+  mcpldevtool_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: src
+      #- name: Pip install packages for mcpldevtool
+      #  run: pip install -r ./src/devel/reqs/requirements_devel.txt
+      - name: mcpldevtool checks
+        run: ./src/devel/bin/mcpldevtool check -n "fix""me"
 
   build:
-#    needs: [ mcpldevtool_check ]
+    needs: [ mcpldevtool_check ]
     strategy:
       fail-fast: false
       matrix:
@@ -40,12 +40,8 @@ jobs:
       with:
         python-version: 3.11
 
-#    - name: Enable parallel cmake
-#      run: python ./src/devel/bin/mcpldevtool nprocs --enable-github-parallel
-
-#    - name: Install zlib (windows)
-#      if: runner.os == 'Windows'
-#      run: choco install zlib
+    - name: Enable parallel cmake
+      run: python ./src/devel/bin/mcpldevtool nprocs --enable-github-parallel
 
     - name: pip install of mcpl-core
       run: python3 -m pip install -v  ./src/mcpl_core
