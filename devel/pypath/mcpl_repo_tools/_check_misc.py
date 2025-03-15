@@ -45,18 +45,6 @@ def main():
         'mcpl_core/src/mcpl.c' : 100,
         'tests/scripts/forcemerge.log' : 500,
         'mcpl_python/src/mcpl/mcpl.py' : 80,
-
-#        'data/LiquidWaterH2O_T293.6K.ncmat' : 600,
-#        'data/LiquidHeavyWaterD2O_T293.6K.ncmat' : 1600,
-#        'tests/data/refnc2d5/LiquidWaterH2O_T293.6K.ncmat' : 530,
-#        'CHANGELOG' : 150,
-#        'ncrystal_core/include/NCrystal/cinterface/ncrystal.h' : 100,
-#        'ncrystal_core/src/cinterface/ncrystal.cc' : 100,
-#        'ncrystal_python/src/NCrystal/_hfgdata.py' : 70,
-#        'ncrystal_python/src/NCrystal/_ncmatimpl.py' : 150,
-#        'ncrystal_python/src/NCrystal/cifutils.py' : 100,
-#        'ncrystal_python/src/NCrystal/core.py' : 100,
-#        'tests/data/QE_pw_Al.out' : 2000,
     }
     for f in all_files_iter():
         lim = max_size_kb_log if f.suffix == '.log' else max_size_kb_other
@@ -72,6 +60,7 @@ def main():
         if frel in ignore_list:
             continue
         #Check can always be read as utf8:
+        content = '\n'
         if not is_well_known_binary(frel):
             try:
                 content = f.read_text(encoding='utf8')
