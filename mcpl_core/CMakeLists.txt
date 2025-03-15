@@ -1,4 +1,24 @@
 
+################################################################################
+##                                                                            ##
+##  This file is part of MCPL (see https://mctools.github.io/mcpl/)           ##
+##                                                                            ##
+##  Copyright 2015-2025 MCPL developers.                                      ##
+##                                                                            ##
+##  Licensed under the Apache License, Version 2.0 (the "License");           ##
+##  you may not use this file except in compliance with the License.          ##
+##  You may obtain a copy of the License at                                   ##
+##                                                                            ##
+##      http://www.apache.org/licenses/LICENSE-2.0                            ##
+##                                                                            ##
+##  Unless required by applicable law or agreed to in writing, software       ##
+##  distributed under the License is distributed on an "AS IS" BASIS,         ##
+##  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  ##
+##  See the License for the specific language governing permissions and       ##
+##  limitations under the License.                                            ##
+##                                                                            ##
+################################################################################
+
 cmake_minimum_required(VERSION 3.16...3.31)
 
 #Detect skbuild mode (std/monolithic) if appropriate:
@@ -100,41 +120,6 @@ endif()
 if ( MCPL_ENABLE_CORE_TESTING )
   enable_testing()
   include(mcpl_coretests)
-endif()
-
-if ( MCPL_ENABLE_TESTING )
-  #When testing we require a namespace of "test" which is intended to ensure
-  #that we never clash with a system-installed NCrystal version (for instance we
-  #had problems when a ctest executable picked up libNCrystal.so from the conda
-  #installed NCrystal, resulting in hard to debug errors).
-  #
-  #Additionally on windows we need to use MCPL_WINEXPORTALL=ON so the ctest
-  #binaries can access internal symbols in the NCrystal library.
-  #
-  #For both of these reasons we will for safety forbid actual installations with
-  #these settings, to avoid potential weird installations.
-  if( "${CMAKE_VERSION}" VERSION_LESS "3.28" )
-    #NB: Keep this minimum version value synchronised with the one on the top of
-    #tests/CMakeLists.txt
-    message( FATAL_ERROR "MCPL_ENABLE_TESTING requires cmake >= 3.28" )
-  endif()
-#  if ( MCPL_NAMESPACE AND NOT "x${MCPL_NAMESPACE}" STREQUAL "xtest" )
-#    message(
-#      FATAL_ERROR
-#      "Do not set MCPL_NAMESPACE with MCPL_ENABLE_TESTING."
-#    )
-#  endif()
-#  _ncrystal_option_force( MCPL_NAMESPACE "test" )
-else()
-  #Make sure the namespace "test" is only ever used by the
-  #MCPL_ENABLE_TESTING option (so no installation out there can have that
-  #namespace).
-#  if ( "x${MCPL_NAMESPACE}" STREQUAL "xtest" )
-#    message(
-#      FATAL_ERROR
-#      "The MCPL_NAMESPACE value \"test\" is reserved for internal usage."
-#    )
-#  endif()
 endif()
 
 #Installation directories (try to follow standard conventions):

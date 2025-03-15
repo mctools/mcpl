@@ -47,18 +47,3 @@ def _find_mcpltool_cmd():
 
 test_data_dir = _find_data_dir()
 mcpltool_cmd = _find_mcpltool_cmd()
-
-#
-#def get_named_test_data_dir(name):
-#    #name of subdir of /tests/data
-#    from .modeinfo import is_simplebuild_mode, is_ncrystalverify_mode
-#    if is_simplebuild_mode():
-#        import os
-#        ddir = pathlib.Path(os.environ['SBLD_DATA_DIR'])/f'NCTestData_{name}'
-#    elif is_ncrystalverify_mode():
-#        ddir = _pymoddir.parent.parent.joinpath('data',name)
-#    else:
-#        ddir = _pymoddir.parent.parent.joinpath('data',name)
-#    assert ddir.is_dir()
-#    return ddir
-#

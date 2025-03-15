@@ -73,10 +73,13 @@ def main():
     c3 = do_check( all_files_iter('c_headers'),
                    [lbansic,lbansic.lstrip()],
                    allow_include_guards_if_hdr = True )
-    c3 = do_check( all_files_iter('c_src'),
+    c4 = do_check( all_files_iter('c_src'),
                    [lbcpp,lbcpp.lstrip()],
                    allow_include_guards_if_hdr = True )
-    if not (c1 and c2 and c3):
+    c5 = do_check( all_files_iter('cmake'),
+                   [lbh])
+
+    if not (c1 and c2 and c3 and c4 and c5):
         raise SystemExit('ERROR: license blurb issues detected.')
     print("All ok!")
 
