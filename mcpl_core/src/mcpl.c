@@ -2207,6 +2207,8 @@ MCPL_LOCAL int mcpl_str2int(const char* str, size_t len, int64_t* res)
 //for _setmode and O_BINARY
 #  include <fcntl.h>
 #  include <io.h>
+#else
+#  include "unistd.h" // for write(..)
 #endif
 
 int mcpl_tool(int argc,char** argv) {
