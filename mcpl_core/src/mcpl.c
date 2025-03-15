@@ -2203,8 +2203,8 @@ MCPL_LOCAL int mcpl_str2int(const char* str, size_t len, int64_t* res)
   return 1;
 }
 
-MCPL_LOCAL void mcpl_internal_dump_to_stdout( const char * data,
-                                              unsigned long ldata );
+MCPL_LOCAL void mcpl_internal_delete_file( const char * );
+MCPL_LOCAL void mcpl_internal_dump_to_stdout( const char *, unsigned long );
 
 int mcpl_tool(int argc,char** argv) {
 
@@ -2670,7 +2670,7 @@ MCPL_LOCAL int _mcpl_custom_gzip(const char *filename, const char *mode)
     return 0;
 
   //remove input file and return success:
-  unlink(filename);
+  mcpl_internal_delete_file( filename );
   return 1;
 
 }
@@ -2682,6 +2682,15 @@ MCPL_LOCAL int _mcpl_custom_gzip(const char *filename, const char *mode)
 #else
 #  include "unistd.h" // for write(..)
 #endif
+
+void mcpl_internal_delete_file( const char * filename )
+{
+#ifdef MCPL_THIS_IS_MS
+  _unlink(filename);//fixme _wunlink if unicode!
+#else
+  unlink(filename);//fixme _wunlink if unicode!
+#endif
+}
 
 void mcpl_internal_dump_to_stdout( const char * data,
                                    unsigned long ldata )
