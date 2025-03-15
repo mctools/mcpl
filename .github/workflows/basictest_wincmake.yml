@@ -1,0 +1,71 @@
+name: basictest_wincmake
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  mcpldevtool_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: src
+      - name: Enable parallel cmake
+        run: python ./src/devel/bin/mcpldevtool nprocs --enable-github-parallel
+      - name: Pip install packages for mcpldevtool
+        run: pip install -r ./src/devel/reqs/requirements_devel.txt
+      - name: mcpldevtool checks
+        run: ./src/devel/bin/mcpldevtool check -n "fix""me"
+
+  build:
+    needs: [ mcpldevtool_check ]
+    # More platform information available on:
+    # https://github.com/actions/runner-images/blob/main/images/windows/Windows2022-Readme.md
+    #
+    # Nov-2024: windows-latest is windows-2022. We should try to exercise
+    # clang/gcc on this platform, and add a conda-based test.
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-2019, windows-2022]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        path: src
+
+    - name: Setup python
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.11
+
+    - name: Enable parallel cmake
+      run: python ./src/devel/bin/mcpldevtool nprocs --enable-github-parallel
+
+      #NB: We don't test matplotlib import here in the next step, since we want
+      #to make sure that our CTest infrastructure correctly avoids problems from
+      #"building font cache" printouts on first imports.
+    - name: pip install extra deps
+      shell: cmd
+      run: python -mpip install -r .\src\devel\reqs\requirements_devel.txt
+
+    - name: CMake cfg
+      shell: cmd
+      run: >
+        cmake -B build src
+        -DMCPL_ENABLE_TESTING=ON
+        -DMCPL_BUILD_STRICT=ON
+        -DMCTOOLS_REQUIRE_ALL_TEST_DEPS=ON
+
+      #NB: More verbosity by appending: "-- /verbosity:detailed":
+    - name: CMake build
+      shell: cmd
+      run: cmake --build build --config Release -j 3
+
+      #NB more verbosity by appending: "-VV":
+    - name: Run CTests
+      run: ctest --test-dir ./build  --build-config Release --no-tests=error --output-on-failure --test-output-size-failed 100000 --test-output-truncation middle
