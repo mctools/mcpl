@@ -35,5 +35,4 @@ const char * mcplcfg_const_version(void) { return "@MCPL_VERSION@"; }
 const char * mcplcfg_const_intversion(void) { return "@mcplcfgapp_intversion@"; }
 //const char * mcplcfg_const_namespace(void) { return "@MCPL_NAMESPACE@"; }
 const char * mcplcfg_const_cmakebuildtype(void) { return "$<CONFIG>"; }//NB: generator expression
-int mcplcfg_boolopt_modify_rpath(void) { return @mcplcfgapp_has_modrpath_01@; }
 int mcplcfg_boolopt_expects_shlibdir_override(void) { return @mcplcfgapp_expect_shlibdir_override_01@; }

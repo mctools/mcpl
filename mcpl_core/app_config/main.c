@@ -233,7 +233,6 @@ mcplcfg_strlist mcplcfg_show_item_list(void)
     "build_type",
     "buildflags",
     "cmakedir",
-    "has_modify_rpath",
     "includedir",
     "intversion",
     "libdir",
@@ -306,14 +305,6 @@ mcu8str mcplcfg_show_item_lookup( nccfgstate* state,
 
   if ( MCPLCFG_STREQUALCONST(item,"build_type") )
     return mcu8str_view_cstr(mcplcfg_const_cmakebuildtype());
-
-  if ( item[0] == 'h' ) {
-    int val = -1;
-    if ( MCPLCFG_STREQUALCONST(item,"has_modify_rpath") )
-      val = mcplcfg_boolopt_modify_rpath();
-    if ( val != -1 )
-      return mcplcfg_bool2str( val );
-  }
 
   //Get here on errors:
   mcu8str error;
