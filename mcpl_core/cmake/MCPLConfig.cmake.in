@@ -56,6 +56,34 @@ if ( NOT EXISTS MCPL_CMD_MCPLCONFIG )
   set( MCPL_CMD_MCPLCONFIG "")
 endif()
 
+#Windows/scikitbuild mode needs fixup at the end of
+#MCPLTargets-<lowercaseconfig>.cmake:
+if ( "@mcpl_skbuild_shlib_in_wheel_scripts@" )
+  function( _mcpl_fixup_mcpltargets )
+    execute_process(
+      COMMAND mcpl-config --show libpath
+      OUTPUT_VARIABLE "_tmp_mcpl_libpath" OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    #Relying a bit too much on internal CMake implementation details for
+    #comfort, but so far this is the only solution found:
+    set(
+      "_cmake_import_check_files_for_MCPL::mcpl"
+      "${_tmp_mcpl_libpath}"
+      PARENT_SCOPE
+    )
+    get_filename_component( "tmp" "${CMAKE_CURRENT_LIST_FILE}" "NAME_WE")
+    string( REPLACE "-" ";" "tmp" "${tmp}" )
+    list(GET tmp -1 "tmp" )
+    string( TOUPPER "${tmp}" "tmp" )
+
+    set_target_properties(
+      "MCPL::mcpl" PROPERTIES
+      "IMPORTED_LOCATION_${tmp}"
+      "${_tmp_mcpl_libpath}"
+    )
+  endfunction()
+endif()
+
 #The MCPL targets:
 if(NOT TARGET MCPL::MCPL)
   include( "${MCPL_CMAKEDIR}/MCPLTargets.cmake" )
