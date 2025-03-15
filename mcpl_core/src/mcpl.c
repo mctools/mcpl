@@ -71,7 +71,7 @@
 #ifndef MCPL_HASZLIB
 #  define MCPL_HASZLIB //fixme
 #endif
-
+//#define MCPL_NO_EXT_GZIP
 //Rough platform detection (could be much more fine-grained):
 #if defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__))
 #  define MCPL_THIS_IS_UNIX
@@ -130,12 +130,9 @@
 #include <string.h>
 #include <assert.h>
 #include <math.h>
-#include <unistd.h>
 #include <limits.h>
-#ifdef MCPL_THIS_IS_MS
-#  include <fcntl.h>
-#  include <io.h>
-#endif
+
+#include "mcpl_fileutils.h"
 
 #define MCPLIMP_NPARTICLES_POS 8
 #define MCPLIMP_MAX_PARTICLE_SIZE 96
@@ -1750,9 +1747,9 @@ int mcpl_can_merge(const char * file1, const char* file2)
   return can_merge;
 }
 
-#ifdef MCPL_THIS_IS_UNIX
-#  include <sys/stat.h>
-#endif
+/* #ifdef MCPL_THIS_IS_UNIX */
+/* #  include <sys/stat.h> */
+/* #endif */
 
 MCPL_LOCAL int mcpl_file_certainly_exists(const char * filename)
 {
@@ -1772,10 +1769,10 @@ MCPL_LOCAL int mcpl_file_certainly_exists(const char * filename)
 #endif
 }
 
-#ifdef MCPL_THIS_IS_UNIX
-#  include <sys/types.h>
-#  include <sys/stat.h>
-#endif
+/* #ifdef MCPL_THIS_IS_UNIX */
+/* #  include <sys/types.h> */
+/* #  include <sys/stat.h> */
+/* #endif */
 
 MCPL_LOCAL void mcpl_warn_duplicates(unsigned n, const char ** filenames)
 {
@@ -1789,33 +1786,13 @@ MCPL_LOCAL void mcpl_warn_duplicates(unsigned n, const char ** filenames)
   if (n<2)
     return;
 
-#ifdef MCPL_THIS_IS_UNIX
-  //Bullet proof(ish) way, (st_ino,st_dev) uniquely identifies a file on a system.
-  dev_t * id_dev = (dev_t*)calloc(n*sizeof(dev_t),1);
-  ino_t * id_ino = (ino_t*)calloc(n*sizeof(ino_t),1);
   unsigned i;
+  unsigned j;
   for (i = 0; i<n; ++i) {
-    FILE * fd = fopen(filenames[i],"rb");
-    struct stat sinfo;
-    if( !fd || fstat(fileno(fd), &sinfo) < 0) {
-      id_dev[i] = 0;
-      id_ino[i] = 0;
-    } else {
-      id_dev[i] = sinfo.st_dev;
-      id_ino[i] = sinfo.st_ino;
-    }
-    if (fd)
-      fclose(fd);
-    if (id_dev[i]==0&&id_ino[i]==0) {
-      printf("MCPL WARNING: Problems %s file (%s).\n",
-             (fd?"accessing meta data of":"opening"),filenames[i]);
-      continue;
-    }
-    unsigned j;
+    mcu8str fn_i = mcu8str_view_cstr( filenames[i] );
     for (j = 0; j<i; ++j) {
-      if (id_dev[j]==0&&id_ino[j]==0)
-        continue;
-      if (id_ino[i]==id_ino[j] && id_dev[i]==id_dev[j]) {
+      mcu8str fn_j = mcu8str_view_cstr( filenames[j] );
+      if ( mctools_is_same_file(&fn_i, &fn_j) ) {
         if (strcmp(filenames[i], filenames[j]) == 0) {
           printf("MCPL WARNING: Merging file with itself (%s).\n",
                  filenames[i]);
@@ -1826,22 +1803,6 @@ MCPL_LOCAL void mcpl_warn_duplicates(unsigned n, const char ** filenames)
       }
     }
   }
-  free(id_dev);
-  free(id_ino);
-#else
-  //Simple check that strings are unique. Very easy to fool obviously and could
-  //be improved with platform-dependent code to at least normalise paths before
-  //comparison.
-  unsigned i, j;
-  for (i = 0; i<n; ++i) {
-    for (j = i+1; j<n; ++j) {
-      if (strcmp(filenames[i], filenames[j]) == 0) {
-        printf("MCPL WARNING: Merging file with itself (%s).\n",
-               filenames[i]);
-      }
-    }
-  }
-#endif
 }
 
 
@@ -2605,81 +2566,81 @@ int mcpl_gzip_file_rc(const char * filename)
   return mcpl_gzip_file(filename);
 }
 
-#if defined(MCPL_HASZLIB) && !defined(Z_SOLO) && !defined(MCPL_NO_CUSTOM_GZIP)
-#  define MCPLIMP_HAS_CUSTOM_GZIP
-int _mcpl_custom_gzip(const char *file, const char *mode);//return 1 if successful, 0 if not
-#endif
+/* #if defined(MCPL_HASZLIB) && !defined(Z_SOLO) && !defined(MCPL_NO_CUSTOM_GZIP) */
+/* #  define MCPLIMP_HAS_CUSTOM_GZIP */
+MCPL_LOCAL int _mcpl_custom_gzip(const char *file, const char *mode);//return 1 if successful, 0 if not
+//#endif
 
-#if defined MCPL_THIS_IS_UNIX && !defined(MCPL_NO_EXT_GZIP)
-//Platform is unix-like enough that we assume gzip is installed and we can
-//include posix headers.
-#  include <sys/types.h>
-#  include <sys/wait.h>
-#  include <errno.h>
+/* #if defined MCPL_THIS_IS_UNIX && !defined(MCPL_NO_EXT_GZIP) */
+/* //Platform is unix-like enough that we assume gzip is installed and we can */
+/* //include posix headers. */
+/* /\* #  include <sys/types.h> *\/ */
+/* /\* #  include <sys/wait.h> *\/ */
+/* /\* #  include <errno.h> *\/ */
 
+/* int mcpl_gzip_file(const char * filename) */
+/* { */
+/*   const char * bn = strrchr(filename, '/'); */
+/*   bn = bn ? bn + 1 : filename; */
+
+/*   //spawn process in which to perform gzip: */
+/*   printf("MCPL: Attempting to compress file %s with gzip\n",bn); */
+/*   fflush(0); */
+/*   pid_t gzip_pid = fork(); */
+/*   if (gzip_pid) { */
+/*     //main proc */
+/*     int chld_state = 0; */
+/*     pid_t ret = waitpid(gzip_pid,&chld_state,0); */
+/*     if (ret!=gzip_pid||chld_state!=0) { */
+/* #  ifdef MCPLIMP_HAS_CUSTOM_GZIP */
+/*       printf("MCPL WARNING: Problems invoking gzip - will revert to a custom zlib based compression\n"); */
+/*       if (!_mcpl_custom_gzip(filename,"wb")) */
+/*         mcpl_error("Problems encountered while attempting to compress file"); */
+/*       else */
+/*         printf("MCPL: Succesfully compressed file into %s.gz\n",bn); */
+/* #  else */
+/*       mcpl_error("Problems encountered while attempting to invoke gzip"); */
+/* #  endif */
+/*     } */
+/*     else */
+/*       printf("MCPL: Succesfully compressed file into %s.gz\n",bn); */
+/*   } else { */
+/*     //spawned proc in which to invoke gzip */
+/*     execlp("gzip", "gzip", "-f",filename, (char*)0); */
+/*     printf("MCPL: execlp/gzip error: %s\n",strerror(errno)); */
+/*     exit(1); */
+/*   } */
+/*   return 1; */
+/* } */
+/* #else */
+/* //Non unix-y platform (like windows). We could use e.g. windows-specific calls */
+/* //instead of the fork() and waitpid() used above, but gzip likely not present on */
+/* //the system anyway, so we either resort to using zlib directly to gzip, or we */
+/* //disable the feature and print a warning. */
+/* #  ifndef MCPLIMP_HAS_CUSTOM_GZIP */
+/* int mcpl_gzip_file(const char * filename) */
+/* { */
+/*   const char * bn = strrchr(filename, '/'); */
+/*   bn = bn ? bn + 1 : filename; */
+/*   printf("MCPL WARNING: Requested compression of %s to %s.gz is not supported in this build.\n",bn,bn); */
+/*   return 0; */
+/* } */
+/* #  else */
 int mcpl_gzip_file(const char * filename)
 {
   const char * bn = strrchr(filename, '/');
   bn = bn ? bn + 1 : filename;
-
-  //spawn process in which to perform gzip:
-  printf("MCPL: Attempting to compress file %s with gzip\n",bn);
-  fflush(0);
-  pid_t gzip_pid = fork();
-  if (gzip_pid) {
-    //main proc
-    int chld_state = 0;
-    pid_t ret = waitpid(gzip_pid,&chld_state,0);
-    if (ret!=gzip_pid||chld_state!=0) {
-#  ifdef MCPLIMP_HAS_CUSTOM_GZIP
-      printf("MCPL WARNING: Problems invoking gzip - will revert to a custom zlib based compression\n");
-      if (!_mcpl_custom_gzip(filename,"wb"))
-        mcpl_error("Problems encountered while attempting to compress file");
-      else
-        printf("MCPL: Succesfully compressed file into %s.gz\n",bn);
-#  else
-      mcpl_error("Problems encountered while attempting to invoke gzip");
-#  endif
-    }
-    else
-      printf("MCPL: Succesfully compressed file into %s.gz\n",bn);
-  } else {
-    //spawned proc in which to invoke gzip
-    execlp("gzip", "gzip", "-f",filename, (char*)0);
-    printf("MCPL: execlp/gzip error: %s\n",strerror(errno));
-    exit(1);
-  }
-  return 1;
-}
-#else
-//Non unix-y platform (like windows). We could use e.g. windows-specific calls
-//instead of the fork() and waitpid() used above, but gzip likely not present on
-//the system anyway, so we either resort to using zlib directly to gzip, or we
-//disable the feature and print a warning.
-#  ifndef MCPLIMP_HAS_CUSTOM_GZIP
-int mcpl_gzip_file(const char * filename)
-{
-  const char * bn = strrchr(filename, '/');
-  bn = bn ? bn + 1 : filename;
-  printf("MCPL WARNING: Requested compression of %s to %s.gz is not supported in this build.\n",bn,bn);
-  return 0;
-}
-#  else
-int mcpl_gzip_file(const char * filename)
-{
-  const char * bn = strrchr(filename, '/');
-  bn = bn ? bn + 1 : filename;
-  printf("MCPL: Attempting to compress file %s with zlib\n",bn);
+  printf("MCPL: Attempting to compress file %s with gzip\n",bn);//FIXME should say "with zlib" but trying to preserve reflog outputs right now
   if (!_mcpl_custom_gzip(filename,"wb"))
     printf("MCPL ERROR: Problems encountered while compressing file %s.\n",bn);
   else
     printf("MCPL: Succesfully compressed file into %s.gz\n",bn);
   return 1;
 }
-#  endif
-#endif
+/* #  endif */
+/* #endif */
 
-#ifdef MCPLIMP_HAS_CUSTOM_GZIP
+/* #ifdef MCPLIMP_HAS_CUSTOM_GZIP */
 
 MCPL_LOCAL int _mcpl_custom_gzip(const char *filename, const char *mode)
 {
@@ -2727,5 +2688,3 @@ MCPL_LOCAL int _mcpl_custom_gzip(const char *filename, const char *mode)
   return 1;
 
 }
-
-#endif
