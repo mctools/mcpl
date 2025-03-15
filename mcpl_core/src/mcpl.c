@@ -2526,9 +2526,16 @@ int mcpl_tool(int argc,char** argv) {
     if (!mcpl_hdr_blob(mcplfile, blobkey, &ldata, &data))
       return 1;
 #ifdef MCPL_THIS_IS_MS
-    _setmode(STDOUT_FILENO, O_BINARY);
-#endif
+    int the_stdout_fileno = _fileno(stdout);
+    if ( the_stdout_fileno == -2 )
+      mcpl_error("stdout is not associated with an output stream");
+    if ( the_stdout_fileno == -1 )
+      mcpl_error("could not determine file number of stdout");
+    _setmode(the_stdout_fileno, O_BINARY);
+    uint32_t nb = write(the_stdout_fileno,data,ldata);
+#else
     uint32_t nb = write(STDOUT_FILENO,data,ldata);
+#endif
     if (nb!=ldata)
       mcpl_error("Problems writing to stdout");
     free(filenames);
