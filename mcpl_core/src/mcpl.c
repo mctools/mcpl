@@ -2203,13 +2203,8 @@ MCPL_LOCAL int mcpl_str2int(const char* str, size_t len, int64_t* res)
   return 1;
 }
 
-#ifdef MCPL_THIS_IS_MS
-//for _setmode and O_BINARY
-#  include <fcntl.h>
-#  include <io.h>
-#else
-#  include "unistd.h" // for write(..)
-#endif
+MCPL_LOCAL void mcpl_internal_dump_to_stdout( const char * data,
+                                              unsigned long ldata );
 
 int mcpl_tool(int argc,char** argv) {
 
@@ -2527,19 +2522,7 @@ int mcpl_tool(int argc,char** argv) {
     const char * data;
     if (!mcpl_hdr_blob(mcplfile, blobkey, &ldata, &data))
       return 1;
-#ifdef MCPL_THIS_IS_MS
-    int the_stdout_fileno = _fileno(stdout);
-    if ( the_stdout_fileno == -2 )
-      mcpl_error("stdout is not associated with an output stream");
-    if ( the_stdout_fileno == -1 )
-      mcpl_error("could not determine file number of stdout");
-    _setmode(the_stdout_fileno, O_BINARY);
-    uint32_t nb = write(the_stdout_fileno,data,ldata);
-#else
-    uint32_t nb = write(STDOUT_FILENO,data,ldata);
-#endif
-    if (nb!=ldata)
-      mcpl_error("Problems writing to stdout");
+    mcpl_internal_dump_to_stdout( data, ldata );
     free(filenames);
     return 0;
   }
@@ -2690,4 +2673,34 @@ MCPL_LOCAL int _mcpl_custom_gzip(const char *filename, const char *mode)
   unlink(filename);
   return 1;
 
+}
+
+#ifdef MCPL_THIS_IS_MS
+//for _setmode and O_BINARY
+#  include <fcntl.h>
+#  include <io.h>
+#else
+#  include "unistd.h" // for write(..)
+#endif
+
+void mcpl_internal_dump_to_stdout( const char * data,
+                                   unsigned long ldata )
+{
+#ifdef MCPL_THIS_IS_MS
+  int the_stdout_fileno = _fileno(stdout);
+  if ( the_stdout_fileno == -2 )
+    mcpl_error("stdout is not associated with an output stream");
+  if ( the_stdout_fileno == -1 )
+    mcpl_error("could not determine file number of stdout");
+  int oldmode = _setmode(the_stdout_fileno, O_BINARY);
+  int nb = _write(the_stdout_fileno,data,ldata);
+  if ( oldmode != O_BINARY )
+    _setmode(the_stdout_fileno, oldmode);
+  if (nb!=(int)ldata)
+    mcpl_error("Problems writing to stdout");
+#else
+  ssize_t nb = write(STDOUT_FILENO,data,ldata);
+  if (nb!=(ssize_t)ldata)
+    mcpl_error("Problems writing to stdout");
+#endif
 }
