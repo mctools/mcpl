@@ -158,7 +158,7 @@ MCPL_LOCAL void mcpl_error(const char * msg) {
                              " to calling code which is not allowed!");
 }
 
-void mcpl_set_error_handler(void (*handler)(const char *))
+MCPL_API void mcpl_set_error_handler(void (*handler)(const char *))
 {
   mcpl_error_handler = handler;
 }
@@ -274,7 +274,7 @@ MCPL_LOCAL void mcpl_platform_compatibility_check(void) {
 
 }
 
-mcpl_outfile_t mcpl_create_outfile(const char * filename)
+MCPL_API mcpl_outfile_t mcpl_create_outfile(const char * filename)
 {
   //Sanity check chosen filename and append ".mcpl" if missing to help people
   //who forgot to add the extension (in the hope of higher consistency).
@@ -332,12 +332,12 @@ mcpl_outfile_t mcpl_create_outfile(const char * filename)
   return out;
 }
 
-const char * mcpl_outfile_filename(mcpl_outfile_t of) {
+MCPL_API const char * mcpl_outfile_filename(mcpl_outfile_t of) {
   MCPLIMP_OUTFILEDECODE;
   return f->filename;
 }
 
-void mcpl_hdr_set_srcname(mcpl_outfile_t of,const char * spn)
+MCPL_API void mcpl_hdr_set_srcname(mcpl_outfile_t of,const char * spn)
 {
   MCPLIMP_OUTFILEDECODE;
   if (!f->header_notwritten)
@@ -345,7 +345,7 @@ void mcpl_hdr_set_srcname(mcpl_outfile_t of,const char * spn)
   mcpl_store_string(&(f->hdr_srcprogname),spn);
 }
 
-void mcpl_hdr_add_comment(mcpl_outfile_t of,const char *comment)
+MCPL_API void mcpl_hdr_add_comment(mcpl_outfile_t of,const char *comment)
 {
   MCPLIMP_OUTFILEDECODE;
   if (!f->header_notwritten)
@@ -360,7 +360,7 @@ void mcpl_hdr_add_comment(mcpl_outfile_t of,const char *comment)
   mcpl_store_string(&(f->comments[oldn]),comment);
 }
 
-void mcpl_hdr_add_data(mcpl_outfile_t of, const char * key,
+MCPL_API void mcpl_hdr_add_data(mcpl_outfile_t of, const char * key,
                        uint32_t ldata, const char * data)
 {
   MCPLIMP_OUTFILEDECODE;
@@ -397,7 +397,7 @@ void mcpl_hdr_add_data(mcpl_outfile_t of, const char * key,
   memcpy(f->blobs[oldn],data,ldata);
 }
 
-void mcpl_enable_userflags(mcpl_outfile_t of)
+MCPL_API void mcpl_enable_userflags(mcpl_outfile_t of)
 {
   MCPLIMP_OUTFILEDECODE;
   if (f->opt_userflags)
@@ -408,7 +408,7 @@ void mcpl_enable_userflags(mcpl_outfile_t of)
   mcpl_recalc_psize(of);
 }
 
-void mcpl_enable_polarisation(mcpl_outfile_t of)
+MCPL_API void mcpl_enable_polarisation(mcpl_outfile_t of)
 {
   MCPLIMP_OUTFILEDECODE;
   if (f->opt_polarisation)
@@ -419,7 +419,7 @@ void mcpl_enable_polarisation(mcpl_outfile_t of)
   mcpl_recalc_psize(of);
 }
 
-void mcpl_enable_doubleprec(mcpl_outfile_t of)
+MCPL_API void mcpl_enable_doubleprec(mcpl_outfile_t of)
 {
   MCPLIMP_OUTFILEDECODE;
   if (!f->opt_singleprec)
@@ -430,7 +430,7 @@ void mcpl_enable_doubleprec(mcpl_outfile_t of)
   mcpl_recalc_psize(of);
 }
 
-void mcpl_enable_universal_pdgcode(mcpl_outfile_t of, int32_t pdgcode)
+MCPL_API void mcpl_enable_universal_pdgcode(mcpl_outfile_t of, int32_t pdgcode)
 {
   MCPLIMP_OUTFILEDECODE;
   if (pdgcode==0)
@@ -446,7 +446,7 @@ void mcpl_enable_universal_pdgcode(mcpl_outfile_t of, int32_t pdgcode)
   mcpl_recalc_psize(of);
 }
 
-void mcpl_enable_universal_weight(mcpl_outfile_t of, double w)
+MCPL_API void mcpl_enable_universal_weight(mcpl_outfile_t of, double w)
 {
   MCPLIMP_OUTFILEDECODE;
   if (w<=0.0||isinf(w)||isnan(w))
@@ -777,7 +777,7 @@ MCPL_LOCAL void mcpl_update_nparticles(FILE* f, uint64_t n)
     mcpl_error(errmsg);
 }
 
-mcpl_particle_t* mcpl_get_empty_particle(mcpl_outfile_t of)
+MCPL_API mcpl_particle_t* mcpl_get_empty_particle(mcpl_outfile_t of)
 {
   MCPLIMP_OUTFILEDECODE;
   if (f->puser) {
@@ -790,7 +790,7 @@ mcpl_particle_t* mcpl_get_empty_particle(mcpl_outfile_t of)
   return f->puser;
 }
 
-void mcpl_close_outfile(mcpl_outfile_t of)
+MCPL_API void mcpl_close_outfile(mcpl_outfile_t of)
 {
   MCPLIMP_OUTFILEDECODE;
   if (f->header_notwritten)
@@ -803,7 +803,7 @@ void mcpl_close_outfile(mcpl_outfile_t of)
   free(f);
 }
 
-void mcpl_transfer_metadata(mcpl_file_t source, mcpl_outfile_t target)
+MCPL_API void mcpl_transfer_metadata(mcpl_file_t source, mcpl_outfile_t target)
 {
   //Note that MCPL format version 2 and 3 have the same meta-data in the header,
   //except of course the version number itself.
@@ -842,7 +842,7 @@ void mcpl_transfer_metadata(mcpl_file_t source, mcpl_outfile_t target)
     mcpl_enable_universal_weight(target,uw);
 }
 
-int mcpl_closeandgzip_outfile_rc(mcpl_outfile_t of)
+MCPL_API int mcpl_closeandgzip_outfile_rc(mcpl_outfile_t of)
 {
     printf("MCPL WARNING: Usage of function mcpl_closeandgzip_outfile_rc is obsolete as"
          " mcpl_closeandgzip_outfile now also returns the status. Please update your code"
@@ -850,7 +850,7 @@ int mcpl_closeandgzip_outfile_rc(mcpl_outfile_t of)
     return mcpl_closeandgzip_outfile(of);
 }
 
-int mcpl_closeandgzip_outfile(mcpl_outfile_t of)
+MCPL_API int mcpl_closeandgzip_outfile(mcpl_outfile_t of)
 {
   MCPLIMP_OUTFILEDECODE;
   char * filename = f->filename;
@@ -1144,13 +1144,13 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   return out;
 }
 
-mcpl_file_t mcpl_open_file(const char * filename)
+MCPL_API mcpl_file_t mcpl_open_file(const char * filename)
 {
   int repair_status = 0;
   return mcpl_actual_open_file(filename,&repair_status);
 }
 
-void mcpl_repair(const char * filename)
+MCPL_API void mcpl_repair(const char * filename)
 {
   int repair_status = 1;
   mcpl_file_t f = mcpl_actual_open_file(filename,&repair_status);
@@ -1181,7 +1181,7 @@ void mcpl_repair(const char * filename)
   }
 }
 
-void mcpl_close_file(mcpl_file_t ff)
+MCPL_API void mcpl_close_file(mcpl_file_t ff)
 {
   MCPLIMP_FILEDECODE;
 
@@ -1208,25 +1208,25 @@ void mcpl_close_file(mcpl_file_t ff)
 }
 
 
-unsigned mcpl_hdr_version(mcpl_file_t ff)
+MCPL_API unsigned mcpl_hdr_version(mcpl_file_t ff)
 {
   MCPLIMP_FILEDECODE;
   return f->format_version;
 }
 
-uint64_t mcpl_hdr_nparticles(mcpl_file_t ff)
+MCPL_API uint64_t mcpl_hdr_nparticles(mcpl_file_t ff)
 {
   MCPLIMP_FILEDECODE;
   return f->nparticles;
 }
 
-unsigned mcpl_hdr_ncomments(mcpl_file_t ff)
+MCPL_API unsigned mcpl_hdr_ncomments(mcpl_file_t ff)
 {
   MCPLIMP_FILEDECODE;
   return f->ncomments;
 }
 
-const char * mcpl_hdr_comment(mcpl_file_t ff, unsigned i)
+MCPL_API const char * mcpl_hdr_comment(mcpl_file_t ff, unsigned i)
 {
   MCPLIMP_FILEDECODE;
   if (i>=f->ncomments)
@@ -1234,19 +1234,19 @@ const char * mcpl_hdr_comment(mcpl_file_t ff, unsigned i)
   return f->comments[i];
 }
 
-int mcpl_hdr_nblobs(mcpl_file_t ff)
+MCPL_API int mcpl_hdr_nblobs(mcpl_file_t ff)
 {
   MCPLIMP_FILEDECODE;
   return f->nblobs;
 }
 
-const char** mcpl_hdr_blobkeys(mcpl_file_t ff)
+MCPL_API const char** mcpl_hdr_blobkeys(mcpl_file_t ff)
 {
   MCPLIMP_FILEDECODE;
   return (const char**)f->blobkeys;
 }
 
-int mcpl_hdr_blob(mcpl_file_t ff, const char* key,
+MCPL_API int mcpl_hdr_blob(mcpl_file_t ff, const char* key,
                   uint32_t* ldata, const char ** data)
 {
   MCPLIMP_FILEDECODE;
@@ -1263,31 +1263,31 @@ int mcpl_hdr_blob(mcpl_file_t ff, const char* key,
   return 0;
 }
 
-const char* mcpl_hdr_srcname(mcpl_file_t ff)
+MCPL_API const char* mcpl_hdr_srcname(mcpl_file_t ff)
 {
   MCPLIMP_FILEDECODE;
   return f->hdr_srcprogname;
 }
 
-int mcpl_hdr_has_userflags(mcpl_file_t ff)
+MCPL_API int mcpl_hdr_has_userflags(mcpl_file_t ff)
 {
   MCPLIMP_FILEDECODE;
   return f->opt_userflags;
 }
 
-int mcpl_hdr_has_polarisation(mcpl_file_t ff)
+MCPL_API int mcpl_hdr_has_polarisation(mcpl_file_t ff)
 {
   MCPLIMP_FILEDECODE;
   return f->opt_polarisation;
 }
 
-int mcpl_hdr_has_doubleprec(mcpl_file_t ff)
+MCPL_API int mcpl_hdr_has_doubleprec(mcpl_file_t ff)
 {
   MCPLIMP_FILEDECODE;
   return !f->opt_singleprec;
 }
 
-const mcpl_particle_t* mcpl_read(mcpl_file_t ff)
+MCPL_API const mcpl_particle_t* mcpl_read(mcpl_file_t ff)
 {
   MCPLIMP_FILEDECODE;
   f->current_particle_idx += 1;
@@ -1399,7 +1399,7 @@ const mcpl_particle_t* mcpl_read(mcpl_file_t ff)
   return p;
 }
 
-int mcpl_skipforward(mcpl_file_t ff,uint64_t n)
+MCPL_API int mcpl_skipforward(mcpl_file_t ff,uint64_t n)
 {
   MCPLIMP_FILEDECODE;
   //increment, but guard against overflows:
@@ -1428,7 +1428,7 @@ int mcpl_skipforward(mcpl_file_t ff,uint64_t n)
   return notEOF;
 }
 
-int mcpl_rewind(mcpl_file_t ff)
+MCPL_API int mcpl_rewind(mcpl_file_t ff)
 {
   MCPLIMP_FILEDECODE;
   int already_there = (f->current_particle_idx==0);
@@ -1448,7 +1448,7 @@ int mcpl_rewind(mcpl_file_t ff)
   return notEOF;
 }
 
-int mcpl_seek(mcpl_file_t ff,uint64_t ipos)
+MCPL_API int mcpl_seek(mcpl_file_t ff,uint64_t ipos)
 {
   MCPLIMP_FILEDECODE;
   int already_there = (f->current_particle_idx==ipos);
@@ -1469,57 +1469,57 @@ int mcpl_seek(mcpl_file_t ff,uint64_t ipos)
   return notEOF;
 }
 
-uint64_t mcpl_currentposition(mcpl_file_t ff)
+MCPL_API uint64_t mcpl_currentposition(mcpl_file_t ff)
 {
   MCPLIMP_FILEDECODE;
   return f->current_particle_idx;
 }
 
-const char * mcpl_basename(const char * filename)
+MCPL_API const char * mcpl_basename(const char * filename)
 {
   //portable "basename" which doesn't modify it's argument:
   const char * bn = strrchr(filename, '/');
   return bn ? bn + 1 : filename;
 }
 
-int mcpl_hdr_particle_size(mcpl_file_t ff)
+MCPL_API int mcpl_hdr_particle_size(mcpl_file_t ff)
 {
   MCPLIMP_FILEDECODE;
   return f->particle_size;
 }
 
-uint64_t mcpl_hdr_header_size(mcpl_file_t ff)
+MCPL_API uint64_t mcpl_hdr_header_size(mcpl_file_t ff)
 {
   MCPLIMP_FILEDECODE;
   return f->first_particle_pos;
 }
 
-int mcpl_hdr_universal_pdgcode(mcpl_file_t ff)
+MCPL_API int mcpl_hdr_universal_pdgcode(mcpl_file_t ff)
 {
   MCPLIMP_FILEDECODE;
   return f->opt_universalpdgcode;
 }
 
-int mcpl_hdr_universel_pdgcode(mcpl_file_t ff)
+MCPL_API int mcpl_hdr_universel_pdgcode(mcpl_file_t ff)
 {
   printf("MCPL WARNING: Usage of function mcpl_hdr_universel_pdgcode is obsolete as it has"
          " been renamed to mcpl_hdr_universal_pdgcode. Please update your code.\n");
   return mcpl_hdr_universal_pdgcode(ff);
 }
 
-double mcpl_hdr_universal_weight(mcpl_file_t ff)
+MCPL_API double mcpl_hdr_universal_weight(mcpl_file_t ff)
 {
   MCPLIMP_FILEDECODE;
   return f->opt_universalweight;
 }
 
-int mcpl_hdr_little_endian(mcpl_file_t ff)
+MCPL_API int mcpl_hdr_little_endian(mcpl_file_t ff)
 {
   MCPLIMP_FILEDECODE;
   return f->is_little_endian;
 }
 
-void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
+MCPL_API void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
 {
   mcpl_outfileinternal_t * ft = (mcpl_outfileinternal_t *)target.internal; assert(ft);
   mcpl_fileinternal_t * fs = (mcpl_fileinternal_t *)source.internal; assert(fs);
@@ -1591,7 +1591,7 @@ void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
   mcpl_internal_write_particle_buffer_to_file(ft);
 }
 
-void mcpl_dump_header(mcpl_file_t f)
+MCPL_API void mcpl_dump_header(mcpl_file_t f)
 {
   printf("\n  Basic info\n");
   printf("    Format             : MCPL-%i\n",mcpl_hdr_version(f));
@@ -1644,8 +1644,8 @@ void mcpl_dump_header(mcpl_file_t f)
 //applications to apply custom filters and see the selected particles. For now,
 //we simply keep the function signature stable, allowing other code to access it
 //by forward declaring it themselves:
-void mcpl_dump_particles(mcpl_file_t f, uint64_t nskip, uint64_t nlimit,
-                         int(filter)(const mcpl_particle_t*))
+MCPL_API void mcpl_dump_particles(mcpl_file_t f, uint64_t nskip, uint64_t nlimit,
+                                  int(filter)(const mcpl_particle_t*))
 {
   int has_uf = mcpl_hdr_has_userflags(f);
   int has_pol = mcpl_hdr_has_polarisation(f);
@@ -1688,7 +1688,7 @@ void mcpl_dump_particles(mcpl_file_t f, uint64_t nskip, uint64_t nlimit,
   }
 }
 
-void mcpl_dump(const char * filename, int parts, uint64_t nskip, uint64_t nlimit)
+MCPL_API void mcpl_dump(const char * filename, int parts, uint64_t nskip, uint64_t nlimit)
 {
   if (parts<0||parts>2)
     mcpl_error("mcpl_dump got forbidden value for argument parts");
@@ -1737,7 +1737,7 @@ MCPL_LOCAL int mcpl_actual_can_merge(mcpl_file_t ff1, mcpl_file_t ff2)
 }
 
 
-int mcpl_can_merge(const char * file1, const char* file2)
+MCPL_API int mcpl_can_merge(const char * file1, const char* file2)
 {
   mcpl_file_t f1 = mcpl_open_file(file1);
   mcpl_file_t f2 = mcpl_open_file(file2);
@@ -1810,7 +1810,7 @@ MCPL_LOCAL void mcpl_warn_duplicates(unsigned n, const char ** filenames)
 //input file into an output file handle which must already be open and ready to
 //be written to, and otherwise be associated with an MCPL file with a compatible
 //format. Note that the error messages assume the overall operation is a merge:
-void mcpl_transfer_particle_contents(FILE * fo, mcpl_file_t ffi, uint64_t nparticles)
+MCPL_API void mcpl_transfer_particle_contents(FILE * fo, mcpl_file_t ffi, uint64_t nparticles)
 {
   mcpl_fileinternal_t * fi = (mcpl_fileinternal_t *)ffi.internal; assert(fi);
 
@@ -1851,10 +1851,10 @@ void mcpl_transfer_particle_contents(FILE * fo, mcpl_file_t ffi, uint64_t nparti
 }
 
 
-mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
-                                      unsigned nfiles,
-                                      const char ** files,
-                                      int keep_userflags )
+MCPL_API mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
+                                               unsigned nfiles,
+                                               const char ** files,
+                                               int keep_userflags )
 {
   ////////////////////////////////////
   // Initial sanity check of input: //
@@ -1964,8 +1964,8 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
   return out;
 }
 
-mcpl_outfile_t mcpl_merge_files( const char* file_output,
-                                 unsigned nfiles, const char ** files )
+MCPL_API mcpl_outfile_t mcpl_merge_files( const char* file_output,
+                                          unsigned nfiles, const char ** files )
 {
   mcpl_outfile_t out;
   out.internal = 0;
@@ -2037,14 +2037,14 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
   return out;
 }
 
-void mcpl_merge(const char * file1, const char* file2)
+MCPL_API void mcpl_merge(const char * file1, const char* file2)
 {
   printf("MCPL WARNING: Usage of function mcpl_merge is obsolete as it has"
          " been renamed to mcpl_merge_inplace. Please update your code.\n");
   mcpl_merge_inplace(file1, file2);
 }
 
-void mcpl_merge_inplace(const char * file1, const char* file2)
+MCPL_API void mcpl_merge_inplace(const char * file1, const char* file2)
 {
   mcpl_file_t ff1 = mcpl_open_file(file1);
   mcpl_file_t ff2 = mcpl_open_file(file2);
@@ -2215,7 +2215,7 @@ MCPL_LOCAL int mcpl_str2int(const char* str, size_t len, int64_t* res)
   return 1;
 }
 
-int mcpl_tool(int argc,char** argv) {
+MCPL_API int mcpl_tool(int argc,char** argv) {
 
   int nfilenames = 0;
   char ** filenames = 0;
@@ -2558,7 +2558,7 @@ int mcpl_tool(int argc,char** argv) {
   return 0;
 }
 
-int mcpl_gzip_file_rc(const char * filename)
+MCPL_API int mcpl_gzip_file_rc(const char * filename)
 {
   printf("MCPL WARNING: Usage of function mcpl_gzip_file_rc is obsolete as"
          " mcpl_gzip_file now also returns the status. Please update your code"
@@ -2626,7 +2626,7 @@ MCPL_LOCAL int _mcpl_custom_gzip(const char *file, const char *mode);//return 1 
 /*   return 0; */
 /* } */
 /* #  else */
-int mcpl_gzip_file(const char * filename)
+MCPL_API int mcpl_gzip_file(const char * filename)
 {
   const char * bn = strrchr(filename, '/');
   bn = bn ? bn + 1 : filename;
