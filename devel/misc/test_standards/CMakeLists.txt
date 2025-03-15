@@ -45,11 +45,15 @@ enable_testing()
 foreach( extensions ON OFF )
   foreach( lang C CXX )
     if ( lang STREQUAL C )
-      set( stds "90;99;11;17;23" )
-      set( stdproperty C_STANDARD )
+      if ( WIN32 )
+        #C23 seems to not be supported yet (March 2025) with MSVC. At least not
+        #in our platforms at github:
+        set( stds "90;99;11;17" )
+      else()
+        set( stds "90;99;11;17;23" )
+      endif()
     else()
-      set( stds "98;11;14;17;20;23" )#fixme: 98
-      set( stdproperty CXX_STANDARD )
+      set( stds "98;11;14;17;20;23" )
     endif()
     foreach( std ${stds} )
       set( bn "${lang}_${std}_extensions${extensions}" )
@@ -57,8 +61,8 @@ foreach( extensions ON OFF )
       file( COPY_FILE "${origsrc}" "${src}" )
       set( props
         LANGUAGE ${lang}
-        ${stdproperty} ${std}
-        "${stdproperty}_REQUIRED" ON ${lang}_EXTENSIONS ${extensions}
+        ${lang}_STANDARD ${std}
+        "${lang}_STANDARD_REQUIRED" ON ${lang}_EXTENSIONS ${extensions}
       )
       set_source_files_properties ( ${src} PROPERTIES ${props} )
       add_executable( "test_${bn}" "${src}" )
