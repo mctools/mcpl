@@ -312,8 +312,9 @@ add_executable(
 set_target_common_props( mcpl )
 set_target_common_props( mcpltool )
 target_compile_features( mcpl PUBLIC c_std_99 )
+target_compile_features( mcpltool PRIVATE c_std_99 )
 target_compile_options( mcpl PRIVATE ${mcpl_extra_private_compile_options} )
-target_compile_features( mcpltool PRIVATE c_std_99 ${mcpl_extra_private_compile_options} )
+target_compile_options( mcpltool PRIVATE ${mcpl_extra_private_compile_options} )
 target_include_directories(
   mcpl
   PRIVATE "${PROJECT_SOURCE_DIR}/src"
