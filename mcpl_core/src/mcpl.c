@@ -140,7 +140,7 @@
 #define MCPLIMP_NPARTICLES_POS 8
 #define MCPLIMP_MAX_PARTICLE_SIZE 96
 
-MCPL_LOCAL int mcpl_platform_is_little_endian() {
+MCPL_LOCAL int mcpl_platform_is_little_endian(void) {
   //Return 0 for big endian, 1 for little endian.
   volatile uint32_t i=0x01234567;
   return (*((uint8_t*)(&i))) == 0x67;
@@ -245,7 +245,7 @@ MCPL_LOCAL void mcpl_recalc_psize(mcpl_outfile_t of)
     + 16 * f->opt_userflags;
 }
 
-MCPL_LOCAL void mcpl_platform_compatibility_check() {
+MCPL_LOCAL void mcpl_platform_compatibility_check(void) {
   static int first = 1;
   if (!first)
     return;
