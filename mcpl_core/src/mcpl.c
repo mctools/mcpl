@@ -298,8 +298,8 @@ mcpl_outfile_t mcpl_create_outfile(const char * filename)
   mcpl_outfile_t out;
   out.internal = 0;
 
-  mcpl_outfileinternal_t * f = (mcpl_outfileinternal_t*)calloc(sizeof(mcpl_outfileinternal_t),1);
-  assert(f);
+  mcpl_outfileinternal_t * f = (mcpl_outfileinternal_t*)calloc(1,sizeof(mcpl_outfileinternal_t));
+  assert(f);//fixme: something safer than asserts!
 
   if (!lastdot || strcmp(lastdot, ".mcpl") != 0) {
     f->filename = (char*)malloc(n+6);
@@ -788,7 +788,7 @@ mcpl_particle_t* mcpl_get_empty_particle(mcpl_outfile_t of)
     //problems in multi-threaded user-code. Better disallow and give an error:
     mcpl_error("mcpl_get_empty_particle must not be called more than once per output file");
   } else {
-    f->puser = (mcpl_particle_t*)calloc(sizeof(mcpl_particle_t),1);
+    f->puser = (mcpl_particle_t*)calloc(1,sizeof(mcpl_particle_t));
   }
   return f->puser;
 }
@@ -956,7 +956,7 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   mcpl_file_t out;
   out.internal = 0;
 
-  mcpl_fileinternal_t * f = (mcpl_fileinternal_t*)calloc(sizeof(mcpl_fileinternal_t),1);
+  mcpl_fileinternal_t * f = (mcpl_fileinternal_t*)calloc(1,sizeof(mcpl_fileinternal_t));
   assert(f);
 
   //open file (with gzopen if filename ends with .gz):
@@ -1074,7 +1074,7 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
     for (i =0; i < f->nblobs; ++i)
       mcpl_read_buffer(f, &(f->bloblengths[i]), &(f->blobs[i]), errmsg);
   }
-  f->particle = (mcpl_particle_t*)calloc(sizeof(mcpl_particle_t),1);
+  f->particle = (mcpl_particle_t*)calloc(1,sizeof(mcpl_particle_t));
 
   //At first event now:
   f->current_particle_idx = 0;
