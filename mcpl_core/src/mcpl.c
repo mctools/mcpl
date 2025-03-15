@@ -1753,20 +1753,8 @@ MCPL_API int mcpl_can_merge(const char * file1, const char* file2)
 
 MCPL_LOCAL int mcpl_file_certainly_exists(const char * filename)
 {
-#if defined MCPL_THIS_IS_UNIX || defined MCPL_THIS_IS_MS
-  if( access( filename, F_OK ) != -1 )
-    return 1;
-  return 0;
-#else
-  //esoteric platform without access(..). Try opening for reads:
-  FILE *fd;
-  if ((fd = fopen(filename, "r"))) {
-    fclose(fd);
-    return 1;
-  }
-  //non-existing or read access not allowed:
-  return 0;
-#endif
+  mcu8str fn = mcu8str_view_cstr( filename );
+  return mctools_is_file( &fn );
 }
 
 /* #ifdef MCPL_THIS_IS_UNIX */
@@ -2215,6 +2203,12 @@ MCPL_LOCAL int mcpl_str2int(const char* str, size_t len, int64_t* res)
   return 1;
 }
 
+#ifdef MCPL_THIS_IS_MS
+//for _setmode and O_BINARY
+#  include <fcntl.h>
+#  include <io.h>
+#endif
+
 MCPL_API int mcpl_tool(int argc,char** argv) {
 
   int nfilenames = 0;
@@ -2532,7 +2526,7 @@ MCPL_API int mcpl_tool(int argc,char** argv) {
     if (!mcpl_hdr_blob(mcplfile, blobkey, &ldata, &data))
       return 1;
 #ifdef MCPL_THIS_IS_MS
-    setmode(STDOUT_FILENO, O_BINARY);
+    _setmode(STDOUT_FILENO, O_BINARY);
 #endif
     uint32_t nb = write(STDOUT_FILENO,data,ldata);
     if (nb!=ldata)

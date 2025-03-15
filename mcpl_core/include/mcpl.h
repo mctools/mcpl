@@ -31,7 +31,7 @@
 #define MCPL_FORMATVERSION 3 /* Format version of written files */
 
 #if defined (_WIN32)
-#  ifdef MCPL_EXPORTS
+#  ifdef mcpl_EXPORTS
 #    define MCPL_API __declspec(dllexport)
 #  else
 #    define MCPL_API __declspec(dllimport)
