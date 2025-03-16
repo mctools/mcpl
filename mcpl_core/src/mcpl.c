@@ -295,12 +295,12 @@ mcpl_outfile_t mcpl_create_outfile(const char * filename)
   if (!lastdot || strcmp(lastdot, ".mcpl") != 0) {
     f->filename = (char*)malloc(n+6);
     f->filename[0] = '\0';
-    strcat(f->filename,filename);
-    strcat(f->filename,".mcpl");
+    strncat(f->filename,filename,n);
+    strncat(f->filename,".mcpl",5);
   } else {
     f->filename = (char*)malloc(n+1);
     f->filename[0] = '\0';
-    strcat(f->filename,filename);
+    strncat(f->filename,filename,n);
   }
 
   f->hdr_srcprogname = 0;
@@ -2378,7 +2378,7 @@ int mcpl_tool(int argc,char** argv) {
         attempt_gzip = 1;
         outfn = (char*)malloc(lfn+1);
         outfn[0] = '\0';
-        strcat(outfn,filenames[0]);
+        strncat(outfn,filenames[0],lfn);
         outfn[lfn-3] = '\0';
         if (mcpl_file_certainly_exists(outfn))
           return free(filenames),mcpl_tool_usage(argv,"Requested output file already exists (without .gz extension).");
@@ -2447,11 +2447,12 @@ int mcpl_tool(int argc,char** argv) {
       ++added;
     }
 
-    char *fo_filename = (char*)malloc(strlen(mcpl_outfile_filename(fo))+4);
+    size_t nn = strlen(mcpl_outfile_filename(fo));
+    char *fo_filename = (char*)malloc(nn+4);
     fo_filename[0] = '\0';
-    strcat(fo_filename,mcpl_outfile_filename(fo));
+    strncat(fo_filename,mcpl_outfile_filename(fo),nn);
     if (mcpl_closeandgzip_outfile(fo))
-      strcat(fo_filename,".gz");
+      strncat(fo_filename,".gz",3);
     mcpl_close_file(fi);
 
     printf("MCPL: Succesfully extracted %" PRIu64 " / %" PRIu64 " particles from %s into %s\n",
@@ -2630,10 +2631,11 @@ MCPL_LOCAL int _mcpl_custom_gzip(const char *filename, const char *mode)
     return 0;
 
   //Construct output file name by appending .gz:
-  char * outfn = (char*)malloc(strlen(filename) + 4);
+  size_t nn = strlen(filename);
+  char * outfn = (char*)malloc(nn + 4);
   outfn[0] = '\0';
-  strcat(outfn,filename);
-  strcat(outfn,".gz");
+  strncat(outfn,filename,nn);
+  strncat(outfn,".gz",3);
 
   //Open output file:
   gzFile handle_out = gzopen(outfn, mode);
