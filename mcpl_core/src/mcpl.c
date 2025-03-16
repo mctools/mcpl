@@ -294,13 +294,18 @@ mcpl_outfile_t mcpl_create_outfile(const char * filename)
 
   if (!lastdot || strcmp(lastdot, ".mcpl") != 0) {
     f->filename = (char*)malloc(n+6);
-    f->filename[0] = '\0';
-    strncat(f->filename,filename,n);
-    strncat(f->filename,".mcpl",5);
+    assert(f->filename);
+    //f->filename[0] = '\0';
+    memcpy(f->filename,filename,n);
+    memcpy(f->filename+n,".mcpl",6);
+    //    strncat(f->filename,filename,n);
+    //    strncat(f->filename,".mcpl",5);
   } else {
     f->filename = (char*)malloc(n+1);
-    f->filename[0] = '\0';
-    strncat(f->filename,filename,n);
+    assert(f->filename);
+    memcpy(f->filename,filename,n+1);
+    //f->filename[0] = '\0';
+    //strncat(f->filename,filename,n);
   }
 
   f->hdr_srcprogname = 0;
@@ -388,6 +393,7 @@ void mcpl_hdr_add_data(mcpl_outfile_t of, const char * key,
   else
     f->blobs = (char **)calloc(f->nblobs,sizeof(char*));
   f->blobs[oldn] = (char *)malloc(ldata);
+  assert(f->blobs[oldn]);
   memcpy(f->blobs[oldn],data,ldata);
 }
 
@@ -1804,6 +1810,7 @@ void mcpl_transfer_particle_contents(FILE * fo, mcpl_file_t ffi, uint64_t nparti
   //buffer for transferring up to 1000 particles at a time:
   const unsigned npbufsize = 1000;
   char * buf = (char*)malloc(npbufsize*particle_size);
+  assert(buf);
   uint64_t np_remaining = nparticles;
 
   while(np_remaining) {
@@ -2376,13 +2383,17 @@ int mcpl_tool(int argc,char** argv) {
       int attempt_gzip = 0;
       if( lfn > 8 && !strcmp(outfn + (lfn - 8), ".mcpl.gz")) {
         attempt_gzip = 1;
-        outfn = (char*)malloc(lfn+1);
-        outfn[0] = '\0';
-        strncat(outfn,filenames[0],lfn);
+        outfn = (char*)malloc(lfn-2);//lfn+1-3
+        assert(outfn);
+        memcpy(outfn,filenames[0],lfn-3);
         outfn[lfn-3] = '\0';
+        /* outfn = (char*)malloc(lfn+1); */
+        /* assert(outfn); */
+        /* outfn[0] = '\0'; */
+        /* strncat(outfn,filenames[0],lfn); */
+        /* outfn[lfn-3] = '\0'; */
         if (mcpl_file_certainly_exists(outfn))
           return free(filenames),mcpl_tool_usage(argv,"Requested output file already exists (without .gz extension).");
-
       } else if( lfn > 3 && !strcmp(outfn + (lfn - 3), ".gz")) {
         return free(filenames),mcpl_tool_usage(argv,"Requested output file should not have .gz extension (unless it is .mcpl.gz).");
       }
@@ -2447,12 +2458,17 @@ int mcpl_tool(int argc,char** argv) {
       ++added;
     }
 
-    size_t nn = strlen(mcpl_outfile_filename(fo));
+    const char * outfile_fn = mcpl_outfile_filename(fo);
+    size_t nn = strlen(outfile_fn);
     char *fo_filename = (char*)malloc(nn+4);
-    fo_filename[0] = '\0';
-    strncat(fo_filename,mcpl_outfile_filename(fo),nn);
+    assert(fo_filename);
+    //fo_filename[0] = '\0';
+    memcpy(fo_filename,outfile_fn,nn+1);
+    //memcpy(fo_filename+nn,".gz",4);
+    //  strncat(fo_filename,mcpl_outfile_filename(fo),nn);
     if (mcpl_closeandgzip_outfile(fo))
-      strncat(fo_filename,".gz",3);
+      memcpy(fo_filename+nn,".gz",4);
+      //strncat(fo_filename,".gz",3);
     mcpl_close_file(fi);
 
     printf("MCPL: Succesfully extracted %" PRIu64 " / %" PRIu64 " particles from %s into %s\n",
@@ -2633,9 +2649,12 @@ MCPL_LOCAL int _mcpl_custom_gzip(const char *filename, const char *mode)
   //Construct output file name by appending .gz:
   size_t nn = strlen(filename);
   char * outfn = (char*)malloc(nn + 4);
-  outfn[0] = '\0';
-  strncat(outfn,filename,nn);
-  strncat(outfn,".gz",3);
+  assert(outfn);
+  memcpy(outfn,filename,nn);
+  memcpy(outfn+nn,".gz",4);
+  /* outfn[0] = '\0'; */
+  /* strncat(outfn,filename,nn); */
+  /* strncat(outfn,".gz",3); */
 
   //Open output file:
   gzFile handle_out = gzopen(outfn, mode);
