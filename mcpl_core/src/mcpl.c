@@ -253,10 +253,6 @@ MCPL_LOCAL void mcpl_recalc_psize(mcpl_outfile_t of)
 }
 
 MCPL_LOCAL void mcpl_platform_compatibility_check(void) {
-#ifndef _WIN32
-  //fixme: can we do something on Windows?
-  MCPL_STATIC_ASSERT(sizeof(z_off_t)==8);//zlib must have large file support
-#endif
   MCPL_STATIC_ASSERT(CHAR_BIT==8);
   MCPL_STATIC_ASSERT(sizeof(float)==4);
   MCPL_STATIC_ASSERT(sizeof(double)==8);
@@ -983,6 +979,30 @@ MCPL_LOCAL gzFile mcpl_gzopen( const char * filename, const char * mode )
   return res;
 }
 
+MCPL_LOCAL int mcpl_gzseek( gzFile fh, int64_t pos )
+{
+  //Invokes gzseek in SEEK_SET mode and returns 1 on success, 0 on failure.
+#ifdef _WIN32
+  if ( sizeof(z_off_t)>=sizeof(int64_t) ) {
+    //64 bit is somehow enabled!
+    return ( gzseek( fh, pos, SEEK_SET ) == pos ? 1 : 0 );
+  } else {
+    //Windows builds seems to not enable the LFS64 support zlib.
+    if ( pos >= 2147483647 )
+      mcpl_error("Can not seek to positions in gzipped files beyond the "
+                 " 2GB limit with the current zlib build.");
+    return ( gzseek( fh, (z_off_t)pos, SEEK_SET ) == (z_off_t)pos ? 1 : 0 );
+  }
+  //fixme: can we do something on Windows?
+#else
+  //Until proven otherwise, we will simply demand that zlib on Unix has the
+  //proper large file support.
+  MCPL_STATIC_ASSERT(sizeof(z_off_t)==8);
+  return ( gzseek( fh, pos, SEEK_SET ) == pos ? 1 : 0 );
+#endif
+}
+
+
 MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair_status)
 {
   int caller_is_mcpl_repair = *repair_status;
@@ -1149,14 +1169,16 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
           if (caller_is_mcpl_repair) {
             *repair_status = 1;//file broken but can't recover since gzip.
           } else {
-            mcpl_error("Input file appears to not have been closed properly and data recovery is disabled for gzipped files.");
+            mcpl_error("Input file appears to not have been closed properly"
+                       " and data recovery is disabled for gzipped files.");
           }
         }
       } else {
         assert(caller_is_mcpl_repair);
         *repair_status = 2;//file brokenness can not be determined since gzip.
       }
-      gzseek( f->filegz, f->first_particle_pos, SEEK_SET );
+      if (!mcpl_gzseek( f->filegz, f->first_particle_pos ) )
+        mcpl_error("Unexpected issue skipping to start of empty gzipped file");
 #endif
     } else {
       //SEEK_END is not guaranteed to always work, so we fail our recovery
@@ -1465,7 +1487,7 @@ int mcpl_skipforward(mcpl_file_t ff,uint64_t n)
 #ifdef MCPL_HASZLIB
     if (f->filegz) {
       int64_t targetpos = f->current_particle_idx*f->particle_size+f->first_particle_pos;
-      error = gzseek( f->filegz, targetpos, SEEK_SET )!=targetpos;
+      error = ! mcpl_gzseek(f->filegz, targetpos );
     } else
 #endif
       error = MCPL_FSEEK_CUR( f->file, f->particle_size * n )!=0;
@@ -1485,7 +1507,7 @@ int mcpl_rewind(mcpl_file_t ff)
     int error;
 #ifdef MCPL_HASZLIB
     if (f->filegz) {
-      error = gzseek( f->filegz, f->first_particle_pos, SEEK_SET )!=(int64_t)f->first_particle_pos;
+      error = ! mcpl_gzseek( f->filegz, f->first_particle_pos );
     } else
 #endif
       error = MCPL_FSEEK( f->file, f->first_particle_pos )!=0;
@@ -1506,7 +1528,7 @@ int mcpl_seek(mcpl_file_t ff,uint64_t ipos)
 #ifdef MCPL_HASZLIB
     if (f->filegz) {
       int64_t targetpos = f->current_particle_idx*f->particle_size+f->first_particle_pos;
-      error = gzseek( f->filegz, targetpos, SEEK_SET )!=targetpos;
+      error = ! mcpl_gzseek( f->filegz, targetpos );
     } else
 #endif
       error = MCPL_FSEEK( f->file, f->first_particle_pos + f->particle_size * ipos )!=0;
