@@ -279,6 +279,8 @@ add_executable(
   "app_tool/mcpltool_app.c"
   "src/mcpl.c" "src/mcpl_fileutils.c" "src/mcpl_fileutils.h"
 )
+target_compile_definitions( mcpltool PRIVATE mcpl_LIB_IS_STATIC )
+
 #target_compile_features( mcpl INTERFACE c_std_99 )
 
 #Libname:

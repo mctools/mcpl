@@ -30,20 +30,25 @@
 #define MCPL_VERSION_STR "1.6.2"
 #define MCPL_FORMATVERSION 3 /* Format version of written files */
 
-#if defined (_WIN32)
-#  ifdef mcpl_EXPORTS
-#    define MCPL_API __declspec(dllexport)
-#  else
-#    define MCPL_API __declspec(dllimport)
-#  endif
+#ifdef mcpl_LIB_IS_STATIC
+#  define MCPL_API
 #  define MCPL_LOCAL
 #else
-#  if ( defined(__GNUC__) && __GNUC__ >= 4) || defined(__clang__)
-#    define MCPL_API    __attribute__ ((visibility ("default")))
-#    define MCPL_LOCAL  __attribute__ ((visibility ("hidden")))
-#  else
-#    define MCPL_API
+#  ifdef _WIN32
+#    ifdef mcpl_EXPORTS
+#      define MCPL_API __declspec(dllexport)
+#    else
+#      define MCPL_API __declspec(dllimport)
+#    endif
 #    define MCPL_LOCAL
+#  else
+#    if ( ( defined(__GNUC__) && __GNUC__ >= 4) || defined(__clang__) )
+#      define MCPL_API    __attribute__ ((visibility ("default")))
+#      define MCPL_LOCAL  __attribute__ ((visibility ("hidden")))
+#    else
+#      define MCPL_API
+#      define MCPL_LOCAL
+#    endif
 #  endif
 #endif
 
