@@ -113,8 +113,7 @@ int main(int argc,char**argv) {
   mcpl_closeandgzip_outfile(f);
 
   //Note: By calling mcpl_closeandgzip_outfile rather than mcpl_close_outfile,
-  //the output file will (in most cases) end up being gzipped, resulting in a
-  //smaller file. Such files can be read directly if mcpl is compiled with zlib
-  //support (if not, users will have to gunzip it before using it).
+  //the output file will end up being gzipped, resulting in a smaller file. Such
+  //files can also be read directly by MCPL.
 }
 

@@ -1618,6 +1618,17 @@ namespace {
     }
   }
 
+#ifdef _WIN32
+  wchar_t* mctools_path2wpath( const mcu8str* path )
+  {
+    mcu8str p = mctools_impl_view_no_winnamespace(path);
+    if ( p.size == 0 )
+      return NULL;
+    mcwinstr wp = mc_path2longwpath( &p );
+    return wp.c_str;
+  }
+#endif
+
 #ifdef MCFILEUTILS_CPPNAMESPACE
 }
 #endif

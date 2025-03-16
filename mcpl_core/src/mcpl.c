@@ -253,12 +253,15 @@ MCPL_LOCAL void mcpl_recalc_psize(mcpl_outfile_t of)
 }
 
 MCPL_LOCAL void mcpl_platform_compatibility_check(void) {
-
+#ifndef _WIN32
+  //fixme: can we do something on Windows?
   MCPL_STATIC_ASSERT(sizeof(z_off_t)==8);//zlib must have large file support
+#endif
   MCPL_STATIC_ASSERT(CHAR_BIT==8);
   MCPL_STATIC_ASSERT(sizeof(float)==4);
   MCPL_STATIC_ASSERT(sizeof(double)==8);
 
+  //Fixme: add a cast on the right side as well? E.g. = -int32_t(1);
   int32_t m1_32 = -1;
   int32_t not0_32 = ~0;
   int64_t m1_64 = -1;
@@ -960,6 +963,26 @@ MCPL_LOCAL void mcpl_read_string(mcpl_fileinternal_t* f, char ** dest, const cha
   *dest = s;
 }
 
+MCPL_LOCAL gzFile mcpl_gzopen( const char * filename, const char * mode )
+{
+  mcu8str f = mcu8str_view_cstr( filename );
+#ifdef _WIN32
+  wchar_t* wpath = mctools_path2wpath(&f);//must free(..) return value.
+  gzFile res = gzopen_w(wpath,mode);
+  free(wpath);
+#else
+  mcu8str rp = mctools_real_path( &f );
+  const char * use_fn = ( rp.c_str && rp.size > 0 ) ? rp.c_str : filename ;
+#  ifdef Z_LARGE64
+  gzFile res = gzopen64( use_fn, mode );
+#  else
+  gzFile res = gzopen( use_fn, mode );
+#  endif
+  mcu8str_dealloc( &rp );
+#endif
+  return res;
+}
+
 MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair_status)
 {
   int caller_is_mcpl_repair = *repair_status;
@@ -982,7 +1005,7 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   const char * lastdot = strrchr(filename, '.');
   if (lastdot && strcmp(lastdot, ".gz") == 0) {
 #ifdef MCPL_HASZLIB
-    f->filegz = gzopen(filename,"rb");
+    f->filegz = mcpl_gzopen( filename, "rb" );
     if (!f->filegz)
       mcpl_error("Unable to open file!");
 #else
@@ -2663,7 +2686,7 @@ int mcpl_gzip_file(const char * filename)
 
 /* #ifdef MCPLIMP_HAS_CUSTOM_GZIP */
 
-MCPL_LOCAL int _mcpl_custom_gzip(const char *filename, const char *mode)
+MCPL_LOCAL int _mcpl_custom_gzip(const char *filename, const char *mode)//fixme: mode is always "wb"
 {
   //Open input file:
   FILE *handle_in = fopen(filename, "rb");
@@ -2681,7 +2704,7 @@ MCPL_LOCAL int _mcpl_custom_gzip(const char *filename, const char *mode)
   /* strncat(outfn,".gz",3); */
 
   //Open output file:
-  gzFile handle_out = gzopen(outfn, mode);
+  gzFile handle_out = mcpl_gzopen(outfn, mode);
 
   free(outfn);
 

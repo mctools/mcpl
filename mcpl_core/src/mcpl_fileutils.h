@@ -217,6 +217,12 @@ namespace MCFILEUTILS_CPPNAMESPACE {
 #endif
   MCTOOLS_FILE_t * mctools_fopen( const mcu8str* path, const char * mode );
 
+#ifdef _WIN32
+  //Get resolved wpath. Returns null pointer in case of problems. Caller must
+  //free(..) the returned value.
+  wchar_t* mctools_path2wpath( const mcu8str* );
+#endif
+
 #ifdef MCFILEUTILS_CPPNAMESPACE
 }
 #endif

@@ -23,6 +23,7 @@
 
 #include <stdint.h>
 
+//Fixme: generate:
 #define MCPL_VERSION_MAJOR 1
 #define MCPL_VERSION_MINOR 6
 #define MCPL_VERSION_PATCH 2
