@@ -98,6 +98,10 @@
 #ifndef _C99_SOURCE
 #  define _C99_SOURCE 1
 #endif
+#ifdef _FILE_OFFSET_BITS
+#  undef _FILE_OFFSET_BITS
+#endif
+#define _FILE_OFFSET_BITS 64
 #include <inttypes.h>
 #include <stdio.h>
 #ifndef PRIu64//bad compiler - fallback to guessing
@@ -196,7 +200,9 @@ MCPL_LOCAL void mcpl_write_buffer(FILE* f, uint32_t n, const char * data, const 
 MCPL_LOCAL void mcpl_write_string(FILE* f, const char * str, const char * errmsg)
 {
   size_t n = strlen(str);
-  mcpl_write_buffer(f,n,str,errmsg);//nb: we don't write the terminating null-char
+  if ( n >= 4294967295 )
+    mcpl_error("too large string encountered ");
+  mcpl_write_buffer(f,(uint32_t)n,str,errmsg);//nb: we don't write the terminating null-char
 }
 
 typedef struct MCPL_LOCAL {
@@ -761,6 +767,20 @@ void mcpl_add_particle(mcpl_outfile_t of,const mcpl_particle_t* particle)
   mcpl_internal_write_particle_buffer_to_file(f);
 }
 
+
+#ifdef MCPL_THIS_IS_MS
+#  define MCPL_FSEEK_OFFSET_TYPE __int64
+#  define MCPL_FSEEK( fh, pos)  _fseeki64(fh,(__int64)(pos), SEEK_SET)
+#  define MCPL_FSEEK_CUR( fh, pos)  _fseeki64(fh,(__int64)(pos), SEEK_CUR)
+#  define MCPL_FSEEK_END( fh, pos)  _fseeki64(fh,(__int64)(pos), SEEK_END)
+#else
+#  define MCPL_FSEEK_OFFSET_TYPE ssize_t
+#  define MCPL_FSEEK( fh, pos) fseek(fh,(ssize_t)(pos), SEEK_SET)
+#  define MCPL_FSEEK_CUR( fh, pos) fseek(fh,(ssize_t)(pos), SEEK_CUR)
+#  define MCPL_FSEEK_END( fh, pos) fseek(fh,(ssize_t)(pos), SEEK_END)
+#endif
+
+
 MCPL_LOCAL void mcpl_update_nparticles(FILE* f, uint64_t n)
 {
   //Seek and update nparticles at correct location in header:
@@ -768,12 +788,12 @@ MCPL_LOCAL void mcpl_update_nparticles(FILE* f, uint64_t n)
   int64_t savedpos = ftell(f);
   if (savedpos<0)
     mcpl_error(errmsg);
-  if (fseek( f, MCPLIMP_NPARTICLES_POS, SEEK_SET ))
+  if (MCPL_FSEEK( f, MCPLIMP_NPARTICLES_POS ))
     mcpl_error(errmsg);
   size_t nb = fwrite(&n, 1, sizeof(n), f);
   if (nb != sizeof(n))
     mcpl_error(errmsg);
-  if (fseek( f, savedpos, SEEK_SET ))
+  if (MCPL_FSEEK( f, savedpos ))
     mcpl_error(errmsg);
 }
 
@@ -1116,7 +1136,9 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
       gzseek( f->filegz, f->first_particle_pos, SEEK_SET );
 #endif
     } else {
-      if (f->file && !fseek( f->file, 0, SEEK_END )) {//SEEK_END is not guaranteed to always work, so we fail our recovery attempt silently.
+      //SEEK_END is not guaranteed to always work, so we fail our recovery
+      //attempt silently:
+      if (f->file && !MCPL_FSEEK_END( f->file, 0 )) {
         int64_t endpos = ftell(f->file);
         if (endpos > (int64_t)f->first_particle_pos && (uint64_t)endpos != f->first_particle_pos) {
           uint64_t np = ( endpos - f->first_particle_pos ) / f->particle_size;
@@ -1136,7 +1158,9 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
           }
         }
       }
-      fseek( f->file, f->first_particle_pos, SEEK_SET );//if this fseek failed, it might just be that we are at EOF with no particles.
+      MCPL_FSEEK( f->file, f->first_particle_pos );//if this fseek failed, it
+                                                   //might just be that we are
+                                                   //at EOF with no particles.
     }
   }
 
@@ -1421,7 +1445,7 @@ int mcpl_skipforward(mcpl_file_t ff,uint64_t n)
       error = gzseek( f->filegz, targetpos, SEEK_SET )!=targetpos;
     } else
 #endif
-      error = fseek( f->file, f->particle_size * n, SEEK_CUR )!=0;
+      error = MCPL_FSEEK_CUR( f->file, f->particle_size * n )!=0;
     if (error)
       mcpl_error("Errors encountered while skipping in particle list");
   }
@@ -1441,7 +1465,7 @@ int mcpl_rewind(mcpl_file_t ff)
       error = gzseek( f->filegz, f->first_particle_pos, SEEK_SET )!=(int64_t)f->first_particle_pos;
     } else
 #endif
-      error = fseek( f->file, f->first_particle_pos, SEEK_SET )!=0;
+      error = MCPL_FSEEK( f->file, f->first_particle_pos )!=0;
     if (error)
       mcpl_error("Errors encountered while rewinding particle list");
   }
@@ -1462,7 +1486,7 @@ int mcpl_seek(mcpl_file_t ff,uint64_t ipos)
       error = gzseek( f->filegz, targetpos, SEEK_SET )!=targetpos;
     } else
 #endif
-      error = fseek( f->file, f->first_particle_pos + f->particle_size * ipos, SEEK_SET )!=0;
+      error = MCPL_FSEEK( f->file, f->first_particle_pos + f->particle_size * ipos )!=0;
     if (error)
       mcpl_error("Errors encountered while seeking in particle list");
   }
@@ -2088,7 +2112,7 @@ void mcpl_merge_inplace(const char * file1, const char* file2)
   //mcpl_repair:
   if (!f1a)
     mcpl_error("Unable to open file1 in update mode!");
-  if (fseek( f1a, first_particle_pos + particle_size*np1, SEEK_SET ))
+  if (MCPL_FSEEK( f1a, first_particle_pos + particle_size*np1 ))
     mcpl_error("Unable to seek to end of file1 in update mode");
 
   //Transfer particle contents, setting nparticles to 0 during the operation (so
