@@ -98,23 +98,54 @@ namespace MCFILEUTILS_CPPNAMESPACE {
       STDNS free( buf_to_free );
   }
 
+#ifdef MCFILEUTILS_CPPNAMESPACE
+  namespace {
+#endif
+    void mctools_impl_error( const char * msg )
+    {
+#ifdef __cplusplus
+      throw std::runtime_error(msg);
+#else
+      fprintf(stderr, "%s\n",msg);
+      exit(EXIT_FAILURE);
+#endif
+    }
+#ifdef MCFILEUTILS_CPPNAMESPACE
+  }
+#endif
+
+#define MCTOOLS_STROKFORUINT( x ) ( (x) < (UINT_MAX-1) )
+  mcu8str_size_t mctools_strlen( const char * c_str, size_t nmax )
+  {
+    //safe strlen which guarantees result can fit in an unsigned integer (or
+    //lower, if nmax!=0 is provided).
+    const mcu8str_size_t o_size = STDNS strnlen( c_str, (nmax?nmax:UINT_MAX) );
+    if ( !MCTOOLS_STROKFORUINT(o_size) )
+      mctools_impl_error("str length out of range");
+    return o_size;
+  }
+
   mcu8str mcu8str_create( mcu8str_size_t prealloc_size )
   {
     if ( prealloc_size == 0 )
       return mcu8str_create_empty();
     mcu8str s;
-    s.c_str = (char*) STDNS malloc( prealloc_size+1 );
+    //Limit prealloc_size, since we use unsigned type to store the size in
+    //buflen below:
+    s.c_str = (char*) ( MCTOOLS_STROKFORUINT(prealloc_size)
+                        ? STDNS malloc( prealloc_size+1 ) : NULL);
     if ( !s.c_str ) {
 #ifdef MCFILEUTILS_CPPNAMESPACE
       throw std::bad_alloc();
 #else
       fprintf(stderr, "ERROR: Memory allocation failed in mcu8str_create\n");
+      exit(EXIT_FAILURE);
 #endif
       return mcu8str_create_empty();
     }
     s.c_str[0] = '\0';
     s.size = 0;
-    s.buflen = prealloc_size + 1;
+    s.buflen = (unsigned)(prealloc_size + 1);//cast ok, checked above
     s.owns_memory = 1;
     return s;
   }
@@ -132,12 +163,12 @@ namespace MCFILEUTILS_CPPNAMESPACE {
                   otherstr->c_str,
                   otherstr->size );
     str->c_str[newsize] = '\0';
-    str->size = newsize;
+    str->size = (unsigned)newsize;//cast ok, mcu8str_reserve checked.
   }
 
   void mcu8str_append_cstr( mcu8str* str, const char * c_str )
   {
-    const mcu8str_size_t o_size = STDNS strlen( c_str );
+    const mcu8str_size_t o_size = mctools_strlen( c_str, 0 );
     if ( o_size == 0 )
       return;
     const mcu8str_size_t newsize = str->size + o_size;
@@ -147,19 +178,19 @@ namespace MCFILEUTILS_CPPNAMESPACE {
     //overlapping even if c_str = str.c_str:
     STDNS memcpy( str->c_str + str->size, c_str, o_size );
     str->c_str[newsize] = '\0';
-    str->size = newsize;
+    str->size = (unsigned)newsize;//cast ok, mcu8str_reserve checked.
   }
 
   mcu8str mcu8str_create_from_cstr( const char * c_str )
   {
     if ( ! *c_str )
       return mcu8str_create_empty();
-    const mcu8str_size_t o_size = STDNS strlen( c_str );
+    const mcu8str_size_t o_size = mctools_strlen( c_str, 0 );
     assert( o_size > 0 );
     mcu8str str = mcu8str_create( o_size );
     //str.c_str is newly allocated, so there can be no overlap:
     STDNS memcpy( str.c_str, c_str, o_size + 1 );
-    str.size = o_size;
+    str.size = (unsigned)o_size;//cast ok, mctools_strlen checked.
     return str;
   }
 
@@ -171,7 +202,7 @@ namespace MCFILEUTILS_CPPNAMESPACE {
     mcu8str s;
     s.c_str = (char*)c_str;//cast away constness, but we will add it again in
                            //the return type (in c++).
-    s.size = STDNS strlen( c_str );
+    s.size = (unsigned)mctools_strlen( c_str, 0 );//cast due to mctools_strlen
     s.buflen = s.size + 1;
     s.owns_memory = 0;
     return s;
@@ -217,8 +248,12 @@ namespace MCFILEUTILS_CPPNAMESPACE {
       assert( str->c_str[0] == '\0' );
       return;
     }
-    str->size = STDNS strlen( str->c_str );
-    assert( str->size < str->buflen );
+    mcu8str_size_t n = mctools_strlen( str->c_str, str->buflen );
+    if ( n >= str->buflen ) {
+      mctools_impl_error("mcu8str_update_size logic error");
+      return;
+    }
+    str->size = (unsigned)n;
   }
 
   void mcu8str_assign( mcu8str* dest, const mcu8str* src )
@@ -284,13 +319,15 @@ namespace MCFILEUTILS_CPPNAMESPACE {
   //Allow usage of static buffers:
   mcu8str mcu8str_create_from_staticbuffer( char * buf, mcu8str_size_t buflen )
   {
+    if ( buflen==0 || !MCTOOLS_STROKFORUINT(buflen-1) )
+      mctools_impl_error("static buffer length out of range");
     assert(buflen > 0);
     mcu8str s;
     s.owns_memory = 0;
     s.c_str = buf;
     s.c_str[0] = '\0';
     s.size = 0;
-    s.buflen = buflen;
+    s.buflen = (unsigned)buflen;
     return s;
   }
 
@@ -387,7 +424,7 @@ namespace MCFILEUTILS_CPPNAMESPACE {
 #  define MC_IS_WINDOWS
 #  define CP_UTF8 1
 #  define MAX_PATH 260
-#  define DWORD int
+#  define DWORD unsigned
 #  define INVALID_FILE_ATTRIBUTES 0x123
 #  define FILE_ATTRIBUTE_DIRECTORY 0x1000
   int MultiByteToWideChar( int,int,const char*,int,wchar_t*,int);
@@ -444,22 +481,14 @@ namespace MCFILEUTILS_CPPNAMESPACE {
 
 #ifdef MCFILEUTILS_CPPNAMESPACE
 namespace MCFILEUTILS_CPPNAMESPACE {
-#endif
-
-
-#ifdef MCFILEUTILS_CPPNAMESPACE
 namespace {
 #endif
-  void mctools_impl_error( const char * msg )
-  {
-#ifdef __cplusplus
-    throw std::runtime_error(msg);
-#else
-    fprintf(stderr, "%s\n",msg);
-#endif
-  }
 
 #ifdef MC_IS_WINDOWS
+#ifndef DWORD_MAX
+#  define DWORD_MAX 0xffffffffUL
+#endif
+
   int mctools_impl_str_size2int( mcu8str_size_t v )
   {
 #  ifdef INT_MAX
@@ -601,7 +630,8 @@ namespace {
       if ( sp->size == 0 )
         return mc_winstr_create_empty();
       mcwinstr out = mc_winstr_create( 4096 );
-      DWORD len = GetLongPathNameW( sp->c_str, out.c_str, out.buflen );
+      assert( out.buflen < DWORD_MAX );
+      DWORD len = GetLongPathNameW( sp->c_str, out.c_str, (DWORD)out.buflen );
       if ( len == 0 ) {
         //failure (e.g. file does not exist). We return the original string
         //unchanged in this case:
@@ -614,7 +644,9 @@ namespace {
         return out;
       }
       mc_winstr_dealloc( &out );
-      out = mc_winstr_create( len );
+      if ( len >= DWORD_MAX )
+        mctools_impl_error("str length out of range for DWORD");
+      out = mc_winstr_create( (DWORD)len );
       len = GetLongPathNameW( sp->c_str, out.c_str, out.buflen );
       if ( (mcu8str_size_t) len < out.buflen ) {
         out.c_str[len] = 0;
@@ -1494,8 +1526,8 @@ namespace {
           mctools_pathseps_platform(&rhome);
           return rhome;
         }
-        const mcu8str_size_t home_size = STDNS strlen( home );
-        const mcu8str_size_t newsize = (mcu8str_size_t)(home_size + p.size - 1);
+        const mcu8str_size_t home_size = mctools_strlen( home, 0 );
+        const mcu8str_size_t newsize = (mcu8str_size_t)(home_size + p.size - 1);//fixme overflow if size_t == unsigned. Static assert sizeof(size_t)>sizeof(unsigned)?
         res = mcu8str_create( newsize );
         mcu8str_append_cstr(&res,home);
         mcu8str_append_cstr(&res, p.c_str + 1 );

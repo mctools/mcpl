@@ -1895,11 +1895,12 @@ void mcpl_transfer_particle_contents(FILE * fo, mcpl_file_t ffi, uint64_t nparti
     np_remaining -= toread;
 
     //read:
-    size_t nb;
+    uint64_t nb;
 #ifdef MCPL_HASZLIB
-    if (fi->filegz)
-      nb = gzread(fi->filegz, buf, toread*particle_size);
-    else
+    if (fi->filegz) {
+      assert( ((unsigned)toread)*particle_size < UINT32_MAX );
+      nb = gzread(fi->filegz, buf, ((unsigned)toread)*particle_size);
+    } else
 #endif
       nb = fread(buf,1,toread*particle_size,fi->file);
     if (nb!=toread*particle_size)
@@ -2507,14 +2508,15 @@ int mcpl_tool(int argc,char** argv) {
 
     if (!opt_preventcomment) {
       char comment[1024];
-      sprintf(comment, "mcpltool: extracted particles from file with %" PRIu64 " particles",fi_nparticles);
+      snprintf(comment, sizeof(comment), "mcpltool: extracted particles from"
+               " file with %" PRIu64 " particles",fi_nparticles);
       mcpl_hdr_add_comment(fo,comment);
     }
 
     int32_t pdgcode_select = 0;
     if (pdgcode_str) {
       int64_t pdgcode64;
-      if (!mcpl_str2int(pdgcode_str, 0, &pdgcode64) || pdgcode64<-2147483648 || pdgcode64>2147483647 || !pdgcode64)
+      if (!mcpl_str2int(pdgcode_str, 0, &pdgcode64) || -pdgcode64>2147483648 || pdgcode64>2147483647 || !pdgcode64)
         return free(filenames),mcpl_tool_usage(argv,"Must specify non-zero 32bit integer as argument to -p.");
       pdgcode_select = (int32_t)pdgcode64;
     }
@@ -2803,3 +2805,6 @@ void mcpl_internal_dump_to_stdout( const char * data,
     mcpl_error("Problems writing to stdout");
 #endif
 }
+
+//fixme: we need special CI test exercising files above 2/4GB, including gzipped
+//files, seeking, closing, rewinding, repairing.
