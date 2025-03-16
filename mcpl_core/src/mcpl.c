@@ -136,6 +136,10 @@
 
 #define MCPLIMP_NPARTICLES_POS 8
 #define MCPLIMP_MAX_PARTICLE_SIZE 96
+#define MCPL_STATIC_ASSERT0(COND,MSG) { typedef char mcpl_##MSG[(COND)?1:-1]; mcpl_##MSG dummy; (void)dummy; }
+#define MCPL_STATIC_ASSERT3(expr,x) MCPL_STATIC_ASSERT0(expr,fail_at_line_##x)
+#define MCPL_STATIC_ASSERT2(expr,x) MCPL_STATIC_ASSERT3(expr,x)
+#define MCPL_STATIC_ASSERT(expr)    MCPL_STATIC_ASSERT2(expr,__LINE__)
 
 MCPL_LOCAL int mcpl_platform_is_little_endian(void) {
   //Return 0 for big endian, 1 for little endian.
@@ -243,19 +247,11 @@ MCPL_LOCAL void mcpl_recalc_psize(mcpl_outfile_t of)
 }
 
 MCPL_LOCAL void mcpl_platform_compatibility_check(void) {
-  static int first = 1;
-  if (!first)
-    return;
-  first = 0;
 
-  if (CHAR_BIT!=8)
-    mcpl_error("Platform compatibility check failed (bytes are not 8 bit)");
-
-  if (sizeof(float)!=4)
-    mcpl_error("Platform compatibility check failed (float is not 4 bytes)");
-
-  if (sizeof(double)!=8)
-    mcpl_error("Platform compatibility check failed (double is not 8 bytes)");
+  MCPL_STATIC_ASSERT(sizeof(z_off_t)==8);//zlib must have large file support
+  MCPL_STATIC_ASSERT(CHAR_BIT==8);
+  MCPL_STATIC_ASSERT(sizeof(float)==4);
+  MCPL_STATIC_ASSERT(sizeof(double)==8);
 
   int32_t m1_32 = -1;
   int32_t not0_32 = ~0;
@@ -264,14 +260,12 @@ MCPL_LOCAL void mcpl_platform_compatibility_check(void) {
   if ( m1_32 != not0_32 || m1_64 != not0_64 )
     mcpl_error("Platform compatibility check failed (integers are not two's complement)");
 
-
   if (copysign(1.0, -0.0) != -1.0)
     mcpl_error("Platform compatibility check failed (floating point numbers do not have signed zero)");
 
   mcpl_particle_t pd;
   if ( (char*)&(pd.userflags)-(char*)&(pd) != 12*sizeof(double)+sizeof(uint32_t) )
     mcpl_error("Platform compatibility check failed (unexpected padding in mcpl_particle_t)");
-
 }
 
 mcpl_outfile_t mcpl_create_outfile(const char * filename)
@@ -1001,16 +995,16 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   //proceed reading header, knowing we have a consistent version and endian-ness.
   const char * errmsg = "Errors encountered while attempting to read header";
 
-  uint64_t np;
+  uint64_t numpart;
 #ifdef MCPL_HASZLIB
   if (f->filegz)
-    nb = gzread(f->filegz, &np, sizeof(np));
+    nb = gzread(f->filegz, &numpart, sizeof(numpart));
   else
 #endif
-    nb = fread(&np, 1, sizeof(np), f->file);
-  if (nb!=sizeof(np))
+    nb = fread(&numpart, 1, sizeof(numpart), f->file);
+  if (nb!=sizeof(numpart))
     mcpl_error(errmsg);
-  f->nparticles = np;
+  f->nparticles = numpart;
 
   uint32_t arr[8];
   assert(sizeof(arr)==32);
