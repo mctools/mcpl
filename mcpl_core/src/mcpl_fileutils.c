@@ -78,16 +78,26 @@ namespace MCFILEUTILS_CPPNAMESPACE {
 #  define STDNS
 #endif
 
+
+//MSVC C4702 ("unreachable code") triggers in the function below, but there are
+//no branches in the function, and it IS being called?!?:
+#ifdef _MSC_VER
+#  pragma warning( push )
+#  pragma warning( disable : 4702 )
+#endif
   mcu8str mcu8str_create_empty(void)
   {
     static char dummy[4] = { 0, 0, 0, 0 };
     mcu8str s;
-    s.c_str = &dummy[0];
+    s.c_str = &dummy[0];//NB: C4702 triggers on this line!
     s.size = 0;
     s.buflen = 0;
     s.owns_memory = 0;
     return s;
   }
+#ifdef _MSC_VER
+#  pragma warning( pop )
+#endif
 
   void mcu8str_dealloc( mcu8str* str )
   {
