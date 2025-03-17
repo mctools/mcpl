@@ -84,6 +84,9 @@ void my_write_file(const char * filename, int pol, int uf, int sp, int updg, int
     if (crash&&crash==i) {
       printf("  ==> \"crashing\"\n");
       fflush(0);
+#if _WIN32
+      _fcloseall();
+#endif
       return;
     }
     p.ekin = (i%2==0?1.234:0.0);
