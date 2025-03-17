@@ -239,9 +239,9 @@ endif()
 function(set_target_common_props targetname)
   #Set private non-transitive properties. If strict builds are enabled, this can
   #enforce no warnings and compilation with a specific standards.
-  if ( MCPL_BUILD_STRICT AND mcpl_compiler_supports_strict_comp_flags )
-    target_compile_options( ${targetname} PRIVATE ${MCPL_STRICT_COMP_FLAGS} )
-  endif()
+  #if ( MCPL_BUILD_STRICT AND mcpl_compiler_supports_strict_comp_flags )
+  #  target_compile_options( ${targetname} PRIVATE ${MCPL_STRICT_COMP_FLAGS} )
+  #endif()
   if ( STRICT_CSTD )
     set_target_properties (
       ${targetname} PROPERTIES
@@ -262,23 +262,23 @@ endfunction()
 #endfunction()
 
 #MCPL library and header files, including optional built-in modules if enabled:
-add_library(
-  mcpl SHARED
-  "src/mcpl.c" "src/mcpl_fileutils.c" "src/mcpl_fileutils.h"
+set( mcpl_src_files "src/mcpl.c" "src/mcpl_fileutils.c" "src/mcpl_fileutils.h" )
+set_source_files_properties(
+  ${mcpl_src_files} PROPERTIES C_VISIBILITY_PRESET "hidden"
 )
 
-set_source_files_properties(
-  "src/mcpl.c" "src/mcpl_fileutils.c" "src/mcpl_fileutils.h"
-  PROPERTIES C_VISIBILITY_PRESET "hidden"
-)
-#
+add_library( mcpl SHARED ${mcpl_src_files} )
+
+if ( MCPL_BUILD_STRICT AND mcpl_compiler_supports_strict_comp_flags )
+  set_property(
+    SOURCE ${mcpl_src_files}
+    APPEND PROPERTY COMPILE_OPTIONS "${MCPL_STRICT_COMP_FLAGS}"
+  )
+endif()
+
 set_target_properties( mcpl PROPERTIES C_VISIBILITY_PRESET "hidden" )
 
-add_executable(
-  mcpltool
-  "app_tool/mcpltool_app.c"
-  "src/mcpl.c" "src/mcpl_fileutils.c" "src/mcpl_fileutils.h"
-)
+add_executable( mcpltool "app_tool/mcpltool_app.c" ${mcpl_src_files} )
 target_compile_definitions( mcpltool PRIVATE mcpl_LIB_IS_STATIC )
 
 #target_compile_features( mcpl INTERFACE c_std_99 )
