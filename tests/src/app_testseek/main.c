@@ -44,7 +44,11 @@ void testskip(const char * filename)
   unsigned long np = mcpl_hdr_nparticles(f);
   const mcpl_particle_t* p = 0;
 
+#if _WIN32
+  const char * bn = strrchr(filename, '\\');
+#else
   const char * bn = strrchr(filename, '/');
+#endif
   bn = bn ? bn + 1 : filename;
 
   printf("**** Opened file %s with %lu particles\n",bn,np);
