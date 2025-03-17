@@ -1734,25 +1734,22 @@ void mcpl_dump_particles(mcpl_file_t f, uint64_t nskip, uint64_t nlimit,
     printf("  userflags");
   printf("\n");
   mcpl_skipforward(f,nskip);
-  uint64_t count = nlimit;
-  const mcpl_particle_t* p;
-  while(((nlimit==0||count--)&&(p=mcpl_read(f)))) {
+  //Writing the next loop in an annoying way to silence MSVC C4706 warning:
+  for ( uint64_t count = nlimit ; ( nlimit==0 || count-- ) ; ) {
+    const mcpl_particle_t* p = mcpl_read(f);
+    if (!p)
+      break;
     if (filter && !filter(p) ) {
       ++count;
       continue;
     }
     uint64_t idx = mcpl_currentposition(f)-1;//-1 since mcpl_read skipped ahead
-    printf("%5" PRIu64 " %11i %11.5g %11.5g %11.5g %11.5g %11.5g %11.5g %11.5g %11.5g",
-           idx,
-           p->pdgcode,
-           p->ekin,
-           p->position[0],
-           p->position[1],
-           p->position[2],
-           p->direction[0],
-           p->direction[1],
-           p->direction[2],
-           p->time);
+    printf( "%5" PRIu64
+            " %11i %11.5g %11.5g %11.5g %11.5g %11.5g %11.5g %11.5g %11.5g",
+            idx, p->pdgcode, p->ekin,
+            p->position[0], p->position[1], p->position[2],
+            p->direction[0], p->direction[1], p->direction[2],
+            p->time );
     if (!uweight)
       printf(" %11.5g",p->weight);
     if (has_pol)
@@ -2088,9 +2085,14 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
         warned_oldversion = 1;
         printf("MCPL WARNING: Merging files from older MCPL format. Output will be in latest format.\n");
       }
-      const mcpl_particle_t* particle;
-      while ( (( particle = mcpl_read(fi) )) )
+
+      //Writing the next loop in an annoying way to silence MSVC C4706 warning:
+      for(;;) {
+        const mcpl_particle_t* particle = mcpl_read(fi);
+        if (!particle)
+          break;
         mcpl_add_particle(out,particle);
+      }
     }
 
     if (ifile!=0)
@@ -2527,8 +2529,13 @@ int mcpl_tool(int argc,char** argv) {
     //uint64_t(-1) instead of UINT64_MAX to fix clang c++98 compilation
     uint64_t left = opt_num_limit>0 ? (uint64_t)opt_num_limit : (uint64_t)-1;
     uint64_t added = 0;
-    const mcpl_particle_t* particle;
-    while ( ( left-- && ( particle = mcpl_read(fi) ))  ) {
+
+    //Writing the next loop in an annoying way to silence MSVC C4706 warning:
+    for (;left;) {
+      --left;
+      const mcpl_particle_t* particle = mcpl_read(fi);
+      if (!particle)
+        break;
       if (pdgcode_select && pdgcode_select!= particle->pdgcode)
         continue;
       mcpl_transfer_last_read_particle(fi, fo);//Doing mcpl_add_particle(fo,particle) is potentially (very rarely) lossy
@@ -2576,11 +2583,15 @@ int mcpl_tool(int argc,char** argv) {
             "         y[cm]                   z[cm]                      ux                  "
             "    uy                      uz                time[ms]                  weight  "
             "                 pol-x                   pol-y                   pol-z  userflags\n");
-    const mcpl_particle_t* p;
-    while ( (( p = mcpl_read(fi) )) ) {
+    //Writing the next loop in an annoying way to silence MSVC C4706 warning:
+    while (1) {
+      const mcpl_particle_t* p = mcpl_read(fi);
+      if (!p)
+        break;
       uint64_t idx = mcpl_currentposition(fi)-1;//-1 since mcpl_read skipped ahead
-      fprintf(fout,"%5" PRIu64 " %11i %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g"
-              " %23.18g %23.18g %23.18g 0x%08x\n",
+      fprintf( fout,"%5" PRIu64
+               " %11i %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g"
+               " %23.18g %23.18g %23.18g %23.18g %23.18g 0x%08x\n",
               idx,p->pdgcode,p->ekin,p->position[0],p->position[1],p->position[2],
               p->direction[0],p->direction[1],p->direction[2],p->time,p->weight,
               p->polarisation[0],p->polarisation[1],p->polarisation[2],p->userflags);
