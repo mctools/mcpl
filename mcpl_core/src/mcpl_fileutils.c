@@ -1266,6 +1266,8 @@ namespace {
 
     BY_HANDLE_FILE_INFORMATION info1;
     BY_HANDLE_FILE_INFORMATION info2;
+    memset( &info1, 0, sizeof(info1) );
+    memset( &info2, 0, sizeof(info2) );
 
     int got_info = ( GetFileInformationByHandle( fh1, &info1 )
                      && GetFileInformationByHandle( fh2, &info2 ) ) ? 1 : 0;
