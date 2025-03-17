@@ -64,6 +64,11 @@ namespace MCFILEUTILS_CPPNAMESPACE {
 #  include <assert.h>
 #endif
 
+#define MCPL_STATIC_ASSERT0(COND,MSG) { typedef char mcpl_##MSG[(COND)?1:-1]; mcpl_##MSG dummy; (void)dummy; }
+#define MCPL_STATIC_ASSERT3(expr,x) MCPL_STATIC_ASSERT0(expr,fail_at_line_##x)
+#define MCPL_STATIC_ASSERT2(expr,x) MCPL_STATIC_ASSERT3(expr,x)
+#define MCPL_STATIC_ASSERT(expr)    MCPL_STATIC_ASSERT2(expr,__LINE__)
+
 #ifdef STDNS
 #  undef STDNS
 #endif
@@ -127,6 +132,8 @@ namespace MCFILEUTILS_CPPNAMESPACE {
 
   mcu8str mcu8str_create( mcu8str_size_t prealloc_size )
   {
+    MCPL_STATIC_ASSERT( sizeof(unsigned)>=4 );
+    MCPL_STATIC_ASSERT( sizeof(size_t)>=8 );
     if ( prealloc_size == 0 )
       return mcu8str_create_empty();
     mcu8str s;
@@ -487,9 +494,9 @@ namespace {
 #endif
 
 #ifdef MC_IS_WINDOWS
-#ifndef DWORD_MAX
-#  define DWORD_MAX 0xffffffffUL
-#endif
+#  ifndef DWORD_MAX
+#    define DWORD_MAX 0xffffffffUL
+#  endif
 
   int mctools_impl_str_size2int( mcu8str_size_t v )
   {
@@ -649,7 +656,7 @@ namespace {
       if ( len >= DWORD_MAX )
         mctools_impl_error("str length out of range for DWORD");
       out = mc_winstr_create( (DWORD)len );
-      len = GetLongPathNameW( sp->c_str, out.c_str, out.buflen );
+      len = GetLongPathNameW( sp->c_str, out.c_str, (DWORD)out.buflen );
       if ( (mcu8str_size_t) len < out.buflen ) {
         out.c_str[len] = 0;
         out.size = (mcu8str_size_t)len;
@@ -781,8 +788,13 @@ namespace {
 
     mcwinstr mc_winstr_create( mcu8str_size_t size )
     {
+      MCPL_STATIC_ASSERT( sizeof(DWORD)==sizeof(uint32_t) );
+      MCPL_STATIC_ASSERT( sizeof(unsigned)>=sizeof(uint32_t) );
+      MCPL_STATIC_ASSERT( sizeof(size_t)>=sizeof(uint64_t) );
       mcwinstr str;
-      str.c_str = (wchar_t*) STDNS malloc( sizeof(wchar_t)*(size + 1) );
+      str.c_str = (wchar_t*)( MCTOOLS_STROKFORUINT(size)
+                              ?  STDNS malloc( sizeof(wchar_t)*(size + 1) )
+                              : NULL );
       if ( !str.c_str ) {
 #ifdef MCFILEUTILS_CPPNAMESPACE
         throw std::bad_alloc();
@@ -928,13 +940,13 @@ namespace {
   mcu8str mctools_get_current_working_dir(void)
   {
 #ifdef MC_IS_WINDOWS
-    mcwinstr wpath = mc_winstr_create( ( MAX_PATH >= 260 ? MAX_PATH+1 : 261 ) );
-    DWORD nsize = GetCurrentDirectoryW(wpath.buflen,wpath.c_str);
+    mcwinstr wpath = mc_winstr_create( 4096 );
+    DWORD nsize = GetCurrentDirectoryW((DWORD)wpath.buflen, wpath.c_str);
     if ( (mcu8str_size_t)(nsize + 1) > wpath.buflen ) {
       //Use larger buffer and try again:
       mc_winstr_dealloc( &wpath );
       wpath = mc_winstr_create( nsize );
-      nsize = GetCurrentDirectoryW(wpath.buflen,wpath.c_str);
+      nsize = GetCurrentDirectoryW((DWORD)wpath.buflen,wpath.c_str);
     }
     if ( nsize == 0 || (mcu8str_size_t )( nsize + 1 ) > wpath.buflen ) {
       mc_winstr_dealloc( &wpath );
@@ -979,7 +991,7 @@ namespace {
     {
       mcwinstr wpath = mc_winstr_create( (mcu8str_size_t)(MAX_PATH<32768
                                                           ?32768:MAX_PATH) +1 );
-      DWORD nsize = GetModuleFileNameW(NULL, wpath.c_str, wpath.buflen );
+      DWORD nsize = GetModuleFileNameW(NULL, wpath.c_str, (DWORD)wpath.buflen );
       if ( nsize == 0 || (mcu8str_size_t)(nsize + 2) >= wpath.buflen ) {//+2 is safety
         //failure:
         mc_winstr_dealloc( &wpath );
@@ -1094,13 +1106,13 @@ namespace {
     //We have an open handle fh1, use it to find the resolved path:
     mcwinstr resolvedpath = mc_winstr_create(4096);
     DWORD len = GetFinalPathNameByHandleW( fh1, resolvedpath.c_str,
-                                           resolvedpath.buflen, 0 );
+                                           (DWORD)resolvedpath.buflen, 0 );
     if ( (mcu8str_size_t)len >= resolvedpath.buflen ) {
       //Too short buffer, try again:
       mc_winstr_dealloc(&resolvedpath);
       resolvedpath = mc_winstr_create(len);
       len = GetFinalPathNameByHandleW( fh1, resolvedpath.c_str,
-                                       resolvedpath.buflen, 0 );
+                                       (DWORD)resolvedpath.buflen, 0 );
     }
     //Close the open file handle:
     CloseHandle( fh1 );
@@ -1435,7 +1447,7 @@ namespace {
       ++used;
     }
     STDNS memcpy( res.c_str + used, p2.c_str, s2+1 );//+1 to include null char
-    res.size = newsize;
+    res.size = (unsigned)newsize;//cast ok due to mcu8str_create
     mctools_pathseps_platform(&res);
     return res;
   }
@@ -1470,7 +1482,7 @@ namespace {
       return mcu8str_create_empty();
     mcu8str res = mcu8str_create( bnsize );
     STDNS memcpy( res.c_str, it, bnsize + 1 );
-    res.size = bnsize;
+    res.size = (unsigned)bnsize;//cast ok due to mcu8str_create
     return res;
   }
 
@@ -1646,14 +1658,14 @@ namespace {
       res.c_str[1] = ':';
       STDNS memcpy( res.c_str + 2, it0, ressize );
       res.c_str[ressize+2] = '\0';
-      res.size = ressize+2;
+      res.size = (unsigned)ressize+2;//cast ok, checked by mcu8str_create
       mctools_pathseps_platform(&res);
       return res;
     } else {
       mcu8str res = mcu8str_create( ressize );
       STDNS memcpy( res.c_str, it0, ressize );
       res.c_str[ressize] = '\0';
-      res.size = ressize;
+      res.size = (unsigned)ressize;//cast ok, checked by mcu8str_create
       mctools_pathseps_platform(&res);
       return res;
     }
