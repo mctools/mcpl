@@ -1736,7 +1736,7 @@ void mcpl_dump_particles(mcpl_file_t f, uint64_t nskip, uint64_t nlimit,
   mcpl_skipforward(f,nskip);
   uint64_t count = nlimit;
   const mcpl_particle_t* p;
-  while((nlimit==0||count--)&&(p=mcpl_read(f))) {
+  while(((nlimit==0||count--)&&(p=mcpl_read(f)))) {
     if (filter && !filter(p) ) {
       ++count;
       continue;
@@ -2089,7 +2089,7 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
         printf("MCPL WARNING: Merging files from older MCPL format. Output will be in latest format.\n");
       }
       const mcpl_particle_t* particle;
-      while ( ( particle = mcpl_read(fi) ) )
+      while ( (( particle = mcpl_read(fi) )) )
         mcpl_add_particle(out,particle);
     }
 
@@ -2528,7 +2528,7 @@ int mcpl_tool(int argc,char** argv) {
     uint64_t left = opt_num_limit>0 ? (uint64_t)opt_num_limit : (uint64_t)-1;
     uint64_t added = 0;
     const mcpl_particle_t* particle;
-    while ( left-- && ( particle = mcpl_read(fi) ) ) {
+    while ( ( left-- && ( particle = mcpl_read(fi) ))  ) {
       if (pdgcode_select && pdgcode_select!= particle->pdgcode)
         continue;
       mcpl_transfer_last_read_particle(fi, fo);//Doing mcpl_add_particle(fo,particle) is potentially (very rarely) lossy
@@ -2577,7 +2577,7 @@ int mcpl_tool(int argc,char** argv) {
             "    uy                      uz                time[ms]                  weight  "
             "                 pol-x                   pol-y                   pol-z  userflags\n");
     const mcpl_particle_t* p;
-    while ( ( p = mcpl_read(fi) ) ) {
+    while ( (( p = mcpl_read(fi) )) ) {
       uint64_t idx = mcpl_currentposition(fi)-1;//-1 since mcpl_read skipped ahead
       fprintf(fout,"%5" PRIu64 " %11i %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g"
               " %23.18g %23.18g %23.18g 0x%08x\n",
