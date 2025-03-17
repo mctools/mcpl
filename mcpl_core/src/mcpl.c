@@ -1550,11 +1550,19 @@ uint64_t mcpl_currentposition(mcpl_file_t ff)
   return f->current_particle_idx;
 }
 
-const char * mcpl_basename(const char * filename)
+MCPL_LOCAL const char * mcpl_basename(const char * filename)
 {
-  //portable "basename" which doesn't modify it's argument:
-  const char * bn = strrchr(filename, '/');
-  return bn ? bn + 1 : filename;
+  //portable "basename" which doesn't modify it's argument. Rightmost separator,
+  //back or forward slash.
+  const char * bn1 = strrchr(filename, '/');
+  const char * bn2 = strrchr(filename, '\\');
+  if ( bn1 ) {
+    if ( bn2 )
+      return ( bn1 > bn2 ) ? bn1 + 1 : bn2 + 1;
+    return bn1 + 1;
+  } else {
+    return bn2 ? bn2 + 1 : filename;
+  }
 }
 
 int mcpl_hdr_particle_size(mcpl_file_t ff)
@@ -2713,8 +2721,7 @@ MCPL_LOCAL int _mcpl_custom_gzip(const char *file, const char *mode);//return 1 
 /* #  else */
 int mcpl_gzip_file(const char * filename)
 {
-  const char * bn = strrchr(filename, '/');
-  bn = bn ? bn + 1 : filename;
+  const char * bn = mcpl_basename(filename);
   printf("MCPL: Attempting to compress file %s with gzip\n",bn);//FIXME should say "with zlib" but trying to preserve reflog outputs right now
   if (!_mcpl_custom_gzip(filename,"wb"))
     printf("MCPL ERROR: Problems encountered while compressing file %s.\n",bn);
