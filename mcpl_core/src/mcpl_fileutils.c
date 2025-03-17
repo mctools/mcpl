@@ -436,6 +436,8 @@ namespace MCFILEUTILS_CPPNAMESPACE {
   DWORD GetLongPathNameW( const wchar_t*, wchar_t*, DWORD);
   DWORD GetLastError(void);
   FILE * _wfopen( const wchar_t*,const wchar_t*);
+#  define errno_t int
+  errno_t _wfopen_s( FILE **, const wchar_t*,const wchar_t*);
   typedef struct { int dummy; } FILETIME;
   typedef struct {
     DWORD    dwFileAttributes;
@@ -826,10 +828,17 @@ namespace {
     mcu8str mcu8str_mode = mcu8str_create_from_staticbuffer( buf, sizeof(buf) );
     mcu8str_append_cstr(&mcu8str_mode,mode);
     mcwinstr wmode = mc_u8str_to_winstr( &mcu8str_mode );
-    MCTOOLS_FILE_t * result = _wfopen( wpath.c_str, wmode.c_str );//nb: no STDNS here on purpose
+    //    MCTOOLS_FILE_t * result = _wfopen( wpath.c_str, wmode.c_str );//nb: no STDNS here on purpose
+    MCTOOLS_FILE_t * result = NULL;
+    errno_t errno_result = _wfopen_s( &result, wpath.c_str, wmode.c_str );
     mcu8str_dealloc(&mcu8str_mode);
     mc_winstr_dealloc( &wpath );
     mc_winstr_dealloc( &wmode );
+    if ( errno_result != 0 ) {
+      if ( result )
+        fclose(result);//a bit weird, but most likely we won't get here.
+      return NULL;
+    }
     return result;
 #else
     if ( !mcu8str_contains( &path, '\\' ) ) {
