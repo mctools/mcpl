@@ -258,7 +258,7 @@ namespace MCFILEUTILS_CPPNAMESPACE {
     mcu8str_size_t n = mctools_strlen( str->c_str, str->buflen );
     if ( n >= str->buflen ) {
       mctools_impl_error("mcu8str_update_size logic error");
-      return;
+      //return;
     }
     str->size = (unsigned)n;
   }
@@ -505,10 +505,9 @@ namespace {
 #  else
     const int lim = 2147483646;
 #  endif
-    if ( v < lim && v + 1 < lim )
-      return (int)(v);
-    mctools_impl_error("str length out of range");
-    return 0;
+    if ( !( v < lim && v + 1 < lim) )
+      mctools_impl_error("str length out of range");
+    return (int)(v);
   }
 #endif
 
@@ -591,7 +590,7 @@ namespace {
       const char * errmsg = "Failed to convert UTF-8 string to UTF-16";
       if (!out_size) {
         mctools_impl_error(errmsg);
-        return mc_winstr_create_empty();
+        //return mc_winstr_create_empty();
       }
 
       mcwinstr res = mc_winstr_create( (mcu8str_size_t)( out_size ) );
@@ -604,7 +603,7 @@ namespace {
       if ( out_size != out_size2 || (mcu8str_size_t)out_size >= res.buflen ) {
         mc_winstr_dealloc( &res );
         mctools_impl_error(errmsg);
-        return mc_winstr_create_empty();
+        //return mc_winstr_create_empty();
       }
       res.c_str[out_size] = 0;
       res.size = out_size;
@@ -677,7 +676,7 @@ namespace {
                                                    (DWORD)0, NULL, NULL );
       if ( len_with_null_term <= 1 ) {
         mctools_impl_error( "Full path expansion with GetFullPathNameW failed" );
-        return mc_winstr_create_empty();
+        //return mc_winstr_create_empty();
       }
       mcwinstr woutput = mc_winstr_create((mcu8str_size_t)(len_with_null_term-1));
       DWORD len = GetFullPathNameW( wpath->c_str,
@@ -686,7 +685,7 @@ namespace {
       if ( len+1 != len_with_null_term ) {
         mc_winstr_dealloc( &woutput );
         mctools_impl_error( "Full path expansion with GetFullPathNameW failed" );
-        return mc_winstr_create_empty();
+        //return mc_winstr_create_empty();
       }
       //OK, update output size:
       woutput.c_str[len] = 0;
@@ -744,7 +743,7 @@ namespace {
 
       if (!out_size) {
         mctools_impl_error(errmsg);
-        return mcu8str_create_empty();
+        //return mcu8str_create_empty();
       }
       mcu8str res = mcu8str_create( out_size );
       //res.resize( out_size );
@@ -757,7 +756,7 @@ namespace {
       if ( out_size2 != out_size || (mcu8str_size_t)out_size >= res.buflen ) {
         mcu8str_dealloc(&res);
         mctools_impl_error(errmsg);
-        return mcu8str_create_empty();
+        //return mcu8str_create_empty();
       }
       res.c_str[out_size] = 0;
       res.size = out_size;
@@ -951,7 +950,7 @@ namespace {
     if ( nsize == 0 || (mcu8str_size_t )( nsize + 1 ) > wpath.buflen ) {
       mc_winstr_dealloc( &wpath );
       mctools_impl_error("Failed to get current working directory");
-      return mcu8str_create_empty();
+      //return mcu8str_create_empty();
     }
     wpath.c_str[nsize] = 0;
     wpath.size = nsize;
@@ -978,7 +977,7 @@ namespace {
       } else {
         mcu8str_dealloc( &res );
         mctools_impl_error("Failed to get current working directory");
-        return mcu8str_create_empty();
+        //return mcu8str_create_empty();
       }
     }
 #endif
