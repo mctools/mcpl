@@ -164,7 +164,6 @@ int main(int argc,char**argv) {
       printf("Please supply output filename\n");
       return 1;
     }
-    const char * filename = argv[1];
     return mcpltests_produce_miscphys_file(argv[1]);
   }
 }

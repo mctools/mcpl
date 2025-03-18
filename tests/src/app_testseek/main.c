@@ -109,7 +109,7 @@ void testskip(const char * filename)
   mcpl_close_file(f);
 }
 
-int mcpltests_testseek( const char * folder )
+void mcpltests_testseek( const char * folder )
 {
   testskip(mcpltests_find_data(folder,"reffile_1.mcpl"));
   testskip(mcpltests_find_data(folder,"reffile_skip123.mcpl"));
@@ -125,5 +125,4 @@ int main(int argc,char**argv) {
   mcpltests_testseek("ref");
   mcpltests_testseek("reffmt2");
   return 0;
-
 }
