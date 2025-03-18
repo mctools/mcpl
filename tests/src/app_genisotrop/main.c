@@ -154,9 +154,9 @@ int mcpltests_genisotrop(int argc,char**argv) {
     mcpl_add_particle(f,particle);
   }
   const char * ofntmp = mcpl_outfile_filename(f);
-  char * ofn = (char*)calloc(strlen(ofntmp)+1,1);
-  ofn[0] = '\0';
-  strcat(ofn,ofntmp);
+  size_t nn = strlen(ofntmp);
+  char * ofn = (char*)malloc(nn+1);
+  memcpy(ofn,ofntmp,nn+1);
   if (!opt_crash)
     mcpl_close_outfile(f);
   if (opt_gzip)

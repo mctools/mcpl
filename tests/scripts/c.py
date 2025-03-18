@@ -77,7 +77,6 @@ sys.path = oldsyspath
 if mcpl is None:
     import mcpldev as mcpl #noqa E402
 
-#datadir = os.getenv('SBLD_DATA_DIR')
 file1 = test_data_dir.joinpath('ref','reffile_12.mcpl')
 file2 = test_data_dir.joinpath('ref','reffile_1.mcpl')
 

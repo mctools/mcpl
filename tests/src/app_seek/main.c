@@ -41,7 +41,7 @@ void pp(mcpl_file_t f,const mcpl_particle_t*p)
 void testskip(const char * filename)
 {
   mcpl_file_t f = mcpl_open_file(filename);
-  unsigned long np = mcpl_hdr_nparticles(f);
+  uint64_t np = mcpl_hdr_nparticles(f);
   const mcpl_particle_t* p = 0;
 
 #if _WIN32
@@ -51,7 +51,7 @@ void testskip(const char * filename)
 #endif
   bn = bn ? bn + 1 : filename;
 
-  printf("**** Opened file %s with %lu particles\n",bn,np);
+  printf("**** Opened file %s with %lu particles\n",bn,(unsigned long)np);
   ppos(f);
   printf("::mcpl_read\n");p=mcpl_read(f);
   pp(f,p);
@@ -99,7 +99,7 @@ void testskip(const char * filename)
   pp(f,p);
   printf("::mcpl_read\n");p=mcpl_read(f);
   pp(f,p);
-  printf("::mcpl_seek %lu -> %i\n",np/2,mcpl_seek(f,np/2));
+  printf("::mcpl_seek %lu -> %i\n",(unsigned long)(np/2),mcpl_seek(f,np/2));
   ppos(f);
   printf("::mcpl_read\n");p=mcpl_read(f);
   pp(f,p);

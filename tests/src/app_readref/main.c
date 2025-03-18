@@ -24,6 +24,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef _MSC_VER
+#  pragma warning( push )
+#  pragma warning( disable : 4996 )
+#endif
 void mcpltests_simple_copy_file( const char * src,
                                  const char * tgt )
 {
@@ -37,12 +41,15 @@ void mcpltests_simple_copy_file( const char * src,
   fclose(fh_in);
   fclose(fh_out);
 }
+#ifdef _MSC_VER
+#  pragma warning( pop )
+#endif
 
 void mcpltests_test_datafolder( const char* folder )
 {
   char filename[128];
   for (unsigned count = 1;count<=16;++count) {
-    sprintf(filename, "reffile_%i.mcpl",count);
+    snprintf(filename, sizeof(filename), "reffile_%i.mcpl",count);
     mcpl_dump(mcpltests_find_data(folder,filename),0,0,0);
   }
   mcpl_dump(mcpltests_find_data(folder,"reffile_crash.mcpl"),0,0,0);

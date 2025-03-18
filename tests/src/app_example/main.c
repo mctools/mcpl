@@ -37,7 +37,7 @@ void my_write_file(const char * filename, int pol, int uf, int sp, int updg, int
   }
   if ((count+1)%3==0||count%12==0) {
     printf("  ==> mcpl_hdr_add_data(\"BlaData\",20,\"0123456789\\012345678\")\n");
-    mcpl_hdr_add_data(f, "BlaData", 20, "0123456789\012345678");
+    mcpl_hdr_add_data(f, "BlaData", 20, "0123456789""\0""12345678");
   }
   if (count%6==0) {
     printf("  ==> mcpl_hdr_add_data(\"LalaData\",6,\"01234\")\n");
@@ -115,7 +115,7 @@ int main(int argc,char**argv) {
     for (int sp = 0; sp<=1; ++sp) {
       for (int uf = 0; uf<=1; ++uf) {
         for (int updg = 0; updg<=1; ++updg) {
-          sprintf(filename, "test_%i.mcpl",count+1);
+          snprintf(filename, sizeof(filename),"test_%i.mcpl",count+1);
           my_write_file(filename,pol,sp,uf,updg,5,0);
           mcpl_dump(filename,0,0,0);
         }

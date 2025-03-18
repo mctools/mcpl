@@ -25,6 +25,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if 1
+#ifdef _MSC_VER
+#  pragma warning( push )
+#  pragma warning( disable : 4996 )
+#endif
 const char * mcpltests_find_data( const char * subpath1, const char * subpath2 )
 {
   //Quick and dirty, not MT safe.
@@ -49,5 +54,42 @@ const char * mcpltests_find_data( const char * subpath1, const char * subpath2 )
   }
   return buffer;
 }
+#ifdef _MSC_VER
+#  pragma warning( pop )
+#endif
+
+
+#else
+//If only we could use the common C fileutils:
+const char * mcpltests_find_data( const char * subpath1, const char * subpath2 )
+{
+  //Quick and dirty, not MT safe.
+  mcu8str varname = mcu8str_view_cstr("MCPL_TESTDATA_DIR");
+  mcu8str f = mctools_getenv( &varname );
+  if (!f.c_str)
+    return "MCPL_TESTDATA_DIR/NOT/SET";
+#ifdef _WIN32
+  const char * sep = "\\";
+#else
+  const char * sep = "/";
+#endif
+  if ( subpath1 ) {
+    mcu8str_append_cstr( &f, sep );
+    mcu8str_append_cstr( &f, subpath1 );
+  }
+  if ( subpath2 ) {
+    mcu8str_append_cstr( &f, sep );
+    mcu8str_append_cstr( &f, subpath2 );
+  }
+  char buf[4096];
+  if ( sizeof(buf) < f.size + 1 ) {
+    printf("ERROR: mcpltests_find_data buffer too small");
+    exit(1);
+  }
+  memcpy(buf,f.c_str,f.size+1);
+  mcu8str_dealloc(&f);
+  return buf;
+}
+#endif
 
 #endif

@@ -21,6 +21,11 @@
 
 #include <stdio.h>
 
+//fixme: eventually revisit all pragma warning disable's
+#ifdef _MSC_VER
+#  pragma warning( push )
+#  pragma warning( disable : 4996 )
+#endif
 int main(int argc, char** argv)
 {
   (void)argc;
@@ -67,3 +72,6 @@ int main(int argc, char** argv)
 
   return 0;
 }
+#ifdef _MSC_VER
+#  pragma warning( pop )
+#endif
