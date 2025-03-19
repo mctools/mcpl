@@ -2034,6 +2034,15 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
   return out;
 }
 
+MCPL_LOCAL void mcpl_internal_delete_file( const char * filename )
+{
+#ifdef MCPL_THIS_IS_MS
+  _unlink(filename);//fixme _wunlink if unicode!
+#else
+  unlink(filename);
+#endif
+}
+
 mcpl_outfile_t mcpl_merge_files( const char* file_output,
                                  unsigned nfiles, const char ** files )
 {
@@ -2076,8 +2085,13 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
       f1 = fi;
     } else {
       //Check file is still compatible with first file
-      if (!mcpl_actual_can_merge(f1,fi))
+      if (!mcpl_actual_can_merge(f1,fi)) {
+        mcpl_close_outfile( out );
+        mcpl_internal_delete_file( file_output );
+        mcpl_close_file(fi);
+        mcpl_close_file(f1);
         mcpl_error("Aborting merge of suddenly incompatible files.");
+      }
     }
 
     //Transfer particle contents:
@@ -2177,10 +2191,15 @@ void mcpl_merge_inplace(const char * file1, const char* file2)
   //first particle and that the seek operation on f1a correctly discards any
   //partial entries at the end, which could be there if the file was in need of
   //mcpl_repair:
-  if (!f1a)
+  if (!f1a) {
+    mcpl_close_file(ff2);
     mcpl_error("Unable to open file1 in update mode!");
-  if (MCPL_FSEEK( f1a, first_particle_pos + particle_size*np1 ))
+  }
+  if (MCPL_FSEEK( f1a, first_particle_pos + particle_size*np1 )) {
+    mcpl_close_file(ff2);
+    fclose(f1a);
     mcpl_error("Unable to seek to end of file1 in update mode");
+  }
 
   //Transfer particle contents, setting nparticles to 0 during the operation (so
   //the file appears broken and in need of mcpl_repair in case of errors during
@@ -2601,8 +2620,11 @@ int mcpl_tool(int argc,char** argv) {
 
     mcpl_file_t fi = mcpl_open_file(filenames[0]);
     FILE * fout = mcpl_fopen(filenames[1],"w");
-    if (!fout)
-      return free(filenames),mcpl_tool_usage(argv,"Could not open output file.");
+    if (!fout) {
+      mcpl_close_file(fi);
+      free(filenames);
+      return mcpl_tool_usage(argv,"Could not open output file.");
+    }
 
     fprintf(fout,"#MCPL-ASCII\n#ASCII-FORMAT: v1\n#NPARTICLES: %" PRIu64 "\n#END-HEADER\n",mcpl_hdr_nparticles(fi));
     fprintf(fout,"index     pdgcode               ekin[MeV]                   x[cm]          "
@@ -2645,10 +2667,13 @@ int mcpl_tool(int argc,char** argv) {
     mcpl_file_t mcplfile = mcpl_open_file(filenames[0]);
     uint32_t ldata;
     const char * data;
-    if (!mcpl_hdr_blob(mcplfile, blobkey, &ldata, &data))
+    if (!mcpl_hdr_blob(mcplfile, blobkey, &ldata, &data)) {
+      mcpl_close_file(mcplfile);
       return 1;
+    }
     mcpl_internal_dump_to_stdout( data, ldata );
     free(filenames);
+    mcpl_close_file(mcplfile);
     return 0;
   }
 
@@ -2784,12 +2809,18 @@ MCPL_LOCAL int _mcpl_custom_gzip(const char *filename, const char *mode)//fixme:
   size_t len;
   while (1) {
     len = (int)fread(buf, 1, sizeof(buf), handle_in);
-    if (ferror(handle_in))
+    if (ferror(handle_in)) {
+      fclose(handle_in);
+      gzclose(handle_out);
       return 0;
+    }
     if (!len)
       break;
-    if ((size_t)gzwrite(handle_out, buf, (unsigned)len) != len)
+    if ((size_t)gzwrite(handle_out, buf, (unsigned)len) != len) {
+      fclose(handle_in);
+      gzclose(handle_out);
       return 0;
+    }
   }
 
   //close file:
@@ -2811,17 +2842,8 @@ MCPL_LOCAL int _mcpl_custom_gzip(const char *filename, const char *mode)//fixme:
 #  include "unistd.h" // for write(..)
 #endif
 
-void mcpl_internal_delete_file( const char * filename )
-{
-#ifdef MCPL_THIS_IS_MS
-  _unlink(filename);//fixme _wunlink if unicode!
-#else
-  unlink(filename);//fixme _wunlink if unicode!
-#endif
-}
-
-void mcpl_internal_dump_to_stdout( const char * data,
-                                   unsigned long ldata )
+MCPL_LOCAL void mcpl_internal_dump_to_stdout( const char * data,
+                                              unsigned long ldata )
 {
 #ifdef MCPL_THIS_IS_MS
   int the_stdout_fileno = _fileno(stdout);
@@ -2843,4 +2865,7 @@ void mcpl_internal_dump_to_stdout( const char * data,
 }
 
 //fixme: we need special CI test exercising files above 2/4GB, including gzipped
-//files, seeking, closing, rewinding, repairing.
+//       files, seeking, closing, rewinding, repairing.
+//       For unit tests in Debug builds we should try to have a static count of
+//       open/closed files, so we can verify that we did not forget a close call
+//       in some exit path.
