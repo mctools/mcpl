@@ -136,6 +136,10 @@
 #include <math.h>
 #include <limits.h>
 
+#ifdef Z_SOLO
+#  error "MCPL needs zlib with gzip functionality"
+#endif
+
 #include "mcpl_fileutils.h"
 
 #define MCPLIMP_NPARTICLES_POS 8
@@ -983,21 +987,18 @@ MCPL_LOCAL int mcpl_gzseek( gzFile fh, int64_t pos )
 {
   //Invokes gzseek in SEEK_SET mode and returns 1 on success, 0 on failure.
 #ifdef _WIN32
-  if ( sizeof(z_off_t)>=sizeof(int64_t) ) {
-    //64 bit is somehow enabled!
-    return ( gzseek( fh, pos, SEEK_SET ) == pos ? 1 : 0 );
-  } else {
-    //Windows builds seems to not enable the LFS64 support zlib.
-    if ( pos >= 2147483647 )
-      mcpl_error("Can not seek to positions in gzipped files beyond the "
-                 " 2GB limit with the current zlib build.");
-    return ( gzseek( fh, (z_off_t)pos, SEEK_SET ) == (z_off_t)pos ? 1 : 0 );
-  }
-  //fixme: can we do something on Windows?
+  //z_off_t is always signed, and we assume for simplicity that it is actually
+  //32 or 64 bit (this is likely always the case).
+  const int64_t seekmax = ( sizeof(z_off_t)>=sizeof(int64_t)
+                            ? INT64_MAX : INT32_MAX ) - 1;//-1 is just safety
+  if ( pos >= seekmax )
+    mcpl_error("Can not seek to positions in gzipped files beyond the "
+               " 2GB limit with the current zlib build.");
+  return ( gzseek( fh, (z_off_t)pos, SEEK_SET ) == (z_off_t)pos ? 1 : 0 );
 #else
   //Until proven otherwise, we will simply demand that zlib on Unix has the
   //proper large file support.
-  MCPL_STATIC_ASSERT(sizeof(z_off_t)==8);
+  MCPL_STATIC_ASSERT(sizeof(z_off_t)==sizeof(int64_t));
   return ( gzseek( fh, pos, SEEK_SET ) == pos ? 1 : 0 );
 #endif
 }
