@@ -41,8 +41,14 @@ def cmd(*args, print_md5sum_of_output = False):
     sys.stdout.flush()
     sys.stderr.flush()
     print("----------------------------------------------")
-    args_print = shlex.join( str(e).replace(str(test_data_dir),'<TESTDATADIR>')
-                             for e in args )
+    def argfmt( a ):
+        a = str(a)
+        if str(test_data_dir) in a:
+            a = a.replace(str(test_data_dir),'<TESTDATADIR>')
+        if '\\' in a and '/' not in a:
+            a = a.replace('\\','/')
+        return a
+    args_print = shlex.join( argfmt(a) for a in args )
     print(f"Running mcpltool {args_print}")
     print("----------------------------------------------")
     sys.stdout.flush()
