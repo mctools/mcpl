@@ -455,7 +455,8 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl --mer --inpl rf16cp.mcpl
 ----------------------------------------------
-MCPL WARNING: Merging file with itself (rf16cp.mcpl).
+MCPL ERROR: Merging file with itself
+===> Command failed!
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl -l0
 ----------------------------------------------
@@ -463,9 +464,9 @@ Opened MCPL file rf16cp.mcpl:
 
   Basic info
     Format             : MCPL-3
-    No. of particles   : 20
+    No. of particles   : 10
     Header storage     : 59 bytes
-    Data storage       : 960 bytes
+    Data storage       : 480 bytes
 
   Custom meta data
     Source             : "MyMCApp"
@@ -492,20 +493,11 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     7        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
     8        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
     9        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
-   10        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
-   11        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
-   12        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
-   13        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
-   14        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
-   15        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
-   16        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
-   17        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
-   18        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
-   19        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl --m --inplac rf16cp.mcpl
 ----------------------------------------------
-MCPL WARNING: Merging file with itself (rf16cp.mcpl).
+MCPL ERROR: Merging file with itself
+===> Command failed!
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl -l0
 ----------------------------------------------
@@ -513,9 +505,9 @@ Opened MCPL file rf16cp.mcpl:
 
   Basic info
     Format             : MCPL-3
-    No. of particles   : 40
+    No. of particles   : 10
     Header storage     : 59 bytes
-    Data storage       : 1920 bytes
+    Data storage       : 480 bytes
 
   Custom meta data
     Source             : "MyMCApp"
@@ -542,62 +534,26 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     7        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
     8        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
     9        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
-   10        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
-   11        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
-   12        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
-   13        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
-   14        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
-   15        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
-   16        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
-   17        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
-   18        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
-   19        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
-   20        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
-   21        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
-   22        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
-   23        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
-   24        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
-   25        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
-   26        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
-   27        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
-   28        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
-   29        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
-   30        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
-   31        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
-   32        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
-   33        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
-   34        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
-   35        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
-   36        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
-   37        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
-   38        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
-   39        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl --merge --inplace rf16cp.mcpl
 ----------------------------------------------
-MCPL WARNING: Merging file with itself (rf16cp.mcpl).
+MCPL ERROR: Merging file with itself
+===> Command failed!
 ----------------------------------------------
 Running mcpltool -m dupmerge.mcpl rf16cp.mcpl ./rf16cp.mcpl ../tmprundir/rf16cp.mcpl rf16cp_sl.mcpl rf16cp_hl.mcpl rf16_sl.mcpl rf16_sl.mcpl
 ----------------------------------------------
-MCPL WARNING: Merging file with itself (rf16cp.mcpl and ./rf16cp.mcpl are the same file).
-MCPL WARNING: Merging file with itself (rf16cp.mcpl and ../tmprundir/rf16cp.mcpl are the same file).
-MCPL WARNING: Merging file with itself (./rf16cp.mcpl and ../tmprundir/rf16cp.mcpl are the same file).
-MCPL WARNING: Merging file with itself (rf16cp.mcpl and rf16cp_sl.mcpl are the same file).
-MCPL WARNING: Merging file with itself (./rf16cp.mcpl and rf16cp_sl.mcpl are the same file).
-MCPL WARNING: Merging file with itself (../tmprundir/rf16cp.mcpl and rf16cp_sl.mcpl are the same file).
-MCPL WARNING: Merging file with itself (rf16cp.mcpl and rf16cp_hl.mcpl are the same file).
-MCPL WARNING: Merging file with itself (./rf16cp.mcpl and rf16cp_hl.mcpl are the same file).
-MCPL WARNING: Merging file with itself (../tmprundir/rf16cp.mcpl and rf16cp_hl.mcpl are the same file).
-MCPL WARNING: Merging file with itself (rf16cp_sl.mcpl and rf16cp_hl.mcpl are the same file).
-MCPL WARNING: Merging file with itself (rf16_sl.mcpl).
+MCPL ERROR: Merging file with itself
+===> Command failed!
 ----------------------------------------------
 Running mcpltool -m --inplace dupmerge.mcpl ./dupmerge.mcpl
 ----------------------------------------------
-MCPL WARNING: Merging file with itself (dupmerge.mcpl and ./dupmerge.mcpl are the same file).
+MCPL ERROR: Unable to open file!
+===> Command failed!
 ----------------------------------------------
 Running mcpltool -m --inplace dupmerge.mcpl dupmerge.mcpl
 ----------------------------------------------
-MCPL WARNING: Merging file with itself (dupmerge.mcpl).
+MCPL ERROR: Unable to open file!
+===> Command failed!
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl -l0
 ----------------------------------------------
@@ -605,9 +561,9 @@ Opened MCPL file rf16cp.mcpl:
 
   Basic info
     Format             : MCPL-3
-    No. of particles   : 80
+    No. of particles   : 10
     Header storage     : 59 bytes
-    Data storage       : 3840 bytes
+    Data storage       : 480 bytes
 
   Custom meta data
     Source             : "MyMCApp"
@@ -634,76 +590,6 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     7        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
     8        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
     9        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
-   10        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
-   11        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
-   12        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
-   13        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
-   14        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
-   15        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
-   16        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
-   17        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
-   18        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
-   19        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
-   20        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
-   21        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
-   22        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
-   23        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
-   24        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
-   25        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
-   26        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
-   27        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
-   28        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
-   29        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
-   30        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
-   31        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
-   32        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
-   33        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
-   34        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
-   35        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
-   36        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
-   37        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
-   38        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
-   39        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
-   40        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
-   41        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
-   42        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
-   43        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
-   44        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
-   45        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
-   46        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
-   47        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
-   48        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
-   49        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
-   50        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
-   51        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
-   52        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
-   53        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
-   54        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
-   55        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
-   56        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
-   57        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
-   58        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
-   59        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
-   60        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
-   61        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
-   62        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
-   63        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
-   64        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
-   65        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
-   66        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
-   67        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
-   68        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
-   69        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
-   70        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
-   71        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
-   72        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
-   73        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
-   74        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
-   75        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
-   76        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
-   77        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
-   78        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
-   79        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
 ----------------------------------------------
 Running mcpltool -l0 -s2 '<TESTDATADIR>/ref/reffile_5.mcpl.gz'
 ----------------------------------------------

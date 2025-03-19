@@ -1842,13 +1842,14 @@ MCPL_LOCAL int mcpl_file_certainly_exists(const char * filename)
 /* #  include <sys/stat.h> */
 /* #endif */
 
-MCPL_LOCAL void mcpl_warn_duplicates(unsigned n, const char ** filenames)
+MCPL_LOCAL void mcpl_error_on_dups(unsigned n, const char ** filenames)
 {
-  //Checks that no filenames in provided list represent the same file (the
-  //detection is not 100% certain on non-POSIX platforms). If duplicates are
-  //found, emit warning - it is assumed the function is called from
-  //mcpl_merge_xxx on a user-provided list of files.
-
+  //Checks that no filenames in provided list represent the same file, and
+  //produce error if they do.
+  //
+  //Note: This used to be merely a warning, but in order to ensure consistent
+  //operations on Windows it became an error in MCPL 2.0.0.
+  //
   //Since this is C, we resort to slow O(N^2) comparison for simplicity.
 
   if (n<2)
@@ -1860,15 +1861,8 @@ MCPL_LOCAL void mcpl_warn_duplicates(unsigned n, const char ** filenames)
     mcu8str fn_i = mcu8str_view_cstr( filenames[i] );
     for (j = 0; j<i; ++j) {
       mcu8str fn_j = mcu8str_view_cstr( filenames[j] );
-      if ( mctools_is_same_file(&fn_i, &fn_j) ) {
-        if (strcmp(filenames[i], filenames[j]) == 0) {
-          printf("MCPL WARNING: Merging file with itself (%s).\n",
-                 filenames[i]);
-        } else {
-          printf("MCPL WARNING: Merging file with itself (%s and %s are the same file).\n",
-                 filenames[j],filenames[i]);
-        }
-      }
+      if ( mctools_is_same_file(&fn_i, &fn_j) )
+        mcpl_error("Merging file with itself");
     }
   }
 }
@@ -1933,8 +1927,7 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
   if (!nfiles)
     mcpl_error("mcpl_forcemerge_files must be called with at least one input file");
 
-  //Warn user if they are merging a file with itself:
-  mcpl_warn_duplicates(nfiles,files);
+  mcpl_error_on_dups(nfiles,files);
 
   //Create new file:
   if (mcpl_file_certainly_exists(file_output))
@@ -2054,14 +2047,12 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
 
   //Check all files for compatibility before we start (for robustness, we check
   //again when actually merging each file).
+  mcpl_error_on_dups(nfiles,files);
   unsigned ifile;
   for (ifile = 1; ifile < nfiles; ++ifile) {
     if (!mcpl_can_merge(files[0],files[ifile]))
       mcpl_error("Attempting to merge incompatible files.");
   }
-
-  //Warn user if they are merging a file with itself:
-  mcpl_warn_duplicates(nfiles,files);
 
   //Create new file:
   if (mcpl_file_certainly_exists(file_output))
@@ -2135,6 +2126,13 @@ void mcpl_merge(const char * file1, const char* file2)
 
 void mcpl_merge_inplace(const char * file1, const char* file2)
 {
+  {
+    mcu8str file1_str = mcu8str_view_cstr( file1 );
+    mcu8str file2_str = mcu8str_view_cstr( file2 );
+    if ( mctools_is_same_file(&file1_str, &file2_str) )
+      mcpl_error("Merging file with itself");
+  }
+
   mcpl_file_t ff1 = mcpl_open_file(file1);
   mcpl_file_t ff2 = mcpl_open_file(file2);
   int can_merge = mcpl_actual_can_merge(ff1,ff2);
@@ -2143,11 +2141,6 @@ void mcpl_merge_inplace(const char * file1, const char* file2)
     mcpl_close_file(ff2);
     mcpl_error("Attempting to merge incompatible files");
   }
-  //Warn user if they are merging a file with itself:
-  const char * filelist[2];
-  filelist[0] = file1;
-  filelist[1] = file2;
-  mcpl_warn_duplicates(2,filelist);
 
   //Access internals:
   mcpl_fileinternal_t * f1 = (mcpl_fileinternal_t *)ff1.internal;

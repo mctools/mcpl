@@ -13,6 +13,11 @@ v1.9.80 (work in progress)
         will in general imply USEPREINSTALLED, except on WINDOWS where it will
         imply FETCH.
       * Many obsolete CMake options were changed or simply removed.
+      * Fix bug when files were not closed properly when merging empty files.
+      * When merging files in place, it is now an error if any of the files
+        being merged are repeated. This used to be merely a WARNING, but in
+        order to get consistent behaviour on all platforms, this now becomes an
+        error.
 
 v1.6.2 2023-06-06
       * Work again with latest numpy by removing usage of deprecated numpy.float

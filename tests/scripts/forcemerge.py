@@ -28,24 +28,34 @@ from MCPLTestUtils.dirs import ( test_data_dir,
 
 def fix_print_str(s):
     if isinstance(s,bytes):
-        return s.replace(str(test_data_dir).encode(),b'<TESTDATADIR>')
+        s = s.replace(str(test_data_dir).encode(),b'<TESTDATADIR>')
+        if b'<TESTDATADIR>' in s:
+            s = s.replace(b'\\',b'/')
     else:
-        return s.replace(str(test_data_dir),'<TESTDATADIR>')
+        s = s.replace(str(test_data_dir),'<TESTDATADIR>')
+        if '<TESTDATADIR>' in s:
+            s = s.replace('\\','/')
+    return s
 
-def run_mcpltool(*args):
+def run_mcpltool(*args, expect_failure):
     cmdargs =[str(e) for e in args]
     print( '\n\n\n\n\nRUNNING: mcpltool %s'%fix_print_str(shlex.join(cmdargs)),
            flush=True )
+    print( 'Expect failure: %s'%('yes' if expect_failure else 'no'),
+           flush=True )
+
     import subprocess
     #sys.stdout.flush()
     #sys.stderr.flush()
     rv = subprocess.run( [mcpltool_cmd] + cmdargs,
-                         check = True,
                          capture_output=True )
-    assert rv.returncode == 0
     assert not rv.stderr
     print(fix_print_str(rv.stdout.decode()))
-
+    print("Ended in failure: %s"%('yes' if rv.returncode!=0 else 'no'))
+    if (rv.returncode != 0) != expect_failure:
+        raise SystemExit('Did not end in failure as expected!'
+                         if expect_failure else
+                         'Should not have ended in failure!')
     #stdout = rv.stdout
     #sys.stdout.flush()
     #sys.stderr.flush()
@@ -99,6 +109,10 @@ def do_test(folder):
         expected_dp = False
         input_univpdg = []
         input_univw = []
+
+        expect_failure = any( find_file(f1).samefile(find_file(f2))
+                              for ( f1, f2 )
+                              in itertools.combinations( filelist, 2 ) )
         for f in filelist:
             with mcpl.MCPLFile(find_file(f)) as m:
                 inputcounts += [m.nparticles]
@@ -122,10 +136,13 @@ def do_test(folder):
         if keepuf:
             mcpltool_args.append('--keepuserflags')
 
-        run_mcpltool(*mcpltool_args)
+        run_mcpltool(*mcpltool_args,expect_failure = expect_failure)
         #Sys.rm_f('tmp.mcpl')
         #cmd=Sys.quote_cmd(['sb_mcpl_tool','--forcemerge','tmp.mcpl']+list(filelist))
         #run(cmd)
+        if expect_failure:
+            assert not pathlib.Path('tmp.mcpl').is_file()
+            continue
         with mcpl.MCPLFile('tmp.mcpl') as res:
             res.dump_hdr()
             if sum(inputcounts)<30:

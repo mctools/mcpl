@@ -37,7 +37,7 @@ def gunzip( f ):
     f.unlink()
     ftgt.write_bytes(content)
 
-def cmd(*args, print_md5sum_of_output = False):
+def cmd(*args, print_md5sum_of_output = False,fail=False):
     sys.stdout.flush()
     sys.stderr.flush()
     print("----------------------------------------------")
@@ -64,6 +64,8 @@ def cmd(*args, print_md5sum_of_output = False):
     sys.stdout.buffer.write(rv.stdout)
     if rv.returncode != 0:
         print("===> Command failed!")
+    if bool(fail) != (rv.returncode != 0):
+        raise SystemExit('Command did not end as expected!')
 
 def check_same( f1, f2 ):
     f1 = Path(f1)

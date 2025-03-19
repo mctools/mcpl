@@ -83,26 +83,26 @@ def main():
     cmd(f1,'-j')
     cmd(f1,'--nohead')
     cmd(f1,'--n')
-    cmd(f1,'--n','-m','--inplace')
-    cmd(f1,'--ju','-l2')
-    cmd(f1,'--ju','-s1')
-    cmd(f1,'-l2','-r')
+    cmd(f1,'--n','-m','--inplace',fail=True)
+    cmd(f1,'--ju','-l2',fail=True)
+    cmd(f1,'--ju','-s1',fail=True)
+    cmd(f1,'-l2','-r',fail=True)
     cmd(f1,'--v','--h')
-    cmd(f1,'--v','--m','--inplace')
+    cmd(f1,'--v','--m','--inplace',fail=True)
     cmd(f1,'-l0','-s2')
     cmd(f1,'-l2','-s0')
     cmd(f1,'-m','--inplace',f2)
     cmd(f1,'-l0')
 
-    #this gives warning on purpose:
-    cmd(f1,'--mer','--inpl',f1)
+    #this used to give a warning on purpose, but since MCPL 2.0.0 it is an error:
+    cmd(f1,'--mer','--inpl',f1,fail=True)
     cmd(f1,'-l0')
-    #this gives warning on purpose:
-    cmd(f1,'--m','--inplac',f1)
+    #this used to give a warning on purpose, but since MCPL 2.0.0 it is an error:
+    cmd(f1,'--m','--inplac',f1,fail=True)
     cmd(f1,'-l0')
-    #this gives warning on purpose:
-    cmd(f1,'--merge','--inplace',f1)
-    #lots of warnings:
+    #this used to give a warning on purpose, but since MCPL 2.0.0 it is an error:
+    cmd(f1,'--merge','--inplace',f1,fail=True)
+    #lots of warnings (errors since MCPL 2.0.0):
     cmd('-m','dupmerge.mcpl',
         f1.name,
         './%s'%f1.name,
@@ -110,42 +110,42 @@ def main():
         f1_sl,
         f1_hl,
         f2_sl,
-        f2_sl)
-    assert Path('dupmerge.mcpl').is_file()
-    cmd('-m','--inplace','dupmerge.mcpl','./dupmerge.mcpl')
-    cmd('-m','--inplace','dupmerge.mcpl','dupmerge.mcpl')
+        f2_sl,fail=True)
+    assert not Path('dupmerge.mcpl').is_file()
+    cmd('-m','--inplace','dupmerge.mcpl','./dupmerge.mcpl',fail=True)
+    cmd('-m','--inplace','dupmerge.mcpl','dupmerge.mcpl',fail=True)
     cmd(f1,'-l0')
     cmd('-l0','-s2',dd('reffile_5.mcpl.gz'))
     cmd('-l0','-s2',dd('reffile_5.mcpl'))
     cmd('-l0','-s2',dd('reffile_empty.mcpl'))
     cmd('-l0','-s2',dd('reffile_empty.mcpl.gz'))
     cmd('-m','--inplace','rf5cp.mcpl',dd('reffile_5.mcpl.gz'))
-    cmd('-m','--inpla','rf5cp.mcpl.gz',dd('reffile_5.mcpl'))
-    cmd('-m','--inplac','rf5cp.mcpl.gz',dd('reffile_5.mcpl.gz'))
+    cmd('-m','--inpla','rf5cp.mcpl.gz',dd('reffile_5.mcpl'),fail=True)
+    cmd('-m','--inplac','rf5cp.mcpl.gz',dd('reffile_5.mcpl.gz'),fail=True)
     cmd(fc)
     cmd('--repair',fc)
     cmd(fc)
-    cmd('--r',fc)
+    cmd('--r',fc,fail=True)#already repaired
     cmd(fc)
-    cmd('-r',fcgz)
+    cmd('-r',fcgz,fail=True)#can not repair gz
     cmd(fc)
-    cmd('-r',f1)
+    cmd('-r',f1,fail=True)#already repaired
     cmd('rfempty.mcpl')
-    cmd('-r','rfempty.mcpl')
+    cmd('-r','rfempty.mcpl',fail=True)#not broken
     cmd('rfempty.mcpl')
     cmd('rfempty.mcpl.gz')
-    cmd('-r','rfempty.mcpl.gz')
+    cmd('-r','rfempty.mcpl.gz',fail=True)#can not repair gz, and not broken
     cmd('rfempty.mcpl.gz')
 
     copy(dd('reffile_truncated.mcpl.gz'),'rftrunc.mcpl.gz')
-    cmd('-r','rftrunc.mcpl.gz')
+    cmd('-r','rftrunc.mcpl.gz',fail=True)
     copy(dd('reffile_truncated.mcpl'),'rftrunc.mcpl')
     cmd('-r','rftrunc.mcpl')
 
     cmd('rftrunc.mcpl')
-    cmd('fake.mcpl')
-    cmd('fake.mcpl.gz')
-    cmd('fake2.mcpl.gz')
+    cmd('fake.mcpl',fail=True)
+    cmd('fake.mcpl.gz',fail=True)
+    cmd('fake2.mcpl.gz',fail=True)
     cmd('-e',fmisc,'extracted_1')
     cmd('--extract','-p2112',fmisc,'extracted_1')
     cmd('--extract','-p-11',fmisc,'extracted_2')
@@ -183,9 +183,9 @@ def main():
     cmd('--merge','merged_1to5_new_filec.mcpl','extracted_1_new.mcpl','extracted_2_new.mcpl','extracted_3.mcpl','extracted_4_new.mcpl','extracted_5.mcpl')
     #merge to gzipped output by specifying .mcpl.gz:
     #  -> but fail since .mcpl file exists:
-    cmd('--merge','merged_1to5_new_filec.mcpl.gz','extracted_1_new.mcpl','extracted_2_new.mcpl','extracted_3.mcpl','extracted_4_new.mcpl','extracted_5.mcpl')
+    cmd('--merge','merged_1to5_new_filec.mcpl.gz','extracted_1_new.mcpl','extracted_2_new.mcpl','extracted_3.mcpl','extracted_4_new.mcpl','extracted_5.mcpl',fail=True)
     #  -> but fail since wrong ending:
-    cmd('--merge','merged_1to5_new_filec.gz','extracted_1_new.mcpl','extracted_2_new.mcpl','extracted_3.mcpl','extracted_4_new.mcpl','extracted_5.mcpl')
+    cmd('--merge','merged_1to5_new_filec.gz','extracted_1_new.mcpl','extracted_2_new.mcpl','extracted_3.mcpl','extracted_4_new.mcpl','extracted_5.mcpl',fail=True)
     #  -> ok (might fail in old releases if gzip support was absent!):
     cmd('--merge','merged_1to5_new_filec_unique.mcpl.gz','extracted_1_new.mcpl','extracted_2_new.mcpl','extracted_3.mcpl','extracted_4_new.mcpl','extracted_5.mcpl')
     check_same('merged_1to5_new_filec.mcpl','merged_1to5_new_filec_unique.mcpl.gz')
@@ -195,13 +195,13 @@ def main():
     check_same('merged_1to5_new_filea.mcpl','merged_1to5_new_filec.mcpl')
 
     #mistakes with --merge but no --inplace should fail:
-    cmd('--merge','extracted_1.mcpl','extracted_2.mcpl')
+    cmd('--merge','extracted_1.mcpl','extracted_2.mcpl',fail=True)
     #too few pars:
-    cmd('--merge','--inplace','extracted_1.mcpl')
-    cmd('--merge','newfile.mcpl')
+    cmd('--merge','--inplace','extracted_1.mcpl',fail=True)
+    cmd('--merge','newfile.mcpl',fail=True)
     #error - can't mix MCPL versions when merging inplace:
-    cmd('--merge','--inplace',f2v2,f2)
-    cmd('--merge','--inplace',f2,f2v2)
+    cmd('--merge','--inplace',f2v2,f2,fail=True)
+    cmd('--merge','--inplace',f2,f2v2,fail=True)
     #but ok when not inplace (does trigger warning though):
     cmd('--merge','mix.mcpl',f2v2,f2)
     cmd('-l0','mix.mcpl')
@@ -218,21 +218,21 @@ def main():
     check_same('difficult_unitvector.mcpl','extracted_none.mcpl')
     check_same('extracted_recombined.mcpl','extracted_none.mcpl')
     #More bad files:
-    cmd(dd('reffile_bad1.mcpl'))
-    cmd(dd('reffile_bad2.mcpl'))
-    cmd(dd('reffile_bad3.mcpl'))
-    cmd(dd('reffile_bad4.mcpl'))
-    cmd(dd('reffile_bad1.mcpl.gz'))
-    cmd(dd('reffile_bad2.mcpl.gz'))
-    cmd(dd('reffile_bad3.mcpl.gz'))
-    cmd(dd('reffile_bad4.mcpl.gz'))
+    cmd(dd('reffile_bad1.mcpl'),fail=True)
+    cmd(dd('reffile_bad2.mcpl'),fail=True)
+    cmd(dd('reffile_bad3.mcpl'),fail=True)
+    cmd(dd('reffile_bad4.mcpl'),fail=True)
+    cmd(dd('reffile_bad1.mcpl.gz'),fail=True)
+    cmd(dd('reffile_bad2.mcpl.gz'),fail=True)
+    cmd(dd('reffile_bad3.mcpl.gz'),fail=True)
+    cmd(dd('reffile_bad4.mcpl.gz'),fail=True)
     #missing file (also tests whether or not we complain about the extension):
-    cmd('bla.txt')
+    cmd('bla.txt',fail=True)
     Path('bla.txt').write_bytes(b'hello\n')
     #not missing but bad (also tests whether or not we complain about the extension):
-    cmd('bla.txt')
-    cmd(dd('reffile_truncated.mcpl.gz'))
-    cmd(dd('reffile_truncated.mcpl'))
+    cmd('bla.txt',fail=True)
+    cmd(dd('reffile_truncated.mcpl.gz'),fail=True)
+    cmd(dd('reffile_truncated.mcpl'),fail=True)
     #This next one opens nicely if mcpltool is build with zlib support, due to the
     #magic of gzopen being able to handle uncompressed files. A bit too magic perhaps...
     cmd(dd('reffile_notreallygz.mcpl.gz'))
