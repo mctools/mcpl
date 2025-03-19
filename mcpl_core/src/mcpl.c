@@ -2204,6 +2204,19 @@ MCPL_LOCAL int mcpl_tool_usage( char** argv, const char * errmsg ) {
     return 1;
   }
   const char * progname = mcpl_basename(argv[0]);
+  char progname_buf[1024];
+  {
+    //Remove any trailing .exe/.EXE:
+    size_t npn = strlen(progname);
+    if ( npn<sizeof(progname_buf) && npn > 4
+         && ( strcmp(progname+(npn-4),".exe")==0
+              || strcmp(progname+(npn-4),".EXE")==0 ) )
+      {
+        memcpy(progname_buf,progname,npn-4);
+        progname_buf[npn-4] = '\0';
+        progname = progname_buf;
+      }
+  }
 
   printf("Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.\n");
   printf("\n");
