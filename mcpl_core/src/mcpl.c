@@ -1239,7 +1239,7 @@ void mcpl_repair(const char * filename)
     mcpl_error("File must be gunzipped before it can be checked and possibly repaired.");
   }
   //Ok, we should repair the file by updating nparticles in the header:
-  FILE * fh = mcpl_fopen(filename,"rb+");
+  FILE * fh = mcpl_fopen(filename,"r+b");
   if (!fh)
     mcpl_error("Unable to open file in update mode!");
   mcpl_update_nparticles(fh, nparticles);
@@ -2143,7 +2143,8 @@ void mcpl_merge_inplace(const char * file1, const char* file2)
   if (f1->format_version!=f2->format_version) {
     mcpl_close_file(ff1);
     mcpl_close_file(ff2);
-    mcpl_error("Attempting to merge incompatible files (can not mix MCPL format versions when merging inplace)");
+    mcpl_error("Attempting to merge incompatible files (can not mix"
+               " MCPL format versions when merging inplace)");
   }
 
   if (f1->filegz) {
@@ -2166,7 +2167,7 @@ void mcpl_merge_inplace(const char * file1, const char* file2)
 
   //Now, close file1 and reopen a file handle in append mode:
   mcpl_close_file(ff1);
-  FILE * f1a = mcpl_fopen(file1,"rb+");
+  FILE * f1a = mcpl_fopen(file1,"r+b");
 
   //Update file positions. Note that f2->file is already at the position for the
   //first particle and that the seek operation on f1a correctly discards any
