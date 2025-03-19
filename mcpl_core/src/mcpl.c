@@ -277,6 +277,12 @@ MCPL_LOCAL void mcpl_platform_compatibility_check(void) {
     mcpl_error("Platform compatibility check failed (unexpected padding in mcpl_particle_t)");
 }
 
+MCPL_LOCAL FILE * mcpl_fopen( const char * filename, const char * mode )
+{
+  mcu8str f = mcu8str_view_cstr( filename );
+  return mctools_fopen( &f, mode );
+}
+
 mcpl_outfile_t mcpl_create_outfile(const char * filename)
 {
   //Sanity check chosen filename and append ".mcpl" if missing to help people
@@ -331,7 +337,7 @@ mcpl_outfile_t mcpl_create_outfile(const char * filename)
   f->opt_universalweight = 0.0;
   f->header_notwritten = 1;
   f->nparticles = 0;
-  f->file = fopen(f->filename,"wb");
+  f->file = mcpl_fopen(f->filename,"wb");
   if (!f->file)
     mcpl_error("Unable to open output file!");
 
@@ -1003,7 +1009,6 @@ MCPL_LOCAL int mcpl_gzseek( gzFile fh, int64_t pos )
 #endif
 }
 
-
 MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair_status)
 {
   int caller_is_mcpl_repair = *repair_status;
@@ -1033,7 +1038,7 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
     mcpl_error("This installation of MCPL was not built with zlib support and can not read compressed (.gz) files directly.");
 #endif
   } else {
-    f->file = fopen(filename,"rb");
+    f->file = mcpl_fopen(filename,"rb");
     if (!f->file)
       mcpl_error("Unable to open file!");
   }
@@ -1234,7 +1239,7 @@ void mcpl_repair(const char * filename)
     mcpl_error("File must be gunzipped before it can be checked and possibly repaired.");
   }
   //Ok, we should repair the file by updating nparticles in the header:
-  FILE * fh = fopen(filename,"rb+");
+  FILE * fh = mcpl_fopen(filename,"rb+");
   if (!fh)
     mcpl_error("Unable to open file in update mode!");
   mcpl_update_nparticles(fh, nparticles);
@@ -2150,7 +2155,7 @@ void mcpl_merge_inplace(const char * file1, const char* file2)
 
   //Now, close file1 and reopen a file handle in append mode:
   mcpl_close_file(ff1);
-  FILE * f1a = fopen(file1,"rb+");
+  FILE * f1a = mcpl_fopen(file1,"rb+");
 
   //Update file positions. Note that f2->file is already at the position for the
   //first particle and that the seek operation on f1a correctly discards any
@@ -2560,7 +2565,7 @@ int mcpl_tool(int argc,char** argv) {
       return free(filenames),mcpl_tool_usage(argv,"Requested output file already exists.");
 
     mcpl_file_t fi = mcpl_open_file(filenames[0]);
-    FILE * fout = fopen(filenames[1],"w");
+    FILE * fout = mcpl_fopen(filenames[1],"w");
     if (!fout)
       return free(filenames),mcpl_tool_usage(argv,"Could not open output file.");
 
@@ -2712,7 +2717,7 @@ int mcpl_gzip_file(const char * filename)
 MCPL_LOCAL int _mcpl_custom_gzip(const char *filename, const char *mode)//fixme: mode is always "wb"
 {
   //Open input file:
-  FILE *handle_in = fopen(filename, "rb");
+  FILE *handle_in = mcpl_fopen(filename, "rb");
   if (!handle_in)
     return 0;
 
