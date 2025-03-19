@@ -2155,8 +2155,12 @@ void mcpl_merge_inplace(const char * file1, const char* file2)
 
   uint64_t np1 = f1->nparticles;
   uint64_t np2 = f2->nparticles;
-  if (!np2)
-    return;//nothing to take from file 2.
+  if (!np2) {
+    //nothing to take from file 2.
+    mcpl_close_file(ff1);
+    mcpl_close_file(ff2);
+    return;
+  }
 
   unsigned particle_size = f1->particle_size;
   uint64_t first_particle_pos = f1->first_particle_pos;
