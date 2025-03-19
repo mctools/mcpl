@@ -139,7 +139,7 @@ int mcpltests_produce_miscphys_file(const char * filename) {
   return 0;
 }
 
-int stdtests()
+int stdtests(void)
 {
   if ( mcpltests_produce_miscphys_file("mp.mcpl")!=0 )
     return 1;
