@@ -47,7 +47,7 @@ def run_mcpltool(*args, expect_failure):
     rv = subprocess.run( [mcpltool_cmd] + cmdargs,
                          capture_output=True )
     assert not rv.stderr
-    print(fix_print_str(rv.stdout.decode()))
+    print(fix_print_str(rv.stdout.replace(b'\r\n',b'\n').decode()))
     print("Ended in failure: %s"%('yes' if rv.returncode!=0 else 'no'))
     if (rv.returncode != 0) != expect_failure:
         raise SystemExit('Did not end in failure as expected!'
