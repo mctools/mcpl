@@ -2327,20 +2327,18 @@ MCPL_LOCAL void mcpl_internal_dump_to_stdout( const char *, unsigned long );
 #ifdef _WIN32
 int mcpl_tool_wchar(int argc, wchar_t** wargv)
 {
-  char* argv_buf[16];//fixme try very small
-  void * to_free = NULL;
-  char ** argv = argv_buf;
-  if ( argc > sizeof(argv_buf)/sizeof(*argv_buf) ) {
-    to_free = malloc( sizeof(char*) * argc );
-    argv = (char**)(to_free);
-  }
+  char ** argv = malloc( sizeof(char*) * argc );
   for ( int i = 0; i < argc; ++i ) {
     mcu8str u8str = mctool_wcharstr_to_u8str( wargv[i] );
     mcu8str_ensure_dynamic_buffer(&u8str);
     argv[i] = u8str.c_str;
   }
   int ec = mcpl_tool(argc,argv);
-  free(to_free);
+
+  for ( int i = 0; i < argc; ++i )
+    free( argv[i] );
+  free(argv);
+
   return ec;
 }
 #endif

@@ -21,7 +21,14 @@
 
 #include "mcpl.h"
 
+#ifdef _WIN32
+int wmain( int argc, wchar_t *argv[ ] )
+{
+  return mcpl_tool_wchar(argc,argv);
+}
+#else
 int main ( int argc, char** argv )
 {
   return mcpl_tool(argc,argv);
 }
+#endif
