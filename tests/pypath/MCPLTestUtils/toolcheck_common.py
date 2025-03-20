@@ -20,6 +20,7 @@
 ################################################################################
 
 from .dirs import ( test_data_dir, mcpltool_cmd )
+from .common import flush
 from pathlib import Path
 import gzip
 import subprocess
@@ -38,8 +39,7 @@ def gunzip( f ):
     ftgt.write_bytes(content)
 
 def cmd(*args, print_md5sum_of_output = False,fail=False):
-    sys.stdout.flush()
-    sys.stderr.flush()
+    flush()
     print("----------------------------------------------")
     def argfmt( a ):
         a = str(a)
@@ -51,12 +51,10 @@ def cmd(*args, print_md5sum_of_output = False,fail=False):
     args_print = shlex.join( argfmt(a) for a in args )
     print(f"Running mcpltool {args_print}")
     print("----------------------------------------------")
-    sys.stdout.flush()
-    sys.stderr.flush()
+    flush()
     rv = subprocess.run( [mcpltool_cmd]+list(str(e) for e in args),
                          capture_output = True, text=False )
-    sys.stdout.flush()
-    sys.stderr.flush()
+    flush()
     assert not rv.stderr
     if print_md5sum_of_output and rv.returncode == 0:
         print( hashlib.md5(rv.stdout).hexdigest() )

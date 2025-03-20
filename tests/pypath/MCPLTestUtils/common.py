@@ -20,19 +20,6 @@
 ################################################################################
 
 import sys
-from .common import flush
-
-class RedirectStdout():
-    def __init__(self,filename):
-        flush()
-        self._f = open(filename, 'w')
-        self._true_stdout = sys.stdout
-        sys.stdout = self._f
-        flush()
-    def __enter__(self):
-        return self
-    def __exit__(self,*args):
-        flush()
-        self._f.close()
-        sys.stdout = self._true_stdout
-        flush()
+def flush():
+    sys.stderr.flush()
+    sys.stdout.flush()

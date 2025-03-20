@@ -45,8 +45,6 @@ def run_mcpltool(*args, expect_failure):
            flush=True )
 
     import subprocess
-    #sys.stdout.flush()
-    #sys.stderr.flush()
     rv = subprocess.run( [mcpltool_cmd] + cmdargs,
                          capture_output=True )
     assert not rv.stderr
@@ -56,9 +54,6 @@ def run_mcpltool(*args, expect_failure):
         raise SystemExit('Did not end in failure as expected!'
                          if expect_failure else
                          'Should not have ended in failure!')
-    #stdout = rv.stdout
-    #sys.stdout.flush()
-    #sys.stderr.flush()
 
 def do_test(folder):
 
@@ -91,14 +86,6 @@ def do_test(folder):
             iter([(files[0], files[0]),(files[1], files[1]),(files[2], files[2])]),
         )
     )
-
-    #def run(cmd):
-    #    sys.stdout.flush()
-    #    sys.stderr.flush()
-    #    Sys.system_throw(os.path.expandvars(cmd)+' | sed "s#"%s"#<SBLD_DATA_DIR>#"'%Sys.quote(os.environ['SBLD_DATA_DIR']))
-    #    sys.stdout.flush()
-    #    sys.stderr.flush()
-
 
     for i,filelist in enumerate(filecombinations):
         keepuf = bool(i%3==0)

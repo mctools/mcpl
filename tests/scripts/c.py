@@ -43,9 +43,7 @@ import sys
 import shutil
 import contextlib
 from MCPLTestUtils.dirs import test_data_dir
-#from io import open#py2's open is now like py3's.
-
-
+from MCPLTestUtils.common import flush
 
 _fmt = '%.8g'
 def _fmtitems(items):
@@ -89,24 +87,20 @@ badfiles = sorted(test_data_dir.joinpath('ref').glob('reffile_bad*.mcpl*'))
 assert len(badfiles)==8
 
 def testtool(args,testnone=False):
-    sys.stderr.flush()
-    sys.stdout.flush()
+    flush()
     try:
         mcpl.app_pymcpltool(['mcpltool']+[str(e) for e in args]
                             if not testnone
                             else None)
     except mcpl.MCPLError as e:
-        sys.stderr.flush()
-        sys.stdout.flush()
+        flush()
         print("===> mcpltool ended with MCPLError exception: %s"%str(e))
         pass
     except SystemExit as e:
-        sys.stderr.flush()
-        sys.stdout.flush()
+        flush()
         print("===> mcpltool ended with exit code %s"%str(e))
         pass
-    sys.stderr.flush()
-    sys.stdout.flush()
+    flush()
 
 testtool([])
 testtool(['-l3'])
@@ -154,14 +148,14 @@ def stdout_buffer_write_hexvalues():
             res += hex(e).encode('ascii')
         _orig_buffer_write(res)
     try:
-        sys.stdout.flush()
+        flush()
         sys.stdout.buffer.flush()
         sys.stdout.buffer.write = bufwrite
         yield
     finally:
         sys.stdout.buffer.write = _orig_buffer_write
         sys.stdout.buffer.flush()
-        sys.stdout.flush()
+        flush()
 
 with stdout_buffer_write_hexvalues():
     testtool([test_data_dir.joinpath('ref','reffile_encodings.mcpl.gz'),

@@ -27,6 +27,7 @@ from MCPLTestUtils.dirs import test_data_dir, mcpltool_cmd
 from MCPLTestUtils.checkasciicompat import check_compat
 import subprocess
 from MCPLTestUtils.stdout_redirect import RedirectStdout
+from MCPLTestUtils.common import flush
 
 def run_pymcpltool(*args):
     from mcpldev.mcpl import app_pymcpltool
@@ -37,8 +38,10 @@ def run_pymcpltool(*args):
             raise
 
 def run_mcpltool(*args, check = False):
+    flush()
     rv = subprocess.run( [mcpltool_cmd]+[str(e) for e in args],
                          capture_output = True, check = check )
+    flush()
     assert not rv.stderr
     if check:
         return rv.stdout
@@ -101,15 +104,15 @@ for file_key in sorted(files.keys()):
             p.unlink()
     rm_f('dump_ascii_c.txt')
     rm_f('dump_ascii_py.txt')
+    flush()
     out_c = run_mcpltool('--text',file_path,'dump_ascii_c.txt',check=True)
-    if out_c.strip():
-        print(out_c.decode('utf-8'), end='')
-    sys.stdout.flush()
+    flush()
+    sys.stdout.buffer.write(out_c)
+    flush()
     rm_f('out_pymcpltool.txt')
     with RedirectStdout('out_pymcpltool.txt'):
         run_pymcpltool('--text',file_path,'dump_ascii_py.txt')
     out_py = pathlib.Path('out_pymcpltool.txt').read_bytes()
-    sys.stdout.flush()
     if out_c!=out_py:
         print("ERRORS DETECTED in stdout during creation of ascii output")
     incompat_errmsg = check_compat('./dump_ascii_c.txt','./dump_ascii_py.txt')
