@@ -1203,7 +1203,8 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
               *repair_status = 3;//file broken and should be able to repair
             } else {
               assert(f->nparticles == 0);
-              printf("MCPL WARNING: Input file appears to not have been closed properly. Recovered %" PRIu64 " particles.\n",np);
+              printf("MCPL WARNING: Input file appears to not have been"
+                     " closed properly. Recovered %" PRIu64 " particles.\n",np);
             }
             f->nparticles = np;
           }
@@ -2322,6 +2323,27 @@ MCPL_LOCAL int mcpl_str2int(const char* str, size_t len, int64_t* res)
 
 MCPL_LOCAL void mcpl_internal_delete_file( const char * );
 MCPL_LOCAL void mcpl_internal_dump_to_stdout( const char *, unsigned long );
+
+#ifdef _WIN32
+int mcpl_tool_wchar(int argc, wchar_t** wargv)
+{
+  char* argv_buf[16];//fixme try very small
+  void * to_free = NULL;
+  char ** argv = argv_buf;
+  if ( argc > sizeof(argv_buf)/sizeof(*argv_buf) ) {
+    to_free = malloc( sizeof(char*) * argc );
+    argv = (char**)(to_free);
+  }
+  for ( int i = 0; i < argc; ++i ) {
+    mcu8str u8str = mctool_wcharstr_to_u8str( wargv[i] );
+    mcu8str_ensure_dynamic_buffer(&u8str);
+    argv[i] = u8str.c_str;
+  }
+  int ec = mcpl_tool(argc,argv);
+  free(to_free);
+  return ec;
+}
+#endif
 
 int mcpl_tool(int argc,char** argv) {
 

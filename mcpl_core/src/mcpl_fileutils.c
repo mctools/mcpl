@@ -1691,6 +1691,17 @@ namespace {
     mcwinstr wp = mc_path2longwpath( &p );
     return wp.c_str;
   }
+
+  mcu8str mctool_wcharstr_to_u8str( const wchar_t* wstr_raw )
+  {
+    mcwinstr wstr_view;
+    wstr_view.c_str = (wchar_t*)wstr_raw;
+    wstr_view.size = wcslen(wstr_raw);
+    wstr_view.buflen = wstr_view.size + 1;
+    const mcwinstr* wstrcp = &wstr_view;
+    return mc_winstr_to_u8str( wstrcp );
+  }
+
 #endif
 
 #ifdef MCFILEUTILS_CPPNAMESPACE

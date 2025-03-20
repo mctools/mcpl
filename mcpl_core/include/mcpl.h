@@ -208,8 +208,15 @@ extern "C" {
   /* properly closed:                                                           */
   MCPL_API void mcpl_repair(const char * file1);
 
-  /* For easily creating a standard mcpl-tool cmdline application: */
+  /* For easily creating a standard mcpl-tool cmdline application (assumes */
+  /* utf8-encoded strings):                                                */
   MCPL_API int mcpl_tool(int argc, char** argv);
+
+#ifdef _WIN32
+  /* Version for implementing wmain with unicode support on windows */
+  MCPL_API int mcpl_tool_wchar(int argc, wchar_t** argv);
+#endif
+
 
   /* Attempt to run gzip on a file (does not require MCPL_HASZLIB on unix) */
   /* Returns non-zero if gzipping was succesful.                           */

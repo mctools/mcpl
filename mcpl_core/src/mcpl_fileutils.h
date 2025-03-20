@@ -221,6 +221,8 @@ namespace MCFILEUTILS_CPPNAMESPACE {
   //Get resolved wpath. Returns null pointer in case of problems. Caller must
   //free(..) the returned value.
   wchar_t* mctools_path2wpath( const mcu8str* );
+  //Generic utf-16 wchar_t* to utf-8 char* string conversion:
+  mcu8str mctool_wcharstr_to_u8str( const wchar_t* );
 #endif
 
 #ifdef MCFILEUTILS_CPPNAMESPACE
