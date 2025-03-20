@@ -143,6 +143,7 @@ def stdout_buffer_write_hexvalues():
     import sys
     _orig_buffer_write = sys.stdout.buffer.write
     def bufwrite( b ):
+        b = b.replace(b'\r\n',b'\n')#dos2unix
         res = b''
         for e in b:
             res += hex(e).encode('ascii')
