@@ -52,14 +52,24 @@ def cmd(*args, print_md5sum_of_output = False,fail=False):
     print(f"Running mcpltool {args_print}")
     print("----------------------------------------------")
     flush()
-    rv = subprocess.run( [mcpltool_cmd]+list(str(e) for e in args),
-                         capture_output = True, text=False )
+    fullcmd = [mcpltool_cmd]+list(str(e) for e in args)
+    #print(repr(fullcmd))
+    #print("----------------------------------------------")
+    #flush()
+    rv = subprocess.run( fullcmd, capture_output = True )
     flush()
-    assert not rv.stderr
-    if print_md5sum_of_output and rv.returncode == 0:
+    assert not rv.stderr, "process had stderr"
+    flush()
+    if print_md5sum_of_output:
+        print('>>>%s<<<'%rv.stdout
+              .replace(b'\r',b'<CR>')
+              .replace(b'\n',b'<LF>')
+              .decode('ascii','backslashreplace'))
         print( hashlib.md5(rv.stdout).hexdigest() )
-        return
-    sys.stdout.buffer.write(rv.stdout)
+    else:
+        sys.stdout.buffer.write(rv.stdout)
+    print()
+    flush()
     if rv.returncode != 0:
         print("===> Command failed!")
     if bool(fail) != (rv.returncode != 0):

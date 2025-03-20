@@ -53,6 +53,7 @@ Other options:
                     using a simple ASCII-based format.
   -v, --version   : Display version of MCPL installation.
   -h, --help      : Display this usage information (ignores all other options).
+
 ----------------------------------------------
 Running mcpltool --help
 ----------------------------------------------
@@ -108,6 +109,7 @@ Other options:
                     using a simple ASCII-based format.
   -v, --version   : Display version of MCPL installation.
   -h, --help      : Display this usage information (ignores all other options).
+
 ----------------------------------------------
 Running mcpltool --h
 ----------------------------------------------
@@ -163,14 +165,17 @@ Other options:
                     using a simple ASCII-based format.
   -v, --version   : Display version of MCPL installation.
   -h, --help      : Display this usage information (ignores all other options).
+
 ----------------------------------------------
 Running mcpltool --version
 ----------------------------------------------
 MCPL version 1.6.2
+
 ----------------------------------------------
 Running mcpltool --v
 ----------------------------------------------
 MCPL version 1.6.2
+
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl --justhead
 ----------------------------------------------
@@ -195,6 +200,7 @@ Opened MCPL file rf16cp.mcpl:
     FP precision       : single
     Endianness         : little
     Storage            : 48 bytes/particle
+
 
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl --ju
@@ -221,6 +227,7 @@ Opened MCPL file rf16cp.mcpl:
     Endianness         : little
     Storage            : 48 bytes/particle
 
+
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl -j
 ----------------------------------------------
@@ -246,6 +253,7 @@ Opened MCPL file rf16cp.mcpl:
     Endianness         : little
     Storage            : 48 bytes/particle
 
+
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl --nohead
 ----------------------------------------------
@@ -256,6 +264,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
     3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
     4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl --n
 ----------------------------------------------
@@ -266,12 +275,14 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
     3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
     4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl --n -m --inplace
 ----------------------------------------------
 ERROR: Conflicting options specified.
 
 Run with -h or --help for usage information
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl --ju -l2
@@ -279,6 +290,7 @@ Running mcpltool rf16cp.mcpl --ju -l2
 ERROR: Do not specify -l or -s with --justhead
 
 Run with -h or --help for usage information
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl --ju -s1
@@ -286,6 +298,7 @@ Running mcpltool rf16cp.mcpl --ju -s1
 ERROR: Do not specify -l or -s with --justhead
 
 Run with -h or --help for usage information
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl -l2 -r
@@ -293,6 +306,7 @@ Running mcpltool rf16cp.mcpl -l2 -r
 ERROR: Conflicting options specified.
 
 Run with -h or --help for usage information
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl --v --h
@@ -349,12 +363,14 @@ Other options:
                     using a simple ASCII-based format.
   -v, --version   : Display version of MCPL installation.
   -h, --help      : Display this usage information (ignores all other options).
+
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl --v --m --inplace
 ----------------------------------------------
 ERROR: Conflicting options specified.
 
 Run with -h or --help for usage information
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl -l0 -s2
@@ -385,6 +401,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
     3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
     4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl -l2 -s0
 ----------------------------------------------
@@ -413,9 +430,11 @@ Opened MCPL file rf16cp.mcpl:
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
     0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
     1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl -m --inplace '<TESTDATADIR>/ref/reffile_16.mcpl'
 ----------------------------------------------
+
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl -l0
 ----------------------------------------------
@@ -452,10 +471,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     7        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
     8        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
     9        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl --mer --inpl rf16cp.mcpl
 ----------------------------------------------
 MCPL ERROR: Merging file with itself
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl -l0
@@ -493,10 +514,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     7        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
     8        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
     9        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl --m --inplac rf16cp.mcpl
 ----------------------------------------------
 MCPL ERROR: Merging file with itself
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl -l0
@@ -534,25 +557,30 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     7        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
     8        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
     9        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl --merge --inplace rf16cp.mcpl
 ----------------------------------------------
 MCPL ERROR: Merging file with itself
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool -m dupmerge.mcpl rf16cp.mcpl ./rf16cp.mcpl ../tmprundir/rf16cp.mcpl rf16cp_sl.mcpl rf16cp_hl.mcpl rf16_sl.mcpl rf16_sl.mcpl
 ----------------------------------------------
 MCPL ERROR: Merging file with itself
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool -m --inplace dupmerge.mcpl ./dupmerge.mcpl
 ----------------------------------------------
 MCPL ERROR: Unable to open file!
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool -m --inplace dupmerge.mcpl dupmerge.mcpl
 ----------------------------------------------
 MCPL ERROR: Unable to open file!
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl -l0
@@ -590,6 +618,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     7        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
     8        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
     9        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+
 ----------------------------------------------
 Running mcpltool -l0 -s2 '<TESTDATADIR>/ref/reffile_5.mcpl.gz'
 ----------------------------------------------
@@ -620,6 +649,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1 0xdeadbeef
     3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1 0xdeadbeef
     4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1 0xdeadbeef
+
 ----------------------------------------------
 Running mcpltool -l0 -s2 '<TESTDATADIR>/ref/reffile_5.mcpl'
 ----------------------------------------------
@@ -650,6 +680,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1 0xdeadbeef
     3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1 0xdeadbeef
     4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1 0xdeadbeef
+
 ----------------------------------------------
 Running mcpltool -l0 -s2 '<TESTDATADIR>/ref/reffile_empty.mcpl'
 ----------------------------------------------
@@ -677,6 +708,7 @@ Opened MCPL file reffile_empty.mcpl:
     Storage            : 96 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+
 ----------------------------------------------
 Running mcpltool -l0 -s2 '<TESTDATADIR>/ref/reffile_empty.mcpl.gz'
 ----------------------------------------------
@@ -704,18 +736,22 @@ Opened MCPL file reffile_empty.mcpl.gz:
     Storage            : 96 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+
 ----------------------------------------------
 Running mcpltool -m --inplace rf5cp.mcpl '<TESTDATADIR>/ref/reffile_5.mcpl.gz'
 ----------------------------------------------
+
 ----------------------------------------------
 Running mcpltool -m --inpla rf5cp.mcpl.gz '<TESTDATADIR>/ref/reffile_5.mcpl'
 ----------------------------------------------
 MCPL ERROR: direct modification of gzipped files is not supported.
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool -m --inplac rf5cp.mcpl.gz '<TESTDATADIR>/ref/reffile_5.mcpl.gz'
 ----------------------------------------------
 MCPL ERROR: direct modification of gzipped files is not supported.
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool rfcrash.mcpl
@@ -753,10 +789,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1
     2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
     3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
+
 ----------------------------------------------
 Running mcpltool --repair rfcrash.mcpl
 ----------------------------------------------
 MCPL: Succesfully repaired file with 4 particles.
+
 ----------------------------------------------
 Running mcpltool rfcrash.mcpl
 ----------------------------------------------
@@ -792,10 +830,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1
     2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
     3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
+
 ----------------------------------------------
 Running mcpltool --r rfcrash.mcpl
 ----------------------------------------------
 MCPL ERROR: File does not appear to be broken.
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool rfcrash.mcpl
@@ -832,10 +872,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1
     2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
     3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
+
 ----------------------------------------------
 Running mcpltool -r rfcrash.mcpl.gz
 ----------------------------------------------
 MCPL ERROR: Input file is indeed broken, but must be gunzipped before it can be repaired.
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool rfcrash.mcpl
@@ -872,10 +914,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1
     2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
     3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
+
 ----------------------------------------------
 Running mcpltool -r rf16cp.mcpl
 ----------------------------------------------
 MCPL ERROR: File does not appear to be broken.
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool rfempty.mcpl
@@ -904,10 +948,12 @@ Opened MCPL file rfempty.mcpl:
     Storage            : 96 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+
 ----------------------------------------------
 Running mcpltool -r rfempty.mcpl
 ----------------------------------------------
 MCPL ERROR: File does not appear to be broken.
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool rfempty.mcpl
@@ -936,6 +982,7 @@ Opened MCPL file rfempty.mcpl:
     Storage            : 96 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+
 ----------------------------------------------
 Running mcpltool rfempty.mcpl.gz
 ----------------------------------------------
@@ -963,10 +1010,12 @@ Opened MCPL file rfempty.mcpl.gz:
     Storage            : 96 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+
 ----------------------------------------------
 Running mcpltool -r rfempty.mcpl.gz
 ----------------------------------------------
 MCPL ERROR: File does not appear to be broken.
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool rfempty.mcpl.gz
@@ -995,15 +1044,18 @@ Opened MCPL file rfempty.mcpl.gz:
     Storage            : 96 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+
 ----------------------------------------------
 Running mcpltool -r rftrunc.mcpl.gz
 ----------------------------------------------
 MCPL ERROR: File must be gunzipped before it can be checked and possibly repaired.
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool -r rftrunc.mcpl
 ----------------------------------------------
 MCPL: Succesfully repaired file with 7 particles.
+
 ----------------------------------------------
 Running mcpltool rftrunc.mcpl
 ----------------------------------------------
@@ -1038,20 +1090,24 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     4        2112           0           0           0           0    -0.89736    -0.39549     0.19578           0
     5          22           0           0           0           0     0.27755    -0.37388     0.88497           0
     6        2112           0           0           0           0     0.93106    0.033764    -0.36331           0
+
 ----------------------------------------------
 Running mcpltool fake.mcpl
 ----------------------------------------------
 MCPL ERROR: File is not an MCPL file!
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool fake.mcpl.gz
 ----------------------------------------------
 MCPL ERROR: File is not an MCPL file!
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool fake2.mcpl.gz
 ----------------------------------------------
 MCPL ERROR: File is not an MCPL file!
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool -e miscphys.mcpl.gz extracted_1
@@ -1059,36 +1115,42 @@ Running mcpltool -e miscphys.mcpl.gz extracted_1
 MCPL: Attempting to compress file extracted_1.mcpl with gzip
 MCPL: Succesfully compressed file into extracted_1.mcpl.gz
 MCPL: Succesfully extracted 195 / 195 particles from miscphys.mcpl.gz into extracted_1.mcpl.gz
+
 ----------------------------------------------
 Running mcpltool --extract -p2112 miscphys.mcpl.gz extracted_1
 ----------------------------------------------
 MCPL: Attempting to compress file extracted_1.mcpl with gzip
 MCPL: Succesfully compressed file into extracted_1.mcpl.gz
 MCPL: Succesfully extracted 15 / 195 particles from miscphys.mcpl.gz into extracted_1.mcpl.gz
+
 ----------------------------------------------
 Running mcpltool --extract -p-11 miscphys.mcpl.gz extracted_2
 ----------------------------------------------
 MCPL: Attempting to compress file extracted_2.mcpl with gzip
 MCPL: Succesfully compressed file into extracted_2.mcpl.gz
 MCPL: Succesfully extracted 10 / 195 particles from miscphys.mcpl.gz into extracted_2.mcpl.gz
+
 ----------------------------------------------
 Running mcpltool -ep-1000020040 miscphysnogz.mcpl extracted_3
 ----------------------------------------------
 MCPL: Attempting to compress file extracted_3.mcpl with gzip
 MCPL: Succesfully compressed file into extracted_3.mcpl.gz
 MCPL: Succesfully extracted 5 / 195 particles from miscphysnogz.mcpl into extracted_3.mcpl.gz
+
 ----------------------------------------------
 Running mcpltool -e -p1000922350 miscphys.mcpl.gz extracted_4
 ----------------------------------------------
 MCPL: Attempting to compress file extracted_4.mcpl with gzip
 MCPL: Succesfully compressed file into extracted_4.mcpl.gz
 MCPL: Succesfully extracted 5 / 195 particles from miscphys.mcpl.gz into extracted_4.mcpl.gz
+
 ----------------------------------------------
 Running mcpltool -e -p111 -l999999 -s150 miscphysnogz.mcpl extracted_5
 ----------------------------------------------
 MCPL: Attempting to compress file extracted_5.mcpl with gzip
 MCPL: Succesfully compressed file into extracted_5.mcpl.gz
 MCPL: Succesfully extracted 5 / 195 particles from miscphysnogz.mcpl into extracted_5.mcpl.gz
+
 ----------------------------------------------
 Running mcpltool -l0 extracted_1.mcpl.gz
 ----------------------------------------------
@@ -1132,6 +1194,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
    12        2112     2.5e-08           0          10           0           1           0           0       60000           1           0           0           0 0x00000000
    13        2112     2.5e-08           0           0          10           0          -1           0           0         0.1           0           0           0 0x00000000
    14        2112     2.5e-08          10           0           0           0           0           1           0           1           0           0           0 0xdeadbeef
+
 ----------------------------------------------
 Running mcpltool -l0 extracted_2.mcpl.gz
 ----------------------------------------------
@@ -1170,6 +1233,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     7         -11        6000           0          10           0           1           0           0       60000           1           0           0           0 0x00000000
     8         -11        6000           0           0          10           0          -1           0           0         0.1           0           0           0 0x00000000
     9         -11        6000          10           0           0           0           0           1           0           1           0           0           0 0xdeadbeef
+
 ----------------------------------------------
 Running mcpltool -l0 extracted_3.mcpl.gz
 ----------------------------------------------
@@ -1203,6 +1267,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     2 -1000020040        6000           0          10           0           1           0           0       60000           1           0           0           0 0x00000000
     3 -1000020040        6000           0           0          10           0          -1           0           0         0.1           0           0           0 0x00000000
     4 -1000020040        6000          10           0           0           0           0           1           0           1           0           0           0 0xdeadbeef
+
 ----------------------------------------------
 Running mcpltool -l0 extracted_4.mcpl.gz
 ----------------------------------------------
@@ -1236,6 +1301,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     2  1000922350        6000           0           0          10           0           1           0       60000           1           0           0           0 0x00000000
     3  1000922350        6000          10           0           0           0           0          -1           0         0.1           0           0           0 0x00000000
     4  1000922350        6000           0          10           0           1           0           0           0           1           0           0           0 0xdeadbeef
+
 ----------------------------------------------
 Running mcpltool -l0 extracted_5.mcpl.gz
 ----------------------------------------------
@@ -1269,19 +1335,24 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     2         111        6000          10           0           0           0           0           1       60000           1           0           0           0 0x00000000
     3         111        6000           0          10           0          -1           0           0           0         0.1           0           0           0 0x00000000
     4         111        6000           0           0          10           0           1           0           0           1           0           0           0 0xdeadbeef
+
 ----------------------------------------------
 Running mcpltool --merge merged_new_file.mcpl extracted_1.mcpl.gz extracted_2.mcpl.gz
 ----------------------------------------------
+
 ----------------------------------------------
 Running mcpltool --merge merged_1to5_new_filea.mcpl extracted_1.mcpl.gz extracted_2.mcpl.gz extracted_3.mcpl.gz extracted_4.mcpl.gz extracted_5.mcpl.gz
 ----------------------------------------------
+
 ----------------------------------------------
 Running mcpltool --merge merged_1to5_new_fileb.mcpl extracted_1.mcpl extracted_2.mcpl extracted_3.mcpl.gz extracted_4.mcpl.gz extracted_5.mcpl.gz
 ----------------------------------------------
+
 ===> Checking that merged_1to5_new_filea.mcpl and merged_1to5_new_fileb.mcpl have identical contents.
 ----------------------------------------------
 Running mcpltool --merge --inplace extracted_1.mcpl extracted_2.mcpl
 ----------------------------------------------
+
 ----------------------------------------------
 Running mcpltool extracted_1.mcpl
 ----------------------------------------------
@@ -1320,11 +1391,13 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     7        2112  2.5248e-08           0           0          10           0          -1           0       60000           1           0           0           0 0x00000000
     8        2112  2.5248e-08          10           0           0           0           0           1           0         0.1           0           0           0 0x00000000
     9        2112  2.5248e-08           0          10           0          -1           0           0           0           1           0           0           0 0xdeadbeef
+
 ===> Checking that merged_new_file.mcpl and extracted_1.mcpl have identical contents.
 ===> Checking that miscphys.mcpl.gz and miscphysnogz.mcpl have identical contents.
 ----------------------------------------------
 Running mcpltool --merge --inplace extracted_1.mcpl extracted_3.mcpl.gz extracted_4.mcpl.gz extracted_5.mcpl.gz
 ----------------------------------------------
+
 ===> Checking that extracted_1.mcpl and merged_1to5_new_fileb.mcpl have identical contents.
 ----------------------------------------------
 Running mcpltool --extract -p2112 miscphysnogz.mcpl extracted_1_new.mcpl
@@ -1332,27 +1405,32 @@ Running mcpltool --extract -p2112 miscphysnogz.mcpl extracted_1_new.mcpl
 MCPL: Attempting to compress file extracted_1_new.mcpl with gzip
 MCPL: Succesfully compressed file into extracted_1_new.mcpl.gz
 MCPL: Succesfully extracted 15 / 195 particles from miscphysnogz.mcpl into extracted_1_new.mcpl.gz
+
 ----------------------------------------------
 Running mcpltool --extract -p-11 miscphysnogz.mcpl extracted_2_new.mcpl
 ----------------------------------------------
 MCPL: Attempting to compress file extracted_2_new.mcpl with gzip
 MCPL: Succesfully compressed file into extracted_2_new.mcpl.gz
 MCPL: Succesfully extracted 10 / 195 particles from miscphysnogz.mcpl into extracted_2_new.mcpl.gz
+
 ----------------------------------------------
 Running mcpltool -e -p1000922350 miscphysnogz.mcpl extracted_4_new.mcpl
 ----------------------------------------------
 MCPL: Attempting to compress file extracted_4_new.mcpl with gzip
 MCPL: Succesfully compressed file into extracted_4_new.mcpl.gz
 MCPL: Succesfully extracted 5 / 195 particles from miscphysnogz.mcpl into extracted_4_new.mcpl.gz
+
 ----------------------------------------------
 Running mcpltool --merge merged_1to5_new_filec.mcpl extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
 ----------------------------------------------
+
 ----------------------------------------------
 Running mcpltool --merge merged_1to5_new_filec.mcpl.gz extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
 ----------------------------------------------
 ERROR: Requested output file already exists (without .gz extension).
 
 Run with -h or --help for usage information
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool --merge merged_1to5_new_filec.gz extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
@@ -1360,16 +1438,19 @@ Running mcpltool --merge merged_1to5_new_filec.gz extracted_1_new.mcpl extracted
 ERROR: Requested output file should not have .gz extension (unless it is .mcpl.gz).
 
 Run with -h or --help for usage information
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool --merge merged_1to5_new_filec_unique.mcpl.gz extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
 ----------------------------------------------
 MCPL: Attempting to compress file merged_1to5_new_filec_unique.mcpl with gzip
 MCPL: Succesfully compressed file into merged_1to5_new_filec_unique.mcpl.gz
+
 ===> Checking that merged_1to5_new_filec.mcpl and merged_1to5_new_filec_unique.mcpl.gz have identical contents.
 ----------------------------------------------
 Running mcpltool --merge --inplace extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
 ----------------------------------------------
+
 ===> Checking that merged_1to5_new_filec.mcpl and extracted_1_new.mcpl have identical contents.
 ===> Checking that merged_1to5_new_filea.mcpl and merged_1to5_new_filec.mcpl have identical contents.
 ----------------------------------------------
@@ -1378,6 +1459,7 @@ Running mcpltool --merge extracted_1.mcpl extracted_2.mcpl
 ERROR: Requested output file already exists.
 
 Run with -h or --help for usage information
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool --merge --inplace extracted_1.mcpl
@@ -1385,6 +1467,7 @@ Running mcpltool --merge --inplace extracted_1.mcpl
 ERROR: Too few arguments for --merge.
 
 Run with -h or --help for usage information
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool --merge newfile.mcpl
@@ -1392,21 +1475,25 @@ Running mcpltool --merge newfile.mcpl
 ERROR: Too few arguments for --merge.
 
 Run with -h or --help for usage information
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool --merge --inplace rf16cp_fmt2.mcpl '<TESTDATADIR>/ref/reffile_16.mcpl'
 ----------------------------------------------
 MCPL ERROR: Attempting to merge incompatible files (can not mix MCPL format versions when merging inplace)
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool --merge --inplace '<TESTDATADIR>/ref/reffile_16.mcpl' rf16cp_fmt2.mcpl
 ----------------------------------------------
 MCPL ERROR: Attempting to merge incompatible files (can not mix MCPL format versions when merging inplace)
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool --merge mix.mcpl rf16cp_fmt2.mcpl '<TESTDATADIR>/ref/reffile_16.mcpl'
 ----------------------------------------------
 MCPL WARNING: Merging files from older MCPL format. Output will be in latest format.
+
 ----------------------------------------------
 Running mcpltool -l0 mix.mcpl
 ----------------------------------------------
@@ -1443,24 +1530,29 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     7        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
     8        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
     9        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+
 ----------------------------------------------
 Running mcpltool -e difficult_unitvector.mcpl extracted_all -l0 --preventcomment
 ----------------------------------------------
 MCPL: Attempting to compress file extracted_all.mcpl with gzip
 MCPL: Succesfully compressed file into extracted_all.mcpl.gz
 MCPL: Succesfully extracted 10 / 10 particles from difficult_unitvector.mcpl into extracted_all.mcpl.gz
+
 ----------------------------------------------
 Running mcpltool -e difficult_unitvector.mcpl extracted_none -s999999999 --preventcomment
 ----------------------------------------------
 MCPL: Attempting to compress file extracted_none.mcpl with gzip
 MCPL: Succesfully compressed file into extracted_none.mcpl.gz
 MCPL: Succesfully extracted 0 / 10 particles from difficult_unitvector.mcpl into extracted_none.mcpl.gz
+
 ----------------------------------------------
 Running mcpltool -m extracted_recombined extracted_none.mcpl extracted_all.mcpl
 ----------------------------------------------
+
 ----------------------------------------------
 Running mcpltool -m --inplace extracted_none.mcpl extracted_all.mcpl
 ----------------------------------------------
+
 ===> Checking that difficult_unitvector.mcpl and extracted_recombined.mcpl have identical contents.
 ===> Checking that difficult_unitvector.mcpl and extracted_none.mcpl have identical contents.
 ===> Checking that extracted_recombined.mcpl and extracted_none.mcpl have identical contents.
@@ -1468,51 +1560,61 @@ Running mcpltool -m --inplace extracted_none.mcpl extracted_all.mcpl
 Running mcpltool '<TESTDATADIR>/ref/reffile_bad1.mcpl'
 ----------------------------------------------
 MCPL ERROR: File is not an MCPL file!
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool '<TESTDATADIR>/ref/reffile_bad2.mcpl'
 ----------------------------------------------
 MCPL ERROR: File is in an unsupported MCPL version!
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool '<TESTDATADIR>/ref/reffile_bad3.mcpl'
 ----------------------------------------------
 MCPL ERROR: File is in an unsupported MCPL version!
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool '<TESTDATADIR>/ref/reffile_bad4.mcpl'
 ----------------------------------------------
 MCPL ERROR: Unexpected value in endianness field!
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool '<TESTDATADIR>/ref/reffile_bad1.mcpl.gz'
 ----------------------------------------------
 MCPL ERROR: File is not an MCPL file!
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool '<TESTDATADIR>/ref/reffile_bad2.mcpl.gz'
 ----------------------------------------------
 MCPL ERROR: File is in an unsupported MCPL version!
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool '<TESTDATADIR>/ref/reffile_bad3.mcpl.gz'
 ----------------------------------------------
 MCPL ERROR: File is in an unsupported MCPL version!
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool '<TESTDATADIR>/ref/reffile_bad4.mcpl.gz'
 ----------------------------------------------
 MCPL ERROR: Unexpected value in endianness field!
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool bla.txt
 ----------------------------------------------
 MCPL ERROR: Unable to open file!
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool bla.txt
 ----------------------------------------------
 MCPL ERROR: File is not an MCPL file!
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool '<TESTDATADIR>/ref/reffile_truncated.mcpl.gz'
@@ -1546,6 +1648,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     2        2112           0           0           0           0     0.61152     0.73811    -0.28504           0
     3          22           0           0           0           0     0.76301   -0.046213     0.64473           0
 MCPL ERROR: Errors encountered while attempting to read particle data.
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool '<TESTDATADIR>/ref/reffile_truncated.mcpl'
@@ -1582,6 +1685,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     5          22           0           0           0           0     0.27755    -0.37388     0.88497           0
     6        2112           0           0           0           0     0.93106    0.033764    -0.36331           0
 MCPL ERROR: Errors encountered while attempting to read particle data.
+
 ===> Command failed!
 ----------------------------------------------
 Running mcpltool '<TESTDATADIR>/ref/reffile_notreallygz.mcpl.gz'
@@ -1614,6 +1718,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
     3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
     4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1
+
 ----------------------------------------------
 Running mcpltool '<TESTDATADIR>/ref/reffile_uw.mcpl.gz'
 ----------------------------------------------
@@ -1651,6 +1756,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     7          22           0           0           0           0   -0.096567     0.81408     0.57267           0
     8        2112           0           0           0           0     0.43938     0.81005    -0.38829           0
     9          22           0           0           0           0    -0.37821     0.14513     0.91427           0
+
 ----------------------------------------------
 Running mcpltool '<TESTDATADIR>/ref/reffile_encodings.mcpl.gz'
 ----------------------------------------------
@@ -1689,28 +1795,39 @@ Opened MCPL file reffile_encodings.mcpl.gz:
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
     0          22           0           0           0           0     0.69673    -0.32571    -0.63913           0           1
     1        2112           0           0           0           0    -0.43755    -0.27624     0.85571           0           1
+
 ====> extracting and calculating md5sum of blob with key "asciidata":
 ----------------------------------------------
 Running mcpltool '<TESTDATADIR>/ref/reffile_encodings.mcpl.gz' -basciidata
 ----------------------------------------------
+>>>Just plain ascii.<LF>Second line.<LF><<<
 d3475b3d8393e4041df7fa22ade054d3
+
 ====> extracting and calculating md5sum of blob with key "asciidata_empty":
 ----------------------------------------------
 Running mcpltool '<TESTDATADIR>/ref/reffile_encodings.mcpl.gz' -basciidata_empty
 ----------------------------------------------
+>>><<<
 d41d8cd98f00b204e9800998ecf8427e
+
 ====> extracting and calculating md5sum of blob with key "utf8data":
 ----------------------------------------------
 Running mcpltool '<TESTDATADIR>/ref/reffile_encodings.mcpl.gz' -butf8data
 ----------------------------------------------
+>>>R\xc3\xb8dgr\xc3\xb8d med<LF>fl\xc3\xb8de.<LF><<<
 de7a6d4a3a291d0d67b3657e62ffcb37
+
 ====> extracting and calculating md5sum of blob with key "binarydata":
 ----------------------------------------------
 Running mcpltool '<TESTDATADIR>/ref/reffile_encodings.mcpl.gz' -bbinarydata
 ----------------------------------------------
+>>>A <LF><CR>Bla<<<
 a04637816e7436951f0512d38d48f212
+
 ====> extracting and calculating md5sum of blob with key "utf8bløbkey":
 ----------------------------------------------
 Running mcpltool '<TESTDATADIR>/ref/reffile_encodings.mcpl.gz' '-butf8bløbkey'
 ----------------------------------------------
+>>>A <LF><CR>Bla<<<
 a04637816e7436951f0512d38d48f212
+

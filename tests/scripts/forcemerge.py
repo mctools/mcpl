@@ -20,7 +20,6 @@
 ################################################################################
 
 import itertools
-import shlex
 import pathlib
 import mcpldev as mcpl
 from MCPLTestUtils.dirs import ( test_data_dir,
@@ -39,7 +38,7 @@ def fix_print_str(s):
 
 def run_mcpltool(*args, expect_failure):
     cmdargs =[str(e) for e in args]
-    print( '\n\n\n\n\nRUNNING: mcpltool %s'%fix_print_str(shlex.join(cmdargs)),
+    print( '\n\n\n\n\nRUNNING: mcpltool %s'%fix_print_str(' '.join(cmdargs)),
            flush=True )
     print( 'Expect failure: %s'%('yes' if expect_failure else 'no'),
            flush=True )
