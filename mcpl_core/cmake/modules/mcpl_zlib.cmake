@@ -34,7 +34,7 @@ function( setup_zlib )
 
   if ( NOT MCPL_ENABLE_ZLIB STREQUAL "FETCH" )
     #look for preinstalled:
-    find_package( ZLIB 1.2.9 REQUIRED )
+    find_package( ZLIB 1.2.7 REQUIRED )
     set( _mcpl_zlib_tgt "ZLIB::ZLIB" PARENT_SCOPE )
     return()
   endif()
