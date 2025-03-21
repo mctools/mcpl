@@ -287,7 +287,7 @@ jobs:
       - name: cibuildwheel
         uses: pypa/cibuildwheel@v2.23.1
         env:
-          CIBW_ARCHS_WINDOWS: "auto ARM64"
+          CIBW_ARCHS_WINDOWS: "auto64 ARM64"
         with:
           package-dir: ${{ env.SDIST_PATH }}
           output-dir: wheelhouse
@@ -405,7 +405,7 @@ jobs:
             #"musllinux_1_2_i686",
             "musllinux_1_2_x86_64",
             "musllinux_1_2_aarch64",
-            "win32",
+            #"win32",
             "win_amd64",
             "win_arm64",
           ]
