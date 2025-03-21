@@ -1,0 +1,521 @@
+name: pypi
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  preparations:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: src
+          fetch-tags: true
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Pip install packages for mcpldevtool
+        run: pip install -r ./src/devel/reqs/requirements_devel.txt
+
+      - name: mcpldevtool checks
+        run: ./src/devel/bin/mcpldevtool check -n "fix""me"
+
+      - name: Check if dryrun
+        env:
+          EVT_IS_VTAG: ${{ startsWith(github.ref, 'refs/tags/v') && 'yes' || 'no' }}
+        id: dryrun_check
+        run: |
+          set -eux
+          echo "EVT_IS_VTAG: ${EVT_IS_VTAG}"
+          if [ "x${EVT_IS_VTAG}" == "xyes" ]; then
+              #FIXME: Add verifytag (and fix version issue in mcpl.h):
+              (./src/devel/bin/mcpldevtool verifytag --fail-if-devel -p 'vX.Y.Z' --file-verify=VERSION > /dev/null) && RES=0 || RES=1
+          else
+              RES=1
+          fi
+          #FIXME: Be extra sure for now:
+          RES=1
+          echo "Dryrun: ${RES}"
+          echo "status=${RES}" >> $GITHUB_OUTPUT
+
+      - name: Determine version number
+        id: version-number
+        env:
+          IS_DRYRUN: ${{ steps.dryrun_check.outputs.status == '1' }}
+        run: |
+          set -eux
+          if [ "x${IS_DRYRUN}" == "x0" ]; then
+              echo "Not a dryrun so verifying both the version tag and the VERSION file"
+              echo "FIXME: Should not happen for now"
+              exit 1
+              VERSIONSTR=$(./src/devel/bin/mcpldevtool verifytag --fail-if-devel -p 'vX.Y.Z' --file-verify=VERSION)
+          else
+              echo "Dryrun so taking version from the VERSION file"
+              VERSIONSTR=$(cat ./src/VERSION)
+          fi
+          echo "Extracted version str: '${VERSIONSTR}'"
+          echo "version_number=$VERSIONSTR" >> $GITHUB_OUTPUT
+
+    outputs:
+      mcplversion: ${{ steps.version-number.outputs.version_number }}
+      dryrun: ${{ steps.dryrun_check.outputs.status }}
+
+  basic_functionality_test:
+    #Very basic testing only, we might have decided to publish a release even
+    #with some tests showing spurious failures or similar. However, we always
+    #tell users that "nctool --test" can be used to test that everything works,
+    #so at least that should always work.
+    needs: [ preparations ]
+    strategy:
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-13, macos-14]
+        #        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        #NOTICE: Keep synchronised with matrix platform list elsewhere in this file!!!!
+    name: ${{ matrix.os }} / test
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: src
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Enable parallel cmake
+        run: python ./src/devel/bin/mcpldevtool nprocs --enable-github-parallel
+
+      - name: Pip install mcpl-core
+        run: pip install ./src/mcpl_core
+
+      - name: Pip install mcpl-python
+        run: pip install ./src/mcpl_python
+
+      - name: Pip install mcpl
+        run: pip install ./src/mcpl_metapkg
+
+      #- name: Pip install mcpl-verify
+      #  run: pip install ./src/mcpl_verify
+
+      - name: mcpltool simple test
+        run: mcpltool "./src/examples/example.mcpl"
+
+      - name: pymcpltool simple test
+        run: pymcpltool "./src/examples/example.mcpl"
+
+      - name: python module test
+        run: python -c 'import mcpl'
+
+  build_sdists:
+    name: Build source distribution
+    runs-on: ubuntu-latest
+    needs: preparations
+    env:
+      SDIST_SUFFIX: "-${{ needs.preparations.outputs.mcplversion }}.tar.gz"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: build mcpl-core sdist
+        run: pipx run build --sdist ./mcpl_core
+
+      - name: build mcpl-python sdist
+        run: pipx run build --sdist ./mcpl_python
+
+      - name: build mcpl-metapkg sdist
+        run: pipx run build --sdist ./mcpl_metapkg
+
+      #- name: build mcpl-verify sdist
+      #  run: pipx run build --sdist ./mcpl_verify
+
+      - name: register mcpl-core sdist
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdist-mcpl-core
+          path: ./mcpl_core/dist/mcpl_core${{ env.SDIST_SUFFIX }}
+          if-no-files-found: error
+
+      - name: register mcpl-python sdist
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdist-mcpl-python
+          path: ./mcpl_python/dist/mcpl_python${{ env.SDIST_SUFFIX }}
+          if-no-files-found: error
+
+      - name: register mcpl-metapkg sdist
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdist-mcpl-metapkg
+          path: ./mcpl_metapkg/dist/mcpl${{ env.SDIST_SUFFIX }}
+          if-no-files-found: error
+
+      #- name: register mcpl-verify sdist
+      #  uses: actions/upload-artifact@v4
+      #  with:
+      #    name: sdist-mcpl-verify
+      #    path: ./mcpl_verify/dist/mcpl_verify${{ env.SDIST_SUFFIX }}
+      #    if-no-files-found: error
+
+    outputs:
+      sdistname_core: mcpl_core${{ env.SDIST_SUFFIX }}
+      sdistname_python: mcpl_python${{ env.SDIST_SUFFIX }}
+      sdistname_metapkg: mcpl${{ env.SDIST_SUFFIX }}
+      #sdistname_verify: mcpl_verify${{ env.SDIST_SUFFIX }}
+
+  build_pure_wheels:
+    name: Build pure wheels
+    runs-on: ubuntu-latest
+    needs: [ preparations, build_sdists ]
+
+    steps:
+      - name: download mcpl-python sdist
+        uses: actions/download-artifact@v4
+        with:
+          name: sdist-mcpl-python
+          path: ./sdist-python
+
+      - name: download mcpl-metapkg sdist
+        uses: actions/download-artifact@v4
+        with:
+          name: sdist-mcpl-metapkg
+          path: ./sdist-metapkg
+
+      #- name: download mcpl-verify sdist
+      #  uses: actions/download-artifact@v4
+      #  with:
+      #    name: sdist-mcpl-verify
+      #    path: ./sdist-verify
+
+      - name: build mcpl-python pure wheel
+        run: |
+          set -eux
+          mkdir tmp_wheelbld_python
+          cd tmp_wheelbld_python
+          tar xf ../sdist-python/${{needs.build_sdists.outputs.sdistname_python }}
+          pipx run build --wheel ./mcpl_python-${{ needs.preparations.outputs.mcplversion }} --outdir=../dist-mcpl-python
+
+      - name: build mcpl-metapkg pure wheel
+        run: |
+          set -eux
+          mkdir tmp_wheelbld_metapkg
+          cd tmp_wheelbld_metapkg
+          tar xf ../sdist-metapkg/${{needs.build_sdists.outputs.sdistname_metapkg }}
+          pipx run build --wheel ./mcpl-${{ needs.preparations.outputs.mcplversion }} --outdir=../dist-mcpl-metapkg
+
+      #- name: build mcpl-verify pure wheel
+      #  run: |
+      #    set -eux
+      #    mkdir tmp_wheelbld_verify
+      #    cd tmp_wheelbld_verify
+      #    tar xf ../sdist-verify/${{needs.build_sdists.outputs.sdistname_verify }}
+      #    pipx run build --wheel ./mcpl_verify-${{ needs.preparations.outputs.mcplversion }} --outdir=../dist-mcpl-verify
+
+      - name: register mcpl-python pure wheel
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheel-mcpl-python
+          path: ./dist-mcpl-python/mcpl_python-${{ needs.preparations.outputs.mcplversion }}-py3-none-any.whl
+          if-no-files-found: error
+
+      - name: register mcpl-metapkg pure wheel
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheel-mcpl-metapkg
+          path: ./dist-mcpl-metapkg/mcpl-${{ needs.preparations.outputs.mcplversion }}-py3-none-any.whl
+          if-no-files-found: error
+
+      #- name: register mcpl-verify pure wheel
+      #  uses: actions/upload-artifact@v4
+      #  with:
+      #    name: wheel-mcpl-verify
+      #    path: ./dist-mcpl-verify/mcpl_verify-${{ needs.preparations.outputs.mcplversion }}-py3-none-any.whl
+      #    if-no-files-found: error
+
+  build_core_wheels:
+    #Based on
+    #https://github.com/pypa/cibuildwheel/blob/main/examples/github-minimal.yml,
+    #where we should check if something needs updating once in a while
+    #(especially with respect to the hardcoded matrix.os list.
+    needs: [ preparations, build_sdists ]
+    strategy:
+      matrix:
+        # macos-13 is an intel runner, macos-14 is apple silicon
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-13, macos-14]
+        #        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        #NOTICE: Keep synchronised with matrix platform list elsewhere in this file!!!!
+    name: ${{ matrix.os }} / mcpl-core wheels
+    runs-on: ${{ matrix.os }}
+
+    env:
+      SDIST_PATH: "./sdist/${{ needs.build_sdists.outputs.sdistname_core }}"
+
+    steps:
+      - name: download mcpl-core sdist
+        uses: actions/download-artifact@v4
+        with:
+          name: sdist-mcpl-core
+          path: ./sdist
+
+      - name: Look in sdist dir (unix)
+        if: runner.os != 'Windows'
+        run: ls -l "${SDIST_PATH}"
+
+      - name: Verify presence of sdist (unix)
+        if: runner.os != 'Windows'
+        run: test -f "${SDIST_PATH}"
+
+      # Run cibuildwheel. Both in default mode, and with additional steps for
+      # manylinux_2_28 wheels, with more modern C++ support (and in particular
+      # cxxabi std::string's compatible with modern linux installations):
+      #
+      # Note from cibuildwheel docs: "The default is scheduled to change in a
+      # cibuildwheel release on or after 6th May 2025 - if you don't want the
+      # new default, you should set the value to manylinux2014." So when that
+      # happens, we can remove the 2_28 step, or possibly swap it for 2_34 and
+      # manylinux2014:
+      #
+      # Additionally, also try to make windows-arm64 wheels through cross
+      # compilation.
+
+      - name: cibuildwheel
+        uses: pypa/cibuildwheel@v2.23.1
+        env:
+          CIBW_ARCHS_WINDOWS: "auto ARM64"
+        with:
+          package-dir: ${{ env.SDIST_PATH }}
+          output-dir: wheelhouse
+
+      - name: cibuildwheel manylinux_2_28
+        uses: pypa/cibuildwheel@v2.23.1
+        if: runner.os == 'Linux'
+        env:
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
+          CIBW_MANYLINUX_AARCH64_IMAGE: manylinux_2_28
+        with:
+          package-dir: ${{ env.SDIST_PATH }}
+          output-dir: wheelhouse
+
+      - name: list wheelhouse (unix)
+        if: runner.os != 'Windows'
+        run: ls -l ./wheelhouse/
+
+      - name: list wheelhouse (windows)
+        if: runner.os == 'Windows'
+        run: dir wheelhouse
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mcpl-core-wheels-${{ matrix.os }}-${{ strategy.job-index }}
+          path: ./wheelhouse/mcpl_core-*.whl
+          if-no-files-found: error
+
+  collect_output:
+    name: Collect all output
+    needs: [preparations, build_sdists, build_core_wheels, build_pure_wheels]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: "mcpl-core-wheels-*"
+          path: mcpl-core-wheels-raw #unpacks all artifacts into mcpl-core-wheels-raw/
+          #Todo if we use merge-multiple: 'true', we might not have to do the
+          #find trick below
+
+      - name: Look in mcpl-core-wheels-raw
+        run: find ./mcpl-core-wheels-raw/
+
+        #gh-action-pypi-publish expects a flat directory layout
+      - name: Move core wheel files into dist_core
+        run: |
+            mkdir -p dist_core
+            find ./mcpl-core-wheels-raw/ -type f -name "mcpl_core-*.whl" -exec mv {} dist_core/ \;
+
+      - name: list collected files
+        run: ls -l ./dist_core
+
+      - name: download mcpl-core sdist
+        uses: actions/download-artifact@v4
+        with:
+          name: sdist-mcpl-core
+          path: ./dist_core
+
+      - name: download mcpl-python pure wheel
+        uses: actions/download-artifact@v4
+        with:
+          name: wheel-mcpl-python
+          path: ./dist_python
+
+      - name: download mcpl-metapkg pure wheel
+        uses: actions/download-artifact@v4
+        with:
+          name: wheel-mcpl-metapkg
+          path: ./dist_metapkg
+
+      #- name: download mcpl-verify pure wheel
+      #  uses: actions/download-artifact@v4
+      #  with:
+      #    name: wheel-mcpl-verify
+      #    path: ./dist_verify
+
+      - name: download mcpl-python sdist
+        uses: actions/download-artifact@v4
+        with:
+          name: sdist-mcpl-python
+          path: ./dist_python
+
+      - name: download mcpl-metapkg sdist
+        uses: actions/download-artifact@v4
+        with:
+          name: sdist-mcpl-metapkg
+          path: ./dist_metapkg
+
+      #- name: download mcpl-verify sdist
+      #  uses: actions/download-artifact@v4
+      #  with:
+      #    name: sdist-mcpl-verify
+      #    path: ./dist_verify
+
+      - name: List files
+        run: |
+          find ./dist_core
+          find ./dist_python
+          find ./dist_metapkg
+          #find ./dist_verify
+
+      - name: Verify presence of expected mcpl-core files
+        shell: python
+        run: |
+          import pathlib
+          pdir = pathlib.Path('./dist_core').absolute()
+          expected_keys = [
+            "macosx_10_9_x86_64",
+            "macosx_11_0_arm64",
+            #"manylinux_2_17_i686.manylinux2014_i686",
+            "manylinux_2_17_x86_64.manylinux2014_x86_64",
+            "manylinux_2_27_x86_64.manylinux_2_28_x86_64",
+            "manylinux_2_17_aarch64.manylinux2014_aarch64",
+            "manylinux_2_27_aarch64.manylinux_2_28_aarch64",
+            #"musllinux_1_2_i686",
+            "musllinux_1_2_x86_64",
+            "musllinux_1_2_aarch64",
+            "win32",
+            "win_amd64",
+            "win_arm64",
+          ]
+          versionstr = '${{ needs.preparations.outputs.mcplversion }}'
+          prefix = f'mcpl_core-{versionstr}-py3-none-'
+          expected_files = set([ f'{prefix}{key}.whl' for key in expected_keys ])
+          expected_files.add(f'mcpl_core-{versionstr}.tar.gz')
+          actual_files = set(f.name for f in pdir.iterdir())
+          if expected_files - actual_files:
+            raise SystemExit('Missing files: %s'%sorted(expected_files - actual_files))
+          if actual_files - expected_files :
+            raise SystemExit('Unexpected files: %s'%sorted(actual_files - expected_files))
+          print("Found exactly the expected files:")
+          for f in sorted(expected_files):
+            print(f'  {f}')
+
+      - name: Verify presence of expected mcpl-python files
+        run: |
+          set -eux
+          test -f ./dist_python/mcpl_python-${{ needs.preparations.outputs.mcplversion }}.tar.gz
+          test -f ./dist_python/mcpl_python-${{ needs.preparations.outputs.mcplversion }}-py3-none-any.whl
+
+      - name: Verify presence of expected mcpl-metapkg files
+        run: |
+          set -eux
+          test -f ./dist_metapkg/mcpl-${{ needs.preparations.outputs.mcplversion }}.tar.gz
+          test -f ./dist_metapkg/mcpl-${{ needs.preparations.outputs.mcplversion }}-py3-none-any.whl
+
+      #- name: Verify presence of expected mcpl-verify files
+      #  run: |
+      #    set -eux
+      #    test -f ./dist_verify/mcpl_verify-${{ needs.preparations.outputs.mcplversion }}.tar.gz
+      #    test -f ./dist_verify/mcpl_verify-${{ needs.preparations.outputs.mcplversion }}-py3-none-any.whl
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: final-dist-mcpl-core
+          path: ./dist_core
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: final-dist-mcpl-python
+          path: ./dist_python
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: final-dist-mcpl-metapkg
+          path: ./dist_metapkg
+          if-no-files-found: error
+
+      #- uses: actions/upload-artifact@v4
+      #  with:
+      #    name: final-dist-mcpl-verify
+      #    path: ./dist_verify
+      #    if-no-files-found: error
+
+  publish_to_pypi:
+    name: Publish to pypi
+    needs: [ preparations, collect_output, basic_functionality_test]
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
+    steps:
+      - name: download mcpl-core dist
+        uses: actions/download-artifact@v4
+        with:
+          name: final-dist-mcpl-core
+          path: ./dist_core
+
+      - name: download mcpl-python dist
+        uses: actions/download-artifact@v4
+        with:
+          name: final-dist-mcpl-python
+          path: ./dist_python
+
+      - name: download mcpl-metapkg dist
+        uses: actions/download-artifact@v4
+        with:
+          name: final-dist-mcpl-metapkg
+          path: ./dist_metapkg
+
+      #- name: download mcpl-verify dist
+      #  uses: actions/download-artifact@v4
+      #  with:
+      #    name: final-dist-mcpl-verify
+      #    path: ./dist_verify
+
+      - name: List files
+        run: |
+          find ./dist_core
+          find ./dist_python
+          find ./dist_metapkg
+          #find ./dist_verify
+
+      - name: Combine in one dir
+        run: |
+          mkdir ./dist_final
+          cp ./dist_core/mcpl_core-* ./dist_final
+          cp ./dist_python/mcpl_python-* ./dist_final
+          cp ./dist_metapkg/mcpl-* ./dist_final
+          #cp ./dist_verify/mcpl_verify-* ./dist_final
+
+      - name: List files
+        run: find ./dist_final
+
+#DISABLE      - name: Upload distribution to PyPI (if not dryrun)
+#DISABLE        if: needs.preparations.outputs.dryrun == '0'
+#DISABLE        uses: pypa/gh-action-pypi-publish@v1.12.4
+#DISABLE        with:
+#DISABLE          packages-dir: ./dist_final
+#DISABLE          verbose: true
