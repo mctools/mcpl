@@ -2016,7 +2016,9 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
   for (ifile = 0; ifile < nfiles; ++ifile) {
     mcpl_file_t f = mcpl_open_file(files[ifile]);
     uint64_t np = mcpl_hdr_nparticles(f);
-    printf("MCPL force-merge: Transferring %" PRIu64 " particle%s from file %s\n",np,(np==1?"":"s"),files[ifile]);
+    printf("MCPL force-merge: Transferring %" PRIu64
+           " particle%s from file %s\n",
+           np,(np==1?"":"s"),files[ifile]);
     while ( mcpl_read(f) != 0 )
       mcpl_transfer_last_read_particle(f, out);//lossless transfer when possible
     mcpl_close_file(f);
@@ -2024,18 +2026,13 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
 
   mcpl_outfileinternal_t * out_internal = (mcpl_outfileinternal_t *)out.internal;
   uint64_t np = out_internal->nparticles;
-  printf("MCPL force-merge: Transferred a total of %" PRIu64 " particle%s to new file %s\n",np,(np==1?"":"s"),file_output);
+  printf("MCPL force-merge: Transferred a total of %" PRIu64
+         " particle%s to new file %s\n",
+         np,(np==1?"":"s"),file_output);
   return out;
 }
 
-MCPL_LOCAL void mcpl_internal_delete_file( const char * filename )
-{
-#ifdef MCPL_THIS_IS_MS
-  _unlink(filename);//fixme _wunlink if unicode!
-#else
-  unlink(filename);
-#endif
-}
+MCPL_LOCAL void mcpl_internal_delete_file( const char * filename );
 
 mcpl_outfile_t mcpl_merge_files( const char* file_output,
                                  unsigned nfiles, const char ** files )
@@ -2852,7 +2849,7 @@ MCPL_LOCAL int _mcpl_custom_gzip(const char *filename, const char *mode)//fixme:
 #  include <fcntl.h>
 #  include <io.h>
 #else
-#  include "unistd.h" // for write(..)
+#  include "unistd.h" // for write(..) and unlink()
 #endif
 
 MCPL_LOCAL void mcpl_internal_dump_to_stdout( const char * data,
@@ -2874,6 +2871,15 @@ MCPL_LOCAL void mcpl_internal_dump_to_stdout( const char * data,
   ssize_t nb = write(STDOUT_FILENO,data,ldata);
   if (nb!=(ssize_t)ldata)
     mcpl_error("Problems writing to stdout");
+#endif
+}
+
+void mcpl_internal_delete_file( const char * filename )
+{
+#ifdef MCPL_THIS_IS_MS
+  _unlink(filename);//fixme _wunlink if unicode!
+#else
+  unlink(filename);
 #endif
 }
 
