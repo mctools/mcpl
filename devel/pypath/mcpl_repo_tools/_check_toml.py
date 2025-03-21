@@ -144,7 +144,8 @@ def check_metadata():
                         allow_diff = [] )
 
     #Check 'tool' section
-    assert set( data_core['tool'].keys() ) == set(['scikit-build'])
+    assert set( data_core['tool'].keys() ) == set(['scikit-build',
+                                                   'cibuildwheel'])
     #assert set( data_monolith['tool'].keys() ) == set(['scikit-build'])
     #cmp_common_entries( 'tool.scikit-build', data_monolith, data_core,
     #                    allow_diff = ['sdist','wheel'] )

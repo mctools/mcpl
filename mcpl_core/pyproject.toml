@@ -52,3 +52,7 @@ sdist.include = ["/src/","/include/","/cmake/",
                  ]
 sdist.cmake = true
 wheel.py-api = "py3" # as close to "noarch" as possible (ABI3)
+
+[tool.cibuildwheel.linux]
+#No 32bit wheels, since it gives problems with files >2GB.
+archs = ["auto64"]
