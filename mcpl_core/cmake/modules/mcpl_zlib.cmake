@@ -34,6 +34,8 @@ function( setup_zlib )
 
   if ( NOT MCPL_ENABLE_ZLIB STREQUAL "FETCH" )
     #look for preinstalled:
+    #fixme: we should have a test (on all 5 github platforms?) that fetches
+    #1.2.7 and run CTests. And one with 1.3.1.
     find_package( ZLIB 1.2.7 REQUIRED )
     set( _mcpl_zlib_tgt "ZLIB::ZLIB" PARENT_SCOPE )
     return()

@@ -18,7 +18,6 @@ classifiers = [
     "License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
 ]
 
-
 [project.urls]
 "Homepage" = "https://mctools.github.io/mcpl/"
 "Bug Tracker" = "https://github.com/mctools/mcpl/issues"

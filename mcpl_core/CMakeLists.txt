@@ -190,6 +190,8 @@ else()
 endif()
 
 if ( MCPL_BUILD_STRICT )
+  #Set globally warnings -> errors (although only has an effect in CMake 3.24 or
+  #later):
   set( "CMAKE_COMPILE_WARNING_AS_ERROR" "ON" )
   # turn list into space separated string for check_c_compiler_flag:
   string( REPLACE ";" " " tmp "${MCPL_STRICT_COMP_FLAGS}" )

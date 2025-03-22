@@ -38,6 +38,7 @@
 //  preprocessor flags can be used when compiling mcpl.c to fine tune the build    //
 //  process and the capabilities of the resulting binary.                          //
 //                                                                                 //
+//  Fixme: review and update these:                                                //
 //  MCPL_HASZLIB        : Define if compiling and linking with zlib, to allow      //
 //                        direct reading of .mcpl.gz files.                        //
 //  MCPL_ZLIB_INCPATH   : Specify alternative value if the zlib header is not to   //
@@ -998,7 +999,7 @@ MCPL_LOCAL int mcpl_gzseek( gzFile fh, int64_t pos )
   const int64_t seekmax = ( sizeof(z_off_t)>=sizeof(int64_t)
                             ? INT64_MAX : INT32_MAX ) - 1;//-1 is just safety
   if ( pos >= seekmax )
-    mcpl_error("Can not seek to positions in gzipped files beyond the "
+    mcpl_error("Can not seek to positions in gzipped files beyond the"
                " 2GB limit with the current zlib build.");
   return ( gzseek( fh, (z_off_t)pos, SEEK_SET ) == (z_off_t)pos ? 1 : 0 );
 #else
@@ -2712,82 +2713,22 @@ int mcpl_gzip_file_rc(const char * filename)
   return mcpl_gzip_file(filename);
 }
 
-/* #if defined(MCPL_HASZLIB) && !defined(Z_SOLO) && !defined(MCPL_NO_CUSTOM_GZIP) */
-/* #  define MCPLIMP_HAS_CUSTOM_GZIP */
-MCPL_LOCAL int _mcpl_custom_gzip(const char *file, const char *mode);//return 1 if successful, 0 if not
-//#endif
+MCPL_LOCAL int mcpl_custom_gzip(const char *file, const char *mode);//return 1 if successful, 0 if not
 
-/* #if defined MCPL_THIS_IS_UNIX && !defined(MCPL_NO_EXT_GZIP) */
-/* //Platform is unix-like enough that we assume gzip is installed and we can */
-/* //include posix headers. */
-/* /\* #  include <sys/types.h> *\/ */
-/* /\* #  include <sys/wait.h> *\/ */
-/* /\* #  include <errno.h> *\/ */
-
-/* int mcpl_gzip_file(const char * filename) */
-/* { */
-/*   const char * bn = strrchr(filename, '/'); */
-/*   bn = bn ? bn + 1 : filename; */
-
-/*   //spawn process in which to perform gzip: */
-/*   printf("MCPL: Attempting to compress file %s with gzip\n",bn); */
-/*   fflush(0); */
-/*   pid_t gzip_pid = fork(); */
-/*   if (gzip_pid) { */
-/*     //main proc */
-/*     int chld_state = 0; */
-/*     pid_t ret = waitpid(gzip_pid,&chld_state,0); */
-/*     if (ret!=gzip_pid||chld_state!=0) { */
-/* #  ifdef MCPLIMP_HAS_CUSTOM_GZIP */
-/*       printf("MCPL WARNING: Problems invoking gzip - will revert to a custom zlib based compression\n"); */
-/*       if (!_mcpl_custom_gzip(filename,"wb")) */
-/*         mcpl_error("Problems encountered while attempting to compress file"); */
-/*       else */
-/*         printf("MCPL: Succesfully compressed file into %s.gz\n",bn); */
-/* #  else */
-/*       mcpl_error("Problems encountered while attempting to invoke gzip"); */
-/* #  endif */
-/*     } */
-/*     else */
-/*       printf("MCPL: Succesfully compressed file into %s.gz\n",bn); */
-/*   } else { */
-/*     //spawned proc in which to invoke gzip */
-/*     execlp("gzip", "gzip", "-f",filename, (char*)0); */
-/*     printf("MCPL: execlp/gzip error: %s\n",strerror(errno)); */
-/*     exit(1); */
-/*   } */
-/*   return 1; */
-/* } */
-/* #else */
-/* //Non unix-y platform (like windows). We could use e.g. windows-specific calls */
-/* //instead of the fork() and waitpid() used above, but gzip likely not present on */
-/* //the system anyway, so we either resort to using zlib directly to gzip, or we */
-/* //disable the feature and print a warning. */
-/* #  ifndef MCPLIMP_HAS_CUSTOM_GZIP */
-/* int mcpl_gzip_file(const char * filename) */
-/* { */
-/*   const char * bn = strrchr(filename, '/'); */
-/*   bn = bn ? bn + 1 : filename; */
-/*   printf("MCPL WARNING: Requested compression of %s to %s.gz is not supported in this build.\n",bn,bn); */
-/*   return 0; */
-/* } */
-/* #  else */
 int mcpl_gzip_file(const char * filename)
 {
   const char * bn = mcpl_basename(filename);
   printf("MCPL: Attempting to compress file %s with gzip\n",bn);//FIXME should say "with zlib" but trying to preserve reflog outputs right now
-  if (!_mcpl_custom_gzip(filename,"wb"))
+  if (!mcpl_custom_gzip(filename,"wb")) {
+    //FIXME: We are always returning 1 here?!?!
     printf("MCPL ERROR: Problems encountered while compressing file %s.\n",bn);
-  else
-    printf("MCPL: Succesfully compressed file into %s.gz\n",bn);
+    return 0;
+  }
+  printf("MCPL: Succesfully compressed file into %s.gz\n",bn);
   return 1;
 }
-/* #  endif */
-/* #endif */
 
-/* #ifdef MCPLIMP_HAS_CUSTOM_GZIP */
-
-MCPL_LOCAL int _mcpl_custom_gzip(const char *filename, const char *mode)//fixme: mode is always "wb"
+MCPL_LOCAL int mcpl_custom_gzip(const char *filename, const char *mode)//fixme: mode is always "wb"
 {
   //Open input file:
   FILE *handle_in = mcpl_fopen(filename, "rb");

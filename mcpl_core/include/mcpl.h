@@ -219,7 +219,7 @@ extern "C" {
 
 
   /* Attempt to run gzip on a file (does not require MCPL_HASZLIB on unix) */
-  /* Returns non-zero if gzipping was succesful.                           */
+  /* Returns non-zero if gzipping was successful.                          */
   MCPL_API int mcpl_gzip_file(const char * filename);
 
   /* Convenience function which transfers all settings, blobs and comments to */

@@ -64,10 +64,10 @@ namespace MCFILEUTILS_CPPNAMESPACE {
 #  include <assert.h>
 #endif
 
-#define MCPL_STATIC_ASSERT0(COND,MSG) { typedef char mcpl_##MSG[(COND)?1:-1]; mcpl_##MSG dummy; (void)dummy; }
-#define MCPL_STATIC_ASSERT3(expr,x) MCPL_STATIC_ASSERT0(expr,fail_at_line_##x)
-#define MCPL_STATIC_ASSERT2(expr,x) MCPL_STATIC_ASSERT3(expr,x)
-#define MCPL_STATIC_ASSERT(expr)    MCPL_STATIC_ASSERT2(expr,__LINE__)
+#define MCTOOLS_STATIC_ASSERT0(COND,MSG) { typedef char mcpl_##MSG[(COND)?1:-1]; mcpl_##MSG dummy; (void)dummy; }
+#define MCTOOLS_STATIC_ASSERT3(expr,x) MCTOOLS_STATIC_ASSERT0(expr,fail_at_line_##x)
+#define MCTOOLS_STATIC_ASSERT2(expr,x) MCTOOLS_STATIC_ASSERT3(expr,x)
+#define MCTOOLS_STATIC_ASSERT(expr)    MCTOOLS_STATIC_ASSERT2(expr,__LINE__)
 
 #ifdef STDNS
 #  undef STDNS
@@ -142,8 +142,9 @@ namespace MCFILEUTILS_CPPNAMESPACE {
 
   mcu8str mcu8str_create( mcu8str_size_t prealloc_size )
   {
-    MCPL_STATIC_ASSERT( sizeof(unsigned)>=4 );
-    MCPL_STATIC_ASSERT( sizeof(size_t)>=8 );
+    MCTOOLS_STATIC_ASSERT( sizeof(unsigned)>=4 );
+    MCTOOLS_STATIC_ASSERT( sizeof(size_t)>=8 );
+    MCTOOLS_STATIC_ASSERT( sizeof(void*)>=8 );
     if ( prealloc_size == 0 )
       return mcu8str_create_empty();
     mcu8str s;
@@ -797,9 +798,9 @@ namespace {
 
     mcwinstr mc_winstr_create( mcu8str_size_t size )
     {
-      MCPL_STATIC_ASSERT( sizeof(DWORD)==sizeof(uint32_t) );
-      MCPL_STATIC_ASSERT( sizeof(unsigned)>=sizeof(uint32_t) );
-      MCPL_STATIC_ASSERT( sizeof(size_t)>=sizeof(uint64_t) );
+      MCTOOLS_STATIC_ASSERT( sizeof(DWORD)==sizeof(uint32_t) );
+      MCTOOLS_STATIC_ASSERT( sizeof(unsigned)>=sizeof(uint32_t) );
+      MCTOOLS_STATIC_ASSERT( sizeof(size_t)>=sizeof(uint64_t) );
       mcwinstr str;
       str.c_str = (wchar_t*)( MCTOOLS_STROKFORUINT(size)
                               ?  STDNS malloc( sizeof(wchar_t)*(size + 1) )

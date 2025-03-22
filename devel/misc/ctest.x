@@ -16,7 +16,9 @@ cmake \
     -B "${TGT}/bld" \
     -DCMAKE_BUILD_TYPE="${THE_BUILD_TYPE}" \
     -DCMAKE_INSTALL_PREFIX="${TGT}/inst" \
+    -DMCPL_BUILD_STRICT=99 \
     -DMCPL_ENABLE_TESTING=ON
+#    -DMCPL_ENABLE_ZLIB=FETCH \
 
 #\
 #    "$@"
