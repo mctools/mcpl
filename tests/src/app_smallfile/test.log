@@ -1,0 +1,136 @@
+Starting tests
+Opened MCPL file test.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 4700000
+    Header storage     : 59 bytes
+    Data storage       : 451200000 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    1        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    2        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    3        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    4        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    5        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    6        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    7        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    8        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    9        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+Opened MCPL file test.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 4700000
+    Header storage     : 59 bytes
+    Data storage       : 451200000 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+4699990        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+4699991        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+4699992        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+4699993        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+4699994        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+4699995        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+4699996        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+4699997        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+4699998        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+4699999        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+MCPL: Attempting to compress file test.mcpl with gzip
+MCPL: Succesfully compressed file into test.mcpl.gz
+Opened MCPL file test.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 4700000
+    Header storage     : 59 bytes
+    Data storage       : 451200000 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    1        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    2        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    3        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    4        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    5        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    6        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    7        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    8        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    9        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+Opened MCPL file test.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 4700000
+    Header storage     : 59 bytes
+    Data storage       : 451200000 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+4699990        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+4699991        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+4699992        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+4699993        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+4699994        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+4699995        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+4699996        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+4699997        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+4699998        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+4699999        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+Tests done
