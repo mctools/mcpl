@@ -38,14 +38,26 @@ jobs:
         with:
           environment_variables: CMAKE_BUILD_PARALLEL_LEVEL CTEST_PARALLEL_LEVEL
           operating_system: freebsd
+          #Increase "memory" from 6G to 10G for bigfile ctests:
+          #memory: 10G
           version: '14.2'
           run: |
+            df -h
+            #Due to limited VM disk space, do not run tests in parallel (the
+            #bigfile tests involve huge intermittent files):
+            export CTEST_PARALLEL_LEVEL=1
             echo "CMAKE_BUILD_PARALLEL_LEVEL=${CMAKE_BUILD_PARALLEL_LEVEL}"
             echo "CTEST_PARALLEL_LEVEL=${CTEST_PARALLEL_LEVEL}"
             sudo pkg install -y cmake python3 py311-numpy py311-matplotlib py311-pyyaml ruff
+            df -h
+            sudo pkg autoremove -y
+            df -h
+            sudo pkg clean -a -y
+            df -h
             ./src/devel/bin/mcpldevtool check -n "fix""me"
             cmake -S ./src -B ./build -DCMAKE_BUILD_TYPE=Release -DMCPL_BUILD_STRICT=ON -DMCPL_ENABLE_TESTING=ON -DMCTOOLS_REQUIRE_ALL_TEST_DEPS=ON
             cmake --build ./build --config Release
+            df -h
             ctest --test-dir ./build --build-config Release --no-tests=error --output-on-failure --test-output-size-failed 100000 --test-output-truncation middle
 
   pipinst:
