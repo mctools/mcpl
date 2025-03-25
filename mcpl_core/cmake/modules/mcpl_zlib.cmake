@@ -24,15 +24,22 @@ include_guard()
 function( setup_zlib )
   #Function which detects and/provide ZLib support and sets MCPL_ZLIB_LIBRARIES.
 
-  set( zlib_fetch_sources https://github.com/madler/zlib/archive/v1.3.1.tar.gz )
-  set( zlib_fetch_sources_sha256 17e88863f3600672ab49182f217281b6fc4d3c762bde361935e436a95214d05c )
-
+  set( do_zlib_fetch OFF )
+  if ( MCPL_ENABLE_ZLIB STREQUAL "FETCH" )
+    set( do_zlib_fetch ON )
+    set( zlib_fetch_sources https://github.com/madler/zlib/archive/v1.3.1.tar.gz )
+    set( zlib_fetch_sources_sha256 17e88863f3600672ab49182f217281b6fc4d3c762bde361935e436a95214d05c )
+  elseif ( MCPL_ENABLE_ZLIB STREQUAL "FETCH_NG" )
+    set( do_zlib_fetch ON )
+    set( zlib_fetch_sources https://github.com/zlib-ng/zlib-ng/archive/2.2.4.tar.gz )
+    set( zlib_fetch_sources_sha256 a73343c3093e5cdc50d9377997c3815b878fd110bf6511c2c7759f2afb90f5a3 )
+  endif()
   set( _mcpl_zlib_tgt "" PARENT_SCOPE )
   set( _mcpl_zlib_srcfiles "" PARENT_SCOPE )
   set( _mcpl_zlib_extra_compile_definitions "" PARENT_SCOPE )
   set( _mcpl_zlib_extra_include_dirs "" PARENT_SCOPE )
 
-  if ( NOT MCPL_ENABLE_ZLIB STREQUAL "FETCH" )
+  if ( NOT do_zlib_fetch )
     #look for preinstalled:
     #fixme: we should have a test (on all 5 github platforms?) that fetches
     #1.2.7 and run CTests. And one with 1.3.1.
@@ -48,22 +55,36 @@ function( setup_zlib )
   include(FetchContent)
   FetchContent_Declare( zlib URL "${zlib_fetch_sources}" URL_HASH "SHA256=${zlib_fetch_sources_sha256}" )
 
-  #Variable used in zlib's CMakeLists.txt to prevent zlib files being installed
-  #as a side-effect:
-  set( SKIP_INSTALL_ALL True )
-  set( ZLIB_INSTALL OFF )
+  if ( MCPL_ENABLE_ZLIB STREQUAL "FETCH" )
+    #Variable used in zlib's CMakeLists.txt to prevent zlib files being installed
+    #as a side-effect:
+    set( SKIP_INSTALL_ALL True )
+    set( ZLIB_INSTALL OFF )
 
-  #Avoid annoying warning (since zlib does not add VERSION in project call but
-  #as standalone variable):
-  set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
+    #Avoid annoying warning (since zlib does not add VERSION in project call but
+    #as standalone variable):
+    set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
 
-  #Other ZLIB options, mostly to disable things:
-  set( ZLIB_BUILD_EXAMPLES OFF )
-  set( ZLIB_BUILD_TESTING OFF )
-  set( ZLIB_BUILD_SHARED OFF )
-  set( ZLIB_BUILD_STATIC ON )
-  set( ZLIB_BUILD_MINIZIP OFF )
-  set( ZLIB_PREFIX ON )
+    #Other ZLIB options, mostly to disable things:
+    set( ZLIB_BUILD_EXAMPLES OFF )
+    set( ZLIB_BUILD_TESTING OFF )
+    set( ZLIB_BUILD_SHARED OFF )
+    set( ZLIB_BUILD_STATIC ON )
+    set( ZLIB_BUILD_MINIZIP OFF )
+    set( ZLIB_PREFIX ON )
+  else()
+    #Avoid annoying warning (since zlib-ng does not add VERSION in project call
+    #but as standalone variable):
+    set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
+    set( ZLIB_COMPAT ON )
+    set( WITH_GTEST OFF )
+    set( ZLIB_ENABLE_TESTS OFF )
+    set( ZLIBNG_ENABLE_TESTS OFF )
+    set( ZLIB_SYMBOL_PREFIX "mcpl" )
+    set( WITH_OPTIM OFF )
+    set( SKIP_INSTALL_ALL True )
+    set( ZLIB_INSTALL OFF )
+  endif()
 
   #Populate and add_subdirectory:
   FetchContent_MakeAvailable(zlib)

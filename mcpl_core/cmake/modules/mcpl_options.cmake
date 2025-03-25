@@ -27,7 +27,7 @@ include( mcpl_utils )
 #corresponding deprecated variable below, the default value should be modified
 #in the add_deprecated_boolvar(..) call as well!
 
-enum_option( MCPL_ENABLE_ZLIB "Whether to enable zlib support" DEFAULT FETCH USEPREINSTALLED )
+enum_option( MCPL_ENABLE_ZLIB "Whether to enable zlib support" DEFAULT FETCH FETCH_NG USEPREINSTALLED )
 bool_option( MCPL_ENABLE_CFGAPP    "Whether to build and install the mcpl-config command" "ON" )
 bool_option( MCPL_ENABLE_CORE_TESTING "Enable the few CTests fully contained within the mcpl_core project." "OFF" )
 enum_option( MCPL_BUILD_STRICT     "Stricter build (primarily for testing). Can optionally select specific C standard." "OFF" "ON" "99" "11" "14" "17" "23" )
