@@ -993,15 +993,43 @@ MCPL_LOCAL gzFile mcpl_gzopen( const char * filename, const char * mode )
 MCPL_LOCAL int mcpl_gzseek( gzFile fh, int64_t pos )
 {
   //Invokes gzseek in SEEK_SET mode and returns 1 on success, 0 on failure.
+  MCPL_STATIC_ASSERT(sizeof(int)>=sizeof(int32_t));
 #ifdef _WIN32
-  //z_off_t is always signed, and we assume for simplicity that it is actually
-  //32 or 64 bit (this is likely always the case).
+  MCPL_STATIC_ASSERT(sizeof(z_off_t)>=sizeof(int32_t));
+  //Windows. Here z_off_t is always signed, and most(all?) zlib builds are
+  //WITHOUT 64bit support. We assume here for simplicity that it is actually 32
+  //or 64 bit (this is likely always the case).
+  MCPL_STATIC_ASSERT(sizeof(z_off_t)==sizeof(int32_t)||sizeof(z_off_t)==sizeof(int64_t));
   const int64_t seekmax = ( sizeof(z_off_t)>=sizeof(int64_t)
                             ? INT64_MAX : INT32_MAX ) - 1;//-1 is just safety
-  if ( pos >= seekmax )
-    mcpl_error("Can not seek to positions in gzipped files beyond the"
-               " 2GB limit with the current zlib build.");
-  return ( gzseek( fh, (z_off_t)pos, SEEK_SET ) == (z_off_t)pos ? 1 : 0 );
+  if ( pos >= seekmax ) {
+    // We could just throw an error:
+    //
+    // mcpl_error("Can not seek to positions in gzipped files beyond the"
+    //            " 2GB limit with the current zlib build.");
+    //
+    // But instead we emulate by first seeking to seekmax, then uncompressing
+    // and reading off the bytes one chunk at a time with gzread. In practice
+    // this actually seems to be not much slower than a pure gzseek.
+    if ( gzseek( fh, (z_off_t)seekmax, SEEK_SET ) != (z_off_t)seekmax )
+      return 0;
+    int64_t current = seekmax;
+    char buf[65536];
+    while (1) {
+      int64_t missing = pos-current;
+      if (!missing)
+        break;
+      int to_read = ( missing > (int64_t)sizeof(buf)
+                      ? (int)sizeof(buf) : (int)missing );
+      int nread = gzread( fh, buf, (unsigned)to_read );
+      if ( nread != to_read )
+        return 0;
+      current += nread;
+    }
+    return 1;
+  } else {
+    return ( gzseek( fh, (z_off_t)pos, SEEK_SET ) == (z_off_t)pos ? 1 : 0 );
+  }
 #else
   //Until proven otherwise, we will simply demand that zlib on Unix has the
   //proper large file support.
