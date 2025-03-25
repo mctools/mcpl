@@ -49,7 +49,7 @@ agreement No 676548 (the BrightnESS project)
 
 #fixme: py3 only
 #fixme copyright statements
-from __future__ import division, print_function, absolute_import,unicode_literals#enable py3 behaviour in py2.6+
+#from __future__ import division, print_function, absolute_import,unicode_literals#enable py3 behaviour in py2.6+
 
 try:
     _str = lambda s : s.encode('ascii') if (hasattr(s,'encode') and bytes==str) else s
