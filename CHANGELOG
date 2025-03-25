@@ -2,6 +2,9 @@ v1.9.80 (work in progress)
       * Change license to the Apache 2.0 license.
       * Completely redesigning package layouts.
       * Removing "fat" installation options.
+      * Support Windows and MSVC!
+      * Proper consistent support for files > 2GB, even on Windows and with
+        gzipped files.
       * Fall back to statically embedding of zlib into binaries (currently
         v1.3.1). Only envisioned to be used for windows builds.
       * Support GCC 14.

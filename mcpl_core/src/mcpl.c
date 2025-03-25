@@ -478,6 +478,20 @@ void mcpl_enable_universal_weight(mcpl_outfile_t of, double w)
   mcpl_recalc_psize(of);
 }
 
+#ifdef MCPL_THIS_IS_MS
+#  define MCPL_FSEEK_OFFSET_TYPE __int64
+#  define MCPL_FSEEK( fh, pos)  _fseeki64(fh,(__int64)(pos), SEEK_SET)
+#  define MCPL_FSEEK_CUR( fh, pos)  _fseeki64(fh,(__int64)(pos), SEEK_CUR)
+#  define MCPL_FSEEK_END( fh, pos)  _fseeki64(fh,(__int64)(pos), SEEK_END)
+#  define MCPL_FTELL( fh)  _ftelli64(fh)
+#else
+#  define MCPL_FSEEK_OFFSET_TYPE ssize_t
+#  define MCPL_FSEEK( fh, pos) fseek(fh,(ssize_t)(pos), SEEK_SET)
+#  define MCPL_FSEEK_CUR( fh, pos) fseek(fh,(ssize_t)(pos), SEEK_CUR)
+#  define MCPL_FSEEK_END( fh, pos) fseek(fh,(ssize_t)(pos), SEEK_END)
+#  define MCPL_FTELL( fh) ftell(fh)
+#endif
+
 MCPL_LOCAL void mcpl_write_header(mcpl_outfileinternal_t * f)
 {
   if (!f->header_notwritten)
@@ -499,7 +513,7 @@ MCPL_LOCAL void mcpl_write_header(mcpl_outfileinternal_t * f)
 
   //Right after the initial 8 bytes, we put the number of particles (0 for now,
   //but important that position is fixed so we can seek and update it later).:
-  long int nparticles_pos = ftell(f->file);
+  int64_t nparticles_pos = MCPL_FTELL(f->file);
   if (nparticles_pos!=MCPLIMP_NPARTICLES_POS)
     mcpl_error(errmsg);
   nb = fwrite(&f->nparticles, 1, sizeof(f->nparticles), f->file);
@@ -777,25 +791,11 @@ void mcpl_add_particle(mcpl_outfile_t of,const mcpl_particle_t* particle)
   mcpl_internal_write_particle_buffer_to_file(f);
 }
 
-
-#ifdef MCPL_THIS_IS_MS
-#  define MCPL_FSEEK_OFFSET_TYPE __int64
-#  define MCPL_FSEEK( fh, pos)  _fseeki64(fh,(__int64)(pos), SEEK_SET)
-#  define MCPL_FSEEK_CUR( fh, pos)  _fseeki64(fh,(__int64)(pos), SEEK_CUR)
-#  define MCPL_FSEEK_END( fh, pos)  _fseeki64(fh,(__int64)(pos), SEEK_END)
-#else
-#  define MCPL_FSEEK_OFFSET_TYPE ssize_t
-#  define MCPL_FSEEK( fh, pos) fseek(fh,(ssize_t)(pos), SEEK_SET)
-#  define MCPL_FSEEK_CUR( fh, pos) fseek(fh,(ssize_t)(pos), SEEK_CUR)
-#  define MCPL_FSEEK_END( fh, pos) fseek(fh,(ssize_t)(pos), SEEK_END)
-#endif
-
-
 MCPL_LOCAL void mcpl_update_nparticles(FILE* f, uint64_t n)
 {
   //Seek and update nparticles at correct location in header:
   const char * errmsg = "Errors encountered while attempting to update number of particles in file.";
-  int64_t savedpos = ftell(f);
+  int64_t savedpos = MCPL_FTELL(f);
   if (savedpos<0)
     mcpl_error(errmsg);
   if (MCPL_FSEEK( f, MCPLIMP_NPARTICLES_POS ))
@@ -1148,10 +1148,10 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   int64_t tellpos = -1;
 #ifdef MCPL_HASZLIB
   if (f->filegz)
-    tellpos = gztell(f->filegz);
+    tellpos = gztell(f->filegz);//fixme: can we do without this and simply increment above? or some combination?
   else
 #endif
-    tellpos = ftell(f->file);
+    tellpos = MCPL_FTELL(f->file);
   if (tellpos<0)
     mcpl_error(errmsg);
   f->first_particle_pos = tellpos;
@@ -1191,7 +1191,7 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
       //SEEK_END is not guaranteed to always work, so we fail our recovery
       //attempt silently:
       if (f->file && !MCPL_FSEEK_END( f->file, 0 )) {
-        int64_t endpos = ftell(f->file);
+        int64_t endpos = MCPL_FTELL(f->file);
         if (endpos > (int64_t)f->first_particle_pos && (uint64_t)endpos != f->first_particle_pos) {
           uint64_t np = ( endpos - f->first_particle_pos ) / f->particle_size;
           if ( f->nparticles != np ) {
@@ -2829,3 +2829,11 @@ void mcpl_internal_delete_file( const char * filename )
 //       For unit tests in Debug builds we should try to have a static count of
 //       open/closed files, so we can verify that we did not forget a close call
 //       in some exit path.
+
+//Issues: mcpl_skipforward, mcpl_seek
+//        mcpl_actual_open_file/mcpl_rewind (only an issue if header is >2GB)
+//
+//  We need a test with >4gb of header (binary blob data) data and gzipped file.
+//  Also test bigfiles with python reader. Can we have one gzipped reference bigfile perhaps to work on?
+//
+//  Chained files: Open with special chain command. Can do nothing except report nparticles and read particles and skip particles.
