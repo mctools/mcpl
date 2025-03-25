@@ -59,7 +59,7 @@ namespace {
 int do_test()
 {
   FileDeleter guard;
-  constexpr std::uint64_t nparticles = 47000000;
+  constexpr std::uint64_t nparticles = 46000000;
   constexpr std::uint64_t bytes_per_particle = 96; //mcpl_hdr_particle_size
   constexpr std::uint64_t header_bytes = 59; //mcpl_hdr_header_size
 

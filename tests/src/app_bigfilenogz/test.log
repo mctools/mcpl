@@ -3,9 +3,9 @@ Opened MCPL file test.mcpl:
 
   Basic info
     Format             : MCPL-3
-    No. of particles   : 47000000
+    No. of particles   : 46000000
     Header storage     : 59 bytes
-    Data storage       : 4512000000 bytes
+    Data storage       : 4416000000 bytes
 
   Custom meta data
     Source             : "unknown"
@@ -36,9 +36,9 @@ Opened MCPL file test.mcpl:
 
   Basic info
     Format             : MCPL-3
-    No. of particles   : 47000000
+    No. of particles   : 46000000
     Header storage     : 59 bytes
-    Data storage       : 4512000000 bytes
+    Data storage       : 4416000000 bytes
 
   Custom meta data
     Source             : "unknown"
@@ -55,14 +55,14 @@ Opened MCPL file test.mcpl:
     Storage            : 96 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
-46999990        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
-46999991        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
-46999992        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
-46999993        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
-46999994        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
-46999995        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
-46999996        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
-46999997        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
-46999998        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
-46999999        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+45999990        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+45999991        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+45999992        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+45999993        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+45999994        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+45999995        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+45999996        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+45999997        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+45999998        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+45999999        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
 Tests done
