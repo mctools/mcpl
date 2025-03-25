@@ -306,7 +306,7 @@ function(
       set( libprefix "TestLib_" )
     endif()
     set( name "${libprefix}${bn}" )
-    mctools_testutils_internal_getsrcfiles( srcfiles "${libdir}" is_module )
+    mctools_testutils_internal_getsrcfiles( srcfiles is_cxx "${libdir}" is_module )
     mctools_testutils_internal_detectlibdeps( "deplist" "${srcfiles}" )
     foreach( dep ${deplist} )
       if ( NOT "x${dep}" STREQUAL "x${bn}" )
@@ -317,6 +317,9 @@ function(
     if ( is_module )
       #Shared library to be loaded by python ctypes
       add_library( ${name} MODULE ${srcfiles} )
+      if ( is_cxx )
+        target_compile_features( ${name} PRIVATE cxx_std_11 )
+      endif()
       set_target_properties(
         ${name} PROPERTIES
         CXX_VISIBILITY_PRESET "hidden"
@@ -377,8 +380,11 @@ function(
   foreach(appdir ${appdirs})
     get_filename_component(bn "${appdir}" NAME_WE)
     string(SUBSTRING "${bn}" 4 -1 "bn")
-    mctools_testutils_internal_getsrcfiles( srcfiles "${appdir}" "OFF" )
+    mctools_testutils_internal_getsrcfiles( srcfiles is_cxx "${appdir}" "OFF" )
     add_executable( ${bn} ${srcfiles})
+    if ( is_cxx )
+      target_compile_features( ${bn} PRIVATE cxx_std_11 )
+    endif()
     apply_strict_comp_properties( ${bn} )
     mctools_testutils_internal_detectlibdeps( "deplist" "${srcfiles}" "" )
     foreach( dep ${deplist} )
@@ -514,7 +520,8 @@ function( mctools_testutils_internal_detectpydeps resvar pyfile )
   set( "${resvar}" "${deplist}" PARENT_SCOPE )
 endfunction()
 
-function( mctools_testutils_internal_getsrcfiles resvar_srcfiles dir is_module )
+function( mctools_testutils_internal_getsrcfiles
+    resvar_srcfiles resvar_iscxx dir is_module  )
   file(
     GLOB srcfiles_cxx LIST_DIRECTORIES false CONFIGURE_DEPENDS
     "${dir}/*.cc"
@@ -526,8 +533,13 @@ function( mctools_testutils_internal_getsrcfiles resvar_srcfiles dir is_module )
   if ( NOT srcfiles_cxx AND NOT srcfiles_c )
     message(FATAL_ERROR "No source files found in ${dir}")
   endif()
-  set_source_files_properties(${srcfiles_cxx} PROPERTIES LANGUAGE CXX)
-  set_source_files_properties(${srcfiles_c} PROPERTIES LANGUAGE C)
+  if ( srcfiles_cxx AND srcfiles_c )
+    message(FATAL_ERROR "Both C and C++ source files found in ${dir}")
+  endif()
+  set_source_files_properties(
+    ${srcfiles_c}
+    PROPERTIES LANGUAGE C
+  )
   if ( is_module )
     set_source_files_properties(
       ${srcfiles_cxx} ${srcfiles_c}
@@ -546,6 +558,11 @@ function( mctools_testutils_internal_getsrcfiles resvar_srcfiles dir is_module )
   list( APPEND res ${srcfiles_cxx} )
   list( APPEND res ${srcfiles_c} )
   set( ${resvar_srcfiles} "${res}" PARENT_SCOPE )
+  if ( srcfiles_cxx )
+    set( ${resvar_iscxx} "ON" PARENT_SCOPE )
+  else()
+    set( ${resvar_iscxx} "OFF" PARENT_SCOPE )
+  endif()
 endfunction()
 
 function( mctools_testutils_internal_addtest name cmd_file reflog )
