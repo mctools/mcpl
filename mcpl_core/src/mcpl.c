@@ -179,10 +179,13 @@ void mcpl_set_error_handler(void (*handler)(const char *))
 MCPL_LOCAL void mcpl_store_string(char** dest, const char * src)
 {
   size_t n = strlen(src);
-  if (n>65535) n = 65535;
+  if (n>65534) {
+    n = 65534;
+    mcpl_error("string length out of range");
+  }
   if (*dest)
     free(*dest);
-  *dest = (char*)calloc(n+1,1);
+  *dest = (char*)malloc(n+1);
   assert(*dest);
   //Usage of strncpy cause compiler warning on newer gcc, so we use memcpy
   //instead (should be safe, we just checked strlen above!):

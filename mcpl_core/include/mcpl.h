@@ -217,9 +217,8 @@ extern "C" {
   MCPL_API int mcpl_tool_wchar(int argc, wchar_t** argv);
 #endif
 
-
-  /* Attempt to run gzip on a file (does not require MCPL_HASZLIB on unix) */
-  /* Returns non-zero if gzipping was successful.                          */
+  /* Compress a file (like running gzip on the file, transforming it from  */
+  /* "filename" to "filename.gz". Non-zero return value indicates success. */
   MCPL_API int mcpl_gzip_file(const char * filename);
 
   /* Convenience function which transfers all settings, blobs and comments to */
