@@ -926,8 +926,9 @@ typedef struct {
 
 #define MCPLIMP_FILEDECODE mcpl_fileinternal_t * f = (mcpl_fileinternal_t *)ff.internal; assert(f)
 
-MCPL_LOCAL void mcpl_read_buffer(mcpl_fileinternal_t* f, unsigned* n, char ** buf, const char * errmsg)
+MCPL_LOCAL uint64_t mcpl_read_buffer(mcpl_fileinternal_t* f, unsigned* n, char ** buf, const char * errmsg)
 {
+  //Reads buffer and returns number of bytes consumed from file
   size_t nb;
 #ifdef MCPL_HASZLIB
   if (f->filegz)
@@ -946,10 +947,12 @@ MCPL_LOCAL void mcpl_read_buffer(mcpl_fileinternal_t* f, unsigned* n, char ** bu
     nb = fread(*buf, 1, *n, f->file);
   if (nb!=*n)
     mcpl_error(errmsg);
+  return sizeof(*n) + *n;
 }
 
-MCPL_LOCAL void mcpl_read_string(mcpl_fileinternal_t* f, char ** dest, const char* errmsg)
+MCPL_LOCAL uint64_t mcpl_read_string(mcpl_fileinternal_t* f, char ** dest, const char* errmsg)
 {
+  //Reads string and returns number of bytes consumed from file
   size_t nb;
   uint32_t n;
 #ifdef MCPL_HASZLIB
@@ -971,6 +974,7 @@ MCPL_LOCAL void mcpl_read_string(mcpl_fileinternal_t* f, char ** dest, const cha
     mcpl_error(errmsg);
   s[n] = '\0';
   *dest = s;
+  return sizeof(n) + n;
 }
 
 MCPL_LOCAL gzFile mcpl_gzopen( const char * filename, const char * mode )
@@ -1098,6 +1102,7 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
     else
       mcpl_error("Unexpected value in endianness field!");
   }
+  int64_t current_pos = sizeof(start);
 
   //proceed reading header, knowing we have a consistent version and endian-ness.
   const char * errmsg = "Errors encountered while attempting to read header";
@@ -1111,6 +1116,7 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
     nb = fread(&numpart, 1, sizeof(numpart), f->file);
   if (nb!=sizeof(numpart))
     mcpl_error(errmsg);
+  current_pos += nb;
   f->nparticles = numpart;
 
   uint32_t arr[8];
@@ -1123,6 +1129,7 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
     nb=fread(arr, 1, sizeof(arr), f->file);
   if (nb!=sizeof(arr))
     mcpl_error(errmsg);
+  current_pos += nb;
 
   f->ncomments = arr[0];
   f->nblobs = arr[1];
@@ -1144,6 +1151,7 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
     assert(nb==sizeof(f->opt_universalweight));
     if (nb!=sizeof(f->opt_universalweight))
       mcpl_error(errmsg);
+    current_pos += nb;
   }
 
   f->opt_signature = 0
@@ -1154,11 +1162,11 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
     + 16 * f->opt_userflags;
 
   //Then some strings:
-  mcpl_read_string(f,&f->hdr_srcprogname,errmsg);
+  current_pos += mcpl_read_string(f,&f->hdr_srcprogname,errmsg);
   f->comments = f->ncomments ? (char **)calloc(f->ncomments,sizeof(char*)) : 0;
   uint32_t i;
   for (i = 0; i < f->ncomments; ++i)
-    mcpl_read_string(f,&(f->comments[i]),errmsg);
+    current_pos += mcpl_read_string(f,&(f->comments[i]),errmsg);
 
   f->blobkeys = 0;
   f->bloblengths = 0;
@@ -1168,24 +1176,15 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
     f->blobkeys = (char **)calloc(f->nblobs,sizeof(char*));
     f->bloblengths = (uint32_t *)calloc(f->nblobs,sizeof(uint32_t));
     for (i =0; i < f->nblobs; ++i)
-      mcpl_read_string(f,&(f->blobkeys[i]),errmsg);
+      current_pos += mcpl_read_string(f,&(f->blobkeys[i]),errmsg);
     for (i =0; i < f->nblobs; ++i)
-      mcpl_read_buffer(f, &(f->bloblengths[i]), &(f->blobs[i]), errmsg);
+      current_pos += mcpl_read_buffer(f, &(f->bloblengths[i]), &(f->blobs[i]), errmsg);
   }
   f->particle = (mcpl_particle_t*)calloc(1,sizeof(mcpl_particle_t));
 
   //At first event now:
   f->current_particle_idx = 0;
-  int64_t tellpos = -1;
-#ifdef MCPL_HASZLIB
-  if (f->filegz)
-    tellpos = gztell(f->filegz);//fixme: can we do without this and simply increment above? or some combination?
-  else
-#endif
-    tellpos = MCPL_FTELL(f->file);
-  if (tellpos<0)
-    mcpl_error(errmsg);
-  f->first_particle_pos = tellpos;
+  f->first_particle_pos = current_pos;
 
   if ( f->nparticles==0 || caller_is_mcpl_repair ) {
     //Although empty files are permitted, it is possible that the file was never
