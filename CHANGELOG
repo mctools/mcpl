@@ -22,6 +22,8 @@ v1.9.80 (work in progress)
         being merged are repeated. This used to be merely a WARNING, but in
         order to get consistent behaviour on all platforms, this now becomes an
         error.
+      * Fix potential (but very unlikely) bug in
+        mcpl_transfer_last_read_particle.
 
 v1.6.2 2023-06-06
       * Work again with latest numpy by removing usage of deprecated numpy.float

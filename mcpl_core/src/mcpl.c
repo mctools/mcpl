@@ -255,7 +255,7 @@ MCPL_LOCAL void mcpl_recalc_psize(mcpl_outfile_t of)
   f->opt_signature = 0
     + 1 * f->opt_singleprec
     + 2 * f->opt_polarisation
-    + 4 * f->opt_universalpdgcode
+    + 4 * (f->opt_universalpdgcode?1:0)
     + 8 * (f->opt_universalweight?1:0)
     + 16 * f->opt_userflags;
 }
@@ -530,7 +530,7 @@ MCPL_LOCAL void mcpl_write_header(mcpl_outfileinternal_t * f)
   arr[2] = f->opt_userflags;
   arr[3] = f->opt_polarisation;
   arr[4] = f->opt_singleprec;
-  arr[5] = f->opt_universalpdgcode;
+  arr[5] = (uint32_t)f->opt_universalpdgcode;
   arr[6] = f->particle_size;
   arr[7] = (f->opt_universalweight?1:0);
   assert(sizeof(arr)==32);
@@ -1136,7 +1136,7 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   f->opt_userflags = arr[2];
   f->opt_polarisation = arr[3];
   f->opt_singleprec = arr[4];
-  f->opt_universalpdgcode = arr[5];
+  f->opt_universalpdgcode = (int32_t)arr[5];
   f->particle_size = arr[6];//We could check consistency here with the calculated value.
   assert(f->particle_size<=MCPLIMP_MAX_PARTICLE_SIZE);
 
@@ -1157,7 +1157,7 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   f->opt_signature = 0
     + 1 * f->opt_singleprec
     + 2 * f->opt_polarisation
-    + 4 * f->opt_universalpdgcode
+    + 4 * (f->opt_universalpdgcode?1:0)
     + 8 * (f->opt_universalweight?1:0)
     + 16 * f->opt_userflags;
 
