@@ -1,0 +1,423 @@
+Starting tests
+Opened MCPL file test.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 1000
+    Header storage     : 4400000749 bytes
+    Data storage       : 96000 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 0
+    Number of blobs    : 50
+          -> 88000000 bytes of data with key "blob0"
+          -> 88000000 bytes of data with key "blob1"
+          -> 88000000 bytes of data with key "blob2"
+          -> 88000000 bytes of data with key "blob3"
+          -> 88000000 bytes of data with key "blob4"
+          -> 88000000 bytes of data with key "blob5"
+          -> 88000000 bytes of data with key "blob6"
+          -> 88000000 bytes of data with key "blob7"
+          -> 88000000 bytes of data with key "blob8"
+          -> 88000000 bytes of data with key "blob9"
+          -> 88000000 bytes of data with key "blob10"
+          -> 88000000 bytes of data with key "blob11"
+          -> 88000000 bytes of data with key "blob12"
+          -> 88000000 bytes of data with key "blob13"
+          -> 88000000 bytes of data with key "blob14"
+          -> 88000000 bytes of data with key "blob15"
+          -> 88000000 bytes of data with key "blob16"
+          -> 88000000 bytes of data with key "blob17"
+          -> 88000000 bytes of data with key "blob18"
+          -> 88000000 bytes of data with key "blob19"
+          -> 88000000 bytes of data with key "blob20"
+          -> 88000000 bytes of data with key "blob21"
+          -> 88000000 bytes of data with key "blob22"
+          -> 88000000 bytes of data with key "blob23"
+          -> 88000000 bytes of data with key "blob24"
+          -> 88000000 bytes of data with key "blob25"
+          -> 88000000 bytes of data with key "blob26"
+          -> 88000000 bytes of data with key "blob27"
+          -> 88000000 bytes of data with key "blob28"
+          -> 88000000 bytes of data with key "blob29"
+          -> 88000000 bytes of data with key "blob30"
+          -> 88000000 bytes of data with key "blob31"
+          -> 88000000 bytes of data with key "blob32"
+          -> 88000000 bytes of data with key "blob33"
+          -> 88000000 bytes of data with key "blob34"
+          -> 88000000 bytes of data with key "blob35"
+          -> 88000000 bytes of data with key "blob36"
+          -> 88000000 bytes of data with key "blob37"
+          -> 88000000 bytes of data with key "blob38"
+          -> 88000000 bytes of data with key "blob39"
+          -> 88000000 bytes of data with key "blob40"
+          -> 88000000 bytes of data with key "blob41"
+          -> 88000000 bytes of data with key "blob42"
+          -> 88000000 bytes of data with key "blob43"
+          -> 88000000 bytes of data with key "blob44"
+          -> 88000000 bytes of data with key "blob45"
+          -> 88000000 bytes of data with key "blob46"
+          -> 88000000 bytes of data with key "blob47"
+          -> 88000000 bytes of data with key "blob48"
+          -> 88000000 bytes of data with key "blob49"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    1        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    2        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    3        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    4        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    5        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    6        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    7        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    8        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    9        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+Opened MCPL file test.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 1000
+    Header storage     : 4400000749 bytes
+    Data storage       : 96000 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 0
+    Number of blobs    : 50
+          -> 88000000 bytes of data with key "blob0"
+          -> 88000000 bytes of data with key "blob1"
+          -> 88000000 bytes of data with key "blob2"
+          -> 88000000 bytes of data with key "blob3"
+          -> 88000000 bytes of data with key "blob4"
+          -> 88000000 bytes of data with key "blob5"
+          -> 88000000 bytes of data with key "blob6"
+          -> 88000000 bytes of data with key "blob7"
+          -> 88000000 bytes of data with key "blob8"
+          -> 88000000 bytes of data with key "blob9"
+          -> 88000000 bytes of data with key "blob10"
+          -> 88000000 bytes of data with key "blob11"
+          -> 88000000 bytes of data with key "blob12"
+          -> 88000000 bytes of data with key "blob13"
+          -> 88000000 bytes of data with key "blob14"
+          -> 88000000 bytes of data with key "blob15"
+          -> 88000000 bytes of data with key "blob16"
+          -> 88000000 bytes of data with key "blob17"
+          -> 88000000 bytes of data with key "blob18"
+          -> 88000000 bytes of data with key "blob19"
+          -> 88000000 bytes of data with key "blob20"
+          -> 88000000 bytes of data with key "blob21"
+          -> 88000000 bytes of data with key "blob22"
+          -> 88000000 bytes of data with key "blob23"
+          -> 88000000 bytes of data with key "blob24"
+          -> 88000000 bytes of data with key "blob25"
+          -> 88000000 bytes of data with key "blob26"
+          -> 88000000 bytes of data with key "blob27"
+          -> 88000000 bytes of data with key "blob28"
+          -> 88000000 bytes of data with key "blob29"
+          -> 88000000 bytes of data with key "blob30"
+          -> 88000000 bytes of data with key "blob31"
+          -> 88000000 bytes of data with key "blob32"
+          -> 88000000 bytes of data with key "blob33"
+          -> 88000000 bytes of data with key "blob34"
+          -> 88000000 bytes of data with key "blob35"
+          -> 88000000 bytes of data with key "blob36"
+          -> 88000000 bytes of data with key "blob37"
+          -> 88000000 bytes of data with key "blob38"
+          -> 88000000 bytes of data with key "blob39"
+          -> 88000000 bytes of data with key "blob40"
+          -> 88000000 bytes of data with key "blob41"
+          -> 88000000 bytes of data with key "blob42"
+          -> 88000000 bytes of data with key "blob43"
+          -> 88000000 bytes of data with key "blob44"
+          -> 88000000 bytes of data with key "blob45"
+          -> 88000000 bytes of data with key "blob46"
+          -> 88000000 bytes of data with key "blob47"
+          -> 88000000 bytes of data with key "blob48"
+          -> 88000000 bytes of data with key "blob49"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    1        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    2        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    3        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    4        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    5        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    6        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    7        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    8        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    9        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+Opened MCPL file test.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 1000
+    Header storage     : 4400000749 bytes
+    Data storage       : 96000 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 0
+    Number of blobs    : 50
+          -> 88000000 bytes of data with key "blob0"
+          -> 88000000 bytes of data with key "blob1"
+          -> 88000000 bytes of data with key "blob2"
+          -> 88000000 bytes of data with key "blob3"
+          -> 88000000 bytes of data with key "blob4"
+          -> 88000000 bytes of data with key "blob5"
+          -> 88000000 bytes of data with key "blob6"
+          -> 88000000 bytes of data with key "blob7"
+          -> 88000000 bytes of data with key "blob8"
+          -> 88000000 bytes of data with key "blob9"
+          -> 88000000 bytes of data with key "blob10"
+          -> 88000000 bytes of data with key "blob11"
+          -> 88000000 bytes of data with key "blob12"
+          -> 88000000 bytes of data with key "blob13"
+          -> 88000000 bytes of data with key "blob14"
+          -> 88000000 bytes of data with key "blob15"
+          -> 88000000 bytes of data with key "blob16"
+          -> 88000000 bytes of data with key "blob17"
+          -> 88000000 bytes of data with key "blob18"
+          -> 88000000 bytes of data with key "blob19"
+          -> 88000000 bytes of data with key "blob20"
+          -> 88000000 bytes of data with key "blob21"
+          -> 88000000 bytes of data with key "blob22"
+          -> 88000000 bytes of data with key "blob23"
+          -> 88000000 bytes of data with key "blob24"
+          -> 88000000 bytes of data with key "blob25"
+          -> 88000000 bytes of data with key "blob26"
+          -> 88000000 bytes of data with key "blob27"
+          -> 88000000 bytes of data with key "blob28"
+          -> 88000000 bytes of data with key "blob29"
+          -> 88000000 bytes of data with key "blob30"
+          -> 88000000 bytes of data with key "blob31"
+          -> 88000000 bytes of data with key "blob32"
+          -> 88000000 bytes of data with key "blob33"
+          -> 88000000 bytes of data with key "blob34"
+          -> 88000000 bytes of data with key "blob35"
+          -> 88000000 bytes of data with key "blob36"
+          -> 88000000 bytes of data with key "blob37"
+          -> 88000000 bytes of data with key "blob38"
+          -> 88000000 bytes of data with key "blob39"
+          -> 88000000 bytes of data with key "blob40"
+          -> 88000000 bytes of data with key "blob41"
+          -> 88000000 bytes of data with key "blob42"
+          -> 88000000 bytes of data with key "blob43"
+          -> 88000000 bytes of data with key "blob44"
+          -> 88000000 bytes of data with key "blob45"
+          -> 88000000 bytes of data with key "blob46"
+          -> 88000000 bytes of data with key "blob47"
+          -> 88000000 bytes of data with key "blob48"
+          -> 88000000 bytes of data with key "blob49"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+  990        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+  991        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+  992        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+  993        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+  994        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+  995        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+  996        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+  997        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+  998        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+  999        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+Validating blob contents of test.mcpl
+Validated blob contents DONE
+MCPL: Attempting to compress file test.mcpl with gzip
+MCPL: Succesfully compressed file into test.mcpl.gz
+Opened MCPL file test.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 1000
+    Header storage     : 4400000749 bytes
+    Data storage       : 96000 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 0
+    Number of blobs    : 50
+          -> 88000000 bytes of data with key "blob0"
+          -> 88000000 bytes of data with key "blob1"
+          -> 88000000 bytes of data with key "blob2"
+          -> 88000000 bytes of data with key "blob3"
+          -> 88000000 bytes of data with key "blob4"
+          -> 88000000 bytes of data with key "blob5"
+          -> 88000000 bytes of data with key "blob6"
+          -> 88000000 bytes of data with key "blob7"
+          -> 88000000 bytes of data with key "blob8"
+          -> 88000000 bytes of data with key "blob9"
+          -> 88000000 bytes of data with key "blob10"
+          -> 88000000 bytes of data with key "blob11"
+          -> 88000000 bytes of data with key "blob12"
+          -> 88000000 bytes of data with key "blob13"
+          -> 88000000 bytes of data with key "blob14"
+          -> 88000000 bytes of data with key "blob15"
+          -> 88000000 bytes of data with key "blob16"
+          -> 88000000 bytes of data with key "blob17"
+          -> 88000000 bytes of data with key "blob18"
+          -> 88000000 bytes of data with key "blob19"
+          -> 88000000 bytes of data with key "blob20"
+          -> 88000000 bytes of data with key "blob21"
+          -> 88000000 bytes of data with key "blob22"
+          -> 88000000 bytes of data with key "blob23"
+          -> 88000000 bytes of data with key "blob24"
+          -> 88000000 bytes of data with key "blob25"
+          -> 88000000 bytes of data with key "blob26"
+          -> 88000000 bytes of data with key "blob27"
+          -> 88000000 bytes of data with key "blob28"
+          -> 88000000 bytes of data with key "blob29"
+          -> 88000000 bytes of data with key "blob30"
+          -> 88000000 bytes of data with key "blob31"
+          -> 88000000 bytes of data with key "blob32"
+          -> 88000000 bytes of data with key "blob33"
+          -> 88000000 bytes of data with key "blob34"
+          -> 88000000 bytes of data with key "blob35"
+          -> 88000000 bytes of data with key "blob36"
+          -> 88000000 bytes of data with key "blob37"
+          -> 88000000 bytes of data with key "blob38"
+          -> 88000000 bytes of data with key "blob39"
+          -> 88000000 bytes of data with key "blob40"
+          -> 88000000 bytes of data with key "blob41"
+          -> 88000000 bytes of data with key "blob42"
+          -> 88000000 bytes of data with key "blob43"
+          -> 88000000 bytes of data with key "blob44"
+          -> 88000000 bytes of data with key "blob45"
+          -> 88000000 bytes of data with key "blob46"
+          -> 88000000 bytes of data with key "blob47"
+          -> 88000000 bytes of data with key "blob48"
+          -> 88000000 bytes of data with key "blob49"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    1        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    2        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    3        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    4        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    5        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    6        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    7        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    8        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+    9        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+Opened MCPL file test.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 1000
+    Header storage     : 4400000749 bytes
+    Data storage       : 96000 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 0
+    Number of blobs    : 50
+          -> 88000000 bytes of data with key "blob0"
+          -> 88000000 bytes of data with key "blob1"
+          -> 88000000 bytes of data with key "blob2"
+          -> 88000000 bytes of data with key "blob3"
+          -> 88000000 bytes of data with key "blob4"
+          -> 88000000 bytes of data with key "blob5"
+          -> 88000000 bytes of data with key "blob6"
+          -> 88000000 bytes of data with key "blob7"
+          -> 88000000 bytes of data with key "blob8"
+          -> 88000000 bytes of data with key "blob9"
+          -> 88000000 bytes of data with key "blob10"
+          -> 88000000 bytes of data with key "blob11"
+          -> 88000000 bytes of data with key "blob12"
+          -> 88000000 bytes of data with key "blob13"
+          -> 88000000 bytes of data with key "blob14"
+          -> 88000000 bytes of data with key "blob15"
+          -> 88000000 bytes of data with key "blob16"
+          -> 88000000 bytes of data with key "blob17"
+          -> 88000000 bytes of data with key "blob18"
+          -> 88000000 bytes of data with key "blob19"
+          -> 88000000 bytes of data with key "blob20"
+          -> 88000000 bytes of data with key "blob21"
+          -> 88000000 bytes of data with key "blob22"
+          -> 88000000 bytes of data with key "blob23"
+          -> 88000000 bytes of data with key "blob24"
+          -> 88000000 bytes of data with key "blob25"
+          -> 88000000 bytes of data with key "blob26"
+          -> 88000000 bytes of data with key "blob27"
+          -> 88000000 bytes of data with key "blob28"
+          -> 88000000 bytes of data with key "blob29"
+          -> 88000000 bytes of data with key "blob30"
+          -> 88000000 bytes of data with key "blob31"
+          -> 88000000 bytes of data with key "blob32"
+          -> 88000000 bytes of data with key "blob33"
+          -> 88000000 bytes of data with key "blob34"
+          -> 88000000 bytes of data with key "blob35"
+          -> 88000000 bytes of data with key "blob36"
+          -> 88000000 bytes of data with key "blob37"
+          -> 88000000 bytes of data with key "blob38"
+          -> 88000000 bytes of data with key "blob39"
+          -> 88000000 bytes of data with key "blob40"
+          -> 88000000 bytes of data with key "blob41"
+          -> 88000000 bytes of data with key "blob42"
+          -> 88000000 bytes of data with key "blob43"
+          -> 88000000 bytes of data with key "blob44"
+          -> 88000000 bytes of data with key "blob45"
+          -> 88000000 bytes of data with key "blob46"
+          -> 88000000 bytes of data with key "blob47"
+          -> 88000000 bytes of data with key "blob48"
+          -> 88000000 bytes of data with key "blob49"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+  990        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+  991        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+  992        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+  993        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+  994        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+  995        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+  996        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+  997        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+  998        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+  999        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
+Validating blob contents of test.mcpl.gz
+Validated blob contents DONE
+Tests done
