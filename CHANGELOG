@@ -24,6 +24,10 @@ v1.9.80 (work in progress)
         error.
       * Fix potential (but very unlikely) bug in
         mcpl_transfer_last_read_particle.
+      * Add a few utility functions for cross-platform reading of files in
+        mcpl.h. This is meant to simplify code in custom mcpl-related utilities,
+        and handles issues like gzipped files or filenames with unicode chars on
+        Windows.
 
 v1.6.2 2023-06-06
       * Work again with latest numpy by removing usage of deprecated numpy.float

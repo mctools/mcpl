@@ -1168,6 +1168,7 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   for (i = 0; i < f->ncomments; ++i)
     current_pos += mcpl_read_string(f,&(f->comments[i]),errmsg);
 
+  //FIXME: Maybe we should not read in very large blobs initially, but only load them on demand?
   f->blobkeys = 0;
   f->bloblengths = 0;
   f->blobs = 0;
@@ -1187,6 +1188,9 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   f->first_particle_pos = current_pos;
 
   if ( f->nparticles==0 || caller_is_mcpl_repair ) {
+    //FIXME: Perhaps the placeholder nparticles should be UINT64_MAX so we know
+    //that nparticles=0 is a properly closed file.
+
     //Although empty files are permitted, it is possible that the file was never
     //closed properly (maybe the writing program ended prematurely). Let us
     //check to possibly recover usage of the file. If caller is mcpl_repair, we
@@ -2853,6 +2857,80 @@ void mcpl_internal_delete_file( const char * filename )
   unlink(filename);
 #endif
 }
+
+/* Open file. Can read gzipped files directly (if have extension ".gz") */
+mcpl_generic_filehandle_t mcpl_generic_fopen( const char * filename )
+{
+  mcpl_generic_filehandle_t res;
+  res.mode = 0;
+  res.current_pos = 0;
+  res.internal = NULL;
+
+  const char * lastdot = strrchr(filename, '.');
+  if (lastdot && strcmp(lastdot, ".gz") == 0) {
+    MCPL_STATIC_ASSERT( sizeof(gzFile) == sizeof(void*) );
+    res.internal = (void*)mcpl_gzopen( filename, "rb" );
+    res.mode = 0x1;
+  } else {
+    res.internal = (void*)mcpl_fopen(filename,"rb");
+  }
+  if (!res.internal)
+    mcpl_error("Unable to open file!");
+  return res;
+}
+
+void mcpl_generic_fread( mcpl_generic_filehandle_t* fh,
+                         char * dest, uint64_t nbytes )
+{
+  if ( !nbytes )
+    return;
+
+  MCPL_STATIC_ASSERT( sizeof(size_t) >= sizeof(uint32_t) );
+  MCPL_STATIC_ASSERT( sizeof(int) >= sizeof(int32_t) );
+  MCPL_STATIC_ASSERT( sizeof(z_off_t) >= sizeof(int32_t) );
+
+  //Ensure we only call gzread/fread with requests well inside 32bit limit (even
+  //signed since gzread can read at most INT_MAX).
+  const uint64_t chunk_max = INT32_MAX / 4;
+  while ( nbytes > chunk_max ) {
+    //fixme: unit test? Or at least test once with very low chunk_max.
+    mcpl_generic_fread( fh, dest, chunk_max );
+    nbytes -= chunk_max;
+    dest += chunk_max;
+  }
+
+  size_t to_read = (size_t)(nbytes);
+  size_t actually_read;
+  //NB: We only use 1 bit in mode flag for now, so we dont have to actually do
+  //"fh->mode & 0x1" to test if it is gzipped.
+  if ( fh->mode ) {
+    int rv = gzread((gzFile)(fh->internal), dest, (z_off_t)to_read);
+    actually_read = (size_t)(rv > 0 ? rv : 0 );
+  } else {
+    actually_read = fread(dest, 1, to_read, (FILE*)(fh->internal));
+  }
+  fh->current_pos += actually_read;
+  if ( actually_read != to_read )
+    mcpl_error("Error while reading from file");
+}
+
+void mcpl_generic_fclose( mcpl_generic_filehandle_t* fh )
+{
+  if ( !fh->internal )
+    mcpl_error("Error trying to close invalid file handle");
+
+  //NB: We only use 1 bit in mode flag for now, so we dont have to actually do
+  //"fh->mode & 0x1" to test if it is gzipped.
+  if ( fh->mode )
+    gzclose((gzFile)(fh->internal));
+  else
+    fclose( (FILE*)(fh->internal) );
+
+  fh->mode = 0;
+  fh->current_pos = 0;
+  fh->internal = NULL;
+}
+
 
 //fixme: we need special CI test exercising files above 2/4GB, including gzipped
 //       files, seeking, closing, rewinding, repairing.

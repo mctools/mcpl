@@ -255,6 +255,24 @@ extern "C" {
   MCPL_API int mcpl_closeandgzip_outfile_rc(mcpl_outfile_t);/* Obsolete name for mcpl_closeandgzip_outfile_rc */
   MCPL_API int32_t mcpl_hdr_universel_pdgcode(mcpl_file_t);/* Obsolete name for mcpl_hdr_universal_pdgcode */
 
+  /***********************************/
+  /* Utilities for tool implementers */
+  /***********************************/
+
+  typedef struct MCPL_API {
+    /* ok to read non-internal fields, but do not modify directly. */
+    void* internal;
+    uint64_t current_pos;/* reading this is like calling ftell(..) */
+    uint32_t mode;/* first bit (bit mask 0x1) tells if file is gzipped */
+  } mcpl_generic_filehandle_t;
+
+  /* Open file. Can read gzipped files directly (must have extension ".gz") */
+  MCPL_API mcpl_generic_filehandle_t mcpl_generic_fopen( const char * filename );
+  /* fread/fclose as usual: */
+  MCPL_API void mcpl_generic_fread( mcpl_generic_filehandle_t*,
+                                    char * dest, uint64_t nbytes );
+  MCPL_API void mcpl_generic_fclose( mcpl_generic_filehandle_t* );
+
 #ifdef __cplusplus
 }
 #endif
