@@ -1,0 +1,219 @@
+Starting tests
+
+
+----> TestData #1
+Wrote 8 bytes
+Read 8 bytes
+-->Expected size 8 and got size 8
+Read 4 bytes (maxsize=4)
+
+
+----> TestData #2
+Wrote 7 bytes
+Read 7 bytes
+-->Expected size 7 and got size 7
+Read 3 bytes (maxsize=3)
+
+
+----> TestData #3
+ --> raw text content: "a<N><N>ab<N>"
+ --> expected normalised text content: "a<N><N>ab<N>"
+ --> expected normalised text content (reduced maxsize=3): "a<N><N>"
+Wrote 6 bytes
+Read 6 bytes
+ --> actual got normalised text content: "a<N><N>ab<N>"
+-->Expected size 6 and got size 6
+Read 3 bytes (maxsize=3)
+ --> actual got normalised text content (with maxsize=3): "a<N><N>"
+
+
+----> TestData #4
+ --> raw text content: "a<R>b"
+ --> expected normalised text content: "a<N>b"
+ --> expected normalised text content (reduced maxsize=1): "a"
+Wrote 3 bytes
+Read 3 bytes
+ --> actual got normalised text content: "a<N>b"
+-->Expected size 3 and got size 3
+Read 1 bytes (maxsize=1)
+ --> actual got normalised text content (with maxsize=1): "a"
+
+
+----> TestData #5
+ --> raw text content: "a<R>ab<N>"
+ --> expected normalised text content: "a<N>ab<N>"
+ --> expected normalised text content (reduced maxsize=2): "a<N>"
+Wrote 5 bytes
+Read 5 bytes
+ --> actual got normalised text content: "a<N>ab<N>"
+-->Expected size 5 and got size 5
+Read 2 bytes (maxsize=2)
+ --> actual got normalised text content (with maxsize=2): "a<N>"
+
+
+----> TestData #6
+ --> raw text content: "a<R><N>b"
+ --> expected normalised text content: "a<N>b"
+ --> expected normalised text content (reduced maxsize=2): "a<N>"
+Wrote 4 bytes
+Read 3 bytes
+ --> actual got normalised text content: "a<N>b"
+-->Expected size 3 and got size 3
+Read 2 bytes (maxsize=2)
+ --> actual got normalised text content (with maxsize=2): "a<N>"
+
+
+----> TestData #7
+ --> raw text content: "a<R><N>bc<N>"
+ --> expected normalised text content: "a<N>bc<N>"
+ --> expected normalised text content (reduced maxsize=3): "a<N>"
+Wrote 6 bytes
+Read 5 bytes
+ --> actual got normalised text content: "a<N>bc<N>"
+-->Expected size 5 and got size 5
+Read 2 bytes (maxsize=3)
+ --> actual got normalised text content (with maxsize=3): "a<N>"
+
+
+----> TestData #8
+ --> raw text content: "a<R><N>bc<R><N>"
+ --> expected normalised text content: "a<N>bc<N>"
+ --> expected normalised text content (reduced maxsize=3): "a<N>"
+Wrote 7 bytes
+Read 5 bytes
+ --> actual got normalised text content: "a<N>bc<N>"
+-->Expected size 5 and got size 5
+Read 2 bytes (maxsize=3)
+ --> actual got normalised text content (with maxsize=3): "a<N>"
+
+
+----> TestData #9
+ --> raw text content: "<R><N>acb"
+ --> expected normalised text content: "<N>acb"
+ --> expected normalised text content (reduced maxsize=2): "<N>"
+Wrote 5 bytes
+Read 4 bytes
+ --> actual got normalised text content: "<N>acb"
+-->Expected size 4 and got size 4
+Read 1 bytes (maxsize=2)
+ --> actual got normalised text content (with maxsize=2): "<N>"
+
+
+----> TestData #10
+ --> raw text content: "a<R><N>bc<R><R><N>"
+ --> expected normalised text content: "a<N>bc<N><N>"
+ --> expected normalised text content (reduced maxsize=4): "a<N>b"
+Wrote 8 bytes
+Read 6 bytes
+ --> actual got normalised text content: "a<N>bc<N><N>"
+-->Expected size 6 and got size 6
+Read 3 bytes (maxsize=4)
+ --> actual got normalised text content (with maxsize=4): "a<N>b"
+
+
+----> TestData #11
+ --> raw text content: "a<R><N>bc<R><R><N>"
+ --> expected normalised text content: "a<N>bc<N><N>"
+ --> expected normalised text content (reduced maxsize=4): "a<N>b"
+Wrote 8 bytes
+Read 6 bytes
+ --> actual got normalised text content: "a<N>bc<N><N>"
+-->Expected size 6 and got size 6
+Read 3 bytes (maxsize=4)
+ --> actual got normalised text content (with maxsize=4): "a<N>b"
+
+
+----> TestData #12
+Wrote 7 bytes
+Read 7 bytes
+-->Expected size 7 and got size 7
+Read 3 bytes (maxsize=3)
+
+
+----> TestData #13
+ --> raw text content: "<R>TSX<R>PI"
+ --> expected normalised text content: "<N>TSX<N>PI"
+ --> expected normalised text content (reduced maxsize=3): "<N>TS"
+Wrote 7 bytes
+Read 7 bytes
+ --> actual got normalised text content: "<N>TSX<N>PI"
+-->Expected size 7 and got size 7
+Read 3 bytes (maxsize=3)
+ --> actual got normalised text content (with maxsize=3): "<N>TS"
+
+
+----> TestData #14
+Wrote 1 bytes
+Read 1 bytes
+-->Expected size 1 and got size 1
+Read 1 bytes (maxsize=1)
+
+
+----> TestData #15
+ --> raw text content: "Y"
+ --> expected normalised text content: "Y"
+ --> expected normalised text content (reduced maxsize=1): "Y"
+Wrote 1 bytes
+Read 1 bytes
+ --> actual got normalised text content: "Y"
+-->Expected size 1 and got size 1
+Read 1 bytes (maxsize=1)
+ --> actual got normalised text content (with maxsize=1): "Y"
+
+
+----> TestData #16
+Wrote 0 bytes
+Read 0 bytes
+-->Expected size 0 and got size 0
+Read 0 bytes (maxsize=0)
+
+
+----> TestData #17
+ --> raw text content: ""
+ --> expected normalised text content: ""
+ --> expected normalised text content (reduced maxsize=0): ""
+Wrote 0 bytes
+Read 0 bytes
+ --> actual got normalised text content: ""
+-->Expected size 0 and got size 0
+Read 0 bytes (maxsize=0)
+ --> actual got normalised text content (with maxsize=0): ""
+
+
+----> TestData #18
+Wrote 65536 bytes
+Read 65536 bytes
+-->Expected size 65536 and got size 65536
+Read 32768 bytes (maxsize=32768)
+
+
+----> TestData #19
+ --> raw text content: "L<R><N>K<R>KVWP<N>XW<R>IL<R>VIVK<N>UT<N>TMLKV<N>@@SNIP@@<R>PKJKZINO<R>SP<N>P<R><R>QZ<R>J<N>XWV<N><N><R>X<R>JU"
+ --> expected normalised text content: "L<N>K<N>KVWP<N>XW<N>IL<N>VIVK<N>UT<N>TMLKV<N><N>@@SNIP@@<N>PKJKZINO<N>SP<N>P<N><N>QZ<N>J<N>XWV<N><N><N>X<N>JU"
+ --> expected normalised text content (reduced maxsize=32768): "L<N>K<N>KVWP<N>XW<N>IL<N>VIVK<N>UT<N>TMLKV<N><N>@@SNIP@@<N>L<N><N>OZW<N>UJSNUXMVW<N>SZI<N>YNQ<N>I<N><N>ZO"
+Wrote 65536 bytes
+Read 63971 bytes
+ --> actual got normalised text content: "L<N>K<N>KVWP<N>XW<N>IL<N>VIVK<N>UT<N>TMLKV<N><N>@@SNIP@@<N>PKJKZINO<N>SP<N>P<N><N>QZ<N>J<N>XWV<N><N><N>X<N>JU"
+-->Expected size 63971 and got size 63971
+Read 31959 bytes (maxsize=32768)
+ --> actual got normalised text content (with maxsize=32768): "L<N>K<N>KVWP<N>XW<N>IL<N>VIVK<N>UT<N>TMLKV<N><N>@@SNIP@@<N>L<N><N>OZW<N>UJSNUXMVW<N>SZI<N>YNQ<N>I<N><N>ZO"
+
+
+----> TestData #20
+Wrote 150000 bytes
+Read 150000 bytes
+-->Expected size 150000 and got size 150000
+Read 75000 bytes (maxsize=75000)
+
+
+----> TestData #21
+ --> raw text content: "VMVINYVI<N>WNYJ<N>J<R>PQTM<N>KL<N>P<R>RINI@@SNIP@@IR<N><R><R>PS<R>UXS<R>KZQ<N>YRYPMVOLS<N><R><N>QXK"
+ --> expected normalised text content: "VMVINYVI<N>WNYJ<N>J<N>PQTM<N>KL<N>P<N>RINI@@SNIP@@JIR<N><N><N>PS<N>UXS<N>KZQ<N>YRYPMVOLS<N><N>QXK"
+ --> expected normalised text content (reduced maxsize=75000): "VMVINYVI<N>WNYJ<N>J<N>PQTM<N>KL<N>P<N>RINI@@SNIP@@QX<N>Z<N>X<N>R<N>V<N><N>UXS<N>WJ<N>PO<N>OJUT<N>N<N>XO"
+Wrote 150000 bytes
+Read 146462 bytes
+ --> actual got normalised text content: "VMVINYVI<N>WNYJ<N>J<N>PQTM<N>KL<N>P<N>RINI@@SNIP@@JIR<N><N><N>PS<N>UXS<N>KZQ<N>YRYPMVOLS<N><N>QXK"
+-->Expected size 146462 and got size 146462
+Read 73176 bytes (maxsize=75000)
+ --> actual got normalised text content (with maxsize=75000): "VMVINYVI<N>WNYJ<N>J<N>PQTM<N>KL<N>P<N>RINI@@SNIP@@QX<N>Z<N>X<N>R<N>V<N><N>UXS<N>WJ<N>PO<N>OJUT<N>N<N>XO"
+Tests done
