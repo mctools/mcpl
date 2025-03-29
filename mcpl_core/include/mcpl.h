@@ -260,7 +260,10 @@ extern "C" {
   /***********************************/
 
   typedef struct MCPL_API {
-    /* ok to read non-internal fields, but do not modify directly. */
+    /* ok to read non-internal fields, but do not modify directly. If        */
+    /* constructing a temporary object that will be initialised later, it is */
+    /* recommended to null out all fields (in particular internal should be  */
+    /* NULL.                                                                 */
     void* internal;
     uint64_t current_pos;/* reading this is like calling ftell(..) */
     uint32_t mode;/* first bit (bit mask 0x1) tells if file is gzipped */
@@ -272,6 +275,22 @@ extern "C" {
   MCPL_API void mcpl_generic_fread( mcpl_generic_filehandle_t*,
                                     char * dest, uint64_t nbytes );
   MCPL_API void mcpl_generic_fclose( mcpl_generic_filehandle_t* );
+
+  /* Read at most nbytes. Returns number of bytes actually read. */
+  /* It is an error to try to read more that int32_max at a time */
+  MCPL_API unsigned mcpl_generic_fread_try( mcpl_generic_filehandle_t*,
+                                            char * dest, unsigned nbytes );
+
+  /* Grab contents of file into buffer. If require_text is nonzero, */
+  /* it must must be utf8 encoded and newlines will be normalised   */
+  /* (e.g. \r or \r\n will be replaced with \n). It is recommended  */
+  /* to set maxsize explicitly to a reasonable value to avoid       */
+  /* potentially overflowing machine memory:                        */
+  MCPL_API void mcpl_read_file_to_buffer( const char * filename,
+                                          uint64_t maxsize,
+                                          int require_text,
+                                          uint64_t* result_size,
+                                          char ** result_buf );
 
 #ifdef __cplusplus
 }

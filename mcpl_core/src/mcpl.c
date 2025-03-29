@@ -2353,7 +2353,6 @@ MCPL_LOCAL int mcpl_str2int(const char* str, size_t len, int64_t* res)
   return 1;
 }
 
-MCPL_LOCAL void mcpl_internal_delete_file( const char * );
 MCPL_LOCAL void mcpl_internal_dump_to_stdout( const char *, unsigned long );
 
 #ifdef _WIN32
@@ -2827,8 +2826,8 @@ MCPL_LOCAL int mcpl_custom_gzip(const char *filename, const char *mode)//fixme: 
 #  include "unistd.h" // for write(..) and unlink()
 #endif
 
-MCPL_LOCAL void mcpl_internal_dump_to_stdout( const char * data,
-                                              unsigned long ldata )
+void mcpl_internal_dump_to_stdout( const char * data,
+                                   unsigned long ldata )
 {
 #ifdef MCPL_THIS_IS_MS
   int the_stdout_fileno = _fileno(stdout);
@@ -2879,40 +2878,8 @@ mcpl_generic_filehandle_t mcpl_generic_fopen( const char * filename )
   return res;
 }
 
-void mcpl_generic_fread( mcpl_generic_filehandle_t* fh,
-                         char * dest, uint64_t nbytes )
-{
-  if ( !nbytes )
-    return;
 
-  MCPL_STATIC_ASSERT( sizeof(size_t) >= sizeof(uint32_t) );
-  MCPL_STATIC_ASSERT( sizeof(int) >= sizeof(int32_t) );
-  MCPL_STATIC_ASSERT( sizeof(z_off_t) >= sizeof(int32_t) );
 
-  //Ensure we only call gzread/fread with requests well inside 32bit limit (even
-  //signed since gzread can read at most INT_MAX).
-  const uint64_t chunk_max = INT32_MAX / 4;
-  while ( nbytes > chunk_max ) {
-    //fixme: unit test? Or at least test once with very low chunk_max.
-    mcpl_generic_fread( fh, dest, chunk_max );
-    nbytes -= chunk_max;
-    dest += chunk_max;
-  }
-
-  size_t to_read = (size_t)(nbytes);
-  size_t actually_read;
-  //NB: We only use 1 bit in mode flag for now, so we dont have to actually do
-  //"fh->mode & 0x1" to test if it is gzipped.
-  if ( fh->mode ) {
-    int rv = gzread((gzFile)(fh->internal), dest, (z_off_t)to_read);
-    actually_read = (size_t)(rv > 0 ? rv : 0 );
-  } else {
-    actually_read = fread(dest, 1, to_read, (FILE*)(fh->internal));
-  }
-  fh->current_pos += actually_read;
-  if ( actually_read != to_read )
-    mcpl_error("Error while reading from file");
-}
 
 void mcpl_generic_fclose( mcpl_generic_filehandle_t* fh )
 {
@@ -2929,6 +2896,227 @@ void mcpl_generic_fclose( mcpl_generic_filehandle_t* fh )
   fh->mode = 0;
   fh->current_pos = 0;
   fh->internal = NULL;
+}
+
+unsigned mcpl_generic_fread_try( mcpl_generic_filehandle_t* fh,
+                                 char * dest, unsigned nbytes )
+{
+  MCPL_STATIC_ASSERT( sizeof(size_t) >= sizeof(uint32_t) );
+  MCPL_STATIC_ASSERT( sizeof(unsigned) >= sizeof(int32_t) );
+  MCPL_STATIC_ASSERT( sizeof(z_off_t) >= sizeof(int32_t) );
+
+  if ( nbytes > INT32_MAX )
+    mcpl_error("too large nbytes value for mcpl_generic_fread_try");
+
+  unsigned nb_left = nbytes;
+  unsigned nb_read = 0;
+
+  while (1) {
+    if ( !nb_left )
+      return nb_read;
+    unsigned nb_totry = ( nb_left > 32768 ? 32768 : nb_left );
+    if ( fh->mode ) {
+      int rv = gzread((gzFile)(fh->internal), dest, (z_off_t)nb_totry);
+      if ( rv < 0 )
+        mcpl_error("Error while reading from file");
+      if ( rv < 1 )
+        return nb_read;
+      nb_read += (unsigned)rv;
+      dest += rv;
+      nb_left -= (unsigned)rv;
+    } else {
+      size_t rv = fread(dest, 1, nb_totry, (FILE*)(fh->internal));
+      if ( !rv ) {
+        if ( feof((FILE*)(fh->internal)) )
+          return nb_read;
+        mcpl_error("Error while reading from file");
+      }
+      dest += rv;
+      nb_read += (unsigned)rv;
+      nb_left -= (unsigned)rv;
+    }
+  }
+}
+
+MCPL_LOCAL char * mcpl_internal_malloc(size_t n)
+{
+  //Fixme: use everywhere
+  char * res = (char*)malloc(n ? n : 1);
+  if (!res)
+    mcpl_error("memory allocation failed");
+  return res;
+}
+
+typedef struct MCPL_LOCAL {
+  char * buf;
+  size_t size;
+  size_t capacity;
+} mcpl_buffer_t;
+
+MCPL_LOCAL mcpl_buffer_t mcpl_internal_buf_create( size_t capacity )
+{
+  mcpl_buffer_t res;
+  res.size = 0;
+  if ( capacity == 0 ) {
+    res.buf = NULL;
+    res.capacity = 0;
+  } else {
+    res.buf = mcpl_internal_malloc(capacity);
+    res.capacity = capacity;
+  }
+  return res;
+}
+
+MCPL_LOCAL void mcpl_internal_buf_squeeze(mcpl_buffer_t* buf)
+{
+  if ( buf->size == buf->capacity )
+    return;
+  char * oldbuf = buf->buf;
+  char * newbuf = mcpl_internal_malloc( buf->size );
+  memcpy( newbuf, oldbuf, buf->size );
+  buf->buf = newbuf;
+  free(oldbuf);
+}
+
+MCPL_LOCAL void mcpl_internal_buf_swap(mcpl_buffer_t* b1, mcpl_buffer_t* b2)
+{
+  mcpl_buffer_t tmp = *b1;
+  *b1 = *b2;
+  *b2 = tmp;
+}
+
+MCPL_LOCAL void mcpl_internal_buf_reserve(mcpl_buffer_t* buf, size_t n)
+{
+  if ( n <= buf->capacity )
+    return;
+  char * oldbuf = buf->buf;
+  char * newbuf = mcpl_internal_malloc( n );
+  memcpy( newbuf, oldbuf, buf->size );
+  buf->buf = newbuf;
+  buf->capacity = n;
+  free(oldbuf);
+}
+
+MCPL_LOCAL int mcpl_buf_is_text( mcpl_buffer_t* buf ) {
+  //We correctly allow ASCII & UTF-8 but not UTF-16 and UTF-32 (by design).
+  const unsigned char * it = (unsigned char*)buf->buf;
+  const unsigned char * itE = it + buf->size;
+  for (; it!=itE; ++it)
+    if ( ! ( ( *it >=9 && *it<=13 ) || ( *it >=32 && *it<=126 ) || *it >=128 ) )
+      return 0;
+  return 1;
+}
+
+MCPL_LOCAL void mcpl_internal_normalise_eol( mcpl_buffer_t* bufobj )
+{
+  //Replace \r\n with \n and \r with \n.
+
+  //First replace all \r not followed by \n inplace. Noting down if we saw any
+  //\r\n along the way:
+  size_t count_rn = 0;
+  {
+    char * buf = bufobj->buf;
+    char * bufE = buf + bufobj->size;
+    while( buf != bufE ) {
+      char * hit = (char*)memchr( buf, '\r', bufE - buf );
+      if (!hit)
+        break;//done
+      buf = hit + 1;
+      if ( buf == bufE || *buf != '\n' ) {
+        *hit = '\n';// \r but not \r\n so just with \n
+      } else {
+        //must be \r\n
+        ++count_rn;
+        ++buf;//skip over the \n
+      }
+    }
+  }
+
+  if (!count_rn)
+    return;//done, we were able to fix everything inplace
+
+  //Next replace \r\n with \n, requiring us to copy everything except any \r
+  //chars to a new buffer:
+  {
+    size_t count_rn_replaced = 0;
+    mcpl_buffer_t out = mcpl_internal_buf_create( bufobj->size - count_rn );
+    char * dest = out.buf;
+    {
+      const char * buf = bufobj->buf;
+      const char * bufE = buf + bufobj->size;
+      while ( buf != bufE ) {
+        char * hit = (char*)memchr( buf, '\r', bufE-buf );
+        if (!hit) {
+          //no more hits, just copy the rest:
+          memcpy(dest,buf,bufE-buf);
+          break;
+        }
+        ++count_rn_replaced;
+        size_t ncopym1 = hit-buf;
+        size_t ncopy = ncopym1+1;
+        memcpy(dest,buf,ncopy);
+        dest += ncopym1;
+        buf += ncopy;
+        if (buf==bufE || *buf != '\n' || *dest!='\r' )
+          mcpl_error(" mcpl_internal_normalise_eol logic error (1)");
+        *dest = '\n';
+        ++dest;
+        ++buf;//skip original '\n'
+      }
+      out.size = out.capacity;
+      if ( count_rn_replaced != count_rn )
+        mcpl_error(" mcpl_internal_normalise_eol logic error (2)");
+      mcpl_internal_buf_swap(&out,bufobj);
+      free(out.buf);
+    }
+  }
+}
+
+void mcpl_read_file_to_buffer( const char * filename,
+                               uint64_t maxsize,
+                               int require_text,
+                               uint64_t* user_result_size,
+                               char ** user_result_buf )
+{
+  MCPL_STATIC_ASSERT( sizeof(size_t) >= sizeof(uint64_t) );
+
+  if ( maxsize == 0 )
+    maxsize = UINT64_MAX;//fixme: more consistent to simply not read!
+
+  mcpl_generic_filehandle_t file = mcpl_generic_fopen( filename );
+  mcpl_buffer_t out = mcpl_internal_buf_create( 65536 > maxsize
+                                                ? maxsize
+                                                : 65536 );//fixme try ultra small
+
+  while (1) {
+    if ( out.capacity >= 1103806595072 )
+      mcpl_error("mcpl_read_file_to_buffer trying to load more than 1TB");
+    mcpl_internal_buf_reserve( &out, ( out.capacity * 2 > (size_t)maxsize
+                                       ? (size_t)maxsize
+                                       : out.capacity*2) );
+    size_t nread_max = out.capacity - out.size;
+    unsigned nread_actual = mcpl_generic_fread_try( &file,
+                                                    out.buf + out.size,
+                                                    nread_max );
+    out.size += nread_actual;
+    if ( nread_actual < nread_max || out.size == maxsize )
+      break;//no more to read
+  }
+
+  mcpl_generic_fclose( &file );
+
+  if ( require_text ) {
+    if ( !mcpl_buf_is_text(&out) )
+      mcpl_error("File is not a text file");
+    mcpl_internal_normalise_eol(&out);
+  }
+
+  //Discard excess allocations:
+  mcpl_internal_buf_squeeze( &out );
+
+  //Done:
+  *user_result_size = out.size;
+  *user_result_buf = out.buf;
 }
 
 
