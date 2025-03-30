@@ -1,0 +1,57 @@
+
+#################################################################################
+##                                                                             ##
+##  Monte Carlo Particle Lists : MCPL                                          ##
+##                                                                             ##
+##  Utilities for reading and writing .mcpl files: A binary format with lists  ##
+##  of particle state information, for interchanging and reshooting events     ##
+##  between various Monte Carlo simulation applications.                       ##
+##                                                                             ##
+##  Find more information and updates at https://mctools.github.io/mcpl/       ##
+##                                                                             ##
+##  This file can be freely used as per the terms in the LICENSE file.         ##
+##                                                                             ##
+##  Written by Thomas Kittelmann, 2015-2025.                                   ##
+##                                                                             ##
+#################################################################################
+
+[project]
+name = "mcpl-extra"
+version = "1.9.80"
+requires-python = ">=3.8"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+  { name="MCPL developers (Thomas Kittelmann, et. al.)" },
+]
+description = "Various tools and conversion utilities related to MCPL files."
+classifiers = [
+    "Programming Language :: Python :: 3",
+    #FIXME: update (in all files):
+    "License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
+]
+
+[project.urls]
+"Homepage" = "https://mctools.github.io/mcpl/"
+"Bug Tracker" = "https://github.com/mctools/mcpl/issues"
+
+[project.scripts]
+ssw2mcpl = "_mcpl_extra.cli:cli_wrapper_ssw2mcpl"
+mcpl2ssw = "_mcpl_extra.cli:cli_wrapper_mcpl2ssw"
+#fixme: sswinspect ?
+
+[build-system]
+requires = ["scikit-build-core>=0.10","mcpl-core>=1.9.80"]
+build-backend = "scikit_build_core.build"
+
+[tool.scikit-build]
+logging.level = "INFO"
+minimum-version = "build-system.requires"
+wheel.packages = ['pywrapper/_mcpl_extra']
+sdist.include = ["/src/",'/CMakeLists.txt','/pyproject.toml','/pywrapper/']
+sdist.cmake = true
+wheel.py-api = "py3" # as close to "noarch" as possible (ABI3)
+
+[tool.cibuildwheel.linux]
+#No 32bit wheels, since it gives problems with files >2GB.
+archs = ["auto64"]

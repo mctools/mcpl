@@ -49,13 +49,19 @@ def check_mcpl_metapkg_version( path ):
             raise SystemExit(f'Missing pinned dependency on {e} in {path}')
     return v
 
-def get_cmake_version( path ):
+def get_cmake_version_impl( path, projname ):
     assert path.name == 'CMakeLists.txt'
     lv = [ line for line in path.read_text().splitlines()
            if line.startswith('project(' ) ]
     assert len(lv)==1
-    assert lv[0].startswith('project( MCPL VERSION ')
-    return lv[0][len('project( MCPL VERSION '):].split()[0]
+    assert lv[0].startswith(f'project( {projname} VERSION ')
+    return lv[0][len(f'project( {projname} VERSION '):].split()[0]
+
+def get_cmake_version_MCPL( path ):
+    return get_cmake_version_impl( path, 'MCPL' )
+
+def get_cmake_version_MCPLExtra( path ):
+    return get_cmake_version_impl( path, 'MCPLExtra' )
 
 def check_versions():
     from .dirs import reporoot
@@ -67,7 +73,9 @@ def check_versions():
         ( get_toml_version, 'mcpl_core/pyproject.toml' ),
         ( get_toml_version, 'mcpl_core/empty_pypkg/pyproject.toml' ),
         ( check_mcpl_metapkg_version, 'mcpl_metapkg/pyproject.toml' ),
-        ( get_cmake_version, 'mcpl_core/CMakeLists.txt' ),
+        ( get_cmake_version_MCPL, 'mcpl_core/CMakeLists.txt' ),
+        ( get_cmake_version_MCPLExtra, 'mcpl_extra/CMakeLists.txt' ),
+        ( get_toml_version, 'mcpl_extra/pyproject.toml' ),
     ]
 
     versions_found = []
