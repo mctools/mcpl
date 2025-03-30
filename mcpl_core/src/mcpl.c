@@ -2857,7 +2857,6 @@ void mcpl_internal_delete_file( const char * filename )
 #endif
 }
 
-/* Open file. Can read gzipped files directly (if have extension ".gz") */
 mcpl_generic_filehandle_t mcpl_generic_fopen( const char * filename )
 {
   mcpl_generic_filehandle_t res;
@@ -2878,9 +2877,6 @@ mcpl_generic_filehandle_t mcpl_generic_fopen( const char * filename )
   return res;
 }
 
-
-
-
 void mcpl_generic_fclose( mcpl_generic_filehandle_t* fh )
 {
   if ( !fh->internal )
@@ -2896,6 +2892,34 @@ void mcpl_generic_fclose( mcpl_generic_filehandle_t* fh )
   fh->mode = 0;
   fh->current_pos = 0;
   fh->internal = NULL;
+}
+
+void mcpl_generic_fread( mcpl_generic_filehandle_t* fh,
+                         char * dest, uint64_t nbytes )
+{
+  //fixme: unit test this function??
+  MCPL_STATIC_ASSERT( sizeof(size_t) >= sizeof(uint32_t) );
+  MCPL_STATIC_ASSERT( sizeof(int) >= sizeof(int32_t) );
+  MCPL_STATIC_ASSERT( sizeof(z_off_t) >= sizeof(int32_t) );
+
+  //Ensure we only call gzread/fread with requests well inside 32bit limit (even
+  //signed since gzread can read at most INT_MAX).
+  const uint64_t chunk_max = INT32_MAX / 4;
+  while ( nbytes > chunk_max ) {
+    //fixme: unit test? Or at least test once with very low chunk_max.
+    mcpl_generic_fread( fh, dest, chunk_max );
+    nbytes -= chunk_max;
+    dest += chunk_max;
+  }
+
+  if ( !nbytes )
+    return;
+
+  unsigned to_read = (unsigned)nbytes;
+  unsigned actually_read = mcpl_generic_fread_try( fh, dest, to_read );
+  fh->current_pos += actually_read;
+  if ( actually_read != to_read )
+    mcpl_error("Error while reading from file");
 }
 
 unsigned mcpl_generic_fread_try( mcpl_generic_filehandle_t* fh,
