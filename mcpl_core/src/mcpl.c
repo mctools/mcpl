@@ -3088,18 +3088,24 @@ void mcpl_read_file_to_buffer( const char * filename,
                                                 ? maxsize
                                                 : 65536 );//fixme try ultra small
 
+  const unsigned max_at_a_time = INT32_MAX;
+
   while (1) {
     if ( out.capacity >= 1103806595072 )
       mcpl_error("mcpl_read_file_to_buffer trying to load more than 1TB");
-    mcpl_internal_buf_reserve( &out, ( out.capacity * 2 > (size_t)maxsize
-                                       ? (size_t)maxsize
-                                       : out.capacity*2) );
+    if ( out.capacity - out.size < max_at_a_time )
+      mcpl_internal_buf_reserve( &out, ( out.capacity * 2 > (size_t)maxsize
+                                         ? (size_t)maxsize
+                                         : out.capacity*2) );
     size_t nread_max = out.capacity - out.size;
+    unsigned max_in_this_go = ( nread_max > max_at_a_time
+                                ? max_at_a_time
+                                : (unsigned)nread_max );
     unsigned nread_actual = mcpl_generic_fread_try( &file,
                                                     out.buf + out.size,
-                                                    nread_max );
+                                                    max_in_this_go );
     out.size += nread_actual;
-    if ( nread_actual < nread_max || out.size == maxsize )
+    if ( nread_actual < max_in_this_go || out.size == maxsize )
       break;//no more to read
   }
 
