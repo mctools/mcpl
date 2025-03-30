@@ -71,74 +71,6 @@
 
 void ssw_error(const char * msg);//fwd declare internal function from sswread.c
 
-int sswmcpl_buf_is_text(size_t n, const unsigned char * buf) {
-  //We correctly allow ASCII & UTF-8 but falsely classify UTF-16 and UTF-32 as
-  //data. See http://stackoverflow.com/questions/277521#277568 for how we could
-  //also detect UTF-16 & UTF-32.
-  const unsigned char * bufE = buf + n;
-  for (; buf!=bufE; ++buf)
-    if ( ! ( ( *buf >=9 && *buf<=13 ) || ( *buf >=32 && *buf<=126 ) || *buf >=128 ) )
-      return 0;
-  return 1;
-}
-
-int sswmcpl_file2buf(const char * filename, unsigned char** buf, size_t* lbuf, size_t maxsize, int require_text) {
-  *buf = 0;
-  *lbuf = 0;
-  FILE * file = fopen(filename, "rb");
-  if (!file) {
-    printf("Error: could not open file %s.\n",filename);
-    return 0;
-  }
-
-  size_t pos_begin = ftell(file);
-  size_t bbuf_size = maxsize;//default to max size (in case SEEK_END does not work)
-  int bbuf_size_guess = 1;
-  if (!fseek( file, 0, SEEK_END )) {
-    size_t pos_end = ftell(file);
-    bbuf_size = pos_end-pos_begin;
-    bbuf_size_guess = 0;
-    if (bbuf_size<50) {
-      printf("Error: file %s is suspiciously short.\n",filename);
-      return 0;
-    }
-    if (bbuf_size>104857600) {
-      printf("Error: file %s is larger than %g bytes.\n",filename,(double)maxsize);
-      return 0;
-    }
-  }
-  if (fseek( file, 0, SEEK_SET)) {
-    printf("Error: Could not rewind file %s.\n",filename);
-    return 0;
-  }
-  unsigned char * bbuf = malloc(bbuf_size);
-  unsigned char * bbuf_iter = bbuf;
-  size_t left = bbuf_size;
-  while (left) {
-    size_t nb = fread(bbuf_iter, 1, left, file);
-    if (bbuf_size_guess&&nb==0) {
-      bbuf_size -= left;
-      break;
-    }
-    if (nb==0||nb>left) {
-      printf("Error: file %s read-error.\n",filename);
-      free(bbuf);
-      return 0;
-    }
-    bbuf_iter += nb;
-    left -= nb;
-  }
-  fclose(file);
-
-  if ( require_text && !sswmcpl_buf_is_text(bbuf_size, bbuf) ) {
-    printf("Error: file %s does not appear to be a text file.\n",filename);
-    free(bbuf);
-    return 0;
-  }
-  *buf = bbuf;
-  *lbuf = bbuf_size;
-  return 1;
-}
 
 int ssw2mcpl(const char * sswfile, const char * mcplfile)
 {
@@ -190,15 +122,24 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
   }
 
   if (inputdeckfile) {
-    unsigned char* cfgfile_buf;
-    size_t cfgfile_lbuf;
-    if (!sswmcpl_file2buf(inputdeckfile, &cfgfile_buf, &cfgfile_lbuf, 104857600, 1))
-      return 0;
+    char* cfgfile_buf;
+    uint64_t cfgfile_lbuf;
+    mcpl_read_file_to_buffer( inputdeckfile,
+                              104857600,//100mb is beyond enough and within than
+                                        //32bit integer reach.
+                              1,//must be text
+                              &cfgfile_lbuf,
+                              &cfgfile_buf );
+    /* if (!sswmcpl_file2buf(inputdeckfile, &cfgfile_buf, &cfgfile_lbuf, 104857600, 1)) */
+    /*   return 0; */
     if (!strstr((const char*)cfgfile_buf, ssw_title(f))) {
-      printf("Error: specified configuration file %s does not contain title found in ssw file: \"%s\".\n",inputdeckfile,ssw_title(f));
+      printf("Error: specified configuration file %s does not contain title"
+             " found in ssw file: \"%s\".\n",inputdeckfile,ssw_title(f));
       return 0;
     }
-    mcpl_hdr_add_data(mcplfh, "mcnp_input_deck", (uint32_t)cfgfile_lbuf,(const char *)cfgfile_buf);
+    mcpl_hdr_add_data(mcplfh, "mcnp_input_deck",
+                      (uint32_t)cfgfile_lbuf,
+                      cfgfile_buf);
     free(cfgfile_buf);
   }
 
@@ -395,11 +336,6 @@ void ssw_writerecord(FILE* outfile, int reclen, size_t lbuf, char* buf)
   }
 }
 
-//Fwd declaration of internal function in sswread.c:
-void ssw_internal_grabhdr( const char * filename, int is_gzip, int64_t hdrlen,
-                           unsigned char * hdrbuf );
-
-
 int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refsswfile,
              long surface_id, long nparticles_limit)
 {
@@ -450,7 +386,12 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
   //Grab the header:
   unsigned char * hdrbuf = (unsigned char*)malloc(ssw_hdrlen);
   assert(hdrbuf);
-  ssw_internal_grabhdr( refsswfile, ref_is_gzipped, ssw_hdrlen, hdrbuf );
+
+  {
+    mcpl_generic_filehandle_t fh = mcpl_generic_fopen( refsswfile );
+    mcpl_generic_fread( &fh, (char*)hdrbuf, (uint64_t)ssw_hdrlen );
+    mcpl_generic_fclose( &fh );
+  }
 
   int32_t orig_np1 = * ((int32_t*)(&hdrbuf[ssw_np1pos]));
 
@@ -462,7 +403,7 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
   printf("Creating (or overwriting) output SSW file.\n");
 
   //Open new ssw file:
-  FILE * fout = fopen(outsswfile,"wb");
+  FILE * fout = fopen(outsswfile,"wb");//fixme! not ok on windows
 
   if (!fout)
     ssw_error("Problems opening new SSW file");

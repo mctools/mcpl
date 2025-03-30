@@ -26,16 +26,7 @@
 //                                                                                 //
 //  Compilation of sswread.c can proceed via any compliant C-compiler using        //
 //  -std=c99 or later, and the resulting code must always be linked with libm      //
-//  (using -lm). Furthermore, the following preprocessor flags can be used         //
-//  when compiling sswread.c to fine tune the build process and the                //
-//  capabilities of the resulting binary.                                          //
-//                                                                                 //
-//  SSWREAD_HASZLIB : Define if compiling and linking with zlib, to allow direct   //
-//                    reading of gzipped SSW files.                                //
-//  SSWREAD_ZLIB_INCPATH : Specify alternative value if the zlib header is not to  //
-//                         be included as "zlib.h".                                //
-//  SSWREAD_HDR_INCPATH : Specify alternative value if the sswread header itself   //
-//                        is not to be included as "sswread.h".                    //
+//  (using -lm).                                                                   //
 //                                                                                 //
 // This file can be freely used as per the terms in MCPLExport/license.txt.        //
 //                                                                                 //
@@ -43,23 +34,13 @@
 // permissions and licenses from third-parties, which is not within the scope of   //
 // the MCPL project itself.                                                        //
 //                                                                                 //
+// fixme: update copyright year                                                    //
 // Written 2015-2017, thomas.kittelmann@ess.eu (European Spallation Source).       //
 //                                                                                 //
 /////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef SSWREAD_HDR_INCPATH
-#  include SSWREAD_HDR_INCPATH
-#else
-#  include "sswread.h"
-#endif
-
-#ifdef SSWREAD_HASZLIB
-#  ifdef SSWREAD_ZLIB_INCPATH
-#    include SSWREAD_ZLIB_INCPATH
-#  else
-#    include "zlib.h"
-#  endif
-#endif
+#include "sswread.h"
+#include "mcpl.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -100,12 +81,7 @@ typedef struct {
   int32_t niss;
   int32_t pos;
   int mcnp_type;
-#ifdef SSWREAD_HASZLIB
-  gzFile filegz;
-#else
-  void * filegz;
-#endif
-  FILE * file;
+  mcpl_generic_filehandle_t filehandle;
   ssw_particle_t part;
   unsigned lbuf;
   unsigned lbufmax;
@@ -119,17 +95,8 @@ typedef struct {
 
 int ssw_readbytes(ssw_fileinternal_t* f, char * dest, int nbytes)
 {
-  int nb;
-#ifdef SSWREAD_HASZLIB
-  if (f->filegz)
-    nb = gzread(f->filegz, dest, nbytes);
-  else
-#endif
-    nb = fread(dest, 1, nbytes, f->file);
-  if (nb!=nbytes) {
-    printf("SSW Error: read failure\n");
-    return 0;
-  }
+  //fixme we won't need this function anymore.
+  mcpl_generic_fread( &f->filehandle, dest, nbytes );
   return 1;
 }
 
@@ -185,16 +152,8 @@ void ssw_close_file(ssw_file_t ff) {
   SSW_FILEDECODE;
   if (!f)
     return;
-  if (f->file) {
-    fclose(f->file);
-    f->file = 0;
-  }
-#ifdef SSWREAD_HASZLIB
-  if (f->filegz) {
-    gzclose(f->filegz);
-    f->file = 0;
-  }
-#endif
+  if ( f->filehandle.internal )
+    mcpl_generic_fclose( &f->filehandle );
   free(f->buf);
   free(f);
   ff.internal = 0;
@@ -216,12 +175,8 @@ void ssw_strip(char **str) {
 
 ssw_file_t ssw_openerror(ssw_fileinternal_t * f, const char* msg) {
   if (f) {
-    if (f->file)
-      fclose(f->file);
-#ifdef SSWREAD_HASZLIB
-    if (f->filegz)
-      gzclose(f->filegz);
-#endif
+    if ( f->filehandle.internal )
+      mcpl_generic_fclose( &f->filehandle );
     free(f->buf);
     free(f);
   }
@@ -231,78 +186,17 @@ ssw_file_t ssw_openerror(ssw_fileinternal_t * f, const char* msg) {
   return out;
 }
 
-//NB: Do not change function signature without updating code in sswmcpl.c as well!
-void ssw_internal_grabhdr( const char * filename, int is_gzip, int64_t hdrlen,
-                           unsigned char * hdrbuf )
-{
-  //To be used by mcpl2ssw, but we don't want to complicate the build process
-  //for users further by also requiring sswmcpl.c to deal with zlib
-  //directly. Thus, we provide a hidden function here which mcpl2ssw can use by
-  //forward declaring it.
-  if (is_gzip) {
-#ifdef SSWREAD_HASZLIB
-    gzFile filegz = gzopen(filename,"rb");
-    if (!filegz)
-      ssw_error("Unable to open file!");
-    int64_t pos = 0;
-    int64_t toread = hdrlen;
-    while(toread) {
-      int chunk = (hdrlen>16384?16384:(int)hdrlen);
-      int nb = gzread(filegz, hdrbuf+pos, chunk);
-      if (!nb)
-        printf("SSW Error: read failure\n");
-      assert(toread >= nb);
-      toread -= nb;
-      pos += nb;
-    }
-    gzclose(filegz);
-#else
-    ssw_error("This installation was not built with zlib support and can not read compressed (.gz) files directly.");
-#endif
-  } else {
-    FILE * fh = fopen(filename,"rb");
-    if (!fh)
-      ssw_error("Unable to open file!\n");
-    int64_t pos = 0;
-    int64_t toread = hdrlen;
-    while(toread) {
-      int chunk = (hdrlen>16384?16384:(int)hdrlen);
-      int nb = fread(hdrbuf+pos,1,chunk,fh);
-      if (!nb)
-        printf("SSW Error: read failure\n");
-      assert(toread >= nb);
-      toread -= nb;
-      pos += nb;
-    }
-    fclose(fh);
-  }
-}
-
 ssw_file_t ssw_open_and_procrec0( const char * filename )
 {
   ssw_fileinternal_t * f = (ssw_fileinternal_t*)calloc(sizeof(ssw_fileinternal_t),1);
+  f->filehandle.internal = NULL;
   assert(f);
 
   ssw_file_t out;
   out.internal = f;
 
-  //open file (with gzopen if filename ends with .gz):
-  f->file = 0;
-  f->filegz = 0;
-  char * lastdot = strrchr(filename, '.');
-  if (lastdot && strcmp(lastdot, ".gz") == 0) {
-#ifdef SSWREAD_HASZLIB
-    f->filegz = gzopen(filename,"rb");
-    if (!f->filegz)
-      ssw_error("Unable to open file!");
-#else
-    ssw_error("This installation was not built with zlib support and can not read compressed (.gz) files directly.");
-#endif
-  } else {
-    f->file = fopen(filename,"rb");
-    if (!f->file)
-      ssw_error("Unable to open file!");
-  }
+  //open file (can be gzipped if filename ends with .gz):
+  f->filehandle = mcpl_generic_fopen( filename );
 
   //Prepare buffer. SSWREAD_STDBUFSIZE bytes should always be enough for the
   //first record (guaranteed by the checks below), but it might later grow on
@@ -508,13 +402,7 @@ ssw_file_t ssw_open_file( const char * filename )
     return ssw_openerror(f,"ssw_open_file error: problems loading record");
 
   //Position of current record payload in file:
-  long int current_recpos;
-#ifdef SSWREAD_HASZLIB
-  if (f->filegz)
-    current_recpos = gztell(f->filegz);
-  else
-#endif
-    current_recpos = ftell(f->file);
+  int64_t current_recpos = (int64_t)f->filehandle.current_pos;
   current_recpos -= f->reclen;
   current_recpos -= f->lbuf;
 
@@ -613,12 +501,7 @@ ssw_file_t ssw_open_file( const char * filename )
 
   //End of header? Mark the position:
   f->pos = 0;
-#ifdef SSWREAD_HASZLIB
-  if (f->filegz)
-    f->headlen = gztell(f->filegz);
-  else
-#endif
-    f->headlen = ftell(f->file);
+  f->headlen = (size_t)f->filehandle.current_pos;
 
   //Check that it was really the end of the header by preloading the next
   //record(s) and checking if the length corresponds to that of particle data
@@ -702,11 +585,7 @@ const char * ssw_mcnpflavour(ssw_file_t ff) {
 
 int ssw_is_gzipped(ssw_file_t ff) {
   SSW_FILEDECODE;
-#ifdef SSWREAD_HASZLIB
-  if (f->filegz)
-    return 1;
-#endif
-  return 0;
+  return ( f->filehandle.mode & 0x1 ? 1 : 0 );
 }
 
 void ssw_layout(ssw_file_t ff, int* reclen, int* ssblen, int64_t* hdrlen, int64_t* np1pos, int64_t* nrsspos)
