@@ -20,6 +20,23 @@
 ################################################################################
 
 import sys
+import contextlib as _contextlib
+
 def flush():
     sys.stderr.flush()
     sys.stdout.flush()
+
+@_contextlib.contextmanager
+def work_in_tmpdir():
+    """Context manager for working in a temporary directory (automatically
+    created+cleaned) and then switching back"""
+    import os
+    import tempfile
+    the_cwd = os.getcwd()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        try:
+            os.chdir(tmpdir)
+            yield
+        finally:
+            os.chdir(the_cwd)#Important to leave tmpdir *before* deletion, to
+                             #avoid PermissionError on Windows.

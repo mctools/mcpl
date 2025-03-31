@@ -126,9 +126,9 @@ mctools_testutils_add_tests_apps(
 )
 
 #Now add tests for mcpl-extra:
-set( mcplextratest_pyenvmod "${mcpltest_pyenvmod}" )
+set( mcplextratest_base_pyenvmod "${mcpltest_pyenvmod}" )
 list(
-  APPEND mcplextratest_pyenvmod
+  APPEND mcplextratest_base_pyenvmod
   "PYTHONPATH=path_list_prepend:${PROJECT_SOURCE_DIR}/extra/pypath"
   "MCPL2SSW_FILE=set:$<TARGET_FILE:mcpl2ssw>"
   "SSW2MCPL_FILE=set:$<TARGET_FILE:ssw2mcpl>"
@@ -136,15 +136,40 @@ list(
   "DYLD_LIBRARY_PATH=path_list_prepend:$<TARGET_FILE_DIR:${mcpltests_mcpllib_target}>"
 )#fixme: (DY)LD_LIBRARY_PATH only only mac/linux
 
+#message(FATAL_ERROR "test ${MCPLEXTRA_TEST_DIR_LIST}")
+
 #FIXME: Add to the envs vars!
 foreach( mcplextra_testdir ${MCPLEXTRA_TEST_DIR_LIST} )
-  mctools_testutils_add_tests_pyscripts(
-    "${mcplextra_testdir}/scripts" "${mcplextratest_pyenvmod}"
-  )
-  mctools_testutils_add_tests_apps(
-    "${mcplextra_testdir}/src"
-    "${mcpltests_extra_link_libs};mcplsswtestlib"
-    "${mcpltests_extra_inc_dirs};${MCPLExtra_SOURCE_DIR}/src/ssw/common"
-    "${mcpltest_appenvmod}"
-  )
+  set( tmp_pyenvmod "${mcplextratest_base_pyenvmod}" )
+  set( tmp_appenvmod "${mcpltest_appenvmod}" )
+  if ( IS_DIRECTORY "${mcplextra_testdir}/data" )
+    list(
+      APPEND tmp_appenvmod
+      "MCPLEXTRADATADIR=set:${mcplextra_testdir}/data"
+    )
+    list(
+      APPEND tmp_pyenvmod
+      "MCPLEXTRADATADIR=set:${mcplextra_testdir}/data"
+    )
+  endif()
+  if ( IS_DIRECTORY "${mcplextra_testdir}/pypath" )
+    list(
+      APPEND tmp_pyenvmod
+      "PYTHONPATH=path_list_prepend:${mcplextra_testdir}/pypath"
+    )
+  endif()
+  if ( IS_DIRECTORY "${mcplextra_testdir}/scripts" )
+    mctools_testutils_add_tests_pyscripts(
+      "${mcplextra_testdir}/scripts"
+      "${tmp_pyenvmod}"
+    )
+  endif()
+  if ( IS_DIRECTORY "${mcplextra_testdir}/src" )
+    mctools_testutils_add_tests_apps(
+      "${mcplextra_testdir}/src"
+      "${mcpltests_extra_link_libs};mcplsswtestlib"
+      "${mcpltests_extra_inc_dirs};${MCPLExtra_SOURCE_DIR}/src/ssw/common"
+      "${tmp_appenvmod}"
+    )
+  endif()
 endforeach()
