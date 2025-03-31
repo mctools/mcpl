@@ -292,6 +292,11 @@ extern "C" {
                                           uint64_t* result_size,
                                           char ** result_buf );
 
+  /* Convert argv[0] to a program name to show in usage printouts (not MT */
+  /* safe):                                                               */
+  MCPL_API const char* mcpl_usage_progname( const char * argv0 );
+
+
 #ifdef __cplusplus
 }
 #endif

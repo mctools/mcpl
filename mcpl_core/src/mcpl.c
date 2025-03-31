@@ -2242,26 +2242,36 @@ void mcpl_merge_inplace(const char * file1, const char* file2)
 #define MCPLIMP_TOOL_DEFAULT_NLIMIT 10
 #define MCPLIMP_TOOL_DEFAULT_NSKIP 0
 
+const char* mcpl_usage_progname( const char * argv0 )
+{
+  const char * progname = mcpl_basename(argv0);
+  static char progname_buf[1024];
+
+  //Remove any trailing .exe/.EXE:
+  size_t npn = strlen(progname);
+  int has_exe = ( npn<sizeof(progname_buf) && npn > 4
+                  && ( strcmp(progname+(npn-4),".exe")==0
+                       || strcmp(progname+(npn-4),".EXE")==0 ) );
+  if ( has_exe ) {
+    memcpy(progname_buf,progname,npn-4);
+    progname_buf[npn-4] = '\0';
+    progname = progname_buf;
+  } else if ( npn+1 <= sizeof(progname_buf) ) {
+    memcpy(progname_buf,progname,npn+1);
+  } else {
+    //Overflow:
+    memcpy(progname_buf,"PROGNAME",9);
+  }
+  return progname_buf;
+}
+
 MCPL_LOCAL int mcpl_tool_usage( char** argv, const char * errmsg ) {
   if (errmsg) {
     printf("ERROR: %s\n\n",errmsg);
     printf("Run with -h or --help for usage information\n");
     return 1;
   }
-  const char * progname = mcpl_basename(argv[0]);
-  char progname_buf[1024];
-  {
-    //Remove any trailing .exe/.EXE:
-    size_t npn = strlen(progname);
-    if ( npn<sizeof(progname_buf) && npn > 4
-         && ( strcmp(progname+(npn-4),".exe")==0
-              || strcmp(progname+(npn-4),".EXE")==0 ) )
-      {
-        memcpy(progname_buf,progname,npn-4);
-        progname_buf[npn-4] = '\0';
-        progname = progname_buf;
-      }
-  }
+  const char * progname = mcpl_usage_progname(argv[0]);
 
   printf("Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.\n");
   printf("\n");

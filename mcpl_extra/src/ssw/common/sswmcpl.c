@@ -199,8 +199,7 @@ void ssw2mcpl_parse_args(int argc,char **argv, const char** infile,
     if (argv[i][0]=='\0')
       continue;
     if (strcmp(argv[i],"-h")==0||strcmp(argv[i],"--help")==0) {
-      const char * progname = strrchr(argv[0], '/');
-      progname = progname ? progname + 1 : argv[0];
+      const char * progname = mcpl_usage_progname(argv[0]);
       printf("Usage:\n\n");
       printf("  %s [options] input.ssw [output.mcpl]\n\n",progname);
       printf("Converts the Monte Carlo particles in the input.ssw file (MCNP Surface\n"
@@ -551,8 +550,7 @@ int mcpl2ssw_app_usage( const char** argv, const char * errmsg ) {
     printf("Run with -h or --help for usage information\n");
     return 1;
   }
-  const char * progname = strrchr(argv[0], '/');
-  progname =  progname ? progname + 1 : argv[0];
+  const char * progname = mcpl_usage_progname(argv[0]);
   printf("Usage:\n\n");
   printf("  %s [options] <input.mcpl> <reference.ssw> [output.ssw]\n\n",progname);
   printf("Converts the Monte Carlo particles in the input MCPL file to SSW format\n"

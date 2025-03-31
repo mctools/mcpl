@@ -28,6 +28,7 @@ from MCPLExtraTestUtils.dirs import ( extra_test_data_dir,
                                       ssw2mcpl_cmd,
                                       mcpltool_cmd )
 import subprocess
+import sys
 
 def main():
 
@@ -39,11 +40,16 @@ def main():
 
     assert test_data_dir_ref == core_test_data_dir
     assert mcpltool_cmd_ref == mcpltool_cmd
-    for cmd in [ mcpl2ssw_cmd, ssw2mcpl_cmd, mcpltool_cmd ]:
-        print(f"\n\nLAUNCHING {cmd.name} --help:\n\n")
+    for cmdname, cmd in [ ('mcpl2ssw',mcpl2ssw_cmd),
+                          ('ssw2mcpl',ssw2mcpl_cmd),
+                          ('mcpltool',mcpltool_cmd) ]:
+        print(f"\n\nLAUNCHING {cmdname} --help:\n\n")
         rv = subprocess.run([cmd,'--help'],check=True,capture_output=True)
         assert not rv.stderr
         assert rv.returncode == 0
-        print(rv.stdout.decode(),end='',flush=True)
+        print(end='',flush=True)
+        sys.stdout.buffer.write(rv.stdout)
+        print(end='',flush=True)
+        #print(rv.stdout.decode(),end='',flush=True)
 
 main()
