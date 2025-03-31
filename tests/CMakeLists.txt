@@ -127,21 +127,44 @@ mctools_testutils_add_tests_apps(
 
 #Now add tests for mcpl-extra:
 set( mcplextratest_base_pyenvmod "${mcpltest_pyenvmod}" )
+set( mcplextratest_base_appenvmod "${mcpltest_appenvmod}" )
+if ( WIN32 )
+  set(
+    mcplextratest_base_envmod_common
+    "PATH=path_list_prepend:$<TARGET_FILE_DIR:mcplsswtestlib>"
+    "PATH=path_list_prepend:$<TARGET_FILE_DIR:${mcpltests_mcpllib_target}>"
+  )
+elseif( APPLE )
+  set(
+    mcplextratest_base_envmod_common
+    "DYLD_LIBRARY_PATH=path_list_prepend:$<TARGET_FILE_DIR:mcplsswtestlib>"
+    "DYLD_LIBRARY_PATH=path_list_prepend:$<TARGET_FILE_DIR:${mcpltests_mcpllib_target}>"
+  )
+else()
+  set(
+    mcplextratest_base_envmod_common
+    "LD_LIBRARY_PATH=path_list_prepend:$<TARGET_FILE_DIR:mcplsswtestlib>"
+    "LD_LIBRARY_PATH=path_list_prepend:$<TARGET_FILE_DIR:${mcpltests_mcpllib_target}>"
+  )
+endif()
+
 list(
   APPEND mcplextratest_base_pyenvmod
   "PYTHONPATH=path_list_prepend:${PROJECT_SOURCE_DIR}/extra/pypath"
   "MCPL2SSW_FILE=set:$<TARGET_FILE:mcpl2ssw>"
   "SSW2MCPL_FILE=set:$<TARGET_FILE:ssw2mcpl>"
-  "LD_LIBRARY_PATH=path_list_prepend:$<TARGET_FILE_DIR:${mcpltests_mcpllib_target}>"
-  "DYLD_LIBRARY_PATH=path_list_prepend:$<TARGET_FILE_DIR:${mcpltests_mcpllib_target}>"
-)#fixme: (DY)LD_LIBRARY_PATH only only mac/linux
-
+  ${mcplextratest_base_envmod_common}
+)
+list(
+  APPEND mcplextratest_base_appenvmod
+  ${mcplextratest_base_envmod_common}
+)
 #message(FATAL_ERROR "test ${MCPLEXTRA_TEST_DIR_LIST}")
 
 #FIXME: Add to the envs vars!
 foreach( mcplextra_testdir ${MCPLEXTRA_TEST_DIR_LIST} )
   set( tmp_pyenvmod "${mcplextratest_base_pyenvmod}" )
-  set( tmp_appenvmod "${mcpltest_appenvmod}" )
+  set( tmp_appenvmod "${mcplextratest_base_appenvmod}" )
   if ( IS_DIRECTORY "${mcplextra_testdir}/data" )
     list(
       APPEND tmp_appenvmod
