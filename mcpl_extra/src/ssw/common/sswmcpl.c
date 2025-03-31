@@ -83,14 +83,12 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
 {
   ssw_file_t f = ssw_open_file(sswfile);
   mcpl_outfile_t mcplfh = mcpl_create_outfile(mcplfile);
-
   mcpl_hdr_set_srcname(mcplfh,ssw_mcnpflavour(f));
 
   uint64_t lstrbuf = 1024;
   lstrbuf += strlen(ssw_srcname(f));
   lstrbuf += strlen(ssw_srcversion(f));
   lstrbuf += strlen(ssw_title(f));
-
   if (lstrbuf<4096) {
     char * buf = (char*)malloc((int)lstrbuf);
     buf[0] = '\0';
@@ -378,12 +376,11 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
   assert(ssw_mcnp_type>0);
   char ref_mcnpflavour_str[64];
   ref_mcnpflavour_str[0] = '\0';
-  strcat(ref_mcnpflavour_str,ssw_mcnpflavour(fsswref));
+  strcat(ref_mcnpflavour_str,ssw_mcnpflavour(fsswref));//fixme: memcpy
 
-  int ref_is_gzipped = ssw_is_gzipped(fsswref);
   ssw_close_file(fsswref);
 
-  //Grab the header:
+  //Grab the header (fixme: use new function for this instead?):
   unsigned char * hdrbuf = (unsigned char*)malloc(ssw_hdrlen);
   assert(hdrbuf);
 
@@ -479,6 +476,8 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
       continue;
     }
 
+    if ( !(rawtype>0 ) )
+      ssw_error("Logic error in PDG code conversions.");
     assert(rawtype>0);
 
     if (ssw_mcnp_type == SSW_MCNP6) {
@@ -689,3 +688,4 @@ int mcpl2ssw_app( int argc, char** argv ) {
   return 1;
 
 }
+//fixme: make sure this is compiled with strict flags!

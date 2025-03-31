@@ -95,21 +95,29 @@ typedef struct {
 
 int ssw_readbytes(ssw_fileinternal_t* f, char * dest, int nbytes)
 {
-  //fixme we won't need this function anymore.
-  mcpl_generic_fread( &f->filehandle, dest, nbytes );
+  //fixme we won't need this function anymore??
+  mcpl_generic_fread( &f->filehandle, dest, (unsigned)nbytes );
   return 1;
+}
+
+int ssw_try_readbytes(ssw_fileinternal_t* f, char * dest, int nbytes)
+{
+  //fixme we won't need this function anymore??
+  unsigned nb_actual = mcpl_generic_fread_try( &f->filehandle,
+                                               dest, (unsigned)nbytes );
+  return ( nb_actual == (unsigned)nbytes ) ? 1 : 0;
 }
 
 int ssw_loadrecord(ssw_fileinternal_t* f)
 {
   if (f->reclen==4) {
     uint32_t rl;
-    if (!ssw_readbytes(f, (char*)&rl, 4))
+    if (!ssw_try_readbytes(f, (char*)&rl, 4))
       return 0;
     f->lbuf = rl;
   } else {
     uint64_t rl;
-    if (!ssw_readbytes(f, (char*)&rl, 8))
+    if (!ssw_try_readbytes(f, (char*)&rl, 8))
       return 0;
     f->lbuf = rl;
   }
@@ -141,7 +149,9 @@ int ssw_loadrecord(ssw_fileinternal_t* f)
     return 0;
   if (f->reclen==4) {
     uint32_t rl;
-    return ssw_readbytes(f, (char*)&rl, 4) && f->lbuf == rl;
+    int ok0 = ssw_readbytes(f, (char*)&rl, 4);
+    int ok = ( ok0 && f->lbuf == rl );
+    return ok;
   } else {
     uint64_t rl;
     return ssw_readbytes(f, (char*)&rl, 8) && f->lbuf == rl;
@@ -399,7 +409,9 @@ ssw_file_t ssw_open_file( const char * filename )
 
   //Skip a record:
   if (!ssw_loadrecord(f))
-    return ssw_openerror(f,"ssw_open_file error: problems loading record");
+    return ssw_openerror(f,"ssw_open_file error: problems loading record (A)");
+  //Fixme: Remove (A), (B), ...(E) markers in err messages above and below again
+  //before final release?
 
   //Position of current record payload in file:
   int64_t current_recpos = (int64_t)f->filehandle.current_pos;
@@ -486,7 +498,7 @@ ssw_file_t ssw_open_file( const char * filename )
   if (f->np1<0) {//Sign is well-defined since f->np1!=0
     f->np1 = - f->np1;
     if (!ssw_loadrecord(f))
-      return ssw_openerror(f,"ssw_open_file error: problems loading record");
+      return ssw_openerror(f,"ssw_open_file error: problems loading record (B)");
     niwr = bi[0];
     //mipts = bi[1];//source particle type
     //kjaq  = bi[2];//macrobody facet flag
@@ -496,7 +508,7 @@ ssw_file_t ssw_open_file( const char * filename )
   int i;
   for (i = 0; i < f->njsw+niwr+1; ++i) {
     if (!ssw_loadrecord(f))
-      return ssw_openerror(f,"ssw_open_file error: problems loading record");
+      return ssw_openerror(f,"ssw_open_file error: problems loading record (C)");
   }
 
   //End of header? Mark the position:
@@ -516,7 +528,7 @@ ssw_file_t ssw_open_file( const char * filename )
       if (f->nrss==0)
         break;
       //But this is certainly an error for files with >0 particles:
-      return ssw_openerror(f,"ssw_open_file error: problems loading record");
+      return ssw_openerror(f,"ssw_open_file error: problems loading record (D)");
     }
     if ( f->nrss > 0 && f->lbuf == (unsigned)8*f->nrcd ) {
       //Looks like we preloaded the first particle of the file!
@@ -525,8 +537,9 @@ ssw_file_t ssw_open_file( const char * filename )
       //Looks like this could not be a particle, so we interpret this as if the
       //header was actually one record longer than previously thought:
       f->headlen += f->reclen * 2 + f->lbuf;
-      printf("ssw_open_file WARNING: Unexpected %i byte record encountered at end of header. Continuing under the assumption it contains valid configuration data.\n",f->lbuf);
-
+      printf("ssw_open_file WARNING: Unexpected %i byte record encountered"
+             " at end of header. Continuing under the assumption it"
+             " contains valid configuration data.\n",f->lbuf);
     }
   }
 
@@ -583,11 +596,6 @@ const char * ssw_mcnpflavour(ssw_file_t ff) {
   return "MCNP_logic_error";
 }
 
-int ssw_is_gzipped(ssw_file_t ff) {
-  SSW_FILEDECODE;
-  return ( f->filehandle.mode & 0x1 ? 1 : 0 );
-}
-
 void ssw_layout(ssw_file_t ff, int* reclen, int* ssblen, int64_t* hdrlen, int64_t* np1pos, int64_t* nrsspos)
 {
   SSW_FILEDECODE;
@@ -611,7 +619,7 @@ const ssw_particle_t * ssw_load_particle(ssw_file_t ff)
   //The record of the first particle in the file is always pre-loaded during
   //initialisation, for the others we must consume another record:
   if ( f->pos > 1 && !ssw_loadrecord(f) ) {
-    ssw_error("ssw_load error: problems loading particle record\n");
+    ssw_error("ssw_load error: problems loading particle record (E)\n");
     return 0;
   }
 
