@@ -30,6 +30,8 @@ v1.9.80 (work in progress)
         Windows.
       * CMake targets MCPL::MCPL and MCPL::mcpl are now both valid aliases for
         the MCPL library target.
+      * Fix bug where MCPL->MCNP5 conversion was encoding the particle type in
+        an incorrect manner.
 
 v1.6.2 2023-06-06
       * Work again with latest numpy by removing usage of deprecated numpy.float

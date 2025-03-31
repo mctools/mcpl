@@ -492,7 +492,9 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
                       //it to 1 (seems to be not used anyway?)
     } else {
       assert(ssw_mcnp_type == SSW_MCNP5);
-      ssb[1] = (isurf + 1000000*rawtype)*8;
+      //FIXME: We had for MCPL <=1.6.x: ssb[1] = (isurf + 1000000*rawtype)*8;
+      //But now we try instead:
+      ssb[1] = (isurf + 100000000*rawtype)*8;
       if (ssw_ssblen==11)
         ssb[10] = 1.0;//Cosine of angle at surface? Can't calculate it, so we simply set
                       //it to 1 (seems to be not used anyway?)
