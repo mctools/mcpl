@@ -87,6 +87,7 @@ endif()
 #The MCPL targets:
 if(NOT TARGET MCPL::MCPL)
   include( "${MCPL_CMAKEDIR}/MCPLTargets.cmake" )
+  add_library(MCPL::MCPL ALIAS MCPL::mcpl)#make both casings available
 endif()
 
 #Undo the policy changes we did above:

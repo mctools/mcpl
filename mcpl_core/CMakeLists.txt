@@ -367,6 +367,9 @@ install(
 
 #Package configuration files for downstream cmake projects:
 install( EXPORT MCPLTargets FILE "MCPLTargets.cmake" NAMESPACE MCPL:: DESTINATION ${MCPL_CMAKEDIR} )
+#always alias namespaces locally:
+add_library(MCPL::mcpl ALIAS mcpl)
+#And in this case also make both casings available:
 add_library(MCPL::MCPL ALIAS mcpl)#always alias namespaces locally
 
 if ( mcpl_skbuild_shlib_in_wheel_scripts )

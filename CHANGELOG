@@ -28,6 +28,8 @@ v1.9.80 (work in progress)
         mcpl.h. This is meant to simplify code in custom mcpl-related utilities,
         and handles issues like gzipped files or filenames with unicode chars on
         Windows.
+      * CMake targets MCPL::MCPL and MCPL::mcpl are now both valid aliases for
+        the MCPL library target.
 
 v1.6.2 2023-06-06
       * Work again with latest numpy by removing usage of deprecated numpy.float
