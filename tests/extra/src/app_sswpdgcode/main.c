@@ -104,14 +104,22 @@ int main(void){
         i < sizeof(known_mcnpx_mappings)/sizeof(known_mcnpx_mappings[0]);
         i+=2 ) {
     int64_t mcnpx = known_mcnpx_mappings[i];
-    int64_t pdgconv = conv_mcnpx_ssw2pdg(mcnpx);
+    if ( mcnpx <= INT32_MIN || mcnpx >= INT32_MAX ) {
+      printf("mcnpx type outside of 32bit range!\n");
+      return 1;
+    }
+    int64_t pdgconv = conv_mcnpx_ssw2pdg((int32_t)mcnpx);
     int64_t pdg = known_mcnpx_mappings[i+1];
     printf("conv_mcnpx_ssw2pdg(%li) = %li\n",(long)mcnpx,(long)pdgconv);
     if (pdg!=pdgconv||!pdgconv) {
       printf("Conversion failed (expected %li)!\n",(long)pdg);
       return 1;
     }
-    int64_t mcnpxconv = conv_mcnpx_pdg2ssw(pdg);
+    if ( pdg <= INT32_MIN || pdg >= INT32_MAX ) {
+      printf("pdg code outside of 32bit range!\n");
+      return 1;
+    }
+    int64_t mcnpxconv = conv_mcnpx_pdg2ssw((int32_t)pdg);
     if ((mcnpx%1000)/200==1 || (mcnpx%1000)/600==1)
       mcnpx -= 200;//reverse mapping can't know about energy groups
     if (mcnpx==402)
@@ -131,13 +139,21 @@ int main(void){
     int64_t mcnp6_desiredreverse = known_mcnp6_mappings[i+2];
     if (!mcnp6_desiredreverse)
       mcnp6_desiredreverse = mcnp6;
-    int64_t pdgconv = conv_mcnp6_ssw2pdg(mcnp6);
+    if ( mcnp6 <= INT32_MIN || mcnp6 >= INT32_MAX ) {
+      printf("mcnp6 type outside of 32bit range!\n");
+      return 1;
+    }
+    int64_t pdgconv = conv_mcnp6_ssw2pdg((int32_t)mcnp6);
     printf("conv_mcnp6_ssw2pdg(%li) = %li\n",(long)mcnp6,(long)pdgconv);
     if (pdg!=pdgconv||!pdgconv) {
       printf("Conversion failed (expected %li)!\n",(long)pdg);
       return 1;
     }
-    int64_t mcnp6conv = conv_mcnp6_pdg2ssw(pdg);
+    if ( pdg <= INT32_MIN || pdg >= INT32_MAX ) {
+      printf("pdg code outside of 32bit range!\n");
+      return 1;
+    }
+    int64_t mcnp6conv = conv_mcnp6_pdg2ssw((int32_t)pdg);
     if (mcnp6_desiredreverse!=mcnp6conv) {
       printf("Reverse conversion via conv_mcnp6_pdg2ssw failed (got"
              " %li, wanted %li)!\n",(long)mcnp6conv,(long)mcnp6_desiredreverse);
