@@ -19,28 +19,31 @@
 ##                                                                            ##
 ################################################################################
 
-cmake_minimum_required(VERSION 3.16...3.31)
+from MCPLTestUtils.dirs import test_data_dir as test_data_dir_ref
+from MCPLTestUtils.dirs import mcpltool_cmd as mcpltool_cmd_ref
 
-project( MCPLRoot LANGUAGES C CXX )
+from MCPLExtraTestUtils.dirs import ( extra_test_data_dir,
+                                      core_test_data_dir,
+                                      mcpl2ssw_cmd,
+                                      ssw2mcpl_cmd,
+                                      mcpltool_cmd )
+import subprocess
 
-#The primary reason for having this CMakeLists.txt at the root of the repository
-#is to enable CTests of all the projects.
+def main():
 
-#Build mcpl-core and mcpl-extra. Note that if tests are enabled, mcpl-python is
-#also tested, even though not explicitly listed here as the MCPL Python module
-#will be injected via PYTHONPATH (done in CMake code in the tests subdirectory):
-add_subdirectory("${PROJECT_SOURCE_DIR}/mcpl_core")
-add_subdirectory("${PROJECT_SOURCE_DIR}/mcpl_extra")
+    assert extra_test_data_dir.is_dir()
+    assert core_test_data_dir.is_dir()
+    assert mcpl2ssw_cmd.is_file()
+    assert ssw2mcpl_cmd.is_file()
+    assert mcpltool_cmd.is_file()
 
-if ( MCPL_ENABLE_TESTING )
-  #CTests are enabled. First determine which tests for mcpl-extra code are
-  #available. Always use those from this repo:
-  set( MCPLEXTRA_TEST_DIR_LIST "${PROJECT_SOURCE_DIR}/tests/extra" )
-  #But we might also have some additional tests:
-  if ( DEFINED MCPLEXTRA_ADDITIONAL_TESTS )
-    list( APPEND MCPLEXTRA_TEST_DIR_LIST "${MCPLEXTRA_ADDITIONAL_TESTS}" )
-  endif()
-  #Finally enable and add the tests:
-  enable_testing()
-  add_subdirectory("${PROJECT_SOURCE_DIR}/tests")
-endif()
+    assert test_data_dir_ref == core_test_data_dir
+    assert mcpltool_cmd_ref == mcpltool_cmd
+    for cmd in [ mcpl2ssw_cmd, ssw2mcpl_cmd, mcpltool_cmd ]:
+        print(f"\n\nLAUNCHING {cmd.name} --help:\n\n")
+        rv = subprocess.run([cmd,'--help'],check=True,capture_output=True)
+        assert not rv.stderr
+        assert rv.returncode == 0
+        print(rv.stdout.decode(),end='',flush=True)
+
+main()

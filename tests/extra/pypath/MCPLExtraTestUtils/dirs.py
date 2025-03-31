@@ -19,28 +19,25 @@
 ##                                                                            ##
 ################################################################################
 
-cmake_minimum_required(VERSION 3.16...3.31)
+def _find_data_dir(extra):
+    import pathlib
+    d = pathlib.Path(__file__).resolve().absolute().parent.parent.parent
+    if not extra:
+        d = d.parent
+    ddir = d.joinpath('data')
+    assert ddir.is_dir()
+    return ddir
 
-project( MCPLRoot LANGUAGES C CXX )
+def _find_cmd(envvar):
+    import os
+    import pathlib
+    f=pathlib.Path(os.environ[envvar])
+    assert f.is_file()
+    return f
 
-#The primary reason for having this CMakeLists.txt at the root of the repository
-#is to enable CTests of all the projects.
+extra_test_data_dir = _find_data_dir(extra=True)
+core_test_data_dir = _find_data_dir(extra=False)
+mcpl2ssw_cmd = _find_cmd('MCPL2SSW_FILE')
+ssw2mcpl_cmd = _find_cmd('SSW2MCPL_FILE')
+mcpltool_cmd = _find_cmd('MCPL_TOOL_FILE')
 
-#Build mcpl-core and mcpl-extra. Note that if tests are enabled, mcpl-python is
-#also tested, even though not explicitly listed here as the MCPL Python module
-#will be injected via PYTHONPATH (done in CMake code in the tests subdirectory):
-add_subdirectory("${PROJECT_SOURCE_DIR}/mcpl_core")
-add_subdirectory("${PROJECT_SOURCE_DIR}/mcpl_extra")
-
-if ( MCPL_ENABLE_TESTING )
-  #CTests are enabled. First determine which tests for mcpl-extra code are
-  #available. Always use those from this repo:
-  set( MCPLEXTRA_TEST_DIR_LIST "${PROJECT_SOURCE_DIR}/tests/extra" )
-  #But we might also have some additional tests:
-  if ( DEFINED MCPLEXTRA_ADDITIONAL_TESTS )
-    list( APPEND MCPLEXTRA_TEST_DIR_LIST "${MCPLEXTRA_ADDITIONAL_TESTS}" )
-  endif()
-  #Finally enable and add the tests:
-  enable_testing()
-  add_subdirectory("${PROJECT_SOURCE_DIR}/tests")
-endif()

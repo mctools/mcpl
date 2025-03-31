@@ -68,15 +68,17 @@ if( NOT MCPLEXTRA_NOTOUCH_CMAKE_BUILD_TYPE )
 endif()
 
 #Find MCPL (mcpl-core):
-if( NOT DEFINED "MCPL_DIR" )
-  #Need to invoke "mcpl-config --show cmakedir" if we want to be able to
-  #work with mcpl-core installed via python wheels:
-  execute_process(
-    COMMAND mcpl-config --show cmakedir
-    OUTPUT_VARIABLE "MCPL_DIR" OUTPUT_STRIP_TRAILING_WHITESPACE
-  )
+if ( NOT TARGET MCPL::MCPL )
+  if( NOT DEFINED "MCPL_DIR" )
+    #Need to invoke "mcpl-config --show cmakedir" if we want to be able to
+    #work with mcpl-core installed via python wheels:
+    execute_process(
+      COMMAND mcpl-config --show cmakedir
+      OUTPUT_VARIABLE "MCPL_DIR" OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+  endif()
+  find_package( MCPL 1.9.80 REQUIRED )
 endif()
-find_package( MCPL 1.9.80 REQUIRED )
 
 # Set module path
 #set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake/modules")
@@ -302,8 +304,6 @@ set_source_files_properties(
 
 set( all_targets "ssw2mcpl" "mcpl2ssw" )
 
-#add_library( mcplssw SHARED ${mcplsswlib_src_files} )
-
 if ( MCPLEXTRA_BUILD_STRICT AND mcplextra_compiler_supports_strict_comp_flags )
   set_property(
     SOURCE ${srcs_all}
@@ -322,7 +322,7 @@ add_executable( mcpl2ssw ${mcpl2ssw_main} ${mcplsswlib_src_files} )
 target_include_directories( mcpl2ssw PRIVATE "${PROJECT_SOURCE_DIR}/src/ssw/common" )
 
 foreach( tgt ${all_targets} )
-  target_link_libraries( ${tgt} MCPL::mcpl ${MCPL_MATH_LIBRARIES} )#fixme MCPL::MCPL
+  target_link_libraries( ${tgt} MCPL::MCPL ${MCPL_MATH_LIBRARIES} )
   target_compile_options( ${tgt} PRIVATE ${mcplextra_extra_private_compile_options} )
   install(
     TARGETS ${tgt}
@@ -338,4 +338,10 @@ foreach( tgt ${all_targets} )
 #  endif()
 #
 endforeach()
+
+if ( MCPL_ENABLE_TESTING )
+  #Purely for usage in CTests apps
+  add_library( mcplsswtestlib SHARED ${mcplsswlib_src_files} )
+  target_link_libraries( mcplsswtestlib MCPL::MCPL ${MCPL_MATH_LIBRARIES} )
+endif()
 

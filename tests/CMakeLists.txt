@@ -26,10 +26,10 @@ cmake_minimum_required(VERSION 3.28...3.30)
 
 project( MCPLTests LANGUAGES CXX C )
 
-if ( NOT TARGET mcpl )
+if ( NOT TARGET mcpl OR NOT TARGET mcplsswtestlib )
   message( FATAL_ERROR "Can only test as part of the MCPL build" )
 endif()
-set( mcpltests_mcpllib_target "mcpl" )
+set( mcpltests_mcpllib_target mcpl )
 
 enable_testing()
 
@@ -75,10 +75,6 @@ list(
   "PYTHONLEGACYWINDOWSSTDIO=set:UTF-8"
 )
 
-mctools_testutils_add_tests_pyscripts(
-  "${CMAKE_CURRENT_LIST_DIR}/scripts" "${mcpltest_pyenvmod}"
-)
-
 set( mcpltests_extra_link_libs "${mcpltests_mcpllib_target}" ${MCPL_MATH_LIBRARIES} )
 
 #backtrace from FPE tests need -lexecinfo on FreeBSD:
@@ -118,9 +114,37 @@ if ( WIN32 )
   )
 endif()
 
+mctools_testutils_add_tests_pyscripts(
+  "${CMAKE_CURRENT_LIST_DIR}/scripts" "${mcpltest_pyenvmod}"
+)
+
 mctools_testutils_add_tests_apps(
   "${CMAKE_CURRENT_LIST_DIR}/src"
   "${mcpltests_extra_link_libs}"
   "${mcpltests_extra_inc_dirs}"
   "${mcpltest_appenvmod}"
 )
+
+#Now add tests for mcpl-extra:
+set( mcplextratest_pyenvmod "${mcpltest_pyenvmod}" )
+list(
+  APPEND mcplextratest_pyenvmod
+  "PYTHONPATH=path_list_prepend:${PROJECT_SOURCE_DIR}/extra/pypath"
+  "MCPL2SSW_FILE=set:$<TARGET_FILE:mcpl2ssw>"
+  "SSW2MCPL_FILE=set:$<TARGET_FILE:ssw2mcpl>"
+  "LD_LIBRARY_PATH=path_list_prepend:$<TARGET_FILE_DIR:${mcpltests_mcpllib_target}>"
+  "DYLD_LIBRARY_PATH=path_list_prepend:$<TARGET_FILE_DIR:${mcpltests_mcpllib_target}>"
+)#fixme: (DY)LD_LIBRARY_PATH only only mac/linux
+
+#FIXME: Add to the envs vars!
+foreach( mcplextra_testdir ${MCPLEXTRA_TEST_DIR_LIST} )
+  mctools_testutils_add_tests_pyscripts(
+    "${mcplextra_testdir}/scripts" "${mcplextratest_pyenvmod}"
+  )
+  mctools_testutils_add_tests_apps(
+    "${mcplextra_testdir}/src"
+    "${mcpltests_extra_link_libs};mcplsswtestlib"
+    "${mcpltests_extra_inc_dirs};${MCPLExtra_SOURCE_DIR}/src/ssw/common"
+    "${mcpltest_appenvmod}"
+  )
+endforeach()

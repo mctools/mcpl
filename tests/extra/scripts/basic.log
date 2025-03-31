@@ -1,0 +1,112 @@
+
+
+LAUNCHING mcpl2ssw --help:
+
+
+Usage:
+
+  mcpl2ssw [options] <input.mcpl> <reference.ssw> [output.ssw]
+
+Converts the Monte Carlo particles in the input MCPL file to SSW format
+(MCNP Surface Source Write) and stores the result in the designated output
+file (defaults to "output.ssw").
+
+In order to do so and get the details of the SSW format correct, the user
+must also provide a reference SSW file from the same approximate setup
+(MCNP version, input deck...) where the new SSW file is to be used. The
+reference SSW file can of course be very small, as only the file header is
+important (the new file essentially gets a copy of the header found in the
+reference file, except for certain fields related to number of particles
+whose values are changed).
+
+Finally, one must pay attention to the Surface ID assigned to the
+particles in the resulting SSW file: Either the user specifies a global
+one with -s<ID>, or it is assumed that the MCPL userflags field in the
+input file is actually intended to become the Surface ID. Note that not
+all MCPL files have userflag fields and that valid Surface IDs are
+integers in the range 1-999999.
+
+Options:
+
+  -h, --help   : Show this usage information.
+  -s<ID>       : All particles in the SSW file will get this surface ID.
+  -l<LIMIT>    : Limit the number of particles transferred to the SSW file
+                 (defaults to 2147483647, the maximal SSW capacity).
+
+
+LAUNCHING ssw2mcpl --help:
+
+
+Usage:
+
+  ssw2mcpl [options] input.ssw [output.mcpl]
+
+Converts the Monte Carlo particles in the input.ssw file (MCNP Surface
+Source Write format) to MCPL format and stores in the designated output
+file (defaults to "output.mcpl").
+
+Options:
+
+  -h, --help   : Show this usage information.
+  -d, --double : Enable double-precision storage of floating point values.
+  -s, --surf   : Store SSW surface IDs in the MCPL userflags.
+  -n, --nogzip : Do not attempt to gzip output file.
+  -c FILE      : Embed entire configuration FILE (the input deck)
+                 used to produce input.ssw in the MCPL header.
+
+
+LAUNCHING mcpltool --help:
+
+
+Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.
+
+The default behaviour is to display the contents of the FILE in human readable
+format (see Dump Options below for how to modify what is displayed).
+
+This installation supports direct reading of gzipped files (.mcpl.gz).
+
+Usage:
+  mcpltool [dump-options] FILE
+  mcpltool --merge [merge-options] FILE1 FILE2
+  mcpltool --extract [extract-options] FILE1 FILE2
+  mcpltool --repair FILE
+  mcpltool --version
+  mcpltool --help
+
+Dump options:
+  By default include the info in the FILE header plus the first ten contained
+  particles. Modify with the following options:
+  -j, --justhead  : Dump just header info and no particle info.
+  -n, --nohead    : Dump just particle info and no header info.
+  -lN             : Dump up to N particles from the file (default 10). You
+                    can specify -l0 to disable this limit.
+  -sN             : Skip past the first N particles in the file (default 0).
+  -bKEY           : Dump binary blob stored under KEY to standard output.
+
+Merge options:
+  -m, --merge FILEOUT FILE1 FILE2 ... FILEN
+                    Creates new FILEOUT with combined particle contents from
+                    specified list of N existing and compatible files.
+  -m, --merge --inplace FILE1 FILE2 ... FILEN
+                    Appends the particle contents in FILE2 ... FILEN into
+                    FILE1. Note that this action modifies FILE1!
+  --forcemerge [--keepuserflags] FILEOUT FILE1 FILE2 ... FILEN
+               Like --merge but works with incompatible files as well, at the
+               heavy price of discarding most metadata like comments and blobs.
+               Userflags will be discarded unless --keepuserflags is specified.
+
+Extract options:
+  -e, --extract FILE1 FILE2
+                    Extracts particles from FILE1 into a new FILE2.
+  -lN, -sN        : Select range of particles in FILE1 (as above).
+  -pPDGCODE       : Select particles of type given by PDGCODE.
+
+Other options:
+  -r, --repair FILE
+                    Attempt to repair FILE which was not properly closed, by up-
+                    dating the file header with the correct number of particles.
+  -t, --text MCPLFILE OUTFILE
+                    Read particle contents of MCPLFILE and write into OUTFILE
+                    using a simple ASCII-based format.
+  -v, --version   : Display version of MCPL installation.
+  -h, --help      : Display this usage information (ignores all other options).
