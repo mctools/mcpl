@@ -2917,11 +2917,13 @@ void mcpl_generic_fread( mcpl_generic_filehandle_t* fh,
 
   unsigned to_read = (unsigned)nbytes;
   unsigned actually_read = mcpl_generic_fread_try( fh, dest, to_read );
-  fh->current_pos += actually_read;
+  //fh->current_pos += actually_read;
   if ( actually_read != to_read )
     mcpl_error("Error while reading from file");
 }
 
+//Fixme: unit test that this (and the fct above) has the corrent effect on
+//fh->current_pos.
 unsigned mcpl_generic_fread_try( mcpl_generic_filehandle_t* fh,
                                  char * dest, unsigned nbytes )
 {
@@ -2946,19 +2948,28 @@ unsigned mcpl_generic_fread_try( mcpl_generic_filehandle_t* fh,
       if ( rv < 1 )
         return nb_read;
       nb_read += (unsigned)rv;
+      fh->current_pos += nb_read;
       dest += rv;
       nb_left -= (unsigned)rv;
     } else {
-      size_t rv = fread(dest, 1, nb_totry, (FILE*)(fh->internal));
-      if ( !rv ) {
-        if ( feof((FILE*)(fh->internal)) )
+      size_t rv = fread(dest, 1, (size_t)nb_totry, (FILE*)(fh->internal));
+      if ( rv != (size_t)nb_totry ) {
+        if ( feof((FILE*)(fh->internal)) ) {
+          //not an error, simply reached the end of the file.
+          if ( rv ) {
+            nb_read += (unsigned)rv;
+            fh->current_pos += rv;
+          }
           return nb_read;
+        }
         mcpl_error("Error while reading from file");
       }
       dest += rv;
       nb_read += (unsigned)rv;
+      fh->current_pos += rv;
       nb_left -= (unsigned)rv;
     }
+
   }
 }
 
