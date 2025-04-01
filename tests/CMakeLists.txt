@@ -125,6 +125,11 @@ mctools_testutils_add_tests_apps(
   "${mcpltest_appenvmod}"
 )
 
+message(STATUS "Added ${mctools_tests_count} mcpl-core/mcpl-python tests" )
+if ( NOT ${mctools_tests_count} GREATER 0 )
+  message( FATAL_ERROR "No standard tests added." )
+endif()
+
 #Now add tests for mcpl-extra:
 set( mcplextratest_base_pyenvmod "${mcpltest_pyenvmod}" )
 set( mcplextratest_base_appenvmod "${mcpltest_appenvmod}" )
@@ -163,6 +168,7 @@ list(
 
 #FIXME: Add to the envs vars!
 foreach( mcplextra_testdir ${MCPLEXTRA_TEST_DIR_LIST} )
+  set( ntests_before "${mctools_tests_count}" )
   set( tmp_pyenvmod "${mcplextratest_base_pyenvmod}" )
   set( tmp_appenvmod "${mcplextratest_base_appenvmod}" )
   if ( IS_DIRECTORY "${mcplextra_testdir}/data" )
@@ -195,4 +201,10 @@ foreach( mcplextra_testdir ${MCPLEXTRA_TEST_DIR_LIST} )
       "${tmp_appenvmod}"
     )
   endif()
+  math( EXPR ntests_added "${mctools_tests_count}-${ntests_before}" )
+  message(STATUS "Added ${ntests_added} tests from: ${mcplextra_testdir}" )
+if ( NOT ${ntests_added} GREATER 0 )
+  message( FATAL_ERROR "No tests added from: ${mcplextra_testdir}" )
+endif()
+
 endforeach()
