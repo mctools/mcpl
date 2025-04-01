@@ -369,11 +369,9 @@ ssw_file_t ssw_open_and_procrec0( const char * filename )
   tmp = f->idtms; ssw_strip(&tmp);
   tmp = f->probs; ssw_strip(&tmp);
   tmp = f->aids; ssw_strip(&tmp);
-  const char * bn = strrchr(filename, '/');
-  bn = bn ? bn + 1 : filename;
-
+  char * bn = mcpl_basename(filename);
   printf("ssw_open_file: Opened file \"%s\":\n",bn);
-
+  free(bn);
   const char * expected_kods = (f->mcnp_type == SSW_MCNPX?"mcnpx":"mcnp");
   if (strcmp(f->kods,expected_kods)!=0) {
     printf("ssw_open_file WARNING: Unusual MCNP flavour detected (\"%s\").\n",f->kods);

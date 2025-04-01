@@ -199,7 +199,7 @@ void ssw2mcpl_parse_args(int argc,char **argv, const char** infile,
     if (argv[i][0]=='\0')
       continue;
     if (strcmp(argv[i],"-h")==0||strcmp(argv[i],"--help")==0) {
-      const char * progname = mcpl_usage_progname(argv[0]);
+      char * progname = mcpl_usage_progname(argv[0]);
       printf("Usage:\n\n");
       printf("  %s [options] input.ssw [output.mcpl]\n\n",progname);
       printf("Converts the Monte Carlo particles in the input.ssw file (MCNP Surface\n"
@@ -215,6 +215,7 @@ void ssw2mcpl_parse_args(int argc,char **argv, const char** infile,
              "  -c FILE      : Embed entire configuration FILE (the input deck)\n"
              "                 used to produce input.ssw in the MCPL header.\n"
              );
+      free(progname);
       exit(0);
     }
     if (strcmp(argv[i],"-c")==0) {
@@ -550,7 +551,7 @@ int mcpl2ssw_app_usage( const char** argv, const char * errmsg ) {
     printf("Run with -h or --help for usage information\n");
     return 1;
   }
-  const char * progname = mcpl_usage_progname(argv[0]);
+  char * progname = mcpl_usage_progname(argv[0]);
   printf("Usage:\n\n");
   printf("  %s [options] <input.mcpl> <reference.ssw> [output.ssw]\n\n",progname);
   printf("Converts the Monte Carlo particles in the input MCPL file to SSW format\n"
@@ -579,6 +580,7 @@ int mcpl2ssw_app_usage( const char** argv, const char * errmsg ) {
          "  -l<LIMIT>    : Limit the number of particles transferred to the SSW file\n"
          "                 (defaults to 2147483647, the maximal SSW capacity).\n"
          );
+  free(progname);
   return 0;
 }
 

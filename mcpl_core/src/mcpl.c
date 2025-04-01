@@ -1586,19 +1586,27 @@ uint64_t mcpl_currentposition(mcpl_file_t ff)
   return f->current_particle_idx;
 }
 
-MCPL_LOCAL const char * mcpl_basename(const char * filename)
+MCPL_LOCAL char * mcpl_internal_malloc(size_t n)
 {
-  //portable "basename" which doesn't modify it's argument. Rightmost separator,
-  //back or forward slash.
-  const char * bn1 = strrchr(filename, '/');
-  const char * bn2 = strrchr(filename, '\\');
-  if ( bn1 ) {
-    if ( bn2 )
-      return ( bn1 > bn2 ) ? bn1 + 1 : bn2 + 1;
-    return bn1 + 1;
+  //Fixme: use everywhere
+  char * res = (char*)malloc(n ? n : 1);
+  if (!res)
+    mcpl_error("memory allocation failed");
+  return res;
+}
+
+char * mcpl_basename(const char * filename)
+{
+  mcu8str fn = mcu8str_view_cstr( filename );
+  mcu8str bn = mctools_basename( &fn );
+  char * res = mcpl_internal_malloc( bn.size + 1 );
+  if ( bn.size == 0 || !bn.c_str ) {
+    res[0] = '\0';
   } else {
-    return bn2 ? bn2 + 1 : filename;
+    memcpy( res, bn.c_str, bn.size + 1 );
   }
+  mcu8str_dealloc( &bn );
+  return res;
 }
 
 int mcpl_hdr_particle_size(mcpl_file_t ff)
@@ -1809,7 +1817,11 @@ void mcpl_dump(const char * filename, int parts, uint64_t nskip, uint64_t nlimit
   if (parts<0||parts>2)
     mcpl_error("mcpl_dump got forbidden value for argument parts");
   mcpl_file_t f = mcpl_open_file(filename);
-  printf("Opened MCPL file %s:\n",mcpl_basename(filename));
+  {
+    char * bn = mcpl_basename(filename);
+    printf("Opened MCPL file %s:\n",bn);
+    free(bn);
+  }
   if (parts==0||parts==1)
     mcpl_dump_header(f);
   if (parts==0||parts==2)
@@ -2242,27 +2254,25 @@ void mcpl_merge_inplace(const char * file1, const char* file2)
 #define MCPLIMP_TOOL_DEFAULT_NLIMIT 10
 #define MCPLIMP_TOOL_DEFAULT_NSKIP 0
 
-const char* mcpl_usage_progname( const char * argv0 )
+char* mcpl_usage_progname( const char * argv0 )
 {
-  const char * progname = mcpl_basename(argv0);
-  static char progname_buf[1024];
-
-  //Remove any trailing .exe/.EXE:
-  size_t npn = strlen(progname);
-  int has_exe = ( npn<sizeof(progname_buf) && npn > 4
-                  && ( strcmp(progname+(npn-4),".exe")==0
-                       || strcmp(progname+(npn-4),".EXE")==0 ) );
-  if ( has_exe ) {
-    memcpy(progname_buf,progname,npn-4);
-    progname_buf[npn-4] = '\0';
-    progname = progname_buf;
-  } else if ( npn+1 <= sizeof(progname_buf) ) {
-    memcpy(progname_buf,progname,npn+1);
-  } else {
-    //Overflow:
-    memcpy(progname_buf,"PROGNAME",9);
+  //Basically return the basename, but with any trailing .exe/.EXE discarded.
+  char * bn = mcpl_basename(argv0);
+  size_t npn = strlen(bn);
+  const int has_exe_suffix = ( npn > 4
+                               && ( strcmp(bn+(npn-4),".exe")==0
+                                    || strcmp(bn+(npn-4),".EXE")==0 ) );
+  if ( has_exe_suffix ) {
+    npn -= 4;
+    bn[npn] = '\0';
   }
-  return progname_buf;
+  //Fallback to PROGNAME if empty or starts with a dot:
+  if ( npn == 0 || bn[0]=='.' ) {
+    free(bn);
+    bn = mcpl_internal_malloc(9);
+    memcpy(bn,"PROGNAME",9);
+  }
+  return bn;
 }
 
 MCPL_LOCAL int mcpl_tool_usage( char** argv, const char * errmsg ) {
@@ -2271,8 +2281,7 @@ MCPL_LOCAL int mcpl_tool_usage( char** argv, const char * errmsg ) {
     printf("Run with -h or --help for usage information\n");
     return 1;
   }
-  const char * progname = mcpl_usage_progname(argv[0]);
-
+  char * progname = mcpl_usage_progname(argv[0]);
   printf("Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.\n");
   printf("\n");
   printf("The default behaviour is to display the contents of the FILE in human readable\n");
@@ -2329,6 +2338,7 @@ MCPL_LOCAL int mcpl_tool_usage( char** argv, const char * errmsg ) {
   printf("  -v, --version   : Display version of MCPL installation.\n");
   printf("  -h, --help      : Display this usage information (ignores all other options).\n");
 
+  free(progname);
   return 0;
 }
 
@@ -2760,14 +2770,16 @@ MCPL_LOCAL int mcpl_custom_gzip(const char *file, const char *mode);//return 1 i
 
 int mcpl_gzip_file(const char * filename)
 {
-  const char * bn = mcpl_basename(filename);
+  char * bn = mcpl_basename(filename);
   printf("MCPL: Attempting to compress file %s with gzip\n",bn);//FIXME should say "with zlib" but trying to preserve reflog outputs right now
   if (!mcpl_custom_gzip(filename,"wb")) {
     //FIXME: We are always returning 1 here?!?!
     printf("MCPL ERROR: Problems encountered while compressing file %s.\n",bn);
+    free(bn);
     return 0;
   }
   printf("MCPL: Succesfully compressed file into %s.gz\n",bn);
+  free(bn);
   return 1;
 }
 
@@ -2981,15 +2993,6 @@ unsigned mcpl_generic_fread_try( mcpl_generic_filehandle_t* fh,
     }
 
   }
-}
-
-MCPL_LOCAL char * mcpl_internal_malloc(size_t n)
-{
-  //Fixme: use everywhere
-  char * res = (char*)malloc(n ? n : 1);
-  if (!res)
-    mcpl_error("memory allocation failed");
-  return res;
 }
 
 typedef struct MCPL_LOCAL {

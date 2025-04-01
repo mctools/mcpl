@@ -137,12 +137,12 @@ extern "C" {
   /* Access header data: */
   MCPL_API unsigned mcpl_hdr_version(mcpl_file_t);/* file format version (not the same as MCPL_VERSION) */
   MCPL_API uint64_t mcpl_hdr_nparticles(mcpl_file_t);/* number of particles stored in file              */
-  MCPL_API const char* mcpl_hdr_srcname(mcpl_file_t);/* Name of the generating application              */
+  MCPL_API const char * mcpl_hdr_srcname(mcpl_file_t);/* Name of the generating application             */
   MCPL_API unsigned mcpl_hdr_ncomments(mcpl_file_t);/* number of comments stored in file                */
   MCPL_API const char * mcpl_hdr_comment(mcpl_file_t, unsigned icomment);/* access i'th comment         */
   MCPL_API int mcpl_hdr_nblobs(mcpl_file_t);
   MCPL_API const char** mcpl_hdr_blobkeys(mcpl_file_t);/* returns 0 if there are no keys */
-  MCPL_API int mcpl_hdr_blob(mcpl_file_t, const char* key,
+  MCPL_API int mcpl_hdr_blob(mcpl_file_t, const char * key,
                              uint32_t* ldata, const char ** data);/* access data (returns 0 if key doesn't exist) */
   MCPL_API int mcpl_hdr_has_userflags(mcpl_file_t);
   MCPL_API int mcpl_hdr_has_polarisation(mcpl_file_t);
@@ -181,25 +181,25 @@ extern "C" {
   /* new file, file_output. This results in an error unless all meta-data and settings */
   /* in the files are identical. Also fails if file_output already exists. Note that   */
   /* the return value is a handle to the output file which has not yet been closed:    */
-  MCPL_API mcpl_outfile_t mcpl_merge_files( const char* file_output,
+  MCPL_API mcpl_outfile_t mcpl_merge_files( const char * file_output,
                                             unsigned nfiles, const char ** files);
 
   /* Test if files could be merged by mcpl_merge_files: */
-  MCPL_API int mcpl_can_merge(const char * file1, const char* file2);
+  MCPL_API int mcpl_can_merge(const char * file1, const char * file2);
 
   /* Similar to mcpl_merge_files, but merges two files by appending all particles in */
   /* file2 to the list in file1 (thus file1 grows while file2 stays untouched).      */
   /* Note that this requires similar version of the MCPL format of the two files, in */
   /* addition to the other checks in mcpl_can_merge().                               */
   /* Careful usage of this function can be more efficient than mcpl_merge_files.     */
-  MCPL_API void mcpl_merge_inplace(const char * file1, const char* file2);
+  MCPL_API void mcpl_merge_inplace(const char * file1, const char * file2);
 
   /* Attempt to merge incompatible files, by throwing away meta-data and otherwise */
   /* selecting a configuration which is suitable to contain the data of all files. */
   /* Userflags will be discarded unless keep_userflags=1.                          */
   /* If called with compatible files, the code will fall back to calling the usual */
   /* mcpl_merge_files function instead.                                            */
-  MCPL_API mcpl_outfile_t mcpl_forcemerge_files( const char* file_output,
+  MCPL_API mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
                                                  unsigned nfiles, const char ** files,
                                                  int keep_userflags );
 
@@ -250,7 +250,7 @@ extern "C" {
   /* usage will result in a warning printed to stdout, notifying users to update */
   /* their code.                                                                 */
 
-  MCPL_API void mcpl_merge(const char *, const char*);/* Obsolete name for mcpl_merge_inplace */
+  MCPL_API void mcpl_merge(const char *, const char *);/* Obsolete name for mcpl_merge_inplace */
   MCPL_API int mcpl_gzip_file_rc(const char * filename);/* Obsolete name for mcpl_gzip_file */
   MCPL_API int mcpl_closeandgzip_outfile_rc(mcpl_outfile_t);/* Obsolete name for mcpl_closeandgzip_outfile_rc */
   MCPL_API int32_t mcpl_hdr_universel_pdgcode(mcpl_file_t);/* Obsolete name for mcpl_hdr_universal_pdgcode */
@@ -292,9 +292,12 @@ extern "C" {
                                           uint64_t* result_size,
                                           char ** result_buf );
 
-  /* Convert argv[0] to a program name to show in usage printouts (not MT */
-  /* safe):                                                               */
-  MCPL_API const char* mcpl_usage_progname( const char * argv0 );
+  /* Convert argv[0] to a program name to show in usage printouts. Return */
+  /* value must be deallocted with free(..):                              */
+  MCPL_API char * mcpl_usage_progname( const char * argv0 );
+
+  /* Extract basename. Return value must be deallocted with free(..):     */
+  MCPL_API char * mcpl_basename(const char * filename);
 
 
 #ifdef __cplusplus
