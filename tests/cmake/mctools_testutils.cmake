@@ -566,6 +566,19 @@ function( mctools_testutils_internal_getsrcfiles
 endfunction()
 
 function( mctools_testutils_internal_addtest name cmd_file reflog )
+  #Make number of tests added available in global variable (need to use internal
+  #cache var since there might be nested function calls, so PARENT_SCOPE is not
+  #enough):
+  if ( NOT DEFINED mctools_tests_count )
+    set( tmpcount "1" )
+  else()
+    math( EXPR tmpcount "${mctools_tests_count}+1" )
+  endif()
+  set(
+    mctools_tests_count "${tmpcount}"
+    CACHE INTERNAL "number of tests added" FORCE
+  )
+  #Wrap all tests in our launcher script:
   mctools_testutils_internal_getpyexec( "pyexec" )
   add_test(
     NAME "${name}"
