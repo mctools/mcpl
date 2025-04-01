@@ -19,6 +19,8 @@
 ##                                                                            ##
 ################################################################################
 
+# NEEDS: numpy
+
 from MCPLTestUtils.dirs import test_data_dir
 import gzip
 import pathlib

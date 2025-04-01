@@ -19,6 +19,8 @@
 ##                                                                            ##
 ################################################################################
 
+# NEEDS: numpy
+
 import itertools
 import pathlib
 import mcpldev as mcpl

@@ -19,6 +19,8 @@
 ##                                                                            ##
 ################################################################################
 
+# NEEDS: numpy
+
 import sys
 import pathlib
 from mcpldev import MCPLError

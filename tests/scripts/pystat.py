@@ -19,6 +19,8 @@
 ##                                                                            ##
 ################################################################################
 
+# NEEDS: numpy
+
 def files_for_testing():
     from MCPLTestUtils.dirs import test_data_dir as tdir
     import itertools
