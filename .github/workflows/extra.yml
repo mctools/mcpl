@@ -1,0 +1,109 @@
+name: extra
+
+on:
+  #fixme: Can we make this work in PRs?
+  push:
+  pull_request:
+  schedule:
+    - cron: '9 15 * * 3'  # 9:15 every Wednesday
+
+
+jobs:
+  mcpldevtool_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: src
+
+      - name: Enable parallel cmake
+        run: python ./src/devel/bin/mcpldevtool nprocs --enable-github-parallel
+
+      - name: Pip install packages for mcpldevtool
+        run: pip install -r ./src/devel/reqs/requirements_devel.txt
+
+      - name: mcpldevtool checks
+        run: ./src/devel/bin/mcpldevtool check -n "fix""me"
+
+      - name: Checkout extra tests
+        uses: actions/checkout@v4
+        with:
+          repository: tkittel/mcpl-private-tests
+          ssh-key: ${{ secrets.ACCESS_TOKEN_MCPL_EXTRA_TESTS }}
+          path: src_extra
+
+      - name: Copy extra test repo for mcpldevtool coverage
+        run: mv ./src_extra ./src/copy
+
+      - name: mcpldevtool check extra test repo
+        run: ./src/devel/bin/mcpldevtool check -n "fix""me"
+
+  build:
+    needs: [ mcpldevtool_check ]
+    strategy:
+      matrix:
+        #fixme: other strict flags?
+        strictflag: [ 'ON' ] #FIXME?, 'OFF' ]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        #fixme more, windows-latest, macos-latest, arm/intel]... and intel
+        #oneapi compiler??
+
+    name: ${{ matrix.os }}.strict${{ matrix.strictflag }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        path: src
+
+    - name: Checkout extra tests
+      uses: actions/checkout@v4
+      with:
+        repository: tkittel/mcpl-private-tests
+        ssh-key: ${{ secrets.ACCESS_TOKEN_MCPL_EXTRA_TESTS }}
+        path: src_extra
+
+    - name: Setup python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Pip install extra packages
+      run: pip install -r ./src/devel/reqs/requirements_devel.txt
+
+    - name: Enable parallel cmake
+      run: python ./src/devel/bin/mcpldevtool nprocs --enable-github-parallel
+
+    - name: Install Ninja (Linux)
+      if: runner.os == 'Linux'
+      run: sudo apt-get install ninja-build
+
+    - name: Install Ninja (macOS)
+      if: runner.os == 'macOS'
+      run: brew install ninja
+
+    - name: Set CMAKE_GENERATOR (Linux/macOS)
+      if: runner.os != 'Windows'
+      run: echo "CMAKE_GENERATOR=Ninja Multi-Config" >> $GITHUB_ENV
+
+    - name: Configure CMake
+      run: >
+        cmake -S ./src -B ./build
+        -DMCPL_ENABLE_TESTING=ON
+        -DMCPL_BUILD_STRICT=${{ matrix.strictflag }}
+        -DMCPLEXTRA_ADDITIONAL_TESTS=src_extra/testroot
+        -DMCTOOLS_REQUIRE_ALL_TEST_DEPS=ON
+
+    - name: Build Release
+      run: cmake --build ./build --config Release
+
+    - name: Build Debug
+      run: cmake --build ./build --config Debug
+
+    - name: CTest Release
+      run: ctest --test-dir ./build  --build-config Release --no-tests=error --output-on-failure --test-output-size-failed 100000 --test-output-truncation middle
+
+    - name: CTest Debug
+      run: ctest --test-dir ./build  --build-config Debug --no-tests=error --output-on-failure --test-output-size-failed 100000 --test-output-truncation middle
