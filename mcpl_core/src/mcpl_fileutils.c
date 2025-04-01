@@ -159,7 +159,8 @@ namespace MCFILEUTILS_CPPNAMESPACE {
       fprintf(stderr, "ERROR: Memory allocation failed in mcu8str_create\n");
       exit(EXIT_FAILURE);
 #endif
-      return mcu8str_create_empty();
+      //gives (correctly but annoyingly) unreachable warning with MSVC
+      //return mcu8str_create_empty();
     }
     s.c_str[0] = '\0';
     s.size = 0;
