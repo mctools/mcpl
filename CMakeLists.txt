@@ -37,7 +37,14 @@ if ( MCPL_ENABLE_TESTING )
   #available. Always use those from this repo:
   set( MCPLEXTRA_TEST_DIR_LIST "${PROJECT_SOURCE_DIR}/tests/extra" )
   #But we might also have some additional tests:
-  if ( DEFINED MCPLEXTRA_ADDITIONAL_TESTS )
+  set( MCPLEXTRA_ADDITIONAL_TESTS "" CACHE PATH "Directory with extra tests")
+  if ( MCPLEXTRA_ADDITIONAL_TESTS )
+    if ( NOT IS_DIRECTORY "${MCPLEXTRA_ADDITIONAL_TESTS}" )
+      message( FATAL_ERROR
+        "MCPLEXTRA_ADDITIONAL_TESTS dir not found:"
+        " ${MCPLEXTRA_ADDITIONAL_TESTS}"
+      )
+    endif()
     list( APPEND MCPLEXTRA_TEST_DIR_LIST "${MCPLEXTRA_ADDITIONAL_TESTS}" )
   endif()
   #Finally enable and add the tests:
