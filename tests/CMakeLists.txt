@@ -158,6 +158,7 @@ list(
   "PYTHONPATH=path_list_prepend:${PROJECT_SOURCE_DIR}/extra/pypath"
   "MCPL2SSW_FILE=set:$<TARGET_FILE:mcpl2ssw>"
   "SSW2MCPL_FILE=set:$<TARGET_FILE:ssw2mcpl>"
+  "MCPLSSWTESTLIB_FILE=set:$<TARGET_FILE:mcplsswtestlib>"
   ${mcplextratest_base_envmod_common}
 )
 list(

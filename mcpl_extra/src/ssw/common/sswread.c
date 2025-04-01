@@ -58,8 +58,32 @@
 #define SSW_MCNPX 2
 #define SSW_MCNP5 3
 
+FILE** ssw_impl_stdout_data()
+{
+  static FILE* thefh = NULL;
+  return &thefh;
+}
+
+FILE* ssw_stdout()
+{
+  FILE* thefh = *ssw_impl_stdout_data();
+  return thefh ? thefh : stdout;
+}
+
+void ssw_set_stdout( FILE* fh )
+{
+  fflush(stdout);
+  fflush(stderr);
+  FILE** fhptr = ssw_impl_stdout_data();
+  if (*fhptr)
+    fflush(*fhptr);
+  if (fh)
+    fflush(fh);
+  *fhptr = fh;
+}
+
 void ssw_error(const char * msg) {
-  printf("ERROR: %s\n",msg);
+  fprintf(ssw_stdout(),"ERROR: %s\n",msg);
   exit(1);
 }
 
@@ -140,7 +164,7 @@ int ssw_loadrecord(ssw_fileinternal_t* f)
 
   if (!f->buf) {
     //Could be corrupted data resulting in unusually large lbuf:
-    printf("SSW Error: unable to allocate requested buffer (corrupted input?).\n");
+    fprintf(ssw_stdout(),"SSW Error: unable to allocate requested buffer (corrupted input?).\n");
     return 0;
   }
 
@@ -311,7 +335,7 @@ ssw_file_t ssw_open_and_procrec0( const char * filename )
   assert(f->reclen && rec0begin && lenrec0 && lenrec0<99999 );
 
   if (f->reclen==8) {
-    printf("ssw_open_file WARNING: 64bit Fortran records detected which is untested (feedback"
+    fprintf(ssw_stdout(),"ssw_open_file WARNING: 64bit Fortran records detected which is untested (feedback"
            " appreciated at https://mctools.github.io/mcpl/contact/).\n");
   }
 
@@ -370,26 +394,26 @@ ssw_file_t ssw_open_and_procrec0( const char * filename )
   tmp = f->probs; ssw_strip(&tmp);
   tmp = f->aids; ssw_strip(&tmp);
   char * bn = mcpl_basename(filename);
-  printf("ssw_open_file: Opened file \"%s\":\n",bn);
+  fprintf(ssw_stdout(),"ssw_open_file: Opened file \"%s\":\n",bn);
   free(bn);
   const char * expected_kods = (f->mcnp_type == SSW_MCNPX?"mcnpx":"mcnp");
   if (strcmp(f->kods,expected_kods)!=0) {
-    printf("ssw_open_file WARNING: Unusual MCNP flavour detected (\"%s\").\n",f->kods);
+    fprintf(ssw_stdout(),"ssw_open_file WARNING: Unusual MCNP flavour detected (\"%s\").\n",f->kods);
   }
 
   if (f->mcnp_type==SSW_MCNP6) {
     if ( strcmp(f->vers,"6")!=0 && strcmp(f->vers,"6.mpi")!=0 ) {
-      printf("ssw_open_file WARNING: Untested MCNP6 source version : \"%s\". (feedback"
+      fprintf(ssw_stdout(),"ssw_open_file WARNING: Untested MCNP6 source version : \"%s\". (feedback"
              " appreciated at https://mctools.github.io/mcpl/contact/)\n",f->vers);
     }
   } else if (f->mcnp_type==SSW_MCNPX) {
     if ( strcmp(f->vers,"2.5.0")!=0 && strcmp(f->vers,"2.6.0")!=0
          && strcmp(f->vers,"2.7.0")!=0 && strcmp(f->vers,"26b")!=0 )
-      printf("ssw_open_file WARNING: Untested MCNPX source version : \"%s\". (feedback"
+      fprintf(ssw_stdout(),"ssw_open_file WARNING: Untested MCNPX source version : \"%s\". (feedback"
              " appreciated at https://mctools.github.io/mcpl/contact/)\n",f->vers);
   } else if (f->mcnp_type==SSW_MCNP5) {
     if ( strcmp(f->vers,"5")!=0 )
-      printf("ssw_open_file WARNING: Untested MCNP5 source version : \"%s\". (feedback"
+      fprintf(ssw_stdout(),"ssw_open_file WARNING: Untested MCNP5 source version : \"%s\". (feedback"
              " appreciated at https://mctools.github.io/mcpl/contact/)\n",f->vers);
   }
 
@@ -451,7 +475,7 @@ ssw_file_t ssw_open_file( const char * filename )
     f->njsw = bi[5];
     f->niss = bi[6];
   } else if (f->lbuf==40) {
-    printf("ssw_open_file WARNING: File format has header format for which decoding was never tested (feedback"
+    fprintf(ssw_stdout(),"ssw_open_file WARNING: File format has header format for which decoding was never tested (feedback"
            " appreciated at https://mctools.github.io/mcpl/contact/).\n");
     f->np1 = bi[0];
     f->np1pos = current_recpos + 0 * sizeof(int32_t);
@@ -464,20 +488,20 @@ ssw_file_t ssw_open_file( const char * filename )
     return ssw_openerror(f,"ssw_open_file error: Unexpected record length");
   }
 
-  printf("ssw_open_file:    File layout detected : %s\n",ssw_mcnpflavour(out));
-  printf("ssw_open_file:    Code ID fields : \"%s\" / \"%s\"\n",f->kods,f->vers);
-  printf("ssw_open_file:    Title field : \"%s\"\n",f->aids);
-  /* printf("ssw_open_file: Found kods  = '%s'\n",f->kods); */
-  /* printf("ssw_open_file: Found vers  = '%s'\n",f->vers); */
-  /* printf("ssw_open_file: Found lods  = '%s'\n",f->lods); */
-  /* printf("ssw_open_file: Found idtms = '%s'\n",f->idtms); */
-  /* printf("ssw_open_file: Found probs = '%s'\n",f->probs); */
-  /* printf("ssw_open_file: Found aids  = '%s'\n",f->aids); */
-  printf("ssw_open_file:    Source statistics (histories): %11i\n" , abs(f->np1));
-  printf("ssw_open_file:    Particles in file            : %11i\n" , f->nrss);
-  printf("ssw_open_file:    Number of surfaces           : %11i\n" , f->njsw);
-  printf("ssw_open_file:    Histories at surfaces        : %11i\n" , f->niss);
-  //  printf("ssw_open_file: File length of SSB array          : %11i\n" , f->nrcd);
+  fprintf(ssw_stdout(),"ssw_open_file:    File layout detected : %s\n",ssw_mcnpflavour(out));
+  fprintf(ssw_stdout(),"ssw_open_file:    Code ID fields : \"%s\" / \"%s\"\n",f->kods,f->vers);
+  fprintf(ssw_stdout(),"ssw_open_file:    Title field : \"%s\"\n",f->aids);
+  /* fprintf(ssw_stdout(),"ssw_open_file: Found kods  = '%s'\n",f->kods); */
+  /* fprintf(ssw_stdout(),"ssw_open_file: Found vers  = '%s'\n",f->vers); */
+  /* fprintf(ssw_stdout(),"ssw_open_file: Found lods  = '%s'\n",f->lods); */
+  /* fprintf(ssw_stdout(),"ssw_open_file: Found idtms = '%s'\n",f->idtms); */
+  /* fprintf(ssw_stdout(),"ssw_open_file: Found probs = '%s'\n",f->probs); */
+  /* fprintf(ssw_stdout(),"ssw_open_file: Found aids  = '%s'\n",f->aids); */
+  fprintf(ssw_stdout(),"ssw_open_file:    Source statistics (histories): %11i\n" , abs(f->np1));
+  fprintf(ssw_stdout(),"ssw_open_file:    Particles in file            : %11i\n" , f->nrss);
+  fprintf(ssw_stdout(),"ssw_open_file:    Number of surfaces           : %11i\n" , f->njsw);
+  fprintf(ssw_stdout(),"ssw_open_file:    Histories at surfaces        : %11i\n" , f->niss);
+  //  fprintf(ssw_stdout(),"ssw_open_file: File length of SSB array          : %11i\n" , f->nrcd);
 
   if(f->nrcd==6)
     return ssw_openerror(f,"ssw_open_file error: SSW files with spherical sources are not currently supported.");
@@ -535,7 +559,7 @@ ssw_file_t ssw_open_file( const char * filename )
       //Looks like this could not be a particle, so we interpret this as if the
       //header was actually one record longer than previously thought:
       f->headlen += f->reclen * 2 + f->lbuf;
-      printf("ssw_open_file WARNING: Unexpected %i byte record encountered"
+      fprintf(ssw_stdout(),"ssw_open_file WARNING: Unexpected %i byte record encountered"
              " at end of header. Continuing under the assumption it"
              " contains valid configuration data.\n",f->lbuf);
     }
@@ -648,13 +672,13 @@ const ssw_particle_t * ssw_load_particle(ssw_file_t ff)
     p->rawtype = nx;
     p->pdgcode = conv_mcnp6_ssw2pdg(nx);
     if (!p->pdgcode)
-      printf("ssw_load_particle WARNING: Could not convert raw MCNP6 SSW type (%li) to pdg code\n",(long)(p->rawtype));
+      fprintf(ssw_stdout(),"ssw_load_particle WARNING: Could not convert raw MCNP6 SSW type (%li) to pdg code\n",(long)(p->rawtype));
   } else if ( f->mcnp_type == SSW_MCNPX ) {
     p->isurf = nx % 1000000;
     p->rawtype = nx / 1000000;
     p->pdgcode = conv_mcnpx_ssw2pdg(p->rawtype);
     if (!p->pdgcode)
-      printf("ssw_load_particle WARNING: Could not convert raw MCNPX SSW type (%li) to pdg code\n",(long)(p->rawtype));
+      fprintf(ssw_stdout(),"ssw_load_particle WARNING: Could not convert raw MCNPX SSW type (%li) to pdg code\n",(long)(p->rawtype));
   } else {
     assert( f->mcnp_type == SSW_MCNP5 );
     nx /= 8;//Guess: Get rid of some bits that might be used for something else
@@ -663,7 +687,7 @@ const ssw_particle_t * ssw_load_particle(ssw_file_t ff)
     p->rawtype /= 100;//Guess: Get rid of some "bits" that might be used for something else
     p->pdgcode = (p->rawtype==1?2112:(p->rawtype==2?22:0));//only neutrons and gammas in MCNP5
     if (!p->pdgcode)
-      printf("ssw_load_particle WARNING: Could not convert raw MCNP5 SSW type (%li) to pdg code\n",(long)(p->rawtype));
+      fprintf(ssw_stdout(),"ssw_load_particle WARNING: Could not convert raw MCNP5 SSW type (%li) to pdg code\n",(long)(p->rawtype));
   }
   p->dirz = sqrt(fmax(0.0, 1. - p->dirx*p->dirx-p->diry*p->diry));
   if (ssb[1]<0.0)
@@ -806,3 +830,39 @@ int32_t conv_mcnp6_pdg2ssw( int32_t c )
   }
   return 0;
 }
+
+#ifdef MCPLSSW_IS_TEST_LIB
+//Function needed for unit tests, outfile must be ascii characters only (for
+//now):
+void ssw_dump( const char * filename, const char * outfile )
+{
+  FILE* outfh = fopen( outfile, "w" ); // Open file for writing
+  ssw_set_stdout(outfh);
+
+  ssw_file_t f = ssw_open_file(filename);
+
+  fprintf(ssw_stdout(),"opened ssw file from %s has %lu particles:\n",
+          ssw_mcnpflavour(f), ssw_nparticles(f));
+
+  fprintf(ssw_stdout(),
+           "    pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]"
+           "          ux          uy          uz    time[ns]      weight"
+           "      isurf\n" );
+  while( 1 ) {
+    const ssw_particle_t * p = ssw_load_particle(f);
+    if (!p)
+      break;
+
+    fprintf( ssw_stdout(),
+             "%10li %11.5g %11.5g %11.5g %11.5g"
+             " %11.5g %11.5g %11.5g %11.5g %11.5g %10li\n",
+             p->pdgcode, p->ekin, p->x, p->y, p->z,
+             p->dirx, p->diry, p->dirz, p->time*10,
+             p->weight, p->isurf );
+  }
+  ssw_close_file(f);
+  fclose(outfh);
+  ssw_set_stdout(NULL);
+
+}
+#endif

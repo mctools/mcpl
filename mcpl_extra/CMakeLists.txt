@@ -342,6 +342,7 @@ endforeach()
 if ( MCPL_ENABLE_TESTING )
   #Purely for usage in CTests apps
   add_library( mcplsswtestlib SHARED ${mcplsswlib_src_files} )
+  target_compile_definitions( mcplsswtestlib PRIVATE MCPLSSW_IS_TEST_LIB )
   target_link_libraries( mcplsswtestlib MCPL::MCPL ${MCPL_MATH_LIBRARIES} )
   if ( WIN32 )
     set_target_properties( mcplsswtestlib PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE )
