@@ -20,7 +20,7 @@
 ################################################################################
 
 def is_well_known_binary( frel ):
-    if frel.endswith('.mcpl.gz') or frel.endswith('.mcpl'):
+    if frel.endswith('.gz') or frel.endswith('.mcpl') or frel.endswith('.w'):
         return True
     if frel in ['devel/misc/test_encodings.log']:
         return True

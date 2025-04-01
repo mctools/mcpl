@@ -34,10 +34,19 @@ ignore_list_nonascii = set([
 #    'devel/plugin_database.yml',
 ])
 
+def get_frel(f):
+    from .dirs import reporoot
+    return str(f.relative_to(reporoot)).replace('\\','/')
+
+def is_external_file(f):
+    return get_frel(f).startswith('copy/')
+
+def is_external_datafile(f):
+    return f.parent.name=='data' and is_external_file(f)
+
 def main():
 
     from .srciter import all_files_iter
-    from .dirs import reporoot
     #For log files (and indeed all files) we simply test the size:
     max_size_kb_log = 300
     max_size_kb_other = 60
@@ -47,16 +56,17 @@ def main():
         'mcpl_python/src/mcpl/mcpl.py' : 80,
     }
     for f in all_files_iter():
+        frel = get_frel(f)
         lim = max_size_kb_log if f.suffix == '.log' else max_size_kb_other
-        lim = max_size_overrides.get(
-            str(f.relative_to( reporoot )).replace('\\','/'), lim
-        )
+        lim = max_size_overrides.get( frel, lim )
+        if is_external_file(f):
+            lim *= 10
         size_kb =  len(f.read_bytes()) / 1024.
         if size_kb > lim:
             raise SystemExit(f'File too large ({size_kb:.4g} kb): {f}')
 
     for f in all_files_iter('!*.log'):
-        frel = str(f.relative_to(reporoot)).replace('\\','/')
+        frel = get_frel(f)
         if frel in ignore_list:
             continue
         #Check can always be read as utf8:
@@ -77,6 +87,8 @@ def main():
             if ignore_on_win and platform.system() == 'Windows':
                 print("WARNING: Windows detected. Ignoring trailing"
                       f" newline error in {f} which might be false positive")
+            elif is_external_datafile(f):
+                print(f"WARNING: Ignoring trailing newline error in {f}")
             else:
                 raise SystemExit(f'No trailing newline in {f}')
 
@@ -93,7 +105,8 @@ def main():
                 raise SystemExit(f'TABs found in {f}')
             if ( e.endswith(' ')
                  and not frel.startswith('tests/data/refnc1/')
-                 and not frel.startswith('tests/data/refnc2d5/') ):
+                 and not frel.startswith('tests/data/refnc2d5/')
+                 and not is_external_datafile(f) ):
                 raise SystemExit(f'Trailing spaces at end-of-line found in {f}')
         #count trailing whitespace:
         nws = 0

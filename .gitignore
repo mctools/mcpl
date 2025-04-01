@@ -19,3 +19,7 @@ __pycache__/
 *~
 \#*\#
 .\#*
+
+#NOTE: Do not ignore "/copy/", it is used as a place where we can copy some
+#      files to be tested by mcpldevtool checks, so it should NOT be in
+#      .gitignore.
