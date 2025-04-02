@@ -49,36 +49,30 @@ agreement No 676548 (the BrightnESS project)
 
 #fixme: py3 only
 #fixme copyright statements
-#from __future__ import division, print_function, absolute_import,unicode_literals#enable py3 behaviour in py2.6+
 
-try:
-    _str = lambda s : s.encode('ascii') if (hasattr(s,'encode') and bytes==str) else s
-except SyntaxError:
-    print('MCPL ERROR: Unsupported obsolete Python detected')
-    raise SystemExit(1)
-
-__license__ = _str('CC0 1.0 Universal')
-__copyright__ = _str('Copyright 2017-2022')
-__version__ = _str('1.9.80')
-__status__ = _str('Production')
-__author__ = _str('Thomas Kittelmann')
-__maintainer__ = _str('Thomas Kittelmann')
-__email__ = _str('thomas.kittelmann@ess.eu')
-__all__ = [_str('MCPLFile'),
-           _str('MCPLParticle'),
-           _str('MCPLParticleBlock'),
-           _str('MCPLError'),
-           _str('dump_file'),
-           _str('convert2ascii'),
-           _str('app_pymcpltool'),
-           _str('collect_stats'),
-           _str('dump_stats'),
-           _str('plot_stats'),
-           _str('main')]
+__license__ = 'CC0 1.0 Universal'
+__copyright__ = 'Copyright 2017-2025'
+__version__ = '1.9.80'
+__status__ = 'Production'
+__author__ = 'Thomas Kittelmann'
+__maintainer__ = 'Thomas Kittelmann'
+__email__ = 'thomas.kittelmann@ess.eu'
+__all__ = ['MCPLFile',
+           'MCPLParticle',
+           'MCPLParticleBlock',
+           'MCPLError',
+           'dump_file',
+           'convert2ascii',
+           'app_pymcpltool',
+           'collect_stats',
+           'dump_stats',
+           'plot_stats',
+           'main']
 
 #Python version checks and workarounds:
 
-import sys,os
+import sys
+import os
 pyversion = sys.version_info[0:3]
 _minpy2=(2,6,6)
 _minpy3=(3,3,2)
@@ -87,12 +81,6 @@ if pyversion < _minpy2 or (pyversion >= (3,0,0) and pyversion < _minpy3):
            +' v%s+ or python3 v%s+).')%('.'.join(str(i) for i in pyversion),
                                         '.'.join(str(i) for i in _minpy2),
                                         '.'.join(str(i) for i in _minpy3)))
-
-#Enable more py3 like behaviour in py2:
-__metaclass__ = type  #classes are new-style without inheriting from "object"
-
-if pyversion < (3,0,0):
-    range = xrange #in py3, range is py2's xrange
 
 #For raw output of byte-array contents to stdout, without any troubles depending
 #on encoding or python versions:
@@ -122,7 +110,7 @@ try:
     from numpy.lib import NumpyVersion
 except ImportError:
     NumpyVersion = None
-if not NumpyVersion is None:
+if NumpyVersion is not None:
     if NumpyVersion(np.__version__) < '1.3.0':
         _numpyok = False
     if NumpyVersion(np.__version__) < '1.5.0':
@@ -140,11 +128,12 @@ else:
 if not _numpyok:
     print("MCPL WARNING: Unsupported numpy version (%s) detected"%(str(np.__version__)))
 
-np_dtype=np.dtype
+np_dtype = np.dtype
 try:
     np.dtype('f8')
 except TypeError:
-    np_dtype = lambda x : np.dtype(x.encode('ascii') if hasattr(x,'encode') else x)
+    def np_dtype( x ):
+        return np.dtype(x.encode('ascii') if hasattr(x,'encode') else x)
 
 #old np.unique does not understand return_inverse and unique1d must be used
 #instead:
@@ -531,7 +520,7 @@ class MCPLFile:
         raw_strings has no effect in python2. In python3, it will prevent utf-8
         decoding of string data loaded from the file."""
 
-        self._py3_str_decode = (not raw_strings) if (pyversion >= (3,0,0)) else False
+        self._str_decode = (not raw_strings)
 
         if hasattr(os,'fspath') and hasattr(filename,'__fspath__'):
             #python >= 3.6, work with all pathlike objects (including str and pathlib.Path):
@@ -649,11 +638,9 @@ class MCPLFile:
             #and struct.error are in the list due to bugs in the python 3.3 gzip
             #module):
             read_errors=[ IOError, OSError, EOFError, TypeError]
-            try:
-                import struct
+            import struct
+            if hasattr(struct,'error'):
                 read_errors += [struct.error]
-            except:
-                pass
             read_errors = tuple(read_errors)
             def fread_via_buffer(dtype,count):
                 dtype,count=np_dtype(dtype),np.squeeze(count)
@@ -663,8 +650,10 @@ class MCPLFile:
                     x = fh.read( n )
                 except read_errors:
                     x = tuple()
-                if len(x)==n: return np.frombuffer(x,dtype=dtype, count=count)
-                else: return np.ndarray(dtype=dtype,shape=0)#incomplete read => return empty array
+                if len(x)==n:
+                    return np.frombuffer(x,dtype=dtype, count=count)
+                else:
+                    return np.ndarray(dtype=dtype,shape=0)#incomplete read => return empty array
             self._fileread = fread_via_buffer
         self._fileseek = lambda pos : fh.seek(pos)
         self._fileclose = lambda : fh.close()
@@ -857,11 +846,11 @@ class MCPLFile:
             raise MCPLError('File is not an MCPL file!')
         x=list(map(chr,x[4:]))
         version = int(''.join(x[0:3]))
-        if not version in (2,3):
+        if version not in (2,3):
             raise MCPLError('File is in an unsupported MCPL version!')
         h['version']=version
         endianness = x[3]
-        if not endianness in ('L','B'):
+        if endianness not in ('L','B'):
             raise MCPLError('Unexpected value in endianness field!')
         h['endianness']=endianness
         dt= np_dtype("u8,5u4,i4,2u4").newbyteorder(endianness)
@@ -889,13 +878,14 @@ class MCPLFile:
         h['opt_universalweight'] = opt_universalweight
 
         def readarr():
-            l = self._fileread(dtype=np_dtype('u4').newbyteorder(endianness),count=1)
-            if len(l)!=1:
+            ll = self._fileread(dtype=np_dtype('u4').newbyteorder(endianness),
+                               count=1)
+            if len(ll)!=1:
                 raise MCPLError('Invalid header')
-            if l==0:
+            if ll==0:
                 return b''
-            cont = self._fileread(dtype='u1',count=l)
-            if len(cont)!=l:
+            cont = self._fileread(dtype='u1',count=ll)
+            if len(cont)!=ll:
                 raise MCPLError('Invalid header')
             return cont.tobytes() if hasattr(cont,'tobytes') else cont.tostring()
 
@@ -904,7 +894,7 @@ class MCPLFile:
         for i in range(ncomments):
             comments += [readarr()]
         blobs={}
-        blobs_user={}
+        #blobs_user={}
         blobkeys = []#to keep order available to dump_hdr
         for i in range(nblobs):
             blobkeys += [readarr()]
@@ -915,10 +905,11 @@ class MCPLFile:
                        + sum(4+len(c) for c in comments)
                        + sum(8+len(bk)+len(bv) for bk,bv in blobs.items()) )
         h['headersize'] = headersize
-        if self._py3_str_decode:
+        if self._str_decode:
             #attributes return python strings since raw_strings was not set, so
             #we must decode these before returning to the user. But for output
-            #compatibility with the C-mcpltool, dump_hdr() will use original ones above.
+            #compatibility with the C-mcpltool, dump_hdr() will use original
+            #ones above.
             h['sourcename_raw'] = sourcename
             h['comments_raw'] = comments
             h['blobs_raw'] = blobs
@@ -1121,44 +1112,61 @@ def app_pymcpltool(argv=None):
         _pymcpltool_usage(progname,errmsg)
     for a in args:
         if a.startswith(str('--')):
-            if a==str('--justhead'): opt_justhead=True
-            elif a==str('--nohead'): opt_nohead=True
-            elif a==str('--version'): opt_version=True
-            elif a==str('--stats'): opt_stats=True
-            elif a==str('--pdf'): opt_pdf=True
-            elif a==str('--gui'): opt_gui=True
-            elif a==str('--text'): opt_text=True
-            elif a==str('--help'): _pymcpltool_usage(progname)
-            else: bad(str("Unrecognised option : %s")%a)
+            if a==str('--justhead'):
+                opt_justhead=True
+            elif a==str('--nohead'):
+                opt_nohead=True
+            elif a==str('--version'):
+                opt_version=True
+            elif a==str('--stats'):
+                opt_stats=True
+            elif a==str('--pdf'):
+                opt_pdf=True
+            elif a==str('--gui'):
+                opt_gui=True
+            elif a==str('--text'):
+                opt_text=True
+            elif a==str('--help'):
+                _pymcpltool_usage(progname)
+            else:
+                bad(str("Unrecognised option : %s")%a)
         elif a.startswith(str('-')):
             a=a[1:]
             while a:
                 f,a=a[0],a[1:]
                 if f=='b':
-                    if not opt_blobkey is None:
+                    if opt_blobkey is not None:
                         bad("-b specified more than once")
                     if not a:
                         bad("Missing argument for -b")
                     opt_blobkey,a = a,''
                 elif f=='l' or f=='s':
-                    if not a: bad("Bad option: missing number")
-                    if not a.isdigit(): bad("Bad option: expected number")
+                    if not a:
+                        bad("Bad option: missing number")
+                    if not a.isdigit():
+                        bad("Bad option: expected number")
                     if f=='l':
-                        if not opt_limit is None:
+                        if opt_limit is not None:
                             bad("-l specified more than once")
                         opt_limit = int(a)
                     else:
                         assert f=='s'
-                        if not opt_skip is None:
+                        if opt_skip is not None:
                             bad("-s specified more than once")
                         opt_skip = int(a)
                     a=''
-                elif f=='j': opt_justhead=True
-                elif f=='n': opt_nohead=True
-                elif f=='v': opt_version=True
-                elif f=='t': opt_text=True
-                elif f=='h': _pymcpltool_usage(progname)
-                else: bad("Unrecognised option : -%s"%f)
+                elif f=='j':
+                    opt_justhead=True
+                elif f=='n':
+                    opt_nohead=True
+                elif f=='v':
+                    opt_version=True
+                elif f=='t':
+                    opt_text=True
+                elif f=='h':
+                    _pymcpltool_usage(progname)
+                else:
+                    bad("Unrecognised option : -%s"%f)
         else:
             filelist += [a]
     number_dumpopts = sum(1 for e in (opt_justhead,opt_nohead,opt_limit is not None,opt_skip is not None,opt_blobkey) if e)
@@ -1188,8 +1196,10 @@ def app_pymcpltool(argv=None):
         if (os.path.exists(filelist[1])):
             bad("Requested output file already exists.")
         try:
+            #fixme: open with context mgr (also elsewhere... and check noqas in
+            #file):
             fout = open(filelist[1],'w')
-        except (IOError,OSError) as e:
+        except (IOError, OSError):
             fout = None
         if not fout:
             raise MCPLError('Could not open output file.')
@@ -1268,7 +1278,7 @@ def _pdg_database(pdgcode):
                     'Es', 'Fm', 'Md', 'No', 'Lr', 'Rf', 'Db', 'Sg', 'Bh', 'Hs', 'Mt',
                     'Ds', 'Rg']
     if pdgcode>0 and pdgcode//100000000==10:
-        I = pdgcode % 10
+        III = pdgcode % 10
         pdgcode //= 10
         AAA = pdgcode%1000
         pdgcode //= 1000
@@ -1277,13 +1287,13 @@ def _pdg_database(pdgcode):
         L = pdgcode % 10
         pdgcode //= 10
         if pdgcode==10 and ZZZ>0 and AAA>0:
-            if L==0 and I==0 and ZZZ < len(_db_elem)+1:
+            if L==0 and III==0 and ZZZ < len(_db_elem)+1:
                 return '%s%i'%(_db_elem[ZZZ-1],AAA)
             s = 'ion(Z=%i,A=%i'%(ZZZ,AAA)
             if L:
                 s += ',L=%i'%L
-            if I:
-                s += ',I=%i'%I
+            if III:
+                s += ',I=%i'%III
             s += ')'
             return s
     return None
@@ -1362,7 +1372,7 @@ class _StatCollector:
 _possible_std_stats = ['ekin','x','y','z','ux','uy','uz','time','weight','polx','poly','polz']
 _possible_freq_stats = ['pdgcode','userflags']
 
-def collect_stats(mcplfile,stats=_str('all'),bin_data=True):
+def collect_stats(mcplfile,stats='all',bin_data=True):
     """Efficiently collect statistics from an entire file (or part of file, if limit
     or skip parameters are set). Returns dictionary with stat names as key and
     the collected statistics as values."""
@@ -1373,7 +1383,7 @@ def collect_stats(mcplfile,stats=_str('all'),bin_data=True):
     #values and their frequency will be returned instead:
     possible_freq_stats = set(_possible_freq_stats)
 
-    if _str(stats)==_str('all'):
+    if stats=='all':
         stats = possible_std_stats.union(possible_freq_stats)
 
     if not isinstance(stats,set):
@@ -1391,10 +1401,14 @@ def collect_stats(mcplfile,stats=_str('all'),bin_data=True):
 
     #Some stats might be constant for all particles in the file:
     constant_stats_available = set()
-    if mcplfile.opt_universalpdgcode: constant_stats_available.add('pdgcode')
-    if not mcplfile.opt_userflags: constant_stats_available.add('userflags')
-    if mcplfile.opt_universalweight: constant_stats_available.add('weight')
-    if not mcplfile.opt_polarisation: constant_stats_available |= set(['polx','poly','polz'])
+    if mcplfile.opt_universalpdgcode:
+        constant_stats_available.add('pdgcode')
+    if not mcplfile.opt_userflags:
+        constant_stats_available.add('userflags')
+    if mcplfile.opt_universalweight:
+        constant_stats_available.add('weight')
+    if not mcplfile.opt_polarisation:
+        constant_stats_available |= set(['polx','poly','polz'])
     cnst_stats = constant_stats_available.intersection(stats)
     stats = stats.difference(cnst_stats)
 
@@ -1471,7 +1485,7 @@ def collect_stats(mcplfile,stats=_str('all'),bin_data=True):
         for pb in mcplfile.particle_blocks:
             weight_sum += pb.weight.sum()
 
-    assert not weight_sum is None
+    assert weight_sum is not None
 
     if cnst_stats:
         if 'pdgcode' in cnst_stats:
@@ -1555,14 +1569,14 @@ def dump_stats(stats):
         print('------------------------------------------------------------------------------')
 
     for statname in _possible_std_stats:
-        if not statname in stats:
+        if statname not in stats:
             continue
         s=stats[statname]
         assert s['type']=='hist'
         su = '%s %s'%(statname.ljust(6),('[%s]'%s['unit']).rjust(5)) if s['unit'] else statname
         print('%s : %15g %15.5g %15g %15g'%(su.ljust(12),s['mean'],s['rms'],s['min'],s['max']))
     for statname in _possible_freq_stats:
-        if not statname in stats:
+        if statname not in stats:
             continue
         print('------------------------------------------------------------------------------')
         s=stats[statname]
@@ -1628,7 +1642,8 @@ def plot_stats(stats,pdf=False,set_backend=None):
             print("ERROR: matplotlib installation does not have required support for PDF output.")
             print()
             raise
-        pdf_file = pdf
+        pdf_file = pdf # noqa F841 (not really sure if this variable was needed
+                       # for object lifetime reasons).
         pdf = PdfPages(pdf)
 
     try:
@@ -1647,7 +1662,7 @@ def plot_stats(stats,pdf=False,set_backend=None):
 
     showmax=10
     for s in _possible_freq_stats:
-        if not s in stats:
+        if s not in stats:
             continue
         freq=stats[s]
         u,c=freq['unique_values'],freq['unique_values_counts']
@@ -1656,16 +1671,18 @@ def plot_stats(stats,pdf=False,set_backend=None):
             alttxt = fct_alt_descr(x)
             return '%s\n(%s)'%(str(x),alttxt) if alttxt is not None else str(x)
         #fmt_fct_raw = freq_formats_fcts[s]
-        fmt_fct = lambda i,x: fmt_fct_raw(x)
+        def fmt_fct( i, x ):
+            return fmt_fct_raw(x)
         if len(c)>showmax:
             sum_other = c[showmax-1:].sum()
             u,c = u[0:showmax].copy(), c[0:showmax].copy()
             c[showmax-1] = sum_other
-            fmt_fct = lambda i,x: 'other' if i==showmax-1 else fmt_fct_raw(x)
+            def fmt_fct( i, x ):
+                return 'other' if i==showmax-1 else fmt_fct_raw(x)
         percents = c.astype(float)*100.0/sum(c)
         labels = ['%s\n%.2f%%'%(fmt_fct(i,e),percents[i]) for i,e in enumerate(u)]
         barcenters=list(range(len(c)))
-        rects = plt.bar(barcenters, c, width=0.7,align='center',linewidth=0)
+        plt.bar(barcenters, c, width=0.7,align='center',linewidth=0)
         ax=plt.gca()
         ax.set_xticks(barcenters)
         percents=c.astype(float)*100.0/sum(c)
@@ -1681,7 +1698,7 @@ def plot_stats(stats,pdf=False,set_backend=None):
             plt.show()
 
     for s in _possible_std_stats:
-        if not s in stats:
+        if s not in stats:
             continue
         h=stats[s]
         hist,bins = h['hist'],h['hist_bins']
