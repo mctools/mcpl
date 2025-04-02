@@ -40,3 +40,37 @@ def work_in_tmpdir():
         finally:
             os.chdir(the_cwd)#Important to leave tmpdir *before* deletion, to
                              #avoid PermissionError on Windows.
+
+def calc_md5hexdigest( str_or_bytes, / ):
+    import hashlib
+    if hasattr(str_or_bytes,'encode'):
+        data = str_or_bytes.encode('utf8',errors='backslashreplace')
+    else:
+        data = str_or_bytes
+    return hashlib.md5( data ).hexdigest()
+
+def print_text_file_with_snipping(content,
+                                  nstart=30,
+                                  nend=20,
+                                  prefix=''):
+    """Prints text files, but snips out the middle part of larger
+    files. Printout includes a checksum of the snipped part."""
+    nstart = max(3,nstart)
+    nend = max(3,nend)
+    lines=content.splitlines()
+    if len(lines) < int((nstart+nend)*1.5+1):
+        for line in lines:
+            print(f'{prefix}{line}')
+    else:
+        for i in range(nstart):
+            print(f'{prefix}{lines[i]}')
+        md5 = calc_md5hexdigest( '\n'.join(lines[nstart:-nend]) )
+        def nleading_spaces( s ):
+            return len(s)-len(s.lstrip(' '))
+        nspaces = min(nleading_spaces(lines[nstart-1]),
+                      nleading_spaces(lines[-nend]))
+        spaces = ' '*nspaces
+        print(f"{prefix}{spaces}<<<SNIPPED {len(lines)-nstart-nend} LINES,"
+              f" MD5={md5}>>>")
+        for i in range(nend):
+            print(f'{prefix}{lines[-nend+i]}')
