@@ -6,14 +6,10 @@ exercise them is to configure and build (but not install) the CMake project at
 the root of the repository (i.e. one level up from here), with the option
 `MCPL_ENABLE_TESTING=ON`, and then subsequently launch the tests via ctest.
 
-fixme:
-
-Alternatively, one can also use the developer command `ncdevtool` from the
+Alternatively, one can also use the developer command `mcpldevtool` from the
 folder at `<reporoot>/devel/bin` (on unix one can inject it into the PATH by
 sourcing the script at `<reporoot>/devel/setup.sh`). With that, one can simply
-launch the tests via the command `ncdevtool cmake`. Alternatively, one can use
-the simplebuild (cf. https://mctools.github.io/simplebuild/) system and use the
-command `ncdevtool sb -t` to both build the MCPL code and launch the tests.
+launch the tests via the command `mcpldevtool cmake`.
 
 Note that in addition to the tests here, the command `ncdevtool check` provides
 several fast checks of the repository based on static code inspection.

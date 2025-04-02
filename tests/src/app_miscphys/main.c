@@ -32,7 +32,7 @@
 
 int mcpltests_produce_miscphys_file(const char * filename) {
   mcpl_outfile_t f = mcpl_create_outfile(filename);
-  mcpl_hdr_set_srcname(f,"ESS/dgcode/MCPLTests/miscphys");//fixme
+  mcpl_hdr_set_srcname(f,"MCPL/Tests/miscphys");
   mcpl_enable_polarisation(f);
   mcpl_enable_userflags(f);
   mcpl_hdr_add_comment(f,"A simple file with various particle species intended as test input.");

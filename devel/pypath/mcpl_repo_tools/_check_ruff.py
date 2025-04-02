@@ -27,9 +27,6 @@ def main():
     if not ruff:
         raise SystemExit('ERROR: ruff command not available')
     files = list(all_files_iter('py'))
-    if True:
-        #fixme update mcpl.py as well:
-        files = [ f for f in files if not f.name=='mcpl.py' ]
     rv = subprocess.run(['ruff','check']+ files )
     if rv.returncode!=0:
         raise SystemExit(1)

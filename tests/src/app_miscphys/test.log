@@ -3,11 +3,11 @@ Opened MCPL file mp.mcpl:
   Basic info
     Format             : MCPL-3
     No. of particles   : 195
-    Header storage     : 152 bytes
+    Header storage     : 142 bytes
     Data storage       : 10140 bytes
 
   Custom meta data
-    Source             : "ESS/dgcode/MCPLTests/miscphys"
+    Source             : "MCPL/Tests/miscphys"
     Number of comments : 1
           -> comment 0 : "A simple file with various particle species intended as test input."
     Number of blobs    : 0

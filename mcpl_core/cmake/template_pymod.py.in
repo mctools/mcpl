@@ -61,11 +61,6 @@ def libname():
     #Expanded by CMake:
     return '$<TARGET_FILE_NAME:mcpl>'#NB: generator expression
 
-#def namespace():
-#    #Expanded by CMake:
-#    #FIXME: support namespace
-#    return '@MCPL_NAMESPACE@'
-
 _cache_libpath = [None]
 def libpath():
     if _cache_libpath[0] is None:

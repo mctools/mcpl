@@ -77,7 +77,7 @@ file1 = test_data_dir.joinpath('ref','reffile_12.mcpl')
 file2 = test_data_dir.joinpath('ref','reffile_1.mcpl')
 
 file3 = test_data_dir.joinpath('ref','miscphys.mcpl.gz')
-file4 = test_data_dir.joinpath('reffmt2','reffile_8.mcpl')#FIXME MCPLTestsFMT2/reffile_8.mcpl
+file4 = test_data_dir.joinpath('reffmt2','reffile_8.mcpl')
 filecrash = test_data_dir.joinpath('ref','reffile_crash.mcpl')
 
 badfiles = sorted(test_data_dir.joinpath('ref').glob('reffile_bad*.mcpl*'))

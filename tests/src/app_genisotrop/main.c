@@ -98,7 +98,12 @@ int mcpltests_genisotrop(int argc,char**argv) {
     printf("Can not specify both f and i\n");
     return 1;
   }
-  unsigned long nstat = atol(argv[1]);//FIXME: should support > 32bit limit
+  long long nstat_raw = atoll(argv[1]);
+  if ( nstat_raw < 0 ) {
+    printf("negative nstat\n");
+    return 1;
+  }
+  unsigned long long nstat = (unsigned long long)nstat_raw;
   const char * filename = argv[2];
   srand(117);
   mcpl_outfile_t f = mcpl_create_outfile(filename);
