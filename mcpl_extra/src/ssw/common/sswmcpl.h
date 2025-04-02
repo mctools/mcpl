@@ -22,21 +22,19 @@
 #ifndef sswmcpl_h
 #define sswmcpl_h
 
-//////////////////////////////////////////////////////////////////////////////////////
-//                                                                                  //
-// Functions for converting SSW files from MCNP(X) to MCPL files.                   //
-//                                                                                  //
-// The code was written with help from E. Klinkby DTU NuTech.                       //
-//                                                                                  //
-// This file can be freely used as per the terms in MCPLExport/license.txt.         //
-//                                                                                  //
-// However, note that usage of MCNP(X)-related utilities might require additional   //
-// permissions and licenses from third-parties, which is not within the scope of    //
-// the MCPL project itself.                                                         //
-//                                                                                  //
-// Written 2015-2017 by Thomas.Kittelmann@ess.eu                                    //
-//                                                                                  //
-//////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// Functions for converting SSW files from MCNP(X) to MCPL files.             //
+//                                                                            //
+// The code was written with help from E. Klinkby DTU NuTech.                 //
+//                                                                            //
+// Note that usage of MCNP(X)-related utilities might require additional      //
+// permissions and licenses from third-parties, which is not within the       //
+// scope of the MCPL project itself.                                          //
+//                                                                            //
+// Written 2015-2025 by Thomas.Kittelmann@ess.eu                              //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////////////////////

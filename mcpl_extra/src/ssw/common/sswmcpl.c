@@ -19,23 +19,20 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////////////////////
-//                                                                                 //
-//  sswmcpl : Code for converting between MCPL and SSW files from MCNP(X).         //
-//                                                                                 //
-//                                                                                 //
-//  Compilation of sswmcpl.c can proceed via any compliant C-compiler using        //
-//  -std=c99 later.
-//                                                                                 //
-// This file can be freely used as per the terms in MCPLExport/license.txt.        //
-//                                                                                 //
-// However, note that usage of MCNP(X)-related utilities might require additional  //
-// permissions and licenses from third-parties, which is not within the scope of   //
-// the MCPL project itself.                                                        //
-//                                                                                 //
-// Written 2015-2017, thomas.kittelmann@ess.eu (European Spallation Source).       //
-//                                                                                 //
-/////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//  sswmcpl : Code for converting between MCPL and SSW files from MCNP(X).    //
+//                                                                            //
+//  Compilation of sswmcpl.c can proceed via any compliant C-compiler using   //
+//  -std=c99 later.                                                           //
+//                                                                            //
+// Note that usage of MCNP(X)-related utilities might require additional      //
+// permissions and licenses from third-parties, which is not within the       //
+// scope of the MCPL project itself.                                          //
+//                                                                            //
+// Written 2015-2025, thomas.kittelmann@ess.eu (European Spallation Source).  //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
 #include "sswmcpl.h"
 #include "sswread.h"

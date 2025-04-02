@@ -22,28 +22,27 @@
 #ifndef sswread_h
 #define sswread_h
 
-/////////////////////////////////////////////////////////////////////////////////////
-//                                                                                 //
-// Code for reading SSW files from MCNP(X). Not all versions of the format has     //
-// been tested, but it is the hope that this will at the very least provide        //
-// reliable functionality for extracting the particle information within.          //
-//                                                                                 //
-// The code was written with help from E. Klinkby DTU NuTech and under             //
-// inspiration from equivalent programs written in Fortran (E. Klinkby DTU         //
-// NuTech with help from H. Breitkreutz) and in python (PyNE & mc-tools by K.      //
-// Batkov ESS).                                                                    //
-//                                                                                 //
-// Refer to the top of sswread.c for details regarding how to build.               //
-//                                                                                 //
-// This file can be freely used as per the terms in MCPLExport/license.txt.        //
-//                                                                                 //
-// However, note that usage of MCNP(X)-related utilities might require additional  //
-// permissions and licenses from third-parties, which is not within the scope of   //
-// the MCPL project itself.                                                        //
-//                                                                                 //
-// Written 2015-2017, thomas.kittelmann@ess.eu (European Spallation Source).       //
-//                                                                                 //
-/////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// Code for reading SSW files from MCNP(X). Not all versions of the format    //
+// has been tested, but it is the hope that this will at the very least       //
+// provide reliable functionality for extracting the particle information     //
+// within.                                                                    //
+//                                                                            //
+// The code was written with help from E. Klinkby DTU NuTech and under        //
+// inspiration from equivalent programs written in Fortran (E. Klinkby DTU    //
+// NuTech with help from H. Breitkreutz) and in python (PyNE & mc-tools by    //
+// K. Batkov ESS).                                                            //
+//                                                                            //
+// Refer to the top of sswread.c for details regarding how to build.          //
+//                                                                            //
+// Note that usage of MCNP(X)-related utilities might require additional      //
+// permissions and licenses from third-parties, which is not within the       //
+// scope of the MCPL project itself.                                          //
+//                                                                            //
+// Written 2015-2025, thomas.kittelmann@ess.eu (European Spallation Source).  //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
 #include <stdint.h>
 

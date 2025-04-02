@@ -19,25 +19,23 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////////////////////
-//                                                                                 //
-//  sswread : Code for reading SSW files from MCNP(X)                              //
-//                                                                                 //
-//                                                                                 //
-//  Compilation of sswread.c can proceed via any compliant C-compiler using        //
-//  -std=c99 or later, and the resulting code must always be linked with libm      //
-//  (using -lm).                                                                   //
-//                                                                                 //
-// This file can be freely used as per the terms in MCPLExport/license.txt.        //
-//                                                                                 //
-// However, note that usage of MCNP(X)-related utilities might require additional  //
-// permissions and licenses from third-parties, which is not within the scope of   //
-// the MCPL project itself.                                                        //
-//                                                                                 //
-// fixme: update copyright year                                                    //
-// Written 2015-2017, thomas.kittelmann@ess.eu (European Spallation Source).       //
-//                                                                                 //
-/////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//  sswread : Code for reading SSW files from MCNP(X)                         //
+//                                                                            //
+//  Compilation of sswread.c can proceed via any compliant C-compiler using   //
+//  -std=c99 or later, and the resulting code must always be linked with libm //
+//  (using -lm).                                                              //
+//                                                                            //
+// Note that usage of MCNP(X)-related utilities might require additional      //
+// permissions and licenses from third-parties, which is not within the       //
+// scope of the MCPL project itself.                                          //
+//                                                                            //
+// Written 2015-2025, thomas.kittelmann@ess.eu (European Spallation Source).  //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+// fixme: check/update copyright year in all files
 
 #include "sswread.h"
 #include "mcpl.h"
