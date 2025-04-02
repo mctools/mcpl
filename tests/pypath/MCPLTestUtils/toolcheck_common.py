@@ -56,7 +56,7 @@ def cmd(*args, print_md5sum_of_output = False,fail=False):
     #print(repr(fullcmd))
     #print("----------------------------------------------")
     #flush()
-    rv = subprocess.run( fullcmd, capture_output = True )
+    rv = subprocess.run( fullcmd + ['--fakeversion'], capture_output = True )
     flush()
     assert not rv.stderr, "process had stderr"
     flush()

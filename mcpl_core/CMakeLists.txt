@@ -313,6 +313,8 @@ target_compile_definitions( mcpltool PRIVATE mcpl_LIB_IS_STATIC )
 #  target_compile_definitions( MCPL PRIVATE MCPL_DISABLE_DYNLOAD )
 #endif()
 
+include( "mcpl_headercreate" )
+mcpl_create_header( mcplheader_include_path )
 
 set_target_common_props( mcpl )
 set_target_common_props( mcpltool )
@@ -324,14 +326,14 @@ target_include_directories(
   mcpl
   PRIVATE "${PROJECT_SOURCE_DIR}/src"
   PUBLIC
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-  #$<BUILD_INTERFACE:${ncapi_include_path}>
+  #$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${mcplheader_include_path}>
   $<INSTALL_INTERFACE:${MCPL_INCDIR}>
 )
 target_include_directories(
   mcpltool PRIVATE
   "${PROJECT_SOURCE_DIR}/src"
-  "${PROJECT_SOURCE_DIR}/include"
+  "${mcplheader_include_path}"
 )
 
 #Zlib:
@@ -361,7 +363,7 @@ install(
 )
 
 install(
-  FILES "${PROJECT_SOURCE_DIR}/include/mcpl.h"
+  FILES "${mcplheader_include_path}/mcpl.h"
   DESTINATION "${MCPL_INCDIR}"
 )
 

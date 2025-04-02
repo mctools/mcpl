@@ -213,6 +213,15 @@ MCPL_LOCAL void mcpl_write_string(FILE* f, const char * str, const char * errmsg
   mcpl_write_buffer(f,(uint32_t)n,str,errmsg);//nb: we don't write the terminating null-char
 }
 
+MCPL_LOCAL int mcpl_internal_fakeconstantversion( int enable )
+{
+  //For consistent output of unit tests:
+  static int fakev = 0;
+  if ( enable )
+    fakev = 1;
+  return fakev;
+}
+
 typedef struct MCPL_LOCAL {
   char * filename;
   FILE * file;
@@ -2047,7 +2056,11 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
     opt_uf = 0;
 
   mcpl_outfile_t out = mcpl_create_outfile(file_output);
-  mcpl_hdr_set_srcname(out,"mcpl_forcemerge_files (from MCPL v" MCPL_VERSION_STR ")");
+
+  if ( mcpl_internal_fakeconstantversion(0) )
+    mcpl_hdr_set_srcname(out,"mcpl_forcemerge_files (from MCPL v" "99.99.99" ")");
+  else
+    mcpl_hdr_set_srcname(out,"mcpl_forcemerge_files (from MCPL v" MCPL_VERSION_STR ")");
   if ( opt_uf )
     mcpl_enable_userflags(out);
   if ( opt_pol )
@@ -2413,6 +2426,7 @@ int mcpl_tool(int argc,char** argv) {
   int opt_repair = 0;
   int opt_version = 0;
   int opt_text = 0;
+  int opt_fakeversion = 0;//undocumented unoffical flag for mcpl unit tests
 
   int i;
   for (i = 1; i<argc; ++i) {
@@ -2479,6 +2493,7 @@ int mcpl_tool(int argc,char** argv) {
       const char * lo_inplace = "inplace";
       const char * lo_extract = "extract";
       const char * lo_preventcomment = "preventcomment";
+      const char * lo_fakeversion = "fakeversion";
       const char * lo_repair = "repair";
       const char * lo_version = "version";
       const char * lo_text = "text";
@@ -2497,6 +2512,7 @@ int mcpl_tool(int argc,char** argv) {
       else if (strstr(lo_repair,a)==lo_repair) opt_repair = 1;
       else if (strstr(lo_version,a)==lo_version) opt_version = 1;
       else if (strstr(lo_preventcomment,a)==lo_preventcomment) opt_preventcomment = 1;
+      else if (strstr(lo_fakeversion,a)==lo_fakeversion) opt_fakeversion = 1;
       else if (strstr(lo_text,a)==lo_text) opt_text = 1;
       else return free(filenames),mcpl_tool_usage(argv,"Unrecognised option");
     } else if (n>=1&&a[0]!='-') {
@@ -2509,6 +2525,9 @@ int mcpl_tool(int argc,char** argv) {
       return free(filenames),mcpl_tool_usage(argv,"Bad arguments");
     }
   }
+
+  if ( opt_fakeversion )
+    mcpl_internal_fakeconstantversion(1);
 
   if ( opt_extract==0 && pdgcode_str )
     return free(filenames),mcpl_tool_usage(argv,"-p can only be used with --extract.");
@@ -2539,7 +2558,11 @@ int mcpl_tool(int argc,char** argv) {
     free(filenames);
     if (nfilenames)
       return mcpl_tool_usage(argv,"Unrecognised arguments for --version.");
-    printf("MCPL version " MCPL_VERSION_STR "\n");
+
+    if ( mcpl_internal_fakeconstantversion(0) )
+      printf("MCPL version " "99.99.99" "\n");
+    else
+      printf("MCPL version " MCPL_VERSION_STR "\n");
     return 0;
   }
 

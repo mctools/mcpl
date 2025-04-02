@@ -46,10 +46,14 @@ def run_mcpltool(*args, expect_failure):
            flush=True )
 
     import subprocess
-    rv = subprocess.run( [mcpltool_cmd] + cmdargs,
+    rv = subprocess.run( [mcpltool_cmd] + cmdargs + ['--fakeversion'],
                          capture_output=True )
     assert not rv.stderr
-    print(fix_print_str(rv.stdout.replace(b'\r\n',b'\n').decode()))
+    print(fix_print_str(rv.stdout
+                        .replace(b'\r\n',b'\n')
+                        .replace(('MCPL v%s'%mcpl.__version__).encode('ascii'),
+                                 b'MCPL v<current>' )
+                        .decode()))
     print("Ended in failure: %s"%('yes' if rv.returncode!=0 else 'no'))
     if (rv.returncode != 0) != expect_failure:
         raise SystemExit('Did not end in failure as expected!'

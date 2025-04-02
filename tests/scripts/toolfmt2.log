@@ -169,12 +169,12 @@ Other options:
 ----------------------------------------------
 Running mcpltool --version
 ----------------------------------------------
-MCPL version 1.6.2
+MCPL version 99.99.99
 
 ----------------------------------------------
 Running mcpltool --v
 ----------------------------------------------
-MCPL version 1.6.2
+MCPL version 99.99.99
 
 ----------------------------------------------
 Running mcpltool rf16cp.mcpl --justhead
