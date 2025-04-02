@@ -168,6 +168,7 @@ class CMakeRunner:
                           args + ['--config',self._bt2cmakebt(bt)] )
         self.stage = 'bld'
 
+    #FIXME: Add test which verifies output of e.g. mcpltool --version.
     def do_ctest( self ):
         assert self.mode == 'ctest'
         assert self.stage == 'bld'

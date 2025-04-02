@@ -25,15 +25,7 @@
 //                                                                                 //
 //                                                                                 //
 //  Compilation of sswmcpl.c can proceed via any compliant C-compiler using        //
-//  -std=c99 later. Furthermore, the following preprocessor flag can be used       //
-//  when compiling sswmcpl.c to fine tune the build process.                       //
-//                                                                                 //
-//  SSWMCPL_HDR_INCPATH  : Specify alternative value if the sswmcpl header         //
-//                         itself is not to be included as "sswmcpl.h".            //
-//  SSWREAD_HDR_INCPATH  : Specify alternative value if the sswread header         //
-//                         is not to be included as "sswread.h".                   //
-//  MCPL_HEADER_INCPATH  : Specify alternative value if the MCPL header is         //
-//                         not to be included as "mcpl.h".                         //
+//  -std=c99 later.
 //                                                                                 //
 // This file can be freely used as per the terms in MCPLExport/license.txt.        //
 //                                                                                 //
@@ -45,23 +37,9 @@
 //                                                                                 //
 /////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef SSWMCPL_HDR_INCPATH
-#  include SSWMCPL_HDR_INCPATH
-#else
-#  include "sswmcpl.h"
-#endif
-
-#ifdef SSWREAD_HDR_INCPATH
-#  include SSWREAD_HDR_INCPATH
-#else
-#  include "sswread.h"
-#endif
-
-#ifdef MCPL_HEADER_INCPATH
-#  include MCPL_HEADER_INCPATH
-#else
-#  include "mcpl.h"
-#endif
+#include "sswmcpl.h"
+#include "sswread.h"
+#include "mcpl.h"
 
 #include <stdlib.h>
 #include <string.h>

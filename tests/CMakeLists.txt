@@ -136,6 +136,7 @@ set( mcplextratest_base_appenvmod "${mcpltest_appenvmod}" )
 if ( WIN32 )
   set(
     mcplextratest_base_envmod_common
+    #fixme: maybe this does not make a difference now:
     "PATH=path_list_prepend:$<TARGET_FILE_DIR:mcplsswtestlib>"
     "PATH=path_list_prepend:$<TARGET_FILE_DIR:${mcpltests_mcpllib_target}>"
   )

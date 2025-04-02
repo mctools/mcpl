@@ -274,11 +274,21 @@ set(
   "src/ssw/common/sswread.h"  "src/ssw/common/sswread.c"
   "src/ssw/common/sswmcpl.h"  "src/ssw/common/sswmcpl.c"
 )
-
+set(
+  mcplphitslib_src_files
+  "src/phits/common/phitsread.h"  "src/phits/common/phitsread.c"
+  "src/phits/common/phitsmcpl.h"  "src/phits/common/phitsmcpl.c"
+)
 set( ssw2mcpl_main "src/ssw/app_ssw2mcpl/main.c" )
 set( mcpl2ssw_main "src/ssw/app_mcpl2ssw/main.c" )
+set( phits2mcpl_main "src/phits/app_phits2mcpl/main.c" )
+set( mcpl2phits_main "src/phits/app_mcpl2phits/main.c" )
 
-set( srcs_c_all ${mcplsswlib_src_files} ${ssw2mcpl_main} ${mcpl2ssw_main} )
+set(
+  srcs_c_all
+  ${mcplsswlib_src_files} ${ssw2mcpl_main} ${mcpl2ssw_main}
+  ${mcplphitslib_src_files} ${phits2mcpl_main} ${mcpl2phits_main}
+)
 set( srcs_all ${srcs_c_all} )
 
 set_source_files_properties(
@@ -286,7 +296,11 @@ set_source_files_properties(
   PROPERTIES C_VISIBILITY_PRESET "hidden"
 )
 
-set( all_targets "ssw2mcpl" "mcpl2ssw" )
+set(
+  all_targets
+  "ssw2mcpl" "mcpl2ssw"
+  "phits2mcpl" "mcpl2phits"
+)
 
 if ( MCPLEXTRA_BUILD_STRICT AND mcplextra_compiler_supports_strict_comp_flags )
   set_property(
@@ -295,7 +309,6 @@ if ( MCPLEXTRA_BUILD_STRICT AND mcplextra_compiler_supports_strict_comp_flags )
   )
 endif()
 
-#set_target_properties( mcplssw PROPERTIES C_VISIBILITY_PRESET "hidden" )
 detect_math_libs()
 
 
@@ -304,6 +317,12 @@ target_include_directories( ssw2mcpl PRIVATE "${PROJECT_SOURCE_DIR}/src/ssw/comm
 
 add_executable( mcpl2ssw ${mcpl2ssw_main} ${mcplsswlib_src_files} )
 target_include_directories( mcpl2ssw PRIVATE "${PROJECT_SOURCE_DIR}/src/ssw/common" )
+
+add_executable( phits2mcpl ${phits2mcpl_main} ${mcplphitslib_src_files} )
+target_include_directories( phits2mcpl PRIVATE "${PROJECT_SOURCE_DIR}/src/phits/common" )
+
+add_executable( mcpl2phits ${mcpl2phits_main} ${mcplphitslib_src_files} )
+target_include_directories( mcpl2phits PRIVATE "${PROJECT_SOURCE_DIR}/src/phits/common" )
 
 foreach( tgt ${all_targets} )
   target_link_libraries( ${tgt} MCPL::MCPL ${MCPL_MATH_LIBRARIES} )
