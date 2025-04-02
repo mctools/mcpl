@@ -42,7 +42,11 @@ def is_external_file(f):
     return get_frel(f).startswith('copy/')
 
 def is_external_datafile(f):
-    return f.parent.name=='data' and is_external_file(f)
+    if not ( f.parent.parent.name=='data' or f.parent.name=='data' ):
+        return False
+    if not is_external_file(f):
+        return False
+    return True
 
 def main():
 
