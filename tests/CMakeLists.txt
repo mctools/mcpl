@@ -138,18 +138,21 @@ if ( WIN32 )
     mcplextratest_base_envmod_common
     #fixme: maybe this does not make a difference now:
     "PATH=path_list_prepend:$<TARGET_FILE_DIR:mcplsswtestlib>"
+    "PATH=path_list_prepend:$<TARGET_FILE_DIR:mcplphitstestlib>"
     "PATH=path_list_prepend:$<TARGET_FILE_DIR:${mcpltests_mcpllib_target}>"
   )
 elseif( APPLE )
   set(
     mcplextratest_base_envmod_common
     "DYLD_LIBRARY_PATH=path_list_prepend:$<TARGET_FILE_DIR:mcplsswtestlib>"
+    "DYLD_LIBRARY_PATH=path_list_prepend:$<TARGET_FILE_DIR:mcplphitstestlib>"
     "DYLD_LIBRARY_PATH=path_list_prepend:$<TARGET_FILE_DIR:${mcpltests_mcpllib_target}>"
   )
 else()
   set(
     mcplextratest_base_envmod_common
     "LD_LIBRARY_PATH=path_list_prepend:$<TARGET_FILE_DIR:mcplsswtestlib>"
+    "LD_LIBRARY_PATH=path_list_prepend:$<TARGET_FILE_DIR:mcplphitstestlib>"
     "LD_LIBRARY_PATH=path_list_prepend:$<TARGET_FILE_DIR:${mcpltests_mcpllib_target}>"
   )
 endif()
@@ -160,6 +163,7 @@ list(
   "MCPL2SSW_FILE=set:$<TARGET_FILE:mcpl2ssw>"
   "SSW2MCPL_FILE=set:$<TARGET_FILE:ssw2mcpl>"
   "MCPLSSWTESTLIB_FILE=set:$<TARGET_FILE:mcplsswtestlib>"
+  "MCPLPHITSTESTLIB_FILE=set:$<TARGET_FILE:mcplphitstestlib>"
   "MCPLLIB_FILE=path_list_append:$<TARGET_FILE:${mcpltests_mcpllib_target}>"
   ${mcplextratest_base_envmod_common}
 )
@@ -197,10 +201,16 @@ foreach( mcplextra_testdir ${MCPLEXTRA_TEST_DIR_LIST} )
     )
   endif()
   if ( IS_DIRECTORY "${mcplextra_testdir}/src" )
+    set(
+      tmpincdirs
+      ${mcpltests_extra_inc_dirs}
+      "${MCPLExtra_SOURCE_DIR}/src/ssw/common"
+      "${MCPLExtra_SOURCE_DIR}/src/phits/common"
+    )
     mctools_testutils_add_tests_apps(
       "${mcplextra_testdir}/src"
-      "${mcpltests_extra_link_libs};mcplsswtestlib"
-      "${mcpltests_extra_inc_dirs};${MCPLExtra_SOURCE_DIR}/src/ssw/common"
+      "${mcpltests_extra_link_libs};mcplsswtestlib;mcplphitstestlib"
+      "${tmpincdirs}"
       "${tmp_appenvmod}"
     )
   endif()

@@ -27,6 +27,12 @@ def cli_wrapper_mcpl2ssw():
 def cli_wrapper_ssw2mcpl():
     _run('ssw2mcpl')
 
+def cli_wrapper_mcpl2phits():
+    _run('mcpl2phits')
+
+def cli_wrapper_phits2mcpl():
+    _run('phits2mcpl')
+
 def _get_mcpl_shlibdir_unix():
     import subprocess
     rv = subprocess.run( ['mcpl-config','--show','shlibdir'],

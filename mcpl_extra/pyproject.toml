@@ -38,7 +38,8 @@ classifiers = [
 [project.scripts]
 ssw2mcpl = "_mcpl_extra.cli:cli_wrapper_ssw2mcpl"
 mcpl2ssw = "_mcpl_extra.cli:cli_wrapper_mcpl2ssw"
-#fixme: sswinspect ?
+phits2mcpl = "_mcpl_extra.cli:cli_wrapper_phits2mcpl"
+mcpl2phits = "_mcpl_extra.cli:cli_wrapper_mcpl2phits"
 
 [build-system]
 requires = ["scikit-build-core>=0.10","mcpl-core>=1.9.80"]
