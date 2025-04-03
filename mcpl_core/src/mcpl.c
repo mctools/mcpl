@@ -1935,7 +1935,8 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
   ////////////////////////////////////
 
   if (!nfiles)
-    mcpl_error("mcpl_forcemerge_files must be called with at least one input file");
+    mcpl_error("mcpl_forcemerge_files must be called"
+               " with at least one input file");
 
   mcpl_error_on_dups(nfiles,files);
 
@@ -1958,7 +1959,9 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
     }
   }
   if (normal_merge_ok) {
-    printf("MCPL mcpl_forcemerge_files called with %i files that are compatible for a standard merge => falling back to standard mcpl_merge_files function\n",nfiles);
+    printf("MCPL mcpl_forcemerge_files called with %i files that are"
+           " compatible for a standard merge => falling back to"
+           " standard mcpl_merge_files function\n",nfiles);
     return mcpl_merge_files(file_output,nfiles,files);
   }
 
@@ -1992,13 +1995,15 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
       opt_dp = 1;
 
     int32_t updg = mcpl_hdr_universal_pdgcode(f);
-    if ( !updg || ( lastseen_universalpdg && lastseen_universalpdg != updg ) ) {
+    if ( !updg
+         || ( lastseen_universalpdg && lastseen_universalpdg != updg ) ) {
       disallow_universalpdg = 1;
     } else {
       lastseen_universalpdg = updg;
     }
     double uw = mcpl_hdr_universal_weight(f);
-    if ( !uw || ( lastseen_universalweight && lastseen_universalweight != uw ) ) {
+    if ( !uw
+         || ( lastseen_universalweight && lastseen_universalweight != uw ) ) {
       disallow_universalweight = 1;
     } else {
       lastseen_universalweight = uw;
@@ -2107,7 +2112,8 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
       //particle data for latest format:
       if (!warned_oldversion) {
         warned_oldversion = 1;
-        printf("MCPL WARNING: Merging files from older MCPL format. Output will be in latest format.\n");
+        printf("MCPL WARNING: Merging files from older MCPL"
+               " format. Output will be in latest format.\n");
       }
 
       //Writing the next loop in an annoying way to silence MSVC C4706 warning:
@@ -2391,31 +2397,45 @@ int mcpl_tool(int argc,char** argv) {
       size_t j;
       for (j=1; j<n; ++j) {
         if (consume_digit) {
-          if (a[j]<'0'||a[j]>'9')
-            return free(filenames),mcpl_tool_usage(argv,"Bad option: expected number");
+          if (a[j]<'0'||a[j]>'9') {
+            free(filenames);
+            return mcpl_tool_usage(argv,"Bad option: expected number");
+          }
           *consume_digit *= 10;
           *consume_digit += a[j] - '0';
           continue;
         }
         if (a[j]=='b') {
-          if (blobkey)
-            return free(filenames),mcpl_tool_usage(argv,"-b specified more than once");
-          if (j+1==n)
-            return free(filenames),mcpl_tool_usage(argv,"Missing argument for -b");
+          if (blobkey) {
+            free(filenames);
+            return mcpl_tool_usage(argv,"-b specified more than once");
+          }
+          if (j+1==n) {
+            free(filenames);
+            return mcpl_tool_usage(argv,"Missing argument for -b");
+          }
           blobkey = a+j+1;
           break;
         }
         if (a[j]=='p') {
-          if (pdgcode_str)
-            return free(filenames),mcpl_tool_usage(argv,"-p specified more than once");
-          if (j+1==n)
-            return free(filenames),mcpl_tool_usage(argv,"Missing argument for -p");
+          if (pdgcode_str) {
+            free(filenames);
+            return mcpl_tool_usage(argv,"-p specified more than once");
+          }
+          if (j+1==n) {
+            free(filenames);
+            return mcpl_tool_usage(argv,"Missing argument for -p");
+          }
           pdgcode_str = a+j+1;
           break;
         }
 
         switch(a[j]) {
-          case 'h': return free(filenames), mcpl_tool_usage(argv,0);
+          case 'h':
+            {
+              free(filenames);
+              return mcpl_tool_usage(argv,0);
+            }
           case 'j': opt_justhead = 1; break;
           case 'n': opt_nohead = 1; break;
           case 'm': opt_merge = 1; break;
@@ -2426,12 +2446,17 @@ int mcpl_tool(int argc,char** argv) {
           case 'l': consume_digit = &opt_num_limit; break;
           case 's': consume_digit = &opt_num_skip; break;
           default:
-            return free(filenames),mcpl_tool_usage(argv,"Unrecognised option");
+            {
+              free(filenames);
+              return mcpl_tool_usage(argv,"Unrecognised option");
+            }
         }
         if (consume_digit) {
           *consume_digit = 0;
-          if (j+1==n)
-            return free(filenames),mcpl_tool_usage(argv,"Bad option: missing number");
+          if (j+1==n) {
+            free(filenames);
+            return mcpl_tool_usage(argv,"Bad option: missing number");
+          }
         }
       }
     } else if (n>=3&&a[0]=='-'&&a[1]=='-') {
@@ -2733,23 +2758,7 @@ int mcpl_gzip_file_rc(const char * filename)
   return mcpl_gzip_file(filename);
 }
 
-MCPL_LOCAL int mcpl_custom_gzip(const char *file, const char *mode);//return 1 if successful, 0 if not
-
-int mcpl_gzip_file(const char * filename)
-{
-  char * bn = mcpl_basename(filename);
-  printf("MCPL: Attempting to compress file %s with gzip\n",bn);//FIXME should say "with zlib" but trying to preserve reflog outputs right now
-  if (!mcpl_custom_gzip(filename,"wb")) {
-    printf("MCPL ERROR: Problems encountered while compressing file %s.\n",bn);
-    free(bn);
-    return 0;
-  }
-  printf("MCPL: Successfully compressed file into %s.gz\n",bn);
-  free(bn);
-  return 1;
-}
-
-MCPL_LOCAL int mcpl_custom_gzip(const char *filename, const char *mode)//fixme: mode is always "wb"
+MCPL_LOCAL int mcpl_internal_do_gzip(const char *filename)
 {
   //Open input file:
   FILE *handle_in = mcpl_fopen(filename, "rb");
@@ -2761,12 +2770,9 @@ MCPL_LOCAL int mcpl_custom_gzip(const char *filename, const char *mode)//fixme: 
   char * outfn = mcpl_internal_malloc(nn + 4);
   memcpy(outfn,filename,nn);
   memcpy(outfn+nn,".gz",4);
-  /* outfn[0] = '\0'; */
-  /* strncat(outfn,filename,nn); */
-  /* strncat(outfn,".gz",3); */
 
   //Open output file:
-  gzFile handle_out = mcpl_gzopen(outfn, mode);
+  gzFile handle_out = mcpl_gzopen(outfn, "wb");
 
   free(outfn);
 
@@ -2803,6 +2809,20 @@ MCPL_LOCAL int mcpl_custom_gzip(const char *filename, const char *mode)//fixme: 
   mcpl_internal_delete_file( filename );
   return 1;
 
+}
+
+int mcpl_gzip_file(const char * filename)
+{
+  char * bn = mcpl_basename(filename);
+  printf("MCPL: Attempting to compress file %s with gzip\n",bn);//FIXME should say "with zlib" but trying to preserve reflog outputs right now
+  if (!mcpl_internal_do_gzip(filename)) {
+    printf("MCPL ERROR: Problems encountered while compressing file %s.\n",bn);
+    free(bn);
+    return 0;
+  }
+  printf("MCPL: Successfully compressed file into %s.gz\n",bn);
+  free(bn);
+  return 1;
 }
 
 #ifdef MCPL_THIS_IS_MS

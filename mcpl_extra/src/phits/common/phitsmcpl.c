@@ -44,78 +44,8 @@
 #include <stdio.h>
 #include <assert.h>
 
-void phits_error(const char * msg);//fwd declare internal function from phitsread.c
-
-int phitsmcpl_buf_is_text(size_t n, const unsigned char * buf) {
-  //fixme: use common fct
-  //We correctly allow ASCII & UTF-8 but falsely classify UTF-16 and UTF-32 as
-  //data. See http://stackoverflow.com/questions/277521#277568 for how we could
-  //also detect UTF-16 & UTF-32.
-  const unsigned char * bufE = buf + n;
-  for (; buf!=bufE; ++buf)
-    if ( ! ( ( *buf >=9 && *buf<=13 ) || ( *buf >=32 && *buf<=126 ) || *buf >=128 ) )
-      return 0;
-  return 1;
-}
-
-int phitsmcpl_file2buf(const char * filename, unsigned char** buf, size_t* lbuf, size_t maxsize, int require_text) {
-  //fixme: use common fct
-  *buf = 0;
-  *lbuf = 0;
-  FILE * file = fopen(filename, "rb");
-  if (!file) {
-    printf("Error: could not open file %s.\n",filename);
-    return 0;
-  }
-
-  size_t pos_begin = ftell(file);
-  size_t bbuf_size = maxsize;//default to max size (in case SEEK_END does not work)
-  int bbuf_size_guess = 1;
-  if (!fseek( file, 0, SEEK_END )) {
-    size_t pos_end = ftell(file);
-    bbuf_size = pos_end-pos_begin;
-    bbuf_size_guess = 0;
-    if (bbuf_size<50) {
-      printf("Error: file %s is suspiciously short.\n",filename);
-      return 0;
-    }
-    if (bbuf_size>104857600) {
-      printf("Error: file %s is larger than %g bytes.\n",filename,(double)maxsize);
-      return 0;
-    }
-  }
-  if (fseek( file, 0, SEEK_SET)) {
-    printf("Error: Could not rewind file %s.\n",filename);
-    return 0;
-  }
-  unsigned char * bbuf = malloc(bbuf_size);
-  unsigned char * bbuf_iter = bbuf;
-  size_t left = bbuf_size;
-  while (left) {
-    size_t nb = fread(bbuf_iter, 1, left, file);
-    if (bbuf_size_guess&&nb==0) {
-      bbuf_size -= left;
-      break;
-    }
-    if (nb==0||nb>left) {
-      printf("Error: file %s read-error.\n",filename);
-      free(bbuf);
-      return 0;
-    }
-    bbuf_iter += nb;
-    left -= nb;
-  }
-  fclose(file);
-
-  if ( require_text && !phitsmcpl_buf_is_text(bbuf_size, bbuf) ) {
-    printf("Error: file %s does not appear to be a text file.\n",filename);
-    free(bbuf);
-    return 0;
-  }
-  *buf = bbuf;
-  *lbuf = bbuf_size;
-  return 1;
-}
+void phits_error(const char * msg);//fwd declare internal function from
+                                   //phitsread.c
 
 int phits2mcpl(const char * phitsfile, const char * mcplfile)
 {
@@ -131,8 +61,6 @@ int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
   mcpl_outfile_t mcplfh = mcpl_create_outfile(mcplfile);
 
   mcpl_hdr_set_srcname(mcplfh,"PHITS");
-
-  //fixme: remove versions in output (also in mcpl forcemerge)
   mcpl_hdr_add_comment(mcplfh,"Converted from PHITS with phits2mcpl");
 
   if (opt_dp)
@@ -144,36 +72,46 @@ int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
   if (inputdeckfile) {
     char* cfgfile_buf;
     uint64_t cfgfile_lbuf;
+    //fixme: do we unit test this??
     mcpl_read_file_to_buffer( inputdeckfile,
                               104857600,//100mb max
                               1,//text
                               &cfgfile_lbuf,
                               &cfgfile_buf );
 
-
-    /* if (!phitsmcpl_file2buf(inputdeckfile, &cfgfile_buf, &cfgfile_lbuf, 104857600, 1)) */
-    /*   return 0; */
     //We won't do much for sanity checks since we want to avoid the risk of
     //false positives, but at least the word "dump" should occur in both input
     //deck and dump summary files:
     if (!strstr((const char*)cfgfile_buf, "dump")) {
-      printf("Error: specified configuration file %s looks invalid as it does not contain the word \"dump\".\n",inputdeckfile);
+      printf("Error: specified configuration file %s looks invalid as it"
+             " does not contain the word \"dump\".\n",inputdeckfile);
       return 0;
     }
-    mcpl_hdr_add_data(mcplfh, "phits_input_deck", (uint32_t)cfgfile_lbuf,(const char *)cfgfile_buf);
+    mcpl_hdr_add_data( mcplfh,
+                       "phits_input_deck",
+                       (uint32_t)cfgfile_lbuf,
+                       (const char *)cfgfile_buf );
     free(cfgfile_buf);
   }
   if (dumpsummaryfile) {
-    unsigned char* summaryfile_buf;
+    char* summaryfile_buf;
     size_t summaryfile_lbuf;
-    if (!phitsmcpl_file2buf(dumpsummaryfile, &summaryfile_buf, &summaryfile_lbuf, 104857600, 1))
-      return 0;
+    mcpl_read_file_to_buffer( dumpsummaryfile,
+                              104857600,//100mb max
+                              1,//text
+                              &summaryfile_lbuf,
+                              &summaryfile_buf );
+
     //Same check as for the input deck above:
-    if (!strstr((const char*)summaryfile_buf, "dump")) {
-      printf("Error: specified dump summary file %s looks invalid as it does not contain the word \"dump\".\n",dumpsummaryfile);
+    if (!strstr(summaryfile_buf, "dump")) {
+      printf("Error: specified dump summary file %s looks invalid"
+             " as it does not contain the word \"dump\".\n",dumpsummaryfile);
       return 0;
     }
-    mcpl_hdr_add_data(mcplfh, "phits_dump_summary_file", (uint32_t)summaryfile_lbuf,(const char *)summaryfile_buf);
+    mcpl_hdr_add_data( mcplfh,
+                       "phits_dump_summary_file",
+                       (uint32_t)summaryfile_lbuf,
+                       summaryfile_buf );
     free(summaryfile_buf);
   }
 
@@ -182,7 +120,8 @@ int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
   const phits_particle_t * p;
   while ((p=phits_load_particle(f))) {
     if (!p->pdgcode) {
-      printf("Warning: ignored particle with no PDG code set (raw phits kt code was %li).\n",p->rawtype);
+      printf("Warning: ignored particle with no PDG code set (raw phits kt"
+             " code was %li).\n",p->rawtype);
       continue;
     }
     mcpl_particle->pdgcode = p->pdgcode;
@@ -195,7 +134,8 @@ int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
     mcpl_particle->polarisation[0] = p->polx;
     mcpl_particle->polarisation[1] = p->poly;
     mcpl_particle->polarisation[2] = p->polz;
-    mcpl_particle->time = p->time * 1.0e-6;//nanoseconds (PHITS) to milliseconds (MCPL)
+    mcpl_particle->time = p->time * 1.0e-6;//nanoseconds (PHITS) to milliseconds
+                                           //(MCPL)
     mcpl_particle->weight = p->weight;
     mcpl_particle->ekin = p->ekin;//already in MeV
     mcpl_add_particle(mcplfh,mcpl_particle);
@@ -361,7 +301,8 @@ int mcpl2phits( const char * inmcplfile, const char * outphitsdumpfile,
                 int use_polarisation, long nparticles_limit, int reclen )
 {
   if ( reclen != 4 && reclen != 8 )
-    phits_error("Reclen parameter should be 4 (32bit Fortran record markers, recommended) or 8 (64bit Fortran record markers)");
+    phits_error("Reclen parameter should be 4 (32bit Fortran record markers,"
+                " recommended) or 8 (64bit Fortran record markers)");
 
   mcpl_file_t fmcpl = mcpl_open_file(inmcplfile);
 
@@ -563,8 +504,9 @@ int mcpl2phits_app( int argc, char** argv ) {
   long nparticles_limit;
   int use64bitreclen, nopolarisation;
 
-  int parse = mcpl2phits_parse_args( argc, (const char**)argv, &inmcplfile, &outphitsfile,
-                                     &nparticles_limit, &use64bitreclen, &nopolarisation);
+  int parse = mcpl2phits_parse_args( argc, (const char**)argv, &inmcplfile,
+                                     &outphitsfile, &nparticles_limit,
+                                     &use64bitreclen, &nopolarisation);
 
   if (parse==-1)// --help
     return 0;
@@ -574,7 +516,8 @@ int mcpl2phits_app( int argc, char** argv ) {
 
   int reclen = (use64bitreclen?8:4);
 
-  if (mcpl2phits(inmcplfile, outphitsfile, (nopolarisation?0:1), nparticles_limit, reclen))
+  if ( mcpl2phits( inmcplfile, outphitsfile, (nopolarisation?0:1),
+                   nparticles_limit, reclen) )
     return 0;
 
   return 1;

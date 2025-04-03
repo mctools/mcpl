@@ -350,8 +350,7 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
   assert(ssw_mcnp_type>0);
   char ref_mcnpflavour_str[64];
   ref_mcnpflavour_str[0] = '\0';
-  strcat(ref_mcnpflavour_str,ssw_mcnpflavour(fsswref));//fixme: memcpy
-
+  strcat(ref_mcnpflavour_str,ssw_mcnpflavour(fsswref));
   ssw_close_file(fsswref);
 
   //Grab the header (fixme: use new function for this instead?):
