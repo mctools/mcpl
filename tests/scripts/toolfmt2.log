@@ -793,7 +793,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 ----------------------------------------------
 Running mcpltool --repair rfcrash.mcpl
 ----------------------------------------------
-MCPL: Succesfully repaired file with 4 particles.
+MCPL: Successfully repaired file with 4 particles.
 
 ----------------------------------------------
 Running mcpltool rfcrash.mcpl
@@ -1067,43 +1067,43 @@ MCPL ERROR: File is not an MCPL file!
 Running mcpltool -e miscphys.mcpl.gz extracted_1
 ----------------------------------------------
 MCPL: Attempting to compress file extracted_1.mcpl with gzip
-MCPL: Succesfully compressed file into extracted_1.mcpl.gz
-MCPL: Succesfully extracted 195 / 195 particles from miscphys.mcpl.gz into extracted_1.mcpl.gz
+MCPL: Successfully compressed file into extracted_1.mcpl.gz
+MCPL: Successfully extracted 195 / 195 particles from miscphys.mcpl.gz into extracted_1.mcpl.gz
 
 ----------------------------------------------
 Running mcpltool --extract -p2112 miscphys.mcpl.gz extracted_1
 ----------------------------------------------
 MCPL: Attempting to compress file extracted_1.mcpl with gzip
-MCPL: Succesfully compressed file into extracted_1.mcpl.gz
-MCPL: Succesfully extracted 15 / 195 particles from miscphys.mcpl.gz into extracted_1.mcpl.gz
+MCPL: Successfully compressed file into extracted_1.mcpl.gz
+MCPL: Successfully extracted 15 / 195 particles from miscphys.mcpl.gz into extracted_1.mcpl.gz
 
 ----------------------------------------------
 Running mcpltool --extract -p-11 miscphys.mcpl.gz extracted_2
 ----------------------------------------------
 MCPL: Attempting to compress file extracted_2.mcpl with gzip
-MCPL: Succesfully compressed file into extracted_2.mcpl.gz
-MCPL: Succesfully extracted 10 / 195 particles from miscphys.mcpl.gz into extracted_2.mcpl.gz
+MCPL: Successfully compressed file into extracted_2.mcpl.gz
+MCPL: Successfully extracted 10 / 195 particles from miscphys.mcpl.gz into extracted_2.mcpl.gz
 
 ----------------------------------------------
 Running mcpltool -ep-1000020040 miscphysnogz.mcpl extracted_3
 ----------------------------------------------
 MCPL: Attempting to compress file extracted_3.mcpl with gzip
-MCPL: Succesfully compressed file into extracted_3.mcpl.gz
-MCPL: Succesfully extracted 5 / 195 particles from miscphysnogz.mcpl into extracted_3.mcpl.gz
+MCPL: Successfully compressed file into extracted_3.mcpl.gz
+MCPL: Successfully extracted 5 / 195 particles from miscphysnogz.mcpl into extracted_3.mcpl.gz
 
 ----------------------------------------------
 Running mcpltool -e -p1000922350 miscphys.mcpl.gz extracted_4
 ----------------------------------------------
 MCPL: Attempting to compress file extracted_4.mcpl with gzip
-MCPL: Succesfully compressed file into extracted_4.mcpl.gz
-MCPL: Succesfully extracted 5 / 195 particles from miscphys.mcpl.gz into extracted_4.mcpl.gz
+MCPL: Successfully compressed file into extracted_4.mcpl.gz
+MCPL: Successfully extracted 5 / 195 particles from miscphys.mcpl.gz into extracted_4.mcpl.gz
 
 ----------------------------------------------
 Running mcpltool -e -p111 -l999999 -s150 miscphysnogz.mcpl extracted_5
 ----------------------------------------------
 MCPL: Attempting to compress file extracted_5.mcpl with gzip
-MCPL: Succesfully compressed file into extracted_5.mcpl.gz
-MCPL: Succesfully extracted 5 / 195 particles from miscphysnogz.mcpl into extracted_5.mcpl.gz
+MCPL: Successfully compressed file into extracted_5.mcpl.gz
+MCPL: Successfully extracted 5 / 195 particles from miscphysnogz.mcpl into extracted_5.mcpl.gz
 
 ----------------------------------------------
 Running mcpltool -l0 extracted_1.mcpl.gz
@@ -1357,22 +1357,22 @@ Running mcpltool --merge --inplace extracted_1.mcpl extracted_3.mcpl.gz extracte
 Running mcpltool --extract -p2112 miscphysnogz.mcpl extracted_1_new.mcpl
 ----------------------------------------------
 MCPL: Attempting to compress file extracted_1_new.mcpl with gzip
-MCPL: Succesfully compressed file into extracted_1_new.mcpl.gz
-MCPL: Succesfully extracted 15 / 195 particles from miscphysnogz.mcpl into extracted_1_new.mcpl.gz
+MCPL: Successfully compressed file into extracted_1_new.mcpl.gz
+MCPL: Successfully extracted 15 / 195 particles from miscphysnogz.mcpl into extracted_1_new.mcpl.gz
 
 ----------------------------------------------
 Running mcpltool --extract -p-11 miscphysnogz.mcpl extracted_2_new.mcpl
 ----------------------------------------------
 MCPL: Attempting to compress file extracted_2_new.mcpl with gzip
-MCPL: Succesfully compressed file into extracted_2_new.mcpl.gz
-MCPL: Succesfully extracted 10 / 195 particles from miscphysnogz.mcpl into extracted_2_new.mcpl.gz
+MCPL: Successfully compressed file into extracted_2_new.mcpl.gz
+MCPL: Successfully extracted 10 / 195 particles from miscphysnogz.mcpl into extracted_2_new.mcpl.gz
 
 ----------------------------------------------
 Running mcpltool -e -p1000922350 miscphysnogz.mcpl extracted_4_new.mcpl
 ----------------------------------------------
 MCPL: Attempting to compress file extracted_4_new.mcpl with gzip
-MCPL: Succesfully compressed file into extracted_4_new.mcpl.gz
-MCPL: Succesfully extracted 5 / 195 particles from miscphysnogz.mcpl into extracted_4_new.mcpl.gz
+MCPL: Successfully compressed file into extracted_4_new.mcpl.gz
+MCPL: Successfully extracted 5 / 195 particles from miscphysnogz.mcpl into extracted_4_new.mcpl.gz
 
 ----------------------------------------------
 Running mcpltool --merge merged_1to5_new_filec.mcpl extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
@@ -1398,7 +1398,7 @@ Run with -h or --help for usage information
 Running mcpltool --merge merged_1to5_new_filec_unique.mcpl.gz extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
 ----------------------------------------------
 MCPL: Attempting to compress file merged_1to5_new_filec_unique.mcpl with gzip
-MCPL: Succesfully compressed file into merged_1to5_new_filec_unique.mcpl.gz
+MCPL: Successfully compressed file into merged_1to5_new_filec_unique.mcpl.gz
 
 ===> Checking that merged_1to5_new_filec.mcpl and merged_1to5_new_filec_unique.mcpl.gz have identical contents.
 ----------------------------------------------

@@ -1266,7 +1266,7 @@ void mcpl_repair(const char * filename)
   uint64_t nparticles2 = mcpl_hdr_nparticles(f);
   mcpl_close_file(f);
   if (repair_status==0&&nparticles==nparticles2) {
-    printf("MCPL: Succesfully repaired file with %" PRIu64 " particles.\n",nparticles);
+    printf("MCPL: Successfully repaired file with %" PRIu64 " particles.\n",nparticles);
   } else {
     mcpl_error("Something went wrong while attempting to repair file.");
   }
@@ -2631,7 +2631,7 @@ int mcpl_tool(int argc,char** argv) {
       //strncat(fo_filename,".gz",3);
     mcpl_close_file(fi);
 
-    printf("MCPL: Succesfully extracted %" PRIu64 " / %" PRIu64 " particles from %s into %s\n",
+    printf("MCPL: Successfully extracted %" PRIu64 " / %" PRIu64 " particles from %s into %s\n",
            added,fi_nparticles,filenames[0],fo_filename);
     free(fo_filename);
     free(filenames);
@@ -2740,12 +2740,11 @@ int mcpl_gzip_file(const char * filename)
   char * bn = mcpl_basename(filename);
   printf("MCPL: Attempting to compress file %s with gzip\n",bn);//FIXME should say "with zlib" but trying to preserve reflog outputs right now
   if (!mcpl_custom_gzip(filename,"wb")) {
-    //FIXME: We are always returning 1 here?!?!
     printf("MCPL ERROR: Problems encountered while compressing file %s.\n",bn);
     free(bn);
     return 0;
   }
-  printf("MCPL: Succesfully compressed file into %s.gz\n",bn);
+  printf("MCPL: Successfully compressed file into %s.gz\n",bn);
   free(bn);
   return 1;
 }
