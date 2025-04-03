@@ -42,7 +42,9 @@ def is_external_file(f):
     return get_frel(f).startswith('copy/')
 
 def is_external_datafile(f):
-    if not ( f.parent.parent.name=='data' or f.parent.name=='data' ):
+    if not ( f.parent.parent.parent.name=='data'
+             or f.parent.parent.name=='data'
+             or f.parent.name=='data' ):
         return False
     if not is_external_file(f):
         return False
@@ -75,7 +77,7 @@ def main():
             continue
         #Check can always be read as utf8:
         content = '\n'
-        if not is_well_known_binary(frel):
+        if not is_well_known_binary(frel) and not is_external_datafile(f):
             try:
                 content = f.read_text(encoding='utf8')
             except UnicodeDecodeError as e:
