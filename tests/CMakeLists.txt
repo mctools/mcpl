@@ -163,6 +163,8 @@ list(
   "MCPL2SSW_FILE=set:$<TARGET_FILE:mcpl2ssw>"
   "SSW2MCPL_FILE=set:$<TARGET_FILE:ssw2mcpl>"
   "MCPLSSWTESTLIB_FILE=set:$<TARGET_FILE:mcplsswtestlib>"
+  "MCPL2PHITS_FILE=set:$<TARGET_FILE:mcpl2phits>"
+  "PHITS2MCPL_FILE=set:$<TARGET_FILE:phits2mcpl>"
   "MCPLPHITSTESTLIB_FILE=set:$<TARGET_FILE:mcplphitstestlib>"
   "MCPLLIB_FILE=path_list_append:$<TARGET_FILE:${mcpltests_mcpllib_target}>"
   ${mcplextratest_base_envmod_common}

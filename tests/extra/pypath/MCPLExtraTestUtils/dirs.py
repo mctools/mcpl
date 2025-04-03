@@ -39,5 +39,7 @@ extra_test_data_dir = _find_data_dir(extra=True)
 core_test_data_dir = _find_data_dir(extra=False)
 mcpl2ssw_cmd = _find_cmd('MCPL2SSW_FILE')
 ssw2mcpl_cmd = _find_cmd('SSW2MCPL_FILE')
+mcpl2phits_cmd = _find_cmd('MCPL2PHITS_FILE')
+phits2mcpl_cmd = _find_cmd('PHITS2MCPL_FILE')
 mcpltool_cmd = _find_cmd('MCPL_TOOL_FILE')
 

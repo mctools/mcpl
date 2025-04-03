@@ -35,25 +35,39 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifdef PHITSREAD_HDR_INCPATH
-#  include PHITSREAD_HDR_INCPATH
-#else
-#  include "phitsread.h"
-#endif
-
-#ifdef PHITSREAD_HASZLIB
-#  ifdef PHITSREAD_ZLIB_INCPATH
-#    include PHITSREAD_ZLIB_INCPATH
-#  else
-#    include "zlib.h"
-#  endif
-#endif
+#include "phitsread.h"
+#include "mcpl.h"
 
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+
+FILE** phits_impl_stdout_data()
+{
+  static FILE* thefh = NULL;
+  return &thefh;
+}
+
+FILE* phits_stdout()
+{
+  FILE* thefh = *phits_impl_stdout_data();
+  return thefh ? thefh : stdout;
+}
+
+void phits_set_stdout( FILE* fh )
+{
+  fflush(stdout);
+  fflush(stderr);
+  FILE** fhptr = phits_impl_stdout_data();
+  if (*fhptr)
+    fflush(*fhptr);
+  if (fh)
+    fflush(fh);
+  *fhptr = fh;
+}
+
 
 static int phits_known_nonion_codes[] = { 11, 12, 13, 14, 22, 111, 211, 221,
                                           311, 321, 331, 2112, 2212, 3112,
@@ -123,7 +137,7 @@ int32_t conv_code_pdg2phits( int32_t c )
 }
 
 void phits_error(const char * msg) {
-  printf("ERROR: %s\n",msg);
+  fprintf(phits_stdout(),"ERROR: %s\n",msg);
   exit(1);
 }
 
@@ -132,12 +146,7 @@ void phits_error(const char * msg) {
 #define PHITSREAD_MAXBUFSIZE (15*sizeof(double))
 
 typedef struct {
-#ifdef PHITSREAD_HASZLIB
-  gzFile filegz;
-#else
-  void * filegz;
-#endif
-  FILE * file;
+  mcpl_generic_filehandle_t filehandle;
   phits_particle_t part;
   int reclen;//width of Fortran record length field (4 or 8)
   unsigned particlesize;//length of particle data in bytes (typically 10*8 or 13*8)
@@ -146,31 +155,20 @@ typedef struct {
   int haspolarisation;
 } phits_fileinternal_t;
 
-int phits_readbytes(phits_fileinternal_t* f, char * dest, int nbytes)
-{
-  assert(nbytes>0);
-  //Attempt to read at most nbytes from file and into dest, handling both
-  //gzipped and standard files.
-  int nb;
-#ifdef PHITSREAD_HASZLIB
-  if (f->filegz)
-    nb = gzread(f->filegz, dest, nbytes);
-  else
-#endif
-    nb = fread(dest, 1, nbytes, f->file);
-  return nb;
-}
-
 int phits_ensure_load(phits_fileinternal_t* f, int nbytes)
 {
-  //For slowly filling up f->buf while reading first record. Returns 1 in case of success.
+  //For slowly filling up f->buf while reading first record. Returns 1 in case
+  //of success.
   if ( nbytes > (int)PHITSREAD_MAXBUFSIZE )
     return 0;
   int missing = nbytes - f->lbuf;
   if ( missing<=0 )
     return 1;
-  int nr = phits_readbytes(f,&(f->buf[f->lbuf]),missing);
-  if (nr!=missing)
+  int actual = (int)mcpl_generic_fread_try( &f->filehandle,
+                                            &(f->buf[f->lbuf]),
+                                            (unsigned)missing );
+  //int nr = phits_readbytes(f,&(f->buf[f->lbuf]),missing);
+  if (actual!=missing)
     return 0;
   f->lbuf = nbytes;
   return 1;
@@ -196,12 +194,8 @@ int phits_tryload_reclen(phits_fileinternal_t* f, int reclen ) {
 
 phits_file_t phits_openerror(phits_fileinternal_t * f, const char* msg) {
   if (f) {
-    if (f->file)
-      fclose(f->file);
-#ifdef PHITSREAD_HASZLIB
-    if (f->filegz)
-      gzclose(f->filegz);
-#endif
+    if ( f->filehandle.internal )
+      mcpl_generic_fclose(&f->filehandle);
     free(f);
   }
   phits_error(msg);
@@ -210,7 +204,8 @@ phits_file_t phits_openerror(phits_fileinternal_t * f, const char* msg) {
   return out;
 }
 
-  phits_file_t phits_open_internal( const char * filename )
+//fixme: indentation (and revisit all calloc/mallocs)
+phits_file_t phits_open_internal( const char * filename )
   {
     phits_fileinternal_t * f = (phits_fileinternal_t*)calloc(sizeof(phits_fileinternal_t),1);
     assert(f);
@@ -222,26 +217,11 @@ phits_file_t phits_openerror(phits_fileinternal_t * f, const char* msg) {
     f->particlesize = 0;
     f->lbuf = 0;
     f->reclen = 4;
-    f->file = 0;
-    f->filegz = 0;
     f->haspolarisation = 0;
     memset( &( f->part ),0,sizeof(f->part) );
 
-    //open file (with gzopen if filename ends with .gz):
-    const char * lastdot = strrchr(filename, '.');
-    if (lastdot && strcmp(lastdot, ".gz") == 0) {
-  #ifdef PHITSREAD_HASZLIB
-      f->filegz = gzopen(filename,"rb");
-      if (!f->filegz)
-        phits_error("Unable to open file!");
-  #else
-      phits_error("This installation was not built with zlib support and can not read compressed (.gz) files directly.");
-  #endif
-    } else {
-      f->file = fopen(filename,"rb");
-      if (!f->file)
-        phits_error("Unable to open file!");
-    }
+    //open file (supports gzipped if ends with .gz):
+    f->filehandle = mcpl_generic_fopen( filename );
 
     //Try to read first Fortran record marker, keeping in mind that we do not
     //know if it is 32bit or 64bit, and that an empty file is to be interpreted
@@ -271,8 +251,9 @@ phits_file_t phits_openerror(phits_fileinternal_t * f, const char* msg) {
     assert( f->reclen==4 || f->reclen==8 );
 
     if (f->reclen==8) {
-      printf("phits_open_file WARNING: 64bit Fortran records detected which is untested (feedback"
-             " appreciated at https://mctools.github.io/mcpl/contact/).\n");
+      fprintf(phits_stdout(),"phits_open_file WARNING: 64bit Fortran records"
+              " detected which is untested (feedback"
+              " appreciated at https://mctools.github.io/mcpl/contact/).\n");
     }
 
     if (f->particlesize == 10*sizeof(double)) {
@@ -295,7 +276,8 @@ phits_file_t phits_openerror(phits_fileinternal_t * f, const char* msg) {
 
     //Open, classify and process first record with mcnp type and version info:
     phits_file_t out = phits_open_internal( filename );
-    phits_fileinternal_t * f = (phits_fileinternal_t *)out.internal; assert(f);
+    phits_fileinternal_t * f = (phits_fileinternal_t *)out.internal;
+    assert(f);
 
     out.internal = f;
     return out;
@@ -333,7 +315,7 @@ phits_file_t phits_openerror(phits_fileinternal_t * f, const char* msg) {
       }
     }
 
-    assert( f->lbuf == f->particlesize + f->reclen * 2 );
+    assert( f->lbuf == f->particlesize + f->reclen * 2 );//fixme avoid asserts
     double * pdata = (double*)(f->buf+f->reclen);
     phits_particle_t * pp =  & (f->part);
     pp->rawtype = pdata[0];
@@ -378,16 +360,43 @@ void phits_close_file(phits_file_t ff) {
   assert(f);
   if (!f)
     return;
-  if (f->file) {
-    fclose(f->file);
-    f->file = 0;
+  if ( f->filehandle.internal ) {
+    mcpl_generic_fclose( &f->filehandle );
+    f->filehandle.internal = NULL;
   }
-#ifdef PHITSREAD_HASZLIB
-  if (f->filegz) {
-    gzclose(f->filegz);
-    f->file = 0;
-  }
-#endif
   free(f);
   ff.internal = 0;
 }
+
+#ifdef MCPLPHITS_IS_TEST_LIB
+//Function needed for unit tests, outfile must be ascii characters only (for
+//now):
+void phits_dump( const char * filename, const char * outfile )
+{
+  FILE* outfh = fopen( outfile, "w" ); // Open file for writing
+  phits_set_stdout(outfh);
+
+  phits_file_t f = phits_open_file(filename);
+
+  fprintf(phits_stdout(),"opened binary PHITS dump file with contents:\n");
+  int haspol = phits_has_polarisation(f);
+  const phits_particle_t * p;
+  fprintf(phits_stdout(),"    pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]"
+         "          ux          uy          uz%s"
+         "    time[ns]      weight\n",(haspol?"        polx        poly        polz":""));
+  while ((p=phits_load_particle(f))) {
+    fprintf(phits_stdout(),"%10li %11.5g %11.5g %11.5g %11.5g"
+           " %11.5g %11.5g %11.5g",
+           p->pdgcode,p->ekin,p->x,p->y,p->z,
+           p->dirx,p->diry,p->dirz);
+    if (haspol)
+      fprintf(phits_stdout()," %11.5g %11.5g %11.5g",p->polx,p->poly,p->polz);
+    fprintf(phits_stdout()," %11.5g %11.5g\n",p->time,p->weight);
+  }
+
+  phits_close_file(f);
+  fclose(outfh);
+  phits_set_stdout(NULL);
+
+}
+#endif
