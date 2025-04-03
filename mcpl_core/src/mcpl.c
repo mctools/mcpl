@@ -19,61 +19,42 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////////////////////
-//                                                                                 //
-//  Monte Carlo Particle Lists : MCPL                                              //
-//                                                                                 //
-//  Utilities for reading and writing .mcpl files: A binary format with lists of   //
-//  particle state information, for interchanging and reshooting events between    //
-//  various Monte Carlo simulation applications.                                   //
-//                                                                                 //
-//  Client code including mcpl.h does not need any special build flags and can     //
-//  be compiled with any complient compiler and any current C or C++ standard.     //
-//                                                                                 //
-//  Compilation of mcpl.c on the other hand is currently not supported for C89,    //
-//  although this could be revisited. Thus, compilation of mcpl.c can proceed      //
-//  using any complient C-compiler using -std=c99 or -std=c11 or any complient     //
-//  C++ compiler using any version of the C++ standard, and the resulting code     //
-//  must always be linked with libm (using -lm). Furthermore, the following        //
-//  preprocessor flags can be used when compiling mcpl.c to fine tune the build    //
-//  process and the capabilities of the resulting binary.                          //
-//                                                                                 //
-//  Fixme: review and update these:                                                //
-//  MCPL_HASZLIB        : Define if compiling and linking with zlib, to allow      //
-//                        direct reading of .mcpl.gz files.                        //
-//  MCPL_ZLIB_INCPATH   : Specify alternative value if the zlib header is not to   //
-//                        be included as "zlib.h".                                 //
-//  MCPL_HEADER_INCPATH : Specify alternative value if the MCPL header itself is   //
-//                        not to be included as "mcpl.h".                          //
-//  MCPL_NO_EXT_GZIP    : Define to make sure that mcpl_gzip_file will never       //
-//                        compress via a separate process running a system-        //
-//                        provided gzip executable.                                //
-//  MCPL_NO_CUSTOM_GZIP : Define to make sure that mcpl_gzip_file will never       //
-//                        compress via custom zlib-based code.                     //
-//                                                                                 //
-//  This file can be freely used as per the terms in the LICENSE file.             //
-//                                                                                 //
-//  Find more information and updates at https://mctools.github.io/mcpl/           //
-//                                                                                 //
-//  Written by Thomas Kittelmann, 2015-2025.                                       //
-//                                                                                 //
-/////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//  Monte Carlo Particle Lists : MCPL                                         //
+//                                                                            //
+//  Utilities for reading and writing .mcpl files: A binary format with       //
+//  lists of particle state information, for interchanging and reshooting     //
+//  events between various Monte Carlo simulation applications.               //
+//                                                                            //
+//  Client code including mcpl.h does not need any special build flags and    //
+//  can be compiled with any complient compiler and any current C or C++      //
+//  standard.                                                                 //
+//                                                                            //
+//  Compilation of mcpl.c on the other hand is currently not supported for    //
+//  C89, although this could be revisited. Thus, compilation of mcpl.c can    //
+//  proceed using any complient C-compiler using -std=c99 or -std=c11 or any  //
+//  complient C++ compiler using any version of the C++ standard, and the     //
+//  resulting code must always be linked with libm (using -lm).               //
+//                                                                            //
+//  Find more information and updates at https://mctools.github.io/mcpl/      //
+//                                                                            //
+//  Written by Thomas Kittelmann, 2015-2025.                                  //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 
 
-/////////////////////////////////////////////////////////////////////////////////////
-//  MCPL_FORMATVERSION history:                                                    //
-//                                                                                 //
-//  3: Current version. Changed packing of unit vectors from octahedral to         //
-//     the better performing "Adaptive Projection Packing".                        //
-//  2: First public release.                                                       //
-//  1: Format used during early development. No longer supported.                  //
-/////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+//  MCPL_FORMATVERSION history:                                               //
+//                                                                            //
+//  3: Current version. Changed packing of unit vectors from octahedral to    //
+//     the better performing "Adaptive Projection Packing".                   //
+//  2: First public release.                                                  //
+//  1: Format used during early development. No longer supported.             //
+////////////////////////////////////////////////////////////////////////////////
 
-#ifndef MCPL_HASZLIB
-#  define MCPL_HASZLIB //fixme
-#endif
-//#define MCPL_NO_EXT_GZIP
 //Rough platform detection (could be much more fine-grained):
+//fixme: use consistently below (e.g. _WIN32 is used directly as well)
 #if defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__))
 #  define MCPL_THIS_IS_UNIX
 #endif
@@ -117,18 +98,6 @@
 #  endif
 #endif
 
-// #ifdef MCPL_HEADER_INCPATH
-// #  include MCPL_HEADER_INCPATH
-// #else
-// #  include "mcpl.h"
-// #endif
-// #ifdef MCPL_HASZLIB
-// #  ifdef MCPL_ZLIB_INCPATH
-// #    include MCPL_ZLIB_INCPATH
-// #  else
-// #    include "zlib.h"
-// #  endif
-// #endif
 #include "mcpl.h"
 #include "zlib.h"
 #include <stdlib.h>
@@ -171,6 +140,31 @@ MCPL_LOCAL void mcpl_error(const char * msg) {
                              " to calling code which is not allowed!");
 }
 
+MCPL_LOCAL char * mcpl_internal_malloc(size_t n)
+{
+  char * res = (char*)malloc(n ? n : 1);
+  if (!res)
+    mcpl_error("memory allocation failed");
+  return res;
+}
+
+MCPL_LOCAL char * mcpl_internal_calloc(size_t num, size_t size)
+{
+  char * res = (char*)calloc( ( num ? num : 1 ),
+                              ( size ? size : 1 ) );
+  if (!res)
+    mcpl_error("memory allocation failed");
+  return res;
+}
+
+MCPL_LOCAL void * mcpl_internal_realloc( void* mem, size_t new_size)
+{
+  void * res = realloc( mem, new_size );
+  if (!res)
+    mcpl_error("memory allocation failed");
+  return res;
+}
+
 void mcpl_set_error_handler(void (*handler)(const char *))
 {
   mcpl_error_handler = handler;
@@ -185,8 +179,8 @@ MCPL_LOCAL void mcpl_store_string(char** dest, const char * src)
   }
   if (*dest)
     free(*dest);
-  *dest = (char*)malloc(n+1);
-  assert(*dest);
+  *dest = mcpl_internal_malloc(n+1);
+
   //Usage of strncpy cause compiler warning on newer gcc, so we use memcpy
   //instead (should be safe, we just checked strlen above!):
   //strncpy( *dest,src,n );
@@ -317,23 +311,17 @@ mcpl_outfile_t mcpl_create_outfile(const char * filename)
   mcpl_outfile_t out;
   out.internal = 0;
 
-  mcpl_outfileinternal_t * f = (mcpl_outfileinternal_t*)calloc(1,sizeof(mcpl_outfileinternal_t));
+  mcpl_outfileinternal_t * f
+    = (mcpl_outfileinternal_t*)mcpl_internal_calloc( 1, sizeof(mcpl_outfileinternal_t) );
   assert(f);//fixme: something safer than asserts!
 
   if (!lastdot || strcmp(lastdot, ".mcpl") != 0) {
-    f->filename = (char*)malloc(n+6);
-    assert(f->filename);
-    //f->filename[0] = '\0';
+    f->filename = mcpl_internal_malloc(n+6);
     memcpy(f->filename,filename,n);
     memcpy(f->filename+n,".mcpl",6);
-    //    strncat(f->filename,filename,n);
-    //    strncat(f->filename,".mcpl",5);
   } else {
-    f->filename = (char*)malloc(n+1);
-    assert(f->filename);
+    f->filename = mcpl_internal_malloc(n+1);
     memcpy(f->filename,filename,n+1);
-    //f->filename[0] = '\0';
-    //strncat(f->filename,filename,n);
   }
 
   f->hdr_srcprogname = 0;
@@ -380,9 +368,10 @@ void mcpl_hdr_add_comment(mcpl_outfile_t of,const char *comment)
   size_t oldn = f->ncomments;
   f->ncomments += 1;
   if (oldn)
-    f->comments = (char **)realloc(f->comments,f->ncomments * sizeof(char*) );
+    f->comments = (char **)mcpl_internal_realloc( f->comments,
+                                                  f->ncomments * sizeof(char*) );
   else
-    f->comments = (char **)calloc(f->ncomments,sizeof(char*));
+    f->comments = (char **)mcpl_internal_calloc(f->ncomments,sizeof(char*));
   f->comments[oldn] = 0;
   mcpl_store_string(&(f->comments[oldn]),comment);
 }
@@ -403,25 +392,30 @@ void mcpl_hdr_add_data(mcpl_outfile_t of, const char * key,
   }
   //store key:
   if (oldn)
-    f->blobkeys = (char **)realloc(f->blobkeys,f->nblobs * sizeof(char*) );
+    f->blobkeys = (char **)mcpl_internal_realloc(f->blobkeys,
+                                                 f->nblobs * sizeof(char*) );
   else
-    f->blobkeys = (char **)calloc(f->nblobs,sizeof(char*));
+    f->blobkeys = (char **)mcpl_internal_calloc(f->nblobs,
+                                                sizeof(char*));
   f->blobkeys[oldn] = 0;
   mcpl_store_string(&(f->blobkeys[oldn]),key);
   //store blob-lengths:
   if (oldn)
-    f->bloblengths = (uint32_t*)realloc(f->bloblengths,f->nblobs * sizeof(uint32_t) );
+    f->bloblengths = (uint32_t*)mcpl_internal_realloc(f->bloblengths,
+                                                      f->nblobs * sizeof(uint32_t) );
   else
-    f->bloblengths = (uint32_t *)calloc(f->nblobs,sizeof(uint32_t));
+    f->bloblengths = (uint32_t *)mcpl_internal_calloc(f->nblobs,
+                                                      sizeof(uint32_t));
   f->bloblengths[oldn] = ldata;
 
   //store data:
   if (oldn)
-    f->blobs = (char **)realloc(f->blobs,f->nblobs * sizeof(char*) );
+    f->blobs = (char **)mcpl_internal_realloc(f->blobs,
+                                              f->nblobs * sizeof(char*) );
   else
-    f->blobs = (char **)calloc(f->nblobs,sizeof(char*));
-  f->blobs[oldn] = (char *)malloc(ldata);
-  assert(f->blobs[oldn]);
+    f->blobs = (char **)mcpl_internal_calloc(f->nblobs,
+                                             sizeof(char*));
+  f->blobs[oldn] = mcpl_internal_malloc(ldata);
   memcpy(f->blobs[oldn],data,ldata);
 }
 
@@ -825,9 +819,10 @@ mcpl_particle_t* mcpl_get_empty_particle(mcpl_outfile_t of)
   if (f->puser) {
     //Calling more than once. This could be innocent, or it could indicate
     //problems in multi-threaded user-code. Better disallow and give an error:
-    mcpl_error("mcpl_get_empty_particle must not be called more than once per output file");
+    mcpl_error("mcpl_get_empty_particle must not be"
+               " called more than once per output file");
   } else {
-    f->puser = (mcpl_particle_t*)calloc(1,sizeof(mcpl_particle_t));
+    f->puser = (mcpl_particle_t*)mcpl_internal_calloc(1,sizeof(mcpl_particle_t));
   }
   return f->puser;
 }
@@ -905,11 +900,7 @@ int mcpl_closeandgzip_outfile(mcpl_outfile_t of)
 
 typedef struct {
   FILE * file;
-#ifdef MCPL_HASZLIB
   gzFile filegz;
-#else
-  void * filegz;
-#endif
   char * hdr_srcprogname;
   unsigned format_version;
   int opt_userflags;
@@ -939,20 +930,16 @@ MCPL_LOCAL uint64_t mcpl_read_buffer(mcpl_fileinternal_t* f, unsigned* n, char *
 {
   //Reads buffer and returns number of bytes consumed from file
   size_t nb;
-#ifdef MCPL_HASZLIB
   if (f->filegz)
     nb = gzread(f->filegz, n, sizeof(*n));
   else
-#endif
     nb = fread(n, 1, sizeof(*n), f->file);
   if (nb!=sizeof(*n))
     mcpl_error(errmsg);
-  *buf = (char*)calloc(*n,1);
-#ifdef MCPL_HASZLIB
+  *buf = mcpl_internal_calloc(*n,1);
   if (f->filegz)
     nb = gzread(f->filegz, *buf, *n);
   else
-#endif
     nb = fread(*buf, 1, *n, f->file);
   if (nb!=*n)
     mcpl_error(errmsg);
@@ -964,20 +951,16 @@ MCPL_LOCAL uint64_t mcpl_read_string(mcpl_fileinternal_t* f, char ** dest, const
   //Reads string and returns number of bytes consumed from file
   size_t nb;
   uint32_t n;
-#ifdef MCPL_HASZLIB
   if (f->filegz)
     nb = gzread(f->filegz, &n, sizeof(n));
   else
-#endif
     nb = fread(&n, 1, sizeof(n), f->file);
   if (nb!=sizeof(n))
     mcpl_error(errmsg);
-  char * s = (char*)calloc(n+1,1);
-#ifdef MCPL_HASZLIB
+  char * s = mcpl_internal_calloc(n+1,1);
   if (f->filegz)
     nb = gzread(f->filegz, s, n);
   else
-#endif
     nb = fread(s, 1, n, f->file);
   if (nb!=n)
     mcpl_error(errmsg);
@@ -1067,7 +1050,8 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   mcpl_file_t out;
   out.internal = 0;
 
-  mcpl_fileinternal_t * f = (mcpl_fileinternal_t*)calloc(1,sizeof(mcpl_fileinternal_t));
+  mcpl_fileinternal_t * f
+    = (mcpl_fileinternal_t*)mcpl_internal_calloc(1,sizeof(mcpl_fileinternal_t));
   assert(f);
 
   //open file (with gzopen if filename ends with .gz):
@@ -1075,13 +1059,9 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   f->filegz = 0;
   const char * lastdot = strrchr(filename, '.');
   if (lastdot && strcmp(lastdot, ".gz") == 0) {
-#ifdef MCPL_HASZLIB
     f->filegz = mcpl_gzopen( filename, "rb" );
     if (!f->filegz)
       mcpl_error("Unable to open file!");
-#else
-    mcpl_error("This installation of MCPL was not built with zlib support and can not read compressed (.gz) files directly.");
-#endif
   } else {
     f->file = mcpl_fopen(filename,"rb");
     if (!f->file)
@@ -1091,11 +1071,9 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   //First read and check magic word, format version and endianness.
   unsigned char start[8];// = {'M','C','P','L','0','0','0','L'};
   size_t nb;
-#ifdef MCPL_HASZLIB
   if (f->filegz)
     nb = gzread(f->filegz, start, sizeof(start));
   else
-#endif
     nb = fread(start, 1, sizeof(start), f->file);
   if (nb>=4&&(start[0]!='M'||start[1]!='C'||start[2]!='P'||start[3]!='L'))
     mcpl_error("File is not an MCPL file!");
@@ -1117,11 +1095,9 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   const char * errmsg = "Errors encountered while attempting to read header";
 
   uint64_t numpart;
-#ifdef MCPL_HASZLIB
   if (f->filegz)
     nb = gzread(f->filegz, &numpart, sizeof(numpart));
   else
-#endif
     nb = fread(&numpart, 1, sizeof(numpart), f->file);
   if (nb!=sizeof(numpart))
     mcpl_error(errmsg);
@@ -1130,11 +1106,9 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
 
   uint32_t arr[8];
   assert(sizeof(arr)==32);
-#ifdef MCPL_HASZLIB
   if (f->filegz)
     nb = gzread(f->filegz, arr, sizeof(arr));
   else
-#endif
     nb=fread(arr, 1, sizeof(arr), f->file);
   if (nb!=sizeof(arr))
     mcpl_error(errmsg);
@@ -1151,13 +1125,10 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
 
   if (arr[7]) {
     //file has universal weight
-#ifdef MCPL_HASZLIB
     if (f->filegz)
       nb = gzread(f->filegz, (void*)&(f->opt_universalweight), sizeof(f->opt_universalweight));
     else
-#endif
       nb=fread((void*)&(f->opt_universalweight), 1, sizeof(f->opt_universalweight), f->file);
-    assert(nb==sizeof(f->opt_universalweight));
     if (nb!=sizeof(f->opt_universalweight))
       mcpl_error(errmsg);
     current_pos += nb;
@@ -1172,7 +1143,9 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
 
   //Then some strings:
   current_pos += mcpl_read_string(f,&f->hdr_srcprogname,errmsg);
-  f->comments = f->ncomments ? (char **)calloc(f->ncomments,sizeof(char*)) : 0;
+  f->comments = ( f->ncomments
+                  ? (char **)mcpl_internal_calloc(f->ncomments,sizeof(char*))
+                  : NULL );
   uint32_t i;
   for (i = 0; i < f->ncomments; ++i)
     current_pos += mcpl_read_string(f,&(f->comments[i]),errmsg);
@@ -1182,15 +1155,15 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   f->bloblengths = 0;
   f->blobs = 0;
   if (f->nblobs) {
-    f->blobs = (char **)calloc(f->nblobs,sizeof(char*));
-    f->blobkeys = (char **)calloc(f->nblobs,sizeof(char*));
-    f->bloblengths = (uint32_t *)calloc(f->nblobs,sizeof(uint32_t));
+    f->blobs = (char **)mcpl_internal_calloc(f->nblobs,sizeof(char*));
+    f->blobkeys = (char **)mcpl_internal_calloc(f->nblobs,sizeof(char*));
+    f->bloblengths = (uint32_t *)mcpl_internal_calloc(f->nblobs,sizeof(uint32_t));
     for (i =0; i < f->nblobs; ++i)
       current_pos += mcpl_read_string(f,&(f->blobkeys[i]),errmsg);
     for (i =0; i < f->nblobs; ++i)
       current_pos += mcpl_read_buffer(f, &(f->bloblengths[i]), &(f->blobs[i]), errmsg);
   }
-  f->particle = (mcpl_particle_t*)calloc(1,sizeof(mcpl_particle_t));
+  f->particle = (mcpl_particle_t*)mcpl_internal_calloc(1,sizeof(mcpl_particle_t));
 
   //At first event now:
   f->current_particle_idx = 0;
@@ -1211,7 +1184,6 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
       //which we won't since it might stall operations for a long time. But we
       //can at least try to check whether the file is indeed empty or not, and
       //give an error in the latter case:
-#ifdef MCPL_HASZLIB
       if (f->nparticles==0) {
         char testbuf[4];
         nb = gzread(f->filegz, testbuf, sizeof(testbuf));
@@ -1229,7 +1201,6 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
       }
       if (!mcpl_gzseek( f->filegz, f->first_particle_pos ) )
         mcpl_error("Unexpected issue skipping to start of empty gzipped file");
-#endif
     } else {
       //SEEK_END is not guaranteed to always work, so we fail our recovery
       //attempt silently:
@@ -1318,10 +1289,8 @@ void mcpl_close_file(mcpl_file_t ff)
   free(f->blobs);
   free(f->bloblengths);
   free(f->particle);
-#ifdef MCPL_HASZLIB
   if (f->filegz)
     gzclose(f->filegz);
-#endif
   if (f->file)
     fclose(f->file);
   free(f);
@@ -1420,11 +1389,9 @@ const mcpl_particle_t* mcpl_read(mcpl_file_t ff)
   size_t nb;
   unsigned lbuf = f->particle_size;
   char * pbuf = &(f->particle_buffer[0]);
-#ifdef MCPL_HASZLIB
     if (f->filegz)
       nb = gzread(f->filegz, pbuf, lbuf);
     else
-#endif
       nb = fread(pbuf, 1, lbuf, f->file);
   if (nb!=lbuf)
     mcpl_error("Errors encountered while attempting to read particle data.");
@@ -1535,13 +1502,12 @@ int mcpl_skipforward(mcpl_file_t ff,uint64_t n)
     return notEOF;
   if (notEOF) {
     int error;
-#ifdef MCPL_HASZLIB
     if (f->filegz) {
       int64_t targetpos = f->current_particle_idx*f->particle_size+f->first_particle_pos;
       error = ! mcpl_gzseek(f->filegz, targetpos );
-    } else
-#endif
+    } else {
       error = MCPL_FSEEK_CUR( f->file, f->particle_size * n )!=0;
+    }
     if (error)
       mcpl_error("Errors encountered while skipping in particle list");
   }
@@ -1556,12 +1522,11 @@ int mcpl_rewind(mcpl_file_t ff)
   int notEOF = f->current_particle_idx<f->nparticles;
   if (notEOF&&!already_there) {
     int error;
-#ifdef MCPL_HASZLIB
     if (f->filegz) {
       error = ! mcpl_gzseek( f->filegz, f->first_particle_pos );
-    } else
-#endif
+    } else {
       error = MCPL_FSEEK( f->file, f->first_particle_pos )!=0;
+    }
     if (error)
       mcpl_error("Errors encountered while rewinding particle list");
   }
@@ -1576,13 +1541,12 @@ int mcpl_seek(mcpl_file_t ff,uint64_t ipos)
   int notEOF = f->current_particle_idx<f->nparticles;
   if (notEOF&&!already_there) {
     int error;
-#ifdef MCPL_HASZLIB
     if (f->filegz) {
       int64_t targetpos = f->current_particle_idx*f->particle_size+f->first_particle_pos;
       error = ! mcpl_gzseek( f->filegz, targetpos );
-    } else
-#endif
+    } else {
       error = MCPL_FSEEK( f->file, f->first_particle_pos + f->particle_size * ipos )!=0;
+    }
     if (error)
       mcpl_error("Errors encountered while seeking in particle list");
   }
@@ -1593,15 +1557,6 @@ uint64_t mcpl_currentposition(mcpl_file_t ff)
 {
   MCPLIMP_FILEDECODE;
   return f->current_particle_idx;
-}
-
-MCPL_LOCAL char * mcpl_internal_malloc(size_t n)
-{
-  //Fixme: use everywhere
-  char * res = (char*)malloc(n ? n : 1);
-  if (!res)
-    mcpl_error("memory allocation failed");
-  return res;
 }
 
 char * mcpl_basename(const char * filename)
@@ -1940,8 +1895,7 @@ void mcpl_transfer_particle_contents(FILE * fo, mcpl_file_t ffi, uint64_t nparti
 
   //buffer for transferring up to 1000 particles at a time:
   const unsigned npbufsize = 1000;
-  char * buf = (char*)malloc(npbufsize*particle_size);
-  assert(buf);
+  char * buf = mcpl_internal_malloc(npbufsize*particle_size);
   uint64_t np_remaining = nparticles;
 
   while(np_remaining) {
@@ -1952,13 +1906,12 @@ void mcpl_transfer_particle_contents(FILE * fo, mcpl_file_t ffi, uint64_t nparti
 
     //read:
     uint64_t nb;
-#ifdef MCPL_HASZLIB
     if (fi->filegz) {
       assert( ((unsigned)toread)*particle_size < UINT32_MAX );
       nb = gzread(fi->filegz, buf, ((unsigned)toread)*particle_size);
-    } else
-#endif
+    } else {
       nb = fread(buf,1,toread*particle_size,fi->file);
+    }
     if (nb!=toread*particle_size)
       mcpl_error("Unexpected read-error while merging");
 
@@ -2300,10 +2253,8 @@ MCPL_LOCAL int mcpl_tool_usage( char** argv, const char * errmsg ) {
   printf("The default behaviour is to display the contents of the FILE in human readable\n");
   printf("format (see Dump Options below for how to modify what is displayed).\n");
   printf("\n");
-#ifdef MCPL_HASZLIB
   printf("This installation supports direct reading of gzipped files (.mcpl.gz).\n");
   printf("\n");
-#endif
   printf("Usage:\n");
   printf("  %s [dump-options] FILE\n",progname);
   printf("  %s --merge [merge-options] FILE1 FILE2\n",progname);
@@ -2518,7 +2469,7 @@ int mcpl_tool(int argc,char** argv) {
     } else if (n>=1&&a[0]!='-') {
       //input file
       if (!filenames)
-        filenames = (char **)calloc(argc,sizeof(char*));
+        filenames = (char **)mcpl_internal_calloc(argc,sizeof(char*));
       filenames[nfilenames] = a;
       ++nfilenames;
     } else {
@@ -2593,15 +2544,9 @@ int mcpl_tool(int argc,char** argv) {
       int attempt_gzip = 0;
       if( lfn > 8 && !strcmp(outfn + (lfn - 8), ".mcpl.gz")) {
         attempt_gzip = 1;
-        outfn = (char*)malloc(lfn-2);//lfn+1-3
-        assert(outfn);
+        outfn = mcpl_internal_malloc(lfn-2);//lfn+1-3
         memcpy(outfn,filenames[0],lfn-3);
         outfn[lfn-3] = '\0';
-        /* outfn = (char*)malloc(lfn+1); */
-        /* assert(outfn); */
-        /* outfn[0] = '\0'; */
-        /* strncat(outfn,filenames[0],lfn); */
-        /* outfn[lfn-3] = '\0'; */
         if (mcpl_file_certainly_exists(outfn))
           return free(filenames),mcpl_tool_usage(argv,"Requested output file already exists (without .gz extension).");
       } else if( lfn > 3 && !strcmp(outfn + (lfn - 3), ".gz")) {
@@ -2676,8 +2621,7 @@ int mcpl_tool(int argc,char** argv) {
 
     const char * outfile_fn = mcpl_outfile_filename(fo);
     size_t nn = strlen(outfile_fn);
-    char *fo_filename = (char*)malloc(nn+4);
-    assert(fo_filename);
+    char *fo_filename = mcpl_internal_malloc(nn+4);
     //fo_filename[0] = '\0';
     memcpy(fo_filename,outfile_fn,nn+1);
     //memcpy(fo_filename+nn,".gz",4);
@@ -2815,8 +2759,7 @@ MCPL_LOCAL int mcpl_custom_gzip(const char *filename, const char *mode)//fixme: 
 
   //Construct output file name by appending .gz:
   size_t nn = strlen(filename);
-  char * outfn = (char*)malloc(nn + 4);
-  assert(outfn);
+  char * outfn = mcpl_internal_malloc(nn + 4);
   memcpy(outfn,filename,nn);
   memcpy(outfn+nn,".gz",4);
   /* outfn[0] = '\0'; */
