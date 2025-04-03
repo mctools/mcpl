@@ -47,6 +47,7 @@
 void phits_error(const char * msg);//fwd declare internal function from phitsread.c
 
 int phitsmcpl_buf_is_text(size_t n, const unsigned char * buf) {
+  //fixme: use common fct
   //We correctly allow ASCII & UTF-8 but falsely classify UTF-16 and UTF-32 as
   //data. See http://stackoverflow.com/questions/277521#277568 for how we could
   //also detect UTF-16 & UTF-32.
@@ -58,6 +59,7 @@ int phitsmcpl_buf_is_text(size_t n, const unsigned char * buf) {
 }
 
 int phitsmcpl_file2buf(const char * filename, unsigned char** buf, size_t* lbuf, size_t maxsize, int require_text) {
+  //fixme: use common fct
   *buf = 0;
   *lbuf = 0;
   FILE * file = fopen(filename, "rb");
@@ -141,10 +143,17 @@ int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
     mcpl_enable_polarisation(mcplfh);
 
   if (inputdeckfile) {
-    unsigned char* cfgfile_buf;
-    size_t cfgfile_lbuf;
-    if (!phitsmcpl_file2buf(inputdeckfile, &cfgfile_buf, &cfgfile_lbuf, 104857600, 1))
-      return 0;
+    char* cfgfile_buf;
+    uint64_t cfgfile_lbuf;
+    mcpl_read_file_to_buffer( inputdeckfile,
+                              104857600,//100mb max
+                              1,//text
+                              &cfgfile_lbuf,
+                              &cfgfile_buf );
+
+
+    /* if (!phitsmcpl_file2buf(inputdeckfile, &cfgfile_buf, &cfgfile_lbuf, 104857600, 1)) */
+    /*   return 0; */
     //We won't do much for sanity checks since we want to avoid the risk of
     //false positives, but at least the word "dump" should occur in both input
     //deck and dump summary files:
@@ -226,8 +235,7 @@ void phits2mcpl_parse_args( int argc,char **argv, const char** infile,
     if (argv[i][0]=='\0')
       continue;
     if (strcmp(argv[i],"-h")==0||strcmp(argv[i],"--help")==0) {
-      const char * progname = strrchr(argv[0], '/');
-      progname = progname ? progname + 1 : argv[0];
+      char * progname = mcpl_usage_progname(argv[0]);
       printf("Usage:\n\n");
       printf("  %s [options] dumpfile [output.mcpl]\n\n",progname);
       printf("Converts the Monte Carlo particles in the input dump file (binary PHITS dump\n"
@@ -244,6 +252,7 @@ void phits2mcpl_parse_args( int argc,char **argv, const char** infile,
              "  -s FILE      : Embed into the MCPL header the dump summary text file,\n"
              "                 which was produced along with the dumpfile itself.\n"
              );
+      free(progname);
       exit(0);
     }
     if (strcmp(argv[i],"-c")==0) {
@@ -303,7 +312,7 @@ void phits2mcpl_parse_args( int argc,char **argv, const char** infile,
   if (!*outfile)
     *outfile = "output.mcpl";
   if (strcmp(*infile,*outfile)==0) {
-    //basic test, easy to cheat:
+    //basic test, easy to cheat: (fixme!)
     printf("Error: input and output files are identical.\n");
     exit(1);
   }
@@ -447,8 +456,7 @@ int mcpl2phits_app_usage( const char** argv, const char * errmsg ) {
     printf("Run with -h or --help for usage information\n");
     return 1;
   }
-  const char * progname = strrchr(argv[0], '/');
-  progname =  progname ? progname + 1 : argv[0];
+  char * progname = mcpl_usage_progname(argv[0]);
   printf("Usage:\n\n");
   printf("  %s [options] <input.mcpl> [phits.dmp]\n\n",progname);
   printf("Converts the Monte Carlo particles in the input MCPL file to binary PHITS\n"
@@ -473,6 +481,7 @@ int mcpl2phits_app_usage( const char** argv, const char * errmsg ) {
          "  -l<LIMIT>    : Limit the number of particles transferred to the PHITS file\n"
          "                 (defaults to 0, meaning no limit).\n"
          );
+  free(progname);
   return 0;
 }
 
