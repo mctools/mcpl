@@ -87,3 +87,31 @@ jobs:
     - name: Run mcpltool
       run: ./install/bin/mcpltool --help
 
+    - name: Setup environment
+      run: |
+        test -f ./install/bin/mcpl-config
+        test -f ./install/bin/mcpltool
+        test -d ./install/lib
+        echo "PATH=$PWD/install/bin:$PATH" >> $GITHUB_ENV
+        echo "LD_LIBRARY_PATH=$PWD/install/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+        echo "DYLD_LIBRARY_PATH=$PWD/install/lib:${DYLD_LIBRARY_PATH}" >> $GITHUB_ENV
+
+    - name: Run mcpl-config
+      run: mcpl-config -s
+
+    - name: Run mcpltool
+      run: mcpltool --help
+
+    - name: Cfg downstream
+      #For fun, always use Release config here, to test that it works even if
+      #using a different build type than mcpl itself:
+      run: cmake -S ./src/examples/downstream_cmake -B ./build_ds -DCMAKE_INSTALL_PREFIX=./install_ds -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build downstream
+      run: cmake --build ./build_ds
+
+    - name: Install downstream
+      run: cmake --install ./build_ds
+
+    - name: Run downstream
+      run: ./install_ds/bin/testapp ./src/examples/example.mcpl

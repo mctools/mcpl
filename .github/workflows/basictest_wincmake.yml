@@ -59,13 +59,60 @@ jobs:
         cmake -B build src
         -DMCPL_ENABLE_TESTING=ON
         -DMCPL_BUILD_STRICT=ON
+        "-DCMAKE_INSTALL_PREFIX=./mcplinstall"
         -DMCTOOLS_REQUIRE_ALL_TEST_DEPS=ON
 
       #NB: More verbosity by appending: "-- /verbosity:detailed":
-    - name: CMake build
+    - name: CMake build (Release)
       shell: cmd
       run: cmake --build build --config Release -j 3
 
+    - name: CMake build (Debug)
+      shell: cmd
+      run: cmake --build build --config Debug -j 3
+
       #NB more verbosity by appending: "-VV":
-    - name: Run CTests
+    - name: Run CTests (Release)
       run: ctest --test-dir ./build  --build-config Release --no-tests=error --output-on-failure --test-output-size-failed 100000 --test-output-truncation middle
+
+    - name: Run CTests (Debug)
+      run: ctest --test-dir ./build  --build-config Release --no-tests=error --output-on-failure --test-output-size-failed 100000 --test-output-truncation middle
+
+    - name: CMake install (Release)
+      shell: cmd
+      run: cmake --install build --config Release
+
+    - name: Setup environment
+      shell: python
+      run: |
+        import pathlib
+        import os
+        v = pathlib.Path('.').joinpath('mcplinstall','bin')
+        vo = os.environ.get('PATH')
+        v = '%s%s%s'%(v,os.pathsep,vo) if vo else v
+        v = f'PATH={v}\n'
+        with pathlib.Path(os.environ['GITHUB_ENV']).open('at') as f:
+            print(f"Setting: {v}")
+            f.write(v)
+
+    - name: Run mcpl-config -s
+      shell: cmd
+      run: mcpl-config -s
+
+    - name: Run mcpltool --help
+      shell: cmd
+      run: mcpltool --help
+
+    - name: Cfg downstream
+      #For fun, always use Release config here, to test that it works even if
+      #using a different build type than mcpl itself:
+      run: cmake -S "./src/examples/downstream_cmake" -B "./build_ds" "-DCMAKE_INSTALL_PREFIX=./install_ds"
+
+    - name: Build downstream
+      run: cmake --build ./build_ds  --config Release
+
+    - name: Install downstream
+      run: cmake --install ./build_ds  --config Release
+
+    - name: Run downstream
+      run: ./install_ds/bin/testapp ./src/examples/example.mcpl
