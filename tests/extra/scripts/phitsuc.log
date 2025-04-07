@@ -1,0 +1,41 @@
+Run mcpl2phits
+Opened MCPL file produced with "MyMCApp" (contains 5 particles)
+Creating (or overwriting) output PHITS file.
+Initiating particle conversion loop.
+Ending particle conversion loop.
+Created føø/hellø.dmp with 5 particles.
+Run phits2mcpl
+MCPL: Attempting to compress file hellø2.mcpl with gzip
+MCPL: Successfully compressed file into hellø2.mcpl.gz
+Created føø/hellø2.mcpl.gz
+Run mcpltool
+Opened MCPL file hellø2.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 97 bytes
+    Data storage       : 240 bytes
+
+  Custom meta data
+    Source             : "PHITS"
+    Number of comments : 1
+          -> comment 0 : "Converted from PHITS with phits2mcpl"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 48 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z
+    0        2112       1.234           0           0           0           0           1           0           0           1           0           0           0
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1           0           0           0
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1           0           0           0
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1           0           0           0
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1           0           0           0
+All ok
