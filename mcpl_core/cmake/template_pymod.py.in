@@ -27,12 +27,31 @@
 #Expanded by CMake:
 _has_shlib_in_scripts_dir = bool('@mcpl_pymod_shlib_in_scripts@')
 
+def cmakedir():
+    """Return same directory path as would normally be produced by 'mcpl-config
+    --show cmakedir' and which can be used to set the MCPL_DIR variable before
+    find_package(MCPL) calls in CMake. This alternative might be useful in a
+    cross-compilation scenarios, where mcpl-config can not actually be invoked
+    due to binary incompatibility with the host platform.
+
+    """
+    import pathlib
+    d = pathlib.Path(__file__).parent.joinpath('data','lib','cmake','MCPL')
+    return d.absolute()
+
 def _mcpl_config_cli_wrapper():
+    import sys
+    a = sys.argv[:]
+    if len(a)==3 and 'cmakedir' in a[1:] and '--show' in a[1:]:
+        #Special workaround for "mcpl-config --show cmakedir", which might be
+        #used from CMake code in a cross-compilation scenario and where the
+        #binary mcpl-config might be incompatible with the host.
+        print(cmakedir())
+        return
+    #Usual case, redirect to binary mcpl-config:
     import subprocess
     import pathlib
-    import sys
     f = pathlib.Path(__file__).parent.joinpath('data','bin','mcpl-config')
-    a = sys.argv[:]
     a[0] = f
     if _has_shlib_in_scripts_dir:
         #Windows, must let the binary mcpl-config know about the actual
