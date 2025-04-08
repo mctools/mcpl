@@ -48,10 +48,9 @@ agreement No 676548 (the BrightnESS project)
 """
 
 #fixme: py3 only
-#fixme copyright statements
 
-__license__ = 'CC0 1.0 Universal'
-__copyright__ = 'Copyright 2017-2025'
+__license__ = "Apache 2.0, http://www.apache.org/licenses/LICENSE-2.0"
+__copyright__ = 'Copyright 2015-2025'
 __version__ = '1.9.80'
 __status__ = 'Production'
 __author__ = 'Thomas Kittelmann'

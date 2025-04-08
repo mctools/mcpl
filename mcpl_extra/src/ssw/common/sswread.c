@@ -35,8 +35,6 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-// fixme: check/update copyright year in all files
-
 #include "sswread.h"
 #include "mcpl.h"
 

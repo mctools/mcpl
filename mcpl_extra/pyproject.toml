@@ -27,8 +27,7 @@ authors = [
 description = "Various tools and conversion utilities related to MCPL files."
 classifiers = [
     "Programming Language :: Python :: 3",
-    #FIXME: update (in all files):
-    "License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
+    "License :: OSI Approved :: Apache Software License",
 ]
 
 [project.urls]
