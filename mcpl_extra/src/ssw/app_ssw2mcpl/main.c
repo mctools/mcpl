@@ -20,8 +20,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "sswmcpl.h"
+#include "mcpl.h"
 
-//FIXME wmain for windows
-int main(int argc,char** argv) {
+#ifdef _WIN32
+int wmain( int argc, wchar_t *argv[ ] )
+{
+  return mcpl_wrap_wmain( argc, argv, ssw2mcpl_app );
+}
+#else
+int main ( int argc, char** argv )
+{
   return ssw2mcpl_app(argc,argv);
 }
+#endif

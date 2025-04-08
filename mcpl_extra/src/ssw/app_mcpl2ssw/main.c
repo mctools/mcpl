@@ -20,7 +20,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "sswmcpl.h"
+#include "mcpl.h"
 
+#ifdef _WIN32
+int wmain( int argc, wchar_t *argv[ ] )
+{
+  return mcpl_wrap_wmain( argc, argv, mcpl2ssw_app );
+}
+#else
 int main(int argc,char** argv) {
   return mcpl2ssw_app(argc,argv);
 }
+#endif
