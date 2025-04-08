@@ -257,54 +257,33 @@ int ssw2mcpl_app(int argc,char** argv)
   return ok ? 0 : 1;
 }
 
-void ssw_update_nparticles(FILE* f,
-                           int64_t np1pos, int32_t np1,
-                           int64_t nrsspos, int32_t nrss)
+void ssw_update_nparticles( mcpl_generic_wfilehandle_t* fh,
+                            int64_t np1pos, int32_t np1,
+                            int64_t nrsspos, int32_t nrss)
 {
   //Seek and update np1 and nrss fields at correct location in header:
-  const char * errmsg = "Errors encountered while attempting to update number of particle info in output file.";
-  int64_t savedpos = ftell(f);
-  if (savedpos<0)
-    ssw_error(errmsg);
-  if (fseek( f, np1pos, SEEK_SET ))
-    ssw_error(errmsg);
-  size_t nb = fwrite(&np1, 1, sizeof(np1), f);
-  if (nb != sizeof(np1))
-    ssw_error(errmsg);
-  if (fseek( f, nrsspos, SEEK_SET ))
-    ssw_error(errmsg);
-  nb = fwrite(&nrss, 1, sizeof(nrss), f);
-  if (nb != sizeof(nrss))
-    ssw_error(errmsg);
-  if (fseek( f, savedpos, SEEK_SET ))
-    ssw_error(errmsg);
+  uint64_t savedpos = fh->current_pos;
+  mcpl_generic_fwseek( fh, np1pos );
+  mcpl_generic_fwrite( fh, (char*)&np1, sizeof(np1) );
+  mcpl_generic_fwseek( fh, nrsspos );
+  mcpl_generic_fwrite( fh, (char*)&nrss, sizeof(nrss) );
+  mcpl_generic_fwseek( fh, savedpos );
 }
 
-void ssw_writerecord(FILE* outfile, int reclen, size_t lbuf, char* buf)
+void ssw_writerecord( mcpl_generic_wfilehandle_t* fh,
+                      int reclen, size_t lbuf, char* buf )
 {
   if (reclen==4) {
     uint32_t rl = lbuf;
-    size_t nb = fwrite(&rl, 1, sizeof(rl), outfile);
-    if (nb!=sizeof(rl))
-      ssw_error("write error");
-    nb = fwrite(buf, 1, lbuf, outfile);
-    if (nb!=lbuf)
-      ssw_error("write error");
-    nb = fwrite(&rl, 1, sizeof(rl), outfile);
-    if (nb!=sizeof(rl))
-      ssw_error("write error");
+    mcpl_generic_fwrite( fh, (char*)&rl, sizeof(rl) );
+    mcpl_generic_fwrite( fh, buf, lbuf );
+    mcpl_generic_fwrite( fh, (char*)&rl, sizeof(rl) );
   } else {
     assert(reclen==8);
     uint64_t rl = lbuf;
-    size_t nb = fwrite(&rl, 1, sizeof(rl), outfile);
-    if (nb!=sizeof(rl))
-      ssw_error("write error");
-    nb = fwrite(buf, 1, lbuf, outfile);
-    if (nb!=lbuf)
-      ssw_error("write error");
-    nb = fwrite(&rl, 1, sizeof(rl), outfile);
-    if (nb!=sizeof(rl))
-      ssw_error("write error");
+    mcpl_generic_fwrite( fh, (char*)&rl, sizeof(rl) );
+    mcpl_generic_fwrite( fh, buf, lbuf );
+    mcpl_generic_fwrite( fh, (char*)&rl, sizeof(rl) );
   }
 }
 
@@ -373,17 +352,14 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
   printf("Creating (or overwriting) output SSW file.\n");
 
   //Open new ssw file:
-  FILE * fout = fopen(outsswfile,"wb");//fixme! not ok on windows
-
-  if (!fout)
+  mcpl_generic_wfilehandle_t fout = mcpl_generic_wfopen( outsswfile );
+  if (!fout.internal)
     ssw_error("Problems opening new SSW file");
 
   //Write header:
-  int nb = fwrite(hdrbuf, 1, ssw_hdrlen, fout);
-  if (nb!=ssw_hdrlen)
-    ssw_error("Problems writing header to new SSW file");
-
+  mcpl_generic_fwrite( &fout, hdrbuf, ssw_hdrlen);
   free(hdrbuf);
+  hdrbuf = NULL;
 
   double ssb[11];
 
@@ -477,7 +453,7 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
     if (mcpl_p->direction[2]<0.0)
       ssb[1] = - ssb[1];
 
-    ssw_writerecord(fout,ssw_reclen,sizeof(double)*ssw_ssblen,(char*)&ssb[0]);
+    ssw_writerecord(&fout,ssw_reclen,sizeof(double)*ssw_ssblen,(char*)&ssb[0]);
     if (++used==nparticles_limit) {
       long long remaining = mcpl_hdr_nparticles(fmcpl) - skipped_nosswtype - used;
       if (remaining)
@@ -506,10 +482,10 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
   if (orig_np1<0)
     new_np1 = - new_np1;
 
-  ssw_update_nparticles(fout,ssw_np1pos,new_np1,ssw_nrsspos,new_nrss);
+  ssw_update_nparticles(&fout,ssw_np1pos,new_np1,ssw_nrsspos,new_nrss);
 
   mcpl_close_file(fmcpl);
-  fclose(fout);
+  mcpl_generic_fwclose(&fout);
 
   printf("Created %s with %lli particles (nrss) and %lli histories (np1).\n",outsswfile,(long long)new_nrss,(long long)labs(new_np1));
   return 1;
