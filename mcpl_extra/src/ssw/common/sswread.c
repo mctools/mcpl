@@ -429,8 +429,6 @@ ssw_file_t ssw_open_file( const char * filename )
   //Skip a record:
   if (!ssw_loadrecord(f))
     return ssw_openerror(f,"ssw_open_file error: problems loading record (A)");
-  //Fixme: Remove (A), (B), ...(E) markers in err messages above and below again
-  //before final release?
 
   //Position of current record payload in file:
   int64_t current_recpos = (int64_t)f->filehandle.current_pos;

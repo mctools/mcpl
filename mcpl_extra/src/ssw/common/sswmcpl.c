@@ -332,14 +332,17 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
   strcat(ref_mcnpflavour_str,ssw_mcnpflavour(fsswref));
   ssw_close_file(fsswref);
 
-  //Grab the header (fixme: use new function for this instead?):
-  unsigned char * hdrbuf = (unsigned char*)malloc(ssw_hdrlen);
-  assert(hdrbuf);
-
+  //Grab the header:
+  char * hdrbuf;
   {
-    mcpl_generic_filehandle_t fh = mcpl_generic_fopen( refsswfile );
-    mcpl_generic_fread( &fh, (char*)hdrbuf, (uint64_t)ssw_hdrlen );
-    mcpl_generic_fclose( &fh );
+    uint64_t actual_size;
+    mcpl_read_file_to_buffer( refsswfile,
+                              (uint64_t)ssw_hdrlen,
+                              0,//not text
+                              &actual_size,
+                              &hdrbuf );
+    if ( !hdrbuf || actual_size != (uint64_t)ssw_hdrlen )
+      ssw_error("Problems extracting header from reference file");
   }
 
   int32_t orig_np1 = * ((int32_t*)(&hdrbuf[ssw_np1pos]));
@@ -440,8 +443,8 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
                       //it to 1 (seems to be not used anyway?)
     } else {
       assert(ssw_mcnp_type == SSW_MCNP5);
-      //FIXME: We had for MCPL <=1.6.x: ssb[1] = (isurf + 1000000*rawtype)*8;
-      //But now we try instead:
+      //NOTE: We had for MCPL <=1.6.x: ssb[1] = (isurf + 1000000*rawtype)*8; But
+      //now we try instead:
       ssb[1] = (isurf + 100000000*rawtype)*8;
       if (ssw_ssblen==11)
         ssb[10] = 1.0;//Cosine of angle at surface? Can't calculate it, so we simply set
@@ -637,4 +640,3 @@ int mcpl2ssw_app( int argc, char** argv ) {
   return 1;
 
 }
-//fixme: make sure this is compiled with strict flags!
