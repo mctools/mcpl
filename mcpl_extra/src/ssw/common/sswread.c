@@ -115,16 +115,13 @@ typedef struct {
 
 #define SSW_FILEDECODE ssw_fileinternal_t * f = (ssw_fileinternal_t *)ff.internal; assert(f)
 
-int ssw_readbytes(ssw_fileinternal_t* f, char * dest, int nbytes)
+void ssw_readbytes(ssw_fileinternal_t* f, char * dest, int nbytes)
 {
-  //fixme we won't need this function anymore??
-  mcpl_generic_fread( &f->filehandle, dest, (unsigned)nbytes );
-  return 1;
+  mcpl_generic_fread( &f->filehandle, dest, (uint64_t)nbytes );
 }
 
 int ssw_try_readbytes(ssw_fileinternal_t* f, char * dest, int nbytes)
 {
-  //fixme we won't need this function anymore??
   unsigned nb_actual = mcpl_generic_fread_try( &f->filehandle,
                                                dest, (unsigned)nbytes );
   return ( nb_actual == (unsigned)nbytes ) ? 1 : 0;
@@ -162,21 +159,22 @@ int ssw_loadrecord(ssw_fileinternal_t* f)
 
   if (!f->buf) {
     //Could be corrupted data resulting in unusually large lbuf:
-    fprintf(ssw_stdout(),"SSW Error: unable to allocate requested buffer (corrupted input?).\n");
+    fprintf(ssw_stdout(),
+            "SSW Error: unable to allocate"
+            " requested buffer (corrupted input?).\n");
     return 0;
   }
 
   char * buf = (char*)f->buf;
-  if (!ssw_readbytes(f, buf, f->lbuf))
-    return 0;
+  ssw_readbytes(f, buf, f->lbuf );
   if (f->reclen==4) {
     uint32_t rl;
-    int ok0 = ssw_readbytes(f, (char*)&rl, 4);
-    int ok = ( ok0 && f->lbuf == rl );
-    return ok;
+    ssw_readbytes(f, (char*)&rl, 4);
+    return ( f->lbuf == rl );
   } else {
     uint64_t rl;
-    return ssw_readbytes(f, (char*)&rl, 8) && f->lbuf == rl;
+    ssw_readbytes(f, (char*)&rl, 8);
+    return ( f->lbuf == rl );
   }
 }
 
