@@ -269,31 +269,20 @@ int phits2mcpl_app(int argc,char** argv)
   return ok ? 0 : 1;
 }
 
-void phits_writerecord(FILE* outfile, int reclen, size_t lbuf, char* buf)
+void phits_writerecord( mcpl_generic_wfilehandle_t* fh,
+                        int reclen, size_t lbuf, char* buf )
 {
   if (reclen==4) {
     uint32_t rl = lbuf;
-    size_t nb = fwrite(&rl, 1, sizeof(rl), outfile);
-    if (nb!=sizeof(rl))
-      phits_error("write error");
-    nb = fwrite(buf, 1, lbuf, outfile);
-    if (nb!=lbuf)
-      phits_error("write error");
-    nb = fwrite(&rl, 1, sizeof(rl), outfile);
-    if (nb!=sizeof(rl))
-      phits_error("write error");
+    mcpl_generic_fwrite( fh, (char*)&rl, sizeof(rl) );
+    mcpl_generic_fwrite( fh, buf, lbuf );
+    mcpl_generic_fwrite( fh, (char*)&rl, sizeof(rl) );
   } else {
     assert(reclen==8);
     uint64_t rl = lbuf;
-    size_t nb = fwrite(&rl, 1, sizeof(rl), outfile);
-    if (nb!=sizeof(rl))
-      phits_error("write error");
-    nb = fwrite(buf, 1, lbuf, outfile);
-    if (nb!=lbuf)
-      phits_error("write error");
-    nb = fwrite(&rl, 1, sizeof(rl), outfile);
-    if (nb!=sizeof(rl))
-      phits_error("write error");
+    mcpl_generic_fwrite( fh, (char*)&rl, sizeof(rl) );
+    mcpl_generic_fwrite( fh, buf, lbuf );
+    mcpl_generic_fwrite( fh, (char*)&rl, sizeof(rl) );
   }
 }
 
@@ -313,9 +302,9 @@ int mcpl2phits( const char * inmcplfile, const char * outphitsdumpfile,
   printf("Creating (or overwriting) output PHITS file.\n");
 
   //Open new phits file:
-  FILE * fout = fopen(outphitsdumpfile,"wb");
+  mcpl_generic_wfilehandle_t fout = mcpl_generic_wfopen(outphitsdumpfile);
 
-  if (!fout)
+  if (!fout.internal)
     phits_error("Problems opening new PHITS file");
 
   const mcpl_particle_t* mcpl_p;
@@ -360,7 +349,7 @@ int mcpl2phits( const char * inmcplfile, const char * outphitsdumpfile,
       printf("WARNING: Writing more than 2147483647 (maximum value of 32 bit integers) particles in the PHITS dump "
              "file - it is not known whether PHITS will be able to deal with such files correctly.\n");
     }
-    phits_writerecord(fout,reclen,sizeof(double)*(use_polarisation?13:10),(char*)&dumpdata[0]);
+    phits_writerecord(&fout,reclen,sizeof(double)*(use_polarisation?13:10),(char*)&dumpdata[0]);
 
     if (++used==nparticles_limit) {
       long long remaining = mcpl_hdr_nparticles(fmcpl) - skipped_nophitstype - used;
@@ -380,7 +369,7 @@ int mcpl2phits( const char * inmcplfile, const char * outphitsdumpfile,
            " could not be converted to PHITS codes.\n",(long long)skipped_nophitstype);
   }
   mcpl_close_file(fmcpl);
-  fclose(fout);
+  mcpl_generic_fwclose(&fout);
 
   printf("Created %s with %lli particles.\n",outphitsdumpfile,(long long)used);
 
