@@ -2854,7 +2854,10 @@ void mcpl_internal_dump_to_stdout( const char * data,
 void mcpl_internal_delete_file( const char * filename )
 {
 #ifdef MCPL_THIS_IS_MS
-  _unlink(filename);//fixme _wunlink if unicode!
+  mcu8str f = mcu8str_view_cstr( filename );
+  wchar_t* wpath = mctools_path2wpath(&f);//must free(..) return value.
+  _wunlink(wpath);
+  free(wpath);
 #else
   unlink(filename);
 #endif
