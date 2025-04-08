@@ -47,11 +47,20 @@ int main(int argc,char**argv) {
     mcpl_add_particle(f,particle);
     mcpl_closeandgzip_outfile(f);
   }
+
+  //Verify that filename without .gz has disappeared:
+  {
+    mcpl_generic_filehandle_t fh = mcpl_generic_fopen_try(filename);
+    if ( fh.internal ) {
+      mcpl_generic_fclose( &fh );
+      printf("ERROR: %s did not disappear upon gzip\n",filename);
+      return 1;
+    }
+  }
   {
     mcpl_file_t f = mcpl_open_file(filenamegz);
     mcpl_close_file(f);
   }
-
 
   return 0;
 

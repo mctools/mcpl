@@ -50,6 +50,16 @@ int main(int argc,char**argv) {
   //close up and gzip:
   mcpl_closeandgzip_outfile(f);
 
+  //Verify that out.mcpl has disappeared:
+  {
+    mcpl_generic_filehandle_t fh = mcpl_generic_fopen_try("out.mcpl");
+    if ( fh.internal ) {
+      mcpl_generic_fclose( &fh );
+      printf("ERROR: out.mcpl did not disappear upon gzip\n");
+      return 1;
+    }
+  }
+
   //Check file:
   mcpl_dump("out.mcpl.gz", 0,0,20);
 
