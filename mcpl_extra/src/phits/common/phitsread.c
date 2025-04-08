@@ -206,146 +206,146 @@ phits_file_t phits_openerror(phits_fileinternal_t * f, const char* msg) {
 
 //fixme: indentation (and revisit all calloc/mallocs)
 phits_file_t phits_open_internal( const char * filename )
-  {
-    phits_fileinternal_t * f = (phits_fileinternal_t*)calloc(sizeof(phits_fileinternal_t),1);
-    assert(f);
+{
+  phits_fileinternal_t * f = (phits_fileinternal_t*)calloc(sizeof(phits_fileinternal_t),1);
+  assert(f);
 
-    phits_file_t out;
-    out.internal = f;
+  phits_file_t out;
+  out.internal = f;
 
-    //Init:
+  //Init:
+  f->particlesize = 0;
+  f->lbuf = 0;
+  f->reclen = 4;
+  f->haspolarisation = 0;
+  memset( &( f->part ),0,sizeof(f->part) );
+
+  //open file (supports gzipped if ends with .gz):
+  f->filehandle = mcpl_generic_fopen( filename );
+
+  //Try to read first Fortran record marker, keeping in mind that we do not
+  //know if it is 32bit or 64bit, and that an empty file is to be interpreted
+  //as a valid PHITS dump file with 0 particles:
+
+  if (!phits_ensure_load(f,1)) {
+    //Can't read a single byte. Assume that this indicates an empty file and
+    //therefore a valid PHITS dump file with 0 particles:
+    //file with 0 particles, mark as EOF:
     f->particlesize = 0;
-    f->lbuf = 0;
-    f->reclen = 4;
+    f->haspolarisation = 0;//Convention: We mark empty files as NOT HAVING
+    //polarisation info (to avoid potentially inflating
+    //mcpl files in various merge/conversion
+    //scenarios).
+    return out;
+  }
+
+  //Try to read first record with first 32bit then 64bit record lengths
+  //(updating f->reclen and f->particlesize in case of success):
+  if (!phits_tryload_reclen(f,4)) {
+    if (!phits_tryload_reclen(f,8)) {
+      if (f->lbuf<8)
+        phits_error("Invalid PHITS dump file: too short\n");
+      phits_error("Invalid PHITS dump file: Problems reading first record.\n");
+    }
+  }
+  assert( f->reclen==4 || f->reclen==8 );
+
+  if (f->reclen==8) {
+    fprintf(phits_stdout(),"phits_open_file WARNING: 64bit Fortran records"
+            " detected which is untested (feedback"
+            " appreciated at https://mctools.github.io/mcpl/contact/).\n");
+  }
+
+  if (f->particlesize == 10*sizeof(double)) {
     f->haspolarisation = 0;
-    memset( &( f->part ),0,sizeof(f->part) );
+  } else if (f->particlesize == 13*sizeof(double)) {
+    f->haspolarisation = 1;
+  } else {
+    phits_error("Invalid PHITS dump file: Does not contain exactly 10 or 13 fields in each"
+                " particle - like due to unsupported configuration flags being used when"
+                " producing the file.\n");
+  }
 
-    //open file (supports gzipped if ends with .gz):
-    f->filehandle = mcpl_generic_fopen( filename );
+  return out;
+}
 
-    //Try to read first Fortran record marker, keeping in mind that we do not
-    //know if it is 32bit or 64bit, and that an empty file is to be interpreted
-    //as a valid PHITS dump file with 0 particles:
+phits_file_t phits_open_file( const char * filename )
+{
+  if (!filename)
+    phits_error("phits_open_file called with null string for filename");
 
-    if (!phits_ensure_load(f,1)) {
-      //Can't read a single byte. Assume that this indicates an empty file and
-      //therefore a valid PHITS dump file with 0 particles:
-      //file with 0 particles, mark as EOF:
+  //Open, classify and process first record with mcnp type and version info:
+  phits_file_t out = phits_open_internal( filename );
+  phits_fileinternal_t * f = (phits_fileinternal_t *)out.internal;
+  assert(f);
+
+  out.internal = f;
+  return out;
+}
+const phits_particle_t * phits_load_particle(phits_file_t ff)
+{
+  phits_fileinternal_t * f = (phits_fileinternal_t *)ff.internal;
+  assert(f);
+
+  if (!f->particlesize) {
+    //EOF already
+    return 0;
+  }
+
+  assert( f->particlesize == 10*sizeof(double) || f->particlesize == 13*sizeof(double) );
+
+  if (!f->lbuf) {
+    if (!phits_ensure_load(f, 1)) {
+      //Can't read a single byte - assume EOF:
       f->particlesize = 0;
-      f->haspolarisation = 0;//Convention: We mark empty files as NOT HAVING
-                             //polarisation info (to avoid potentially inflating
-                             //mcpl files in various merge/conversion
-                             //scenarios).
-      return out;
-    }
-
-    //Try to read first record with first 32bit then 64bit record lengths
-    //(updating f->reclen and f->particlesize in case of success):
-    if (!phits_tryload_reclen(f,4)) {
-      if (!phits_tryload_reclen(f,8)) {
-        if (f->lbuf<8)
-          phits_error("Invalid PHITS dump file: too short\n");
-        phits_error("Invalid PHITS dump file: Problems reading first record.\n");
-      }
-    }
-    assert( f->reclen==4 || f->reclen==8 );
-
-    if (f->reclen==8) {
-      fprintf(phits_stdout(),"phits_open_file WARNING: 64bit Fortran records"
-              " detected which is untested (feedback"
-              " appreciated at https://mctools.github.io/mcpl/contact/).\n");
-    }
-
-    if (f->particlesize == 10*sizeof(double)) {
-      f->haspolarisation = 0;
-    } else if (f->particlesize == 13*sizeof(double)) {
-      f->haspolarisation = 1;
-    } else {
-      phits_error("Invalid PHITS dump file: Does not contain exactly 10 or 13 fields in each"
-                  " particle - like due to unsupported configuration flags being used when"
-                  " producing the file.\n");
-    }
-
-    return out;
-  }
-
-  phits_file_t phits_open_file( const char * filename )
-  {
-    if (!filename)
-      phits_error("phits_open_file called with null string for filename");
-
-    //Open, classify and process first record with mcnp type and version info:
-    phits_file_t out = phits_open_internal( filename );
-    phits_fileinternal_t * f = (phits_fileinternal_t *)out.internal;
-    assert(f);
-
-    out.internal = f;
-    return out;
-  }
-  const phits_particle_t * phits_load_particle(phits_file_t ff)
-  {
-    phits_fileinternal_t * f = (phits_fileinternal_t *)ff.internal;
-    assert(f);
-
-    if (!f->particlesize) {
-      //EOF already
       return 0;
     }
-
-    assert( f->particlesize == 10*sizeof(double) || f->particlesize == 13*sizeof(double) );
-
-    if (!f->lbuf) {
-      if (!phits_ensure_load(f, 1)) {
-        //Can't read a single byte - assume EOF:
-        f->particlesize = 0;
-        return 0;
-      }
-      //Try to load another record
-      int old_reclen = f->reclen;
-      (void)old_reclen;//otherwise unused if assert inactive.
-      unsigned old_particlesize = f->particlesize;
-      if (!phits_tryload_reclen(f,f->reclen)) {
-        phits_error("Problems loading particle data record!");
-        return 0;
-      }
-      assert(f->reclen==old_reclen);
-      if ( f->particlesize != old_particlesize) {
-        phits_error("Problems loading particle data record - particle data length changed mid-file (perhaps it is not actually a binary PHITS dump file after all?)!");
-        return 0;
-      }
+    //Try to load another record
+    int old_reclen = f->reclen;
+    (void)old_reclen;//otherwise unused if assert inactive.
+    unsigned old_particlesize = f->particlesize;
+    if (!phits_tryload_reclen(f,f->reclen)) {
+      phits_error("Problems loading particle data record!");
+      return 0;
     }
-
-    assert( f->lbuf == f->particlesize + f->reclen * 2 );//fixme avoid asserts
-    double * pdata = (double*)(f->buf+f->reclen);
-    phits_particle_t * pp =  & (f->part);
-    pp->rawtype = pdata[0];
-    //NB: PHITS units, not MCPL units here (only difference is time unit which is ns in PHITS and ms in MCPL):
-    pp->x = pdata[1];//cm
-    pp->y = pdata[2];//cm
-    pp->z = pdata[3];//cm
-    pp->dirx = pdata[4];
-    pp->diry = pdata[5];
-    pp->dirz = pdata[6];
-    pp->ekin = pdata[7];//MeV
-    pp->weight = pdata[8];
-    pp->time = pdata[9];//ns
-    if (f->particlesize == 13*sizeof(double)) {
-      pp->polx = pdata[10];
-      pp->poly = pdata[11];
-      pp->polz = pdata[12];
-    } else {
-      pp->polx = 0.0;
-      pp->poly = 0.0;
-      pp->polz = 0.0;
+    assert(f->reclen==old_reclen);
+    if ( f->particlesize != old_particlesize) {
+      phits_error("Problems loading particle data record - particle data length changed mid-file (perhaps it is not actually a binary PHITS dump file after all?)!");
+      return 0;
     }
-
-    pp->pdgcode = conv_code_phits2pdg(pp->rawtype);
-
-    //Mark as used:
-    f->lbuf = 0;
-
-    return pp;
   }
+
+  assert( f->lbuf == f->particlesize + f->reclen * 2 );//fixme avoid asserts
+  double * pdata = (double*)(f->buf+f->reclen);
+  phits_particle_t * pp =  & (f->part);
+  pp->rawtype = pdata[0];
+  //NB: PHITS units, not MCPL units here (only difference is time unit which is ns in PHITS and ms in MCPL):
+  pp->x = pdata[1];//cm
+  pp->y = pdata[2];//cm
+  pp->z = pdata[3];//cm
+  pp->dirx = pdata[4];
+  pp->diry = pdata[5];
+  pp->dirz = pdata[6];
+  pp->ekin = pdata[7];//MeV
+  pp->weight = pdata[8];
+  pp->time = pdata[9];//ns
+  if (f->particlesize == 13*sizeof(double)) {
+    pp->polx = pdata[10];
+    pp->poly = pdata[11];
+    pp->polz = pdata[12];
+  } else {
+    pp->polx = 0.0;
+    pp->poly = 0.0;
+    pp->polz = 0.0;
+  }
+
+  pp->pdgcode = conv_code_phits2pdg(pp->rawtype);
+
+  //Mark as used:
+  f->lbuf = 0;
+
+  return pp;
+}
 
 int phits_has_polarisation(phits_file_t ff)
 {
@@ -382,13 +382,13 @@ void phits_dump( const char * filename, const char * outfile )
   int haspol = phits_has_polarisation(f);
   const phits_particle_t * p;
   fprintf(phits_stdout(),"    pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]"
-         "          ux          uy          uz%s"
-         "    time[ns]      weight\n",(haspol?"        polx        poly        polz":""));
+          "          ux          uy          uz%s"
+          "    time[ns]      weight\n",(haspol?"        polx        poly        polz":""));
   while ((p=phits_load_particle(f))) {
     fprintf(phits_stdout(),"%10li %11.5g %11.5g %11.5g %11.5g"
-           " %11.5g %11.5g %11.5g",
-           p->pdgcode,p->ekin,p->x,p->y,p->z,
-           p->dirx,p->diry,p->dirz);
+            " %11.5g %11.5g %11.5g",
+            p->pdgcode,p->ekin,p->x,p->y,p->z,
+            p->dirx,p->diry,p->dirz);
     if (haspol)
       fprintf(phits_stdout()," %11.5g %11.5g %11.5g",p->polx,p->poly,p->polz);
     fprintf(phits_stdout()," %11.5g %11.5g\n",p->time,p->weight);

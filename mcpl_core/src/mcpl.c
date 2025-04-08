@@ -881,10 +881,10 @@ void mcpl_transfer_metadata(mcpl_file_t source, mcpl_outfile_t target)
 
 int mcpl_closeandgzip_outfile_rc(mcpl_outfile_t of)
 {
-    printf("MCPL WARNING: Usage of function mcpl_closeandgzip_outfile_rc is obsolete as"
+  printf("MCPL WARNING: Usage of function mcpl_closeandgzip_outfile_rc is obsolete as"
          " mcpl_closeandgzip_outfile now also returns the status. Please update your code"
-           " to use mcpl_closeandgzip_outfile instead.\n");
-    return mcpl_closeandgzip_outfile(of);
+         " to use mcpl_closeandgzip_outfile instead.\n");
+  return mcpl_closeandgzip_outfile(of);
 }
 
 int mcpl_closeandgzip_outfile(mcpl_outfile_t of)
@@ -1389,10 +1389,10 @@ const mcpl_particle_t* mcpl_read(mcpl_file_t ff)
   size_t nb;
   unsigned lbuf = f->particle_size;
   char * pbuf = &(f->particle_buffer[0]);
-    if (f->filegz)
-      nb = gzread(f->filegz, pbuf, lbuf);
-    else
-      nb = fread(pbuf, 1, lbuf, f->file);
+  if (f->filegz)
+    nb = gzread(f->filegz, pbuf, lbuf);
+  else
+    nb = fread(pbuf, 1, lbuf, f->file);
   if (nb!=lbuf)
     mcpl_error("Errors encountered while attempting to read particle data.");
 
@@ -1630,7 +1630,7 @@ void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
   }
   if ( ft->opt_universalweight && fs->particle->weight != ft->opt_universalweight) {
     printf("MCPL ERROR: mcpl_transfer_last_read_particle asked to transfer particle with weight %g into a file with universal weight of %g\n",
-               fs->particle->weight,ft->opt_universalweight);
+           fs->particle->weight,ft->opt_universalweight);
     mcpl_error("mcpl_transfer_last_read_particle got incompatible weight\n");
     return;
   }
@@ -2431,25 +2431,25 @@ int mcpl_tool(int argc,char** argv) {
         }
 
         switch(a[j]) {
-          case 'h':
-            {
-              free(filenames);
-              return mcpl_tool_usage(argv,0);
-            }
-          case 'j': opt_justhead = 1; break;
-          case 'n': opt_nohead = 1; break;
-          case 'm': opt_merge = 1; break;
-          case 'e': opt_extract = 1; break;
-          case 'r': opt_repair = 1; break;
-          case 'v': opt_version = 1; break;
-          case 't': opt_text = 1; break;
-          case 'l': consume_digit = &opt_num_limit; break;
-          case 's': consume_digit = &opt_num_skip; break;
-          default:
-            {
-              free(filenames);
-              return mcpl_tool_usage(argv,"Unrecognised option");
-            }
+        case 'h':
+          {
+            free(filenames);
+            return mcpl_tool_usage(argv,0);
+          }
+        case 'j': opt_justhead = 1; break;
+        case 'n': opt_nohead = 1; break;
+        case 'm': opt_merge = 1; break;
+        case 'e': opt_extract = 1; break;
+        case 'r': opt_repair = 1; break;
+        case 'v': opt_version = 1; break;
+        case 't': opt_text = 1; break;
+        case 'l': consume_digit = &opt_num_limit; break;
+        case 's': consume_digit = &opt_num_skip; break;
+        default:
+          {
+            free(filenames);
+            return mcpl_tool_usage(argv,"Unrecognised option");
+          }
         }
         if (consume_digit) {
           *consume_digit = 0;
@@ -2653,7 +2653,7 @@ int mcpl_tool(int argc,char** argv) {
     //  strncat(fo_filename,mcpl_outfile_filename(fo),nn);
     if (mcpl_closeandgzip_outfile(fo))
       memcpy(fo_filename+nn,".gz",4);
-      //strncat(fo_filename,".gz",3);
+    //strncat(fo_filename,".gz",3);
     mcpl_close_file(fi);
 
     printf("MCPL: Successfully extracted %" PRIu64 " / %" PRIu64 " particles from %s into %s\n",
@@ -2696,9 +2696,9 @@ int mcpl_tool(int argc,char** argv) {
       fprintf( fout,"%5" PRIu64
                " %11i %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g"
                " %23.18g %23.18g %23.18g %23.18g %23.18g 0x%08x\n",
-              idx,p->pdgcode,p->ekin,p->position[0],p->position[1],p->position[2],
-              p->direction[0],p->direction[1],p->direction[2],p->time,p->weight,
-              p->polarisation[0],p->polarisation[1],p->polarisation[2],p->userflags);
+               idx,p->pdgcode,p->ekin,p->position[0],p->position[1],p->position[2],
+               p->direction[0],p->direction[1],p->direction[2],p->time,p->weight,
+               p->polarisation[0],p->polarisation[1],p->polarisation[2],p->userflags);
     }
     fclose(fout);
     mcpl_close_file(fi);

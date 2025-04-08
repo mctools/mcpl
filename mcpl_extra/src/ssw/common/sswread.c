@@ -328,13 +328,14 @@ ssw_file_t ssw_open_and_procrec0( const char * filename )
   }
 
   if ( f->mcnp_type == SSW_MCNP_NOTFOUND )
-    return ssw_openerror(f,"ssw_open_file error: File does not look like a supported MCNP SSW file");
+    return ssw_openerror(f,"ssw_open_file error: File does not"
+                         " look like a supported MCNP SSW file");
 
   assert(f->reclen && rec0begin && lenrec0 && lenrec0<99999 );
 
   if (f->reclen==8) {
     fprintf(ssw_stdout(),"ssw_open_file WARNING: 64bit Fortran records detected which is untested (feedback"
-           " appreciated at https://mctools.github.io/mcpl/contact/).\n");
+            " appreciated at https://mctools.github.io/mcpl/contact/).\n");
   }
 
   //Finish reading the first record:
@@ -402,17 +403,17 @@ ssw_file_t ssw_open_and_procrec0( const char * filename )
   if (f->mcnp_type==SSW_MCNP6) {
     if ( strcmp(f->vers,"6")!=0 && strcmp(f->vers,"6.mpi")!=0 ) {
       fprintf(ssw_stdout(),"ssw_open_file WARNING: Untested MCNP6 source version : \"%s\". (feedback"
-             " appreciated at https://mctools.github.io/mcpl/contact/)\n",f->vers);
+              " appreciated at https://mctools.github.io/mcpl/contact/)\n",f->vers);
     }
   } else if (f->mcnp_type==SSW_MCNPX) {
     if ( strcmp(f->vers,"2.5.0")!=0 && strcmp(f->vers,"2.6.0")!=0
          && strcmp(f->vers,"2.7.0")!=0 && strcmp(f->vers,"26b")!=0 )
       fprintf(ssw_stdout(),"ssw_open_file WARNING: Untested MCNPX source version : \"%s\". (feedback"
-             " appreciated at https://mctools.github.io/mcpl/contact/)\n",f->vers);
+              " appreciated at https://mctools.github.io/mcpl/contact/)\n",f->vers);
   } else if (f->mcnp_type==SSW_MCNP5) {
     if ( strcmp(f->vers,"5")!=0 )
       fprintf(ssw_stdout(),"ssw_open_file WARNING: Untested MCNP5 source version : \"%s\". (feedback"
-             " appreciated at https://mctools.github.io/mcpl/contact/)\n",f->vers);
+              " appreciated at https://mctools.github.io/mcpl/contact/)\n",f->vers);
   }
 
   return out;
@@ -474,7 +475,7 @@ ssw_file_t ssw_open_file( const char * filename )
     f->niss = bi[6];
   } else if (f->lbuf==40) {
     fprintf(ssw_stdout(),"ssw_open_file WARNING: File format has header format for which decoding was never tested (feedback"
-           " appreciated at https://mctools.github.io/mcpl/contact/).\n");
+            " appreciated at https://mctools.github.io/mcpl/contact/).\n");
     f->np1 = bi[0];
     f->np1pos = current_recpos + 0 * sizeof(int32_t);
     f->nrss = bi[2];
@@ -558,8 +559,8 @@ ssw_file_t ssw_open_file( const char * filename )
       //header was actually one record longer than previously thought:
       f->headlen += f->reclen * 2 + f->lbuf;
       fprintf(ssw_stdout(),"ssw_open_file WARNING: Unexpected %i byte record encountered"
-             " at end of header. Continuing under the assumption it"
-             " contains valid configuration data.\n",f->lbuf);
+              " at end of header. Continuing under the assumption it"
+              " contains valid configuration data.\n",f->lbuf);
     }
   }
 
@@ -843,9 +844,9 @@ void ssw_dump( const char * filename, const char * outfile )
           ssw_mcnpflavour(f), ssw_nparticles(f));
 
   fprintf(ssw_stdout(),
-           "    pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]"
-           "          ux          uy          uz    time[ns]      weight"
-           "      isurf\n" );
+          "    pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]"
+          "          ux          uy          uz    time[ns]      weight"
+          "      isurf\n" );
   while( 1 ) {
     const ssw_particle_t * p = ssw_load_particle(f);
     if (!p)
