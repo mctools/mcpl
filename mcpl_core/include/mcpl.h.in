@@ -301,6 +301,9 @@ extern "C" {
 
   /* Open file. Can read gzipped files directly (must have extension ".gz") */
   MCPL_API mcpl_generic_filehandle_t mcpl_generic_fopen( const char * filename );
+  /* Same but returns handle with .internal=NULL if unable to open */
+  MCPL_API mcpl_generic_filehandle_t mcpl_generic_fopen_try( const char * fn );
+
   /* fread/fclose as usual: */
   MCPL_API void mcpl_generic_fread( mcpl_generic_filehandle_t*,
                                     char * dest, uint64_t nbytes );

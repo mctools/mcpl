@@ -2921,7 +2921,7 @@ void mcpl_generic_fwseek( mcpl_generic_wfilehandle_t* fh,
     mcpl_error("Error while seeking in output file");
 }
 
-mcpl_generic_filehandle_t mcpl_generic_fopen( const char * filename )
+mcpl_generic_filehandle_t mcpl_generic_fopen_try( const char * filename )
 {
   mcpl_generic_filehandle_t res;
   res.mode = 0;
@@ -2936,6 +2936,13 @@ mcpl_generic_filehandle_t mcpl_generic_fopen( const char * filename )
   } else {
     res.internal = (void*)mcpl_internal_fopen(filename,"rb");
   }
+  return res;
+}
+
+
+mcpl_generic_filehandle_t mcpl_generic_fopen( const char * filename )
+{
+  mcpl_generic_filehandle_t res = mcpl_generic_fopen_try(filename);
   if (!res.internal)
     mcpl_error("Unable to open file!");
   return res;
