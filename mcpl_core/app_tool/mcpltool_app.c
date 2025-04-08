@@ -24,7 +24,7 @@
 #ifdef _WIN32
 int wmain( int argc, wchar_t *argv[ ] )
 {
-  return mcpl_tool_wchar(argc,argv);
+  return mcpl_wrap_wmain( argc, argv, mcpl_tool );
 }
 #else
 int main ( int argc, char** argv )

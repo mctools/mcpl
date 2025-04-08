@@ -2346,7 +2346,7 @@ MCPL_LOCAL int mcpl_str2int(const char* str, size_t len, int64_t* res)
 MCPL_LOCAL void mcpl_internal_dump_to_stdout( const char *, unsigned long );
 
 #ifdef _WIN32
-int mcpl_tool_wchar(int argc, wchar_t** wargv)
+int mcpl_wrap_wmain( int argc, wchar_t** wargv, int(*appfct)(int,char**)  )
 {
   char ** argv = malloc( sizeof(char*) * argc );
   for ( int i = 0; i < argc; ++i ) {
@@ -2354,12 +2354,10 @@ int mcpl_tool_wchar(int argc, wchar_t** wargv)
     mcu8str_ensure_dynamic_buffer(&u8str);
     argv[i] = u8str.c_str;
   }
-  int ec = mcpl_tool(argc,argv);
-
+  int ec = (*appfct)(argc,argv);
   for ( int i = 0; i < argc; ++i )
     free( argv[i] );
   free(argv);
-
   return ec;
 }
 #endif

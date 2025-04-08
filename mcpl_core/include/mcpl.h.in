@@ -247,11 +247,6 @@ extern "C" {
   /* utf8-encoded strings):                                                */
   MCPL_API int mcpl_tool(int argc, char** argv);
 
-#ifdef _WIN32
-  /* Version for implementing wmain with unicode support on windows */
-  MCPL_API int mcpl_tool_wchar(int argc, wchar_t** argv);
-#endif
-
   /* Compress a file (like running gzip on the file, transforming it from  */
   /* "filename" to "filename.gz". Non-zero return value indicates success. */
   MCPL_API int mcpl_gzip_file(const char * filename);
@@ -333,6 +328,13 @@ extern "C" {
 
   /* Extract basename. Return value must be deallocted with free(..):     */
   MCPL_API char * mcpl_basename(const char * filename);
+
+#ifdef _WIN32
+  /* For implementing wmain with unicode support on Windows, the following   */
+  /* function can be used to wrap a standard app function accepting non-wide */
+  /* utf8-encoded c-strings in argv:                                         */
+  MCPL_API int mcpl_wrap_wmain( int argc, wchar_t** argv, int(*)(int,char**) );
+#endif
 
 
 #ifdef __cplusplus
