@@ -284,7 +284,7 @@ MCPL_LOCAL void mcpl_platform_compatibility_check(void) {
     mcpl_error("Platform compatibility check failed (unexpected padding in mcpl_particle_t)");
 }
 
-MCPL_LOCAL FILE * mcpl_fopen( const char * filename, const char * mode )
+MCPL_LOCAL FILE * mcpl_internal_fopen( const char * filename, const char * mode )
 {
   mcu8str f = mcu8str_view_cstr( filename );
   return mctools_fopen( &f, mode );
@@ -338,7 +338,7 @@ mcpl_outfile_t mcpl_create_outfile(const char * filename)
   f->opt_universalweight = 0.0;
   f->header_notwritten = 1;
   f->nparticles = 0;
-  f->file = mcpl_fopen(f->filename,"wb");
+  f->file = mcpl_internal_fopen(f->filename,"wb");
   if (!f->file)
     mcpl_error("Unable to open output file!");
 
@@ -485,16 +485,14 @@ void mcpl_enable_universal_weight(mcpl_outfile_t of, double w)
 }
 
 #ifdef MCPL_THIS_IS_MS
-#  define MCPL_FSEEK_OFFSET_TYPE __int64
 #  define MCPL_FSEEK( fh, pos)  _fseeki64(fh,(__int64)(pos), SEEK_SET)
 #  define MCPL_FSEEK_CUR( fh, pos)  _fseeki64(fh,(__int64)(pos), SEEK_CUR)
-#  define MCPL_FSEEK_END( fh, pos)  _fseeki64(fh,(__int64)(pos), SEEK_END)
+#  define MCPL_FSEEK_END( fh)  _fseeki64(fh,(__int64)(0), SEEK_END)
 #  define MCPL_FTELL( fh)  _ftelli64(fh)
 #else
-#  define MCPL_FSEEK_OFFSET_TYPE ssize_t
 #  define MCPL_FSEEK( fh, pos) fseek(fh,(ssize_t)(pos), SEEK_SET)
 #  define MCPL_FSEEK_CUR( fh, pos) fseek(fh,(ssize_t)(pos), SEEK_CUR)
-#  define MCPL_FSEEK_END( fh, pos) fseek(fh,(ssize_t)(pos), SEEK_END)
+#  define MCPL_FSEEK_END( fh) fseek(fh,(ssize_t)(0), SEEK_END)
 #  define MCPL_FTELL( fh) ftell(fh)
 #endif
 
@@ -1063,7 +1061,7 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
     if (!f->filegz)
       mcpl_error("Unable to open file!");
   } else {
-    f->file = mcpl_fopen(filename,"rb");
+    f->file = mcpl_internal_fopen(filename,"rb");
     if (!f->file)
       mcpl_error("Unable to open file!");
   }
@@ -1204,7 +1202,7 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
     } else {
       //SEEK_END is not guaranteed to always work, so we fail our recovery
       //attempt silently:
-      if (f->file && !MCPL_FSEEK_END( f->file, 0 )) {
+      if (f->file && !MCPL_FSEEK_END( f->file )) {
         int64_t endpos = MCPL_FTELL(f->file);
         if (endpos > (int64_t)f->first_particle_pos && (uint64_t)endpos != f->first_particle_pos) {
           uint64_t np = ( endpos - f->first_particle_pos ) / f->particle_size;
@@ -1255,7 +1253,7 @@ void mcpl_repair(const char * filename)
     mcpl_error("File must be gunzipped before it can be checked and possibly repaired.");
   }
   //Ok, we should repair the file by updating nparticles in the header:
-  FILE * fh = mcpl_fopen(filename,"r+b");
+  FILE * fh = mcpl_internal_fopen(filename,"r+b");
   if (!fh)
     mcpl_error("Unable to open file in update mode!");
   mcpl_update_nparticles(fh, nparticles);
@@ -2195,7 +2193,7 @@ void mcpl_merge_inplace(const char * file1, const char* file2)
 
   //Now, close file1 and reopen a file handle in append mode:
   mcpl_close_file(ff1);
-  FILE * f1a = mcpl_fopen(file1,"r+b");
+  FILE * f1a = mcpl_internal_fopen(file1,"r+b");
 
   //Update file positions. Note that f2->file is already at the position for the
   //first particle and that the seek operation on f1a correctly discards any
@@ -2673,7 +2671,7 @@ int mcpl_tool(int argc,char** argv) {
       return free(filenames),mcpl_tool_usage(argv,"Requested output file already exists.");
 
     mcpl_file_t fi = mcpl_open_file(filenames[0]);
-    FILE * fout = mcpl_fopen(filenames[1],"w");
+    FILE * fout = mcpl_internal_fopen(filenames[1],"w");
     if (!fout) {
       mcpl_close_file(fi);
       free(filenames);
@@ -2759,7 +2757,7 @@ int mcpl_gzip_file_rc(const char * filename)
 MCPL_LOCAL int mcpl_internal_do_gzip(const char *filename)
 {
   //Open input file:
-  FILE *handle_in = mcpl_fopen(filename, "rb");
+  FILE *handle_in = mcpl_internal_fopen(filename, "rb");
   if (!handle_in)
     return 0;
 
@@ -2862,6 +2860,67 @@ void mcpl_internal_delete_file( const char * filename )
 #endif
 }
 
+mcpl_generic_wfilehandle_t mcpl_generic_wfopen( const char * filename )
+{
+  mcpl_generic_wfilehandle_t res;
+  res.mode = 0;
+  res.current_pos = 0;
+  res.internal = NULL;
+  res.internal = (void*)mcpl_internal_fopen(filename,"wb");
+  if (!res.internal)
+    mcpl_error("Unable to open file for writing!");
+  return res;
+}
+
+void mcpl_generic_fwrite( mcpl_generic_wfilehandle_t* fh,
+                          const char * src, uint64_t nbytes )
+{
+  MCPL_STATIC_ASSERT( sizeof(size_t) >= sizeof(uint32_t) );
+  MCPL_STATIC_ASSERT( sizeof(int) >= sizeof(int32_t) );
+
+  //Write nbytes. For safety, we do this in chunks well inside 32bit limit.
+  const uint64_t chunk_max = INT32_MAX / 4;
+  while ( nbytes > chunk_max ) {
+    mcpl_generic_fwrite( fh, src, chunk_max );
+    nbytes -= chunk_max;
+    src += chunk_max;
+  }
+
+  if ( !nbytes )
+    return;
+
+  size_t to_write = (size_t)nbytes;
+  size_t written = fwrite( src, 1, to_write, (FILE*)(fh->internal) );
+  fh->current_pos += written;
+  if ( written != to_write )
+    mcpl_error("Error while writing to file");
+}
+
+void mcpl_generic_fwclose( mcpl_generic_wfilehandle_t* fh )
+{
+  if ( !fh->internal )
+    mcpl_error("Error trying to close invalid file handle");
+  fclose( (FILE*)(fh->internal) );
+  fh->mode = 0;
+  fh->current_pos = 0;
+  fh->internal = NULL;
+}
+
+void mcpl_generic_fwseek( mcpl_generic_wfilehandle_t* fh,
+                          uint64_t position )
+{
+  int rv;
+  if ( position == UINT64_MAX ) {
+    rv = MCPL_FSEEK_END( (FILE*)(fh->internal) );
+    fh->current_pos = (uint64_t)MCPL_FTELL((FILE*)(fh->internal));
+  } else {
+    rv = MCPL_FSEEK( (FILE*)(fh->internal), position );
+    fh->current_pos = position;
+  }
+  if ( rv != 0 )
+    mcpl_error("Error while seeking in output file");
+}
+
 mcpl_generic_filehandle_t mcpl_generic_fopen( const char * filename )
 {
   mcpl_generic_filehandle_t res;
@@ -2875,7 +2934,7 @@ mcpl_generic_filehandle_t mcpl_generic_fopen( const char * filename )
     res.internal = (void*)mcpl_gzopen( filename, "rb" );
     res.mode = 0x1;
   } else {
-    res.internal = (void*)mcpl_fopen(filename,"rb");
+    res.internal = (void*)mcpl_internal_fopen(filename,"rb");
   }
   if (!res.internal)
     mcpl_error("Unable to open file!");

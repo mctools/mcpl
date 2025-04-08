@@ -322,6 +322,23 @@ extern "C" {
                                           uint64_t* result_size,
                                           char ** result_buf );
 
+
+  /* Similar API, but for writing to files: */
+  typedef struct MCPL_API {
+    void* internal;
+    uint64_t current_pos;/* reading this is like calling ftell(..) */
+    uint32_t mode;/* unused for now, reserved for future usage */
+  } mcpl_generic_wfilehandle_t;
+
+  /* Open file in binary write mode ("wb"): */
+  MCPL_API mcpl_generic_wfilehandle_t mcpl_generic_wfopen( const char * fname );
+  MCPL_API void mcpl_generic_fwrite( mcpl_generic_wfilehandle_t*,
+                                     const char * src, uint64_t nbytes );
+  MCPL_API void mcpl_generic_fwclose( mcpl_generic_wfilehandle_t* );
+  /* Like fseek with SEEK_SET (SEEK_END if position==UINT64_MAX): */
+  MCPL_API void mcpl_generic_fwseek( mcpl_generic_wfilehandle_t*,
+                                     uint64_t position );
+
   /* Convert argv[0] to a program name to show in usage printouts. Return */
   /* value must be deallocted with free(..):                              */
   MCPL_API char * mcpl_usage_progname( const char * argv0 );
@@ -335,7 +352,6 @@ extern "C" {
   /* utf8-encoded c-strings in argv:                                         */
   MCPL_API int mcpl_wrap_wmain( int argc, wchar_t** argv, int(*)(int,char**) );
 #endif
-
 
 #ifdef __cplusplus
 }
