@@ -254,7 +254,8 @@ MCPL_LOCAL void mcpl_recalc_psize(mcpl_outfile_t of)
     f->particle_size += fp;
   if (f->opt_userflags)
     f->particle_size += sizeof(uint32_t);
-  assert(f->particle_size<=MCPLIMP_MAX_PARTICLE_SIZE);
+  if ( ! (f->particle_size<=MCPLIMP_MAX_PARTICLE_SIZE) )
+    mcpl_error("unexpected particle size");
   f->opt_signature = 0
     + 1 * f->opt_singleprec
     + 2 * f->opt_polarisation
@@ -313,7 +314,6 @@ mcpl_outfile_t mcpl_create_outfile(const char * filename)
 
   mcpl_outfileinternal_t * f
     = (mcpl_outfileinternal_t*)mcpl_internal_calloc( 1, sizeof(mcpl_outfileinternal_t) );
-  assert(f);//fixme: something safer than asserts!
 
   if (!lastdot || strcmp(lastdot, ".mcpl") != 0) {
     f->filename = mcpl_internal_malloc(n+6);
@@ -534,13 +534,13 @@ MCPL_LOCAL void mcpl_write_header(mcpl_outfileinternal_t * f)
   arr[5] = (uint32_t)f->opt_universalpdgcode;
   arr[6] = f->particle_size;
   arr[7] = (f->opt_universalweight?1:0);
-  assert(sizeof(arr)==32);
+  MCPL_STATIC_ASSERT(sizeof(arr)==32);
   nb = fwrite(arr, 1, sizeof(arr), f->file);
   if (nb!=sizeof(arr))
     mcpl_error(errmsg);
 
   if (f->opt_universalweight) {
-    assert(sizeof(f->opt_universalweight)==8);
+    MCPL_STATIC_ASSERT(sizeof(f->opt_universalweight)==8);
     nb = fwrite((void*)(&(f->opt_universalweight)), 1, sizeof(f->opt_universalweight), f->file);
     if (nb!=sizeof(f->opt_universalweight))
       mcpl_error(errmsg);
@@ -858,7 +858,8 @@ void mcpl_transfer_metadata(mcpl_file_t source, mcpl_outfile_t target)
     int ii;
     for (ii = 0; ii < nblobs; ++ii) {
       int res = mcpl_hdr_blob(source,blobkeys[ii],&ldata,&data);
-      assert(res);//key must exist
+      if (!res)
+        mcpl_error("unexpected key problem in mcpl_transfer_metadata");
       (void)res;
       mcpl_hdr_add_data(target, blobkeys[ii], ldata, data);
     }
@@ -1050,7 +1051,6 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
 
   mcpl_fileinternal_t * f
     = (mcpl_fileinternal_t*)mcpl_internal_calloc(1,sizeof(mcpl_fileinternal_t));
-  assert(f);
 
   //open file (with gzopen if filename ends with .gz):
   f->file = 0;
@@ -1103,7 +1103,7 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   f->nparticles = numpart;
 
   uint32_t arr[8];
-  assert(sizeof(arr)==32);
+  MCPL_STATIC_ASSERT(sizeof(arr)==32);
   if (f->filegz)
     nb = gzread(f->filegz, arr, sizeof(arr));
   else
@@ -1119,7 +1119,8 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   f->opt_singleprec = arr[4];
   f->opt_universalpdgcode = (int32_t)arr[5];
   f->particle_size = arr[6];//We could check consistency here with the calculated value.
-  assert(f->particle_size<=MCPLIMP_MAX_PARTICLE_SIZE);
+  if ( ! (f->particle_size<=MCPLIMP_MAX_PARTICLE_SIZE) )
+    mcpl_error("unexpected particle size");
 
   if (arr[7]) {
     //file has universal weight
@@ -1194,7 +1195,8 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
           }
         }
       } else {
-        assert(caller_is_mcpl_repair);
+        if (!caller_is_mcpl_repair)
+          mcpl_error("logic error (!caller_is_mcpl_repair)");
         *repair_status = 2;//file brokenness can not be determined since gzip.
       }
       if (!mcpl_gzseek( f->filegz, f->first_particle_pos ) )
@@ -1215,7 +1217,8 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
             if (caller_is_mcpl_repair) {
               *repair_status = 3;//file broken and should be able to repair
             } else {
-              assert(f->nparticles == 0);
+              if (f->nparticles!=0)
+                mcpl_error("unexpected nparticles value");
               printf("MCPL WARNING: Input file appears to not have been"
                      " closed properly. Recovered %" PRIu64 " particles.\n",np);
             }
@@ -1610,8 +1613,10 @@ int mcpl_hdr_little_endian(mcpl_file_t ff)
 
 void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
 {
-  mcpl_outfileinternal_t * ft = (mcpl_outfileinternal_t *)target.internal; assert(ft);
-  mcpl_fileinternal_t * fs = (mcpl_fileinternal_t *)source.internal; assert(fs);
+  mcpl_outfileinternal_t * ft = (mcpl_outfileinternal_t *)target.internal;
+  assert(ft);
+  mcpl_fileinternal_t * fs = (mcpl_fileinternal_t *)source.internal;
+  assert(fs);
 
   if ( fs->current_particle_idx==0 && fs->particle->weight==0.0 && fs->particle->pdgcode==0 ) {
     mcpl_error("mcpl_transfer_last_read_particle called with source file in invalid state"
@@ -1649,7 +1654,8 @@ void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
     //Particle data is encoded in exactly the same manner in src and target (a
     //common scenario for many merge or extraction scenarios) -> simply transfer
     //the bytes and be done with it:
-    assert(fs->particle_size==ft->particle_size);
+    if ( fs->particle_size!=ft->particle_size )
+      mcpl_error("unexpectedly inconsistent particle sizes");
     memcpy(ft->particle_buffer,fs->particle_buffer,fs->particle_size);
     mcpl_internal_write_particle_buffer_to_file(ft);
     return;
@@ -1795,7 +1801,8 @@ MCPL_LOCAL int mcpl_actual_can_merge(mcpl_file_t ff1, mcpl_file_t ff2)
 {
   mcpl_fileinternal_t * f1 = (mcpl_fileinternal_t *)ff1.internal;
   mcpl_fileinternal_t * f2 = (mcpl_fileinternal_t *)ff2.internal;
-  assert(f1&&f2);
+  assert(f1);
+  assert(f2);
   if (f1->first_particle_pos!=f2->first_particle_pos)
     return 0;//different header
 
@@ -1884,7 +1891,8 @@ MCPL_LOCAL void mcpl_error_on_dups(unsigned n, const char ** filenames)
 //format. Note that the error messages assume the overall operation is a merge:
 void mcpl_transfer_particle_contents(FILE * fo, mcpl_file_t ffi, uint64_t nparticles)
 {
-  mcpl_fileinternal_t * fi = (mcpl_fileinternal_t *)ffi.internal; assert(fi);
+  mcpl_fileinternal_t * fi = (mcpl_fileinternal_t *)ffi.internal;
+  assert(fi);
 
   if (!nparticles)
     return;//no particles to transfer
@@ -2160,7 +2168,8 @@ void mcpl_merge_inplace(const char * file1, const char* file2)
   //Access internals:
   mcpl_fileinternal_t * f1 = (mcpl_fileinternal_t *)ff1.internal;
   mcpl_fileinternal_t * f2 = (mcpl_fileinternal_t *)ff2.internal;
-  assert(f1&&f2);
+  assert(f1);
+  assert(f2);
 
   if (f1->format_version!=f2->format_version) {
     mcpl_close_file(ff1);
@@ -2188,8 +2197,9 @@ void mcpl_merge_inplace(const char * file1, const char* file2)
   uint64_t first_particle_pos = f1->first_particle_pos;
 
   //Should be same since can_merge:
-  assert(particle_size==f2->particle_size);
-  assert(first_particle_pos==f2->first_particle_pos);
+  if ( particle_size != f2->particle_size
+       || first_particle_pos != f2->first_particle_pos )
+    mcpl_error("mcpl_merge_inplace: unexpected particle size or position");
 
   //Now, close file1 and reopen a file handle in append mode:
   mcpl_close_file(ff1);
@@ -2270,7 +2280,7 @@ MCPL_LOCAL int mcpl_tool_usage( char** argv, const char * errmsg ) {
   printf("Dump options:\n");
   printf("  By default include the info in the FILE header plus the first ten contained\n");
   printf("  particles. Modify with the following options:\n");
-  assert(MCPLIMP_TOOL_DEFAULT_NLIMIT==10);
+  MCPL_STATIC_ASSERT(MCPLIMP_TOOL_DEFAULT_NLIMIT==10);
   printf("  -j, --justhead  : Dump just header info and no particle info.\n");
   printf("  -n, --nohead    : Dump just particle info and no header info.\n");
   printf("  -lN             : Dump up to N particles from the file (default %i). You\n",MCPLIMP_TOOL_DEFAULT_NLIMIT);
@@ -2552,7 +2562,8 @@ int mcpl_tool(int argc,char** argv) {
     }
 
     if (opt_inplace) {
-      assert( !opt_forcemerge && opt_merge );
+      if ( ! ( !opt_forcemerge && opt_merge) )
+        mcpl_error("logic error in argument parsing");
       for (i = ifirstinfile+1; i < nfilenames; ++i)
         mcpl_merge_inplace(filenames[ifirstinfile],filenames[i]);
     } else {
