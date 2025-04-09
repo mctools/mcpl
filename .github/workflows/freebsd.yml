@@ -100,7 +100,10 @@ jobs:
             python3 -mpip check
             mcpltool -h
             mcpltool ./src/examples/example.mcpl
-            #FIXME: todo:
-            #python3 -mpip install --user ./src/mcpl_metapkg
-            #python3 -mpip show mcpl
-            #python3 -mpip check
+            python3 -mpip install --user ./src/mcpl_metapkg
+            python3 -mpip show mcpl
+            python3 -mpip check
+            python3 -mpip install --user ./src/mcpl_extra
+            mcpl2phits ./src/examples/example.mcpl foo.dmp
+            phits2mcpl foo.dmp foo.mcpl
+            mcpltool foo.mcpl
