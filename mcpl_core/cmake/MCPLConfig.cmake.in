@@ -39,7 +39,10 @@ get_filename_component( MCPL_BINDIR "${MCPL_CMAKEDIR}/@MCPL_relpath_CMAKEDIR2BIN
 get_filename_component( MCPL_LIBDIR "${MCPL_CMAKEDIR}/@MCPL_relpath_CMAKEDIR2LIBDIR@" ABSOLUTE )
 get_filename_component( MCPL_INCDIR "${MCPL_CMAKEDIR}/@MCPL_relpath_CMAKEDIR2INCDIR@" ABSOLUTE )
 
-#Fixme: find dependency: zlib ??
+if ( "@mcpl_zlib_required_depversion@" )
+  include(CMakeFindDependencyMacro)
+  find_dependency( ZLIB "@mcpl_zlib_required_depversion@" )
+endif()
 
 #Libname:
 set( MCPL_LIBNAME @MCPL_libname@ )

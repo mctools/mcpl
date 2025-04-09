@@ -23,6 +23,7 @@ include_guard()
 
 function( setup_zlib )
   #Function which detects and/provide ZLib support and sets MCPL_ZLIB_LIBRARIES.
+  set( mcpl_zlib_required_depversion "OFF" PARENT_SCOPE )
 
   set( do_zlib_fetch OFF )
   if ( MCPL_ENABLE_ZLIB STREQUAL "FETCH" )
@@ -45,6 +46,7 @@ function( setup_zlib )
     #1.2.7 and run CTests. And one with 1.3.1.
     find_package( ZLIB 1.2.7 REQUIRED )
     set( _mcpl_zlib_tgt "ZLIB::ZLIB" PARENT_SCOPE )
+    set( mcpl_zlib_required_depversion "${ZLIB_VERSION}" PARENT_SCOPE )
     return()
   endif()
 
@@ -121,6 +123,7 @@ function( setup_zlib )
   set( _mcpl_zlib_srcfiles "${tmp_zlibsrcfiles}" PARENT_SCOPE )
   set( _mcpl_zlib_extra_include_dirs "${zlib_BINARY_DIR}" "${zlib_SOURCE_DIR}" PARENT_SCOPE)
   set( _mcpl_zlib_extra_compile_definitions "${_mcpl_zlib_extra_compile_definitions}" PARENT_SCOPE )
+
   message(STATUS "ZLIB sources built into MCPL binaries: ${tmp_zlibsrcfiles}")
   message(STATUS "Extra definitions for ZLIB sources built into MCPL binaries: ${_mcpl_zlib_extra_compile_definitions}")
 endfunction()
