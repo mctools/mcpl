@@ -291,6 +291,25 @@ MCPL_LOCAL FILE * mcpl_internal_fopen( const char * filename, const char * mode 
   return mctools_fopen( &f, mode );
 }
 
+MCPL_LOCAL void mcpl_internal_cleanup_outfile(mcpl_outfileinternal_t * f)
+{
+  if (!f)
+    return;
+  if ( f->file ) {
+    fclose(f->file);
+    f->file = NULL;
+  }
+  if ( f->filename ) {
+    free(f->filename);
+    f->filename = NULL;
+  }
+  if ( f->puser ) {
+    free(f->puser);
+    f->puser = NULL;
+  }
+  free(f);
+}
+
 mcpl_outfile_t mcpl_create_outfile(const char * filename)
 {
   //Sanity check chosen filename and append ".mcpl" if missing to help people
@@ -310,7 +329,7 @@ mcpl_outfile_t mcpl_create_outfile(const char * filename)
   mcpl_platform_compatibility_check();
 
   mcpl_outfile_t out;
-  out.internal = 0;
+  out.internal = NULL;
 
   mcpl_outfileinternal_t * f
     = (mcpl_outfileinternal_t*)mcpl_internal_calloc( 1, sizeof(mcpl_outfileinternal_t) );
@@ -324,13 +343,13 @@ mcpl_outfile_t mcpl_create_outfile(const char * filename)
     memcpy(f->filename,filename,n+1);
   }
 
-  f->hdr_srcprogname = 0;
+  f->hdr_srcprogname = NULL;
   f->ncomments = 0;
-  f->comments = 0;
+  f->comments = NULL;
   f->nblobs = 0;
-  f->blobkeys = 0;
-  f->bloblengths = 0;
-  f->blobs = 0;
+  f->blobkeys = NULL;
+  f->bloblengths = NULL;
+  f->blobs = NULL;
   f->opt_userflags = 0;
   f->opt_polarisation = 0;
   f->opt_singleprec = 1;
@@ -339,9 +358,10 @@ mcpl_outfile_t mcpl_create_outfile(const char * filename)
   f->header_notwritten = 1;
   f->nparticles = 0;
   f->file = mcpl_internal_fopen(f->filename,"wb");
-  if (!f->file)
+  if (!f->file) {
+    mcpl_internal_cleanup_outfile(f);
     mcpl_error("Unable to open output file!");
-
+  }
   out.internal = f;
   mcpl_recalc_psize(out);
   return out;
@@ -372,7 +392,7 @@ void mcpl_hdr_add_comment(mcpl_outfile_t of,const char *comment)
                                                   f->ncomments * sizeof(char*) );
   else
     f->comments = (char **)mcpl_internal_calloc(f->ncomments,sizeof(char*));
-  f->comments[oldn] = 0;
+  f->comments[oldn] = NULL;
   mcpl_store_string(&(f->comments[oldn]),comment);
 }
 
@@ -386,7 +406,7 @@ void mcpl_hdr_add_data(mcpl_outfile_t of, const char * key,
   f->nblobs += 1;
   //Check that key is unique
   unsigned i;
-  for (i =0; i<oldn; ++i) {
+  for (i = 0; i<oldn; ++i) {
     if (strcmp(f->blobkeys[i],key)==0)
       mcpl_error("mcpl_hdr_add_data got duplicate key");
   }
@@ -397,7 +417,7 @@ void mcpl_hdr_add_data(mcpl_outfile_t of, const char * key,
   else
     f->blobkeys = (char **)mcpl_internal_calloc(f->nblobs,
                                                 sizeof(char*));
-  f->blobkeys[oldn] = 0;
+  f->blobkeys[oldn] = NULL;
   mcpl_store_string(&(f->blobkeys[oldn]),key);
   //store blob-lengths:
   if (oldn)
@@ -562,25 +582,25 @@ MCPL_LOCAL void mcpl_write_header(mcpl_outfileinternal_t * f)
 
   //Free up acquired memory only needed for header writing:
   free(f->hdr_srcprogname);
-  f->hdr_srcprogname = 0;
+  f->hdr_srcprogname = NULL;
   if (f->ncomments) {
     for (i = 0; i < f->ncomments; ++i)
       free(f->comments[i]);
     free(f->comments);
-    f->comments=0;
-    f->ncomments=0;
+    f->comments = NULL;
+    f->ncomments = 0;
   }
   if (f->nblobs) {
     for (i = 0; i < f->nblobs; ++i)
       free(f->blobkeys[i]);
     free(f->blobkeys);
-    f->blobkeys = 0;
+    f->blobkeys = NULL;
     for (i = 0; i < f->nblobs; ++i)
       free(f->blobs[i]);
     free(f->blobs);
-    f->blobs = 0;
+    f->blobs = NULL;
     free(f->bloblengths);
-    f->bloblengths = 0;
+    f->bloblengths = NULL;
     f->nblobs = 0;
   }
   f->header_notwritten = 0;
@@ -798,7 +818,8 @@ void mcpl_add_particle(mcpl_outfile_t of,const mcpl_particle_t* particle)
 MCPL_LOCAL void mcpl_update_nparticles(FILE* f, uint64_t n)
 {
   //Seek and update nparticles at correct location in header:
-  const char * errmsg = "Errors encountered while attempting to update number of particles in file.";
+  const char * errmsg = ( "Errors encountered while attempting "
+                          "to update number of particles in file." );
   int64_t savedpos = MCPL_FTELL(f);
   if (savedpos<0)
     mcpl_error(errmsg);
@@ -832,10 +853,7 @@ void mcpl_close_outfile(mcpl_outfile_t of)
     mcpl_write_header(f);
   if (f->nparticles)
     mcpl_update_nparticles(f->file,f->nparticles);
-  fclose(f->file);
-  free(f->filename);
-  free(f->puser);
-  free(f);
+  mcpl_internal_cleanup_outfile(f);
 }
 
 void mcpl_transfer_metadata(mcpl_file_t source, mcpl_outfile_t target)
@@ -890,7 +908,7 @@ int mcpl_closeandgzip_outfile(mcpl_outfile_t of)
 {
   MCPLIMP_OUTFILEDECODE;
   char * filename = f->filename;
-  f->filename = 0;//prevent free in mcpl_close_outfile
+  f->filename = NULL;//prevent free in mcpl_close_outfile
   mcpl_close_outfile(of);
   int rc = mcpl_gzip_file(filename);
   free(filename);
@@ -1036,6 +1054,65 @@ MCPL_LOCAL int mcpl_gzseek( gzFile fh, int64_t pos )
 #endif
 }
 
+MCPL_LOCAL void mcpl_internal_cleanup_file(mcpl_fileinternal_t * f)
+{
+  if (!f)
+    return;
+  if ( f->hdr_srcprogname ) {
+    free(f->hdr_srcprogname);
+    f->hdr_srcprogname = NULL;
+  }
+  if ( f->comments ) {
+    uint32_t i;
+    for (i = 0; i < f->ncomments; ++i) {
+      if ( f->comments[i] ) {
+        free(f->comments[i]);
+        f->comments[i] = NULL;
+      }
+    }
+    free(f->comments);
+    f->comments = NULL;
+  }
+  if ( f->blobkeys ) {
+    for ( uint32_t i = 0; i < f->nblobs; ++i ) {
+      if ( f->blobkeys[i] ) {
+        free(f->blobkeys[i]);
+        f->blobkeys[i] = NULL;
+      }
+    }
+    free(f->blobkeys);
+    f->blobkeys = NULL;
+  }
+  if ( f->blobs ) {
+    for ( uint32_t i = 0; i < f->nblobs; ++i ) {
+      if ( f->blobs[i] ) {
+        free(f->blobs[i]);
+        f->blobs[i] = NULL;
+      }
+    }
+    free(f->blobs);
+    f->blobs = NULL;
+  }
+
+  if ( f->bloblengths ) {
+    free(f->bloblengths);
+    f->bloblengths = NULL;
+  }
+  if ( f->particle ) {
+    free(f->particle);
+    f->particle = NULL;
+  }
+  if (f->filegz) {
+    gzclose(f->filegz);
+    f->filegz = NULL;
+  }
+  if (f->file) {
+    fclose(f->file);
+    f->file = NULL;
+  }
+  free(f);
+}
+
 MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair_status)
 {
   int caller_is_mcpl_repair = *repair_status;
@@ -1047,23 +1124,27 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   mcpl_platform_compatibility_check();
 
   mcpl_file_t out;
-  out.internal = 0;
+  out.internal = NULL;
 
   mcpl_fileinternal_t * f
     = (mcpl_fileinternal_t*)mcpl_internal_calloc(1,sizeof(mcpl_fileinternal_t));
 
   //open file (with gzopen if filename ends with .gz):
-  f->file = 0;
-  f->filegz = 0;
+  f->file = NULL;
+  f->filegz = NULL;
   const char * lastdot = strrchr(filename, '.');
   if (lastdot && strcmp(lastdot, ".gz") == 0) {
     f->filegz = mcpl_gzopen( filename, "rb" );
-    if (!f->filegz)
+    if (!f->filegz) {
+      mcpl_internal_cleanup_file(f);
       mcpl_error("Unable to open file!");
+    }
   } else {
     f->file = mcpl_internal_fopen(filename,"rb");
-    if (!f->file)
+    if (!f->file) {
+      mcpl_internal_cleanup_file(f);
       mcpl_error("Unable to open file!");
+    }
   }
 
   //First read and check magic word, format version and endianness.
@@ -1150,9 +1231,9 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
     current_pos += mcpl_read_string(f,&(f->comments[i]),errmsg);
 
   //FIXME: Maybe we should not read in very large blobs initially, but only load them on demand?
-  f->blobkeys = 0;
+  f->blobkeys = NULL;
   f->bloblengths = 0;
-  f->blobs = 0;
+  f->blobs = NULL;
   if (f->nblobs) {
     f->blobs = (char **)mcpl_internal_calloc(f->nblobs,sizeof(char*));
     f->blobkeys = (char **)mcpl_internal_calloc(f->nblobs,sizeof(char*));
@@ -1273,30 +1354,12 @@ void mcpl_repair(const char * filename)
   }
 }
 
+
 void mcpl_close_file(mcpl_file_t ff)
 {
   MCPLIMP_FILEDECODE;
-
-  free(f->hdr_srcprogname);
-  uint32_t i;
-  for (i = 0; i < f->ncomments; ++i)
-    free(f->comments[i]);
-  free(f->comments);
-  for (i = 0; i < f->nblobs; ++i)
-    free(f->blobkeys[i]);
-  for (i = 0; i < f->nblobs; ++i)
-    free(f->blobs[i]);
-  free(f->blobkeys);
-  free(f->blobs);
-  free(f->bloblengths);
-  free(f->particle);
-  if (f->filegz)
-    gzclose(f->filegz);
-  if (f->file)
-    fclose(f->file);
-  free(f);
+  mcpl_internal_cleanup_file(f);
 }
-
 
 unsigned mcpl_hdr_version(mcpl_file_t ff)
 {
@@ -1348,7 +1411,7 @@ int mcpl_hdr_blob(mcpl_file_t ff, const char* key,
       return 1;
     }
   }
-  *data = 0;
+  *data = NULL;
   *ldata = 0;
   return 0;
 }
@@ -2062,7 +2125,7 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
                                  unsigned nfiles, const char ** files )
 {
   mcpl_outfile_t out;
-  out.internal = 0;
+  out.internal = NULL;
 
   if (!nfiles)
     mcpl_error("mcpl_merge_files must be called with at least one input file");
@@ -2084,7 +2147,7 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
   mcpl_outfileinternal_t * out_internal = (mcpl_outfileinternal_t *)out.internal;
 
   mcpl_file_t f1;
-  f1.internal = 0;
+  f1.internal = NULL;
 
   int warned_oldversion = 0;
 
@@ -2373,9 +2436,9 @@ int mcpl_wrap_wmain( int argc, wchar_t** wargv, int(*appfct)(int,char**)  )
 int mcpl_tool(int argc,char** argv) {
 
   int nfilenames = 0;
-  char ** filenames = 0;
-  const char * blobkey = 0;
-  const char * pdgcode_str = 0;
+  char ** filenames = NULL;
+  const char * blobkey = NULL;
+  const char * pdgcode_str = NULL;
   int opt_justhead = 0;
   int opt_nohead = 0;
   int64_t opt_num_limit = -1;
@@ -2399,7 +2462,7 @@ int mcpl_tool(int argc,char** argv) {
       continue;
     if (n>=2&&a[0]=='-'&&a[1]!='-') {
       //short options:
-      int64_t * consume_digit = 0;
+      int64_t * consume_digit = NULL;
       size_t j;
       for (j=1; j<n; ++j) {
         if (consume_digit) {
@@ -2864,6 +2927,7 @@ void mcpl_internal_dump_to_stdout( const char * data,
 
 void mcpl_internal_delete_file( const char * filename )
 {
+  assert(filename);
 #ifdef MCPL_THIS_IS_MS
   mcu8str f = mcu8str_view_cstr( filename );
   wchar_t* wpath = mctools_path2wpath(&f);//must free(..) return value.
