@@ -13,13 +13,17 @@ access to only the
 Python module](LOCAL:usage_python). If possible, the installation via conda is
 recommended.
 
+NOTICE: In the near future (spring 2025), MCPL 2.0.0 will be released, which
+will include both Windows support and fully functional PyPI releases. After that
+point, `pip install mcpl` should give you a fully-fledged MCPL installation on
+all platforms.
 
 Finally, you can of course also use the [tar.gz]({{site.github.tar_url|replace: "/gh-pages","/master"}}),
  [zip]({{site.github.zip_url|replace: "/gh-pages","/master"}})
  or [github]({{site.github.repository_url}}) links
 to download source files for the latest MCPL distribution. But take note that if you are a user
 of [McStas](LOCAL:hooks_mcstas/), [McXtrace](LOCAL:hooks_mcxtrace/) or the
-[ESS-dgcode framework](https://confluence.esss.lu.se/x/lgDD), you likely
+[simplebuild-dgcode framework](https://mctools.github.io/simplebuild-dgcode/), you likely
 already have MCPL available through the framework you are using.
 
 After downloading the MCPL
