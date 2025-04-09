@@ -50,13 +50,9 @@ def main():
                 'mcpl_extra/LICENSE',
                )
 
-    #fixme:
-    #check_same( 'examples/mcpl_example_cpp.cc',
-    #            'examples/downstream_cmake/main.cc' )
-
-    #fixme:
-    #check_same( 'mcpl_core/app_test/main.cc',
-    #            'tests/src/app_cpp/main.cc' )
+    for e in ['filter','read','write']:
+        check_same(f'examples/example_{e}mcpl.c',
+                   f'tests/src/app_examples/example_{e}mcpl.h')
 
 if __name__=='__main__':
     main()

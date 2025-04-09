@@ -20,10 +20,11 @@
 ################################################################################
 
 def do_check( files, allowed_file_hdr_list, *,
-              allow_include_guards_if_hdr = False ):
+              allow_include_guards_if_hdr = False,
+              ignore_fct = None ):
 
     def ignore_path( frel ):
-        return False
+        return ignore_fct(frel) if ignore_fct else False
 
     def text_ok( text ):
         return any(text.startswith(e) for e in allowed_file_hdr_list)
@@ -65,6 +66,11 @@ def main():
     lbh = '\n' + licenseblurb_data_with_hash_comments()
     lbansic = '\n' + licenseblurb_data_with_ansic_comments()
 
+    def ignore_c_headers(frel):
+        return frel in [ 'tests/src/app_examples/example_filtermcpl.h',
+                         'tests/src/app_examples/example_writemcpl.h',
+                         'tests/src/app_examples/example_readmcpl.h' ]
+
     c1 = do_check( all_files_iter('py'),
                    [lbh,'#!/usr/bin/env python3\n'+lbh])
     c2 = do_check( all_files_iter('cpp'),
@@ -72,7 +78,8 @@ def main():
                    allow_include_guards_if_hdr = True )
     c3 = do_check( all_files_iter('c_headers'),
                    [lbansic,lbansic.lstrip()],
-                   allow_include_guards_if_hdr = True )
+                   allow_include_guards_if_hdr = True,
+                   ignore_fct = ignore_c_headers )
     c4 = do_check( all_files_iter('c_src'),
                    [lbcpp,lbcpp.lstrip()],
                    allow_include_guards_if_hdr = True )

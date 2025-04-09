@@ -1,0 +1,180 @@
+do_writemcpl( "dummy.mcpl" )
+MCPL: Compressing file dummy.mcpl
+MCPL: Compressed file into dummy.mcpl.gz
+Opened MCPL file dummy.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 100
+    Header storage     : 109 bytes
+    Data storage       : 3600 bytes
+
+  Custom meta data
+    Source             : "my_cool_program_name"
+    Number of comments : 2
+          -> comment 0 : "Some comment."
+          -> comment 1 : "Another comment."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0          22      5.7704        39.8        98.4       -43.2           0           0           1          87      1.6284
+    1        2112      6.2604        49.6         -92       -33.4           0           0           1        91.9      2.1179
+    2          22      6.7503        59.4       -82.2       -23.6           0           0           1        96.8      2.6074
+    3        2112      7.2403        69.2       -72.4       -13.8           0           0           1         1.6      3.0969
+    4          22      7.7302          79       -62.6          -4           0           0           1         6.5      3.5864
+    5        2112      8.2202        88.8       -52.8         5.8           0           0           1        11.4      4.0759
+    6          22      8.7101        98.6         -43        15.6           0           0           1        16.3      4.5654
+    7        2112      9.2001       -91.8       -33.2        25.4           0           0           1        21.2       5.055
+    8          22        9.69         -82       -23.4        35.2           0           0           1        26.1      5.5445
+    9        2112     0.17098       -72.2       -13.6          45           0           0           1          31       6.034
+do_readmcpl( "dummy.mcpl.gz" )
+Opened MCPL file produced with my_cool_program_name
+file had comment: 'Some comment.'
+file had comment: 'Another comment.'
+File contains 100 particles
+  found particle with pdgcode 22 and time-stamp 87 ms with weight 1.62838
+  found particle with pdgcode 2112 and time-stamp 91.9 ms with weight 2.11789
+  found particle with pdgcode 22 and time-stamp 96.8 ms with weight 2.6074
+  found particle with pdgcode 2112 and time-stamp 1.6 ms with weight 3.09691
+  found particle with pdgcode 22 and time-stamp 6.5 ms with weight 3.58642
+  found particle with pdgcode 2112 and time-stamp 11.4 ms with weight 4.07593
+  found particle with pdgcode 22 and time-stamp 16.3 ms with weight 4.56544
+  found particle with pdgcode 2112 and time-stamp 21.2 ms with weight 5.05495
+  found particle with pdgcode 22 and time-stamp 26.1 ms with weight 5.54446
+  found particle with pdgcode 2112 and time-stamp 31 ms with weight 6.03397
+  found particle with pdgcode 22 and time-stamp 35.9 ms with weight 6.52348
+  found particle with pdgcode 2112 and time-stamp 40.8 ms with weight 7.01299
+  found particle with pdgcode 22 and time-stamp 45.7 ms with weight 7.5025
+  found particle with pdgcode 22 and time-stamp 50.6 ms with weight 7.99201
+  found particle with pdgcode 2112 and time-stamp 55.5 ms with weight 8.48152
+  found particle with pdgcode 22 and time-stamp 60.4 ms with weight 8.97103
+  found particle with pdgcode 2112 and time-stamp 65.3 ms with weight 9.46054
+  found particle with pdgcode 22 and time-stamp 70.2 ms with weight 9.95005
+  found particle with pdgcode 2112 and time-stamp 75.1 ms with weight 0.43957
+  found particle with pdgcode 22 and time-stamp 80 ms with weight 0.92908
+  found particle with pdgcode 2112 and time-stamp 84.9 ms with weight 1.41859
+  found particle with pdgcode 22 and time-stamp 89.8 ms with weight 1.9081
+  found particle with pdgcode 2112 and time-stamp 94.7 ms with weight 2.39761
+  found particle with pdgcode 22 and time-stamp 99.6 ms with weight 2.88712
+  found particle with pdgcode 2112 and time-stamp 4.4 ms with weight 3.37663
+  found particle with pdgcode 22 and time-stamp 9.3 ms with weight 3.86614
+  found particle with pdgcode 2112 and time-stamp 14.2 ms with weight 4.35565
+  found particle with pdgcode 22 and time-stamp 19.1 ms with weight 4.84516
+  found particle with pdgcode 2112 and time-stamp 24 ms with weight 5.33467
+  found particle with pdgcode 22 and time-stamp 28.9 ms with weight 5.82418
+  found particle with pdgcode 2112 and time-stamp 33.8 ms with weight 6.31369
+  found particle with pdgcode 22 and time-stamp 38.7 ms with weight 6.8032
+  found particle with pdgcode 2112 and time-stamp 43.6 ms with weight 7.29271
+  found particle with pdgcode 2112 and time-stamp 48.5 ms with weight 7.78222
+  found particle with pdgcode 22 and time-stamp 53.4 ms with weight 8.27173
+  found particle with pdgcode 2112 and time-stamp 58.3 ms with weight 8.76124
+  found particle with pdgcode 22 and time-stamp 63.2 ms with weight 9.25075
+  found particle with pdgcode 2112 and time-stamp 68.1 ms with weight 9.74026
+  found particle with pdgcode 22 and time-stamp 73 ms with weight 0.22978
+  found particle with pdgcode 2112 and time-stamp 77.9 ms with weight 0.71929
+  found particle with pdgcode 22 and time-stamp 82.8 ms with weight 1.2088
+  found particle with pdgcode 2112 and time-stamp 87.7 ms with weight 1.69831
+  found particle with pdgcode 22 and time-stamp 92.6 ms with weight 2.18782
+  found particle with pdgcode 2112 and time-stamp 97.5 ms with weight 2.67733
+  found particle with pdgcode 22 and time-stamp 2.3 ms with weight 3.16684
+  found particle with pdgcode 2112 and time-stamp 7.2 ms with weight 3.65635
+  found particle with pdgcode 22 and time-stamp 12.1 ms with weight 4.14586
+  found particle with pdgcode 2112 and time-stamp 17 ms with weight 4.63537
+  found particle with pdgcode 22 and time-stamp 21.9 ms with weight 5.12488
+  found particle with pdgcode 2112 and time-stamp 26.8 ms with weight 5.61439
+  found particle with pdgcode 22 and time-stamp 31.7 ms with weight 6.1039
+  found particle with pdgcode 2112 and time-stamp 36.6 ms with weight 6.59341
+  found particle with pdgcode 22 and time-stamp 41.5 ms with weight 7.08292
+  found particle with pdgcode 22 and time-stamp 46.4 ms with weight 7.57243
+  found particle with pdgcode 2112 and time-stamp 51.3 ms with weight 8.06194
+  found particle with pdgcode 22 and time-stamp 56.2 ms with weight 8.55145
+  found particle with pdgcode 2112 and time-stamp 61.1 ms with weight 9.04096
+  found particle with pdgcode 22 and time-stamp 66 ms with weight 9.53047
+  found particle with pdgcode 2112 and time-stamp 70.9 ms with weight 0.01999
+  found particle with pdgcode 22 and time-stamp 75.8 ms with weight 0.5095
+  found particle with pdgcode 2112 and time-stamp 80.7 ms with weight 0.99901
+  found particle with pdgcode 22 and time-stamp 85.6 ms with weight 1.48852
+  found particle with pdgcode 2112 and time-stamp 90.5 ms with weight 1.97803
+  found particle with pdgcode 22 and time-stamp 95.4 ms with weight 2.46754
+  found particle with pdgcode 2112 and time-stamp 0.2 ms with weight 2.95705
+  found particle with pdgcode 22 and time-stamp 5.1 ms with weight 3.44656
+  found particle with pdgcode 2112 and time-stamp 10 ms with weight 3.93607
+  found particle with pdgcode 22 and time-stamp 14.9 ms with weight 4.42558
+  found particle with pdgcode 2112 and time-stamp 19.8 ms with weight 4.91509
+  found particle with pdgcode 22 and time-stamp 24.7 ms with weight 5.4046
+  found particle with pdgcode 2112 and time-stamp 29.6 ms with weight 5.89411
+  found particle with pdgcode 22 and time-stamp 34.5 ms with weight 6.38362
+  found particle with pdgcode 2112 and time-stamp 39.4 ms with weight 6.87313
+  found particle with pdgcode 22 and time-stamp 44.3 ms with weight 7.36264
+  found particle with pdgcode 22 and time-stamp 49.2 ms with weight 7.85215
+  found particle with pdgcode 2112 and time-stamp 54.1 ms with weight 8.34166
+  found particle with pdgcode 22 and time-stamp 59 ms with weight 8.83117
+  found particle with pdgcode 2112 and time-stamp 63.9 ms with weight 9.32068
+  found particle with pdgcode 22 and time-stamp 68.8 ms with weight 9.81019
+  found particle with pdgcode 2112 and time-stamp 73.7 ms with weight 0.29971
+  found particle with pdgcode 22 and time-stamp 78.6 ms with weight 0.78922
+  found particle with pdgcode 2112 and time-stamp 83.5 ms with weight 1.27873
+  found particle with pdgcode 22 and time-stamp 88.4 ms with weight 1.76824
+  found particle with pdgcode 2112 and time-stamp 93.3 ms with weight 2.25775
+  found particle with pdgcode 22 and time-stamp 98.2 ms with weight 2.74726
+  found particle with pdgcode 2112 and time-stamp 3 ms with weight 3.23677
+  found particle with pdgcode 22 and time-stamp 7.9 ms with weight 3.72628
+  found particle with pdgcode 2112 and time-stamp 12.8 ms with weight 4.21579
+  found particle with pdgcode 22 and time-stamp 17.7 ms with weight 4.7053
+  found particle with pdgcode 2112 and time-stamp 22.6 ms with weight 5.19481
+  found particle with pdgcode 22 and time-stamp 27.5 ms with weight 5.68432
+  found particle with pdgcode 2112 and time-stamp 32.4 ms with weight 6.17383
+  found particle with pdgcode 22 and time-stamp 37.3 ms with weight 6.66334
+  found particle with pdgcode 2112 and time-stamp 42.2 ms with weight 7.15285
+  found particle with pdgcode 2112 and time-stamp 47.1 ms with weight 7.64236
+  found particle with pdgcode 22 and time-stamp 52 ms with weight 8.13187
+  found particle with pdgcode 2112 and time-stamp 56.9 ms with weight 8.62138
+  found particle with pdgcode 22 and time-stamp 61.8 ms with weight 9.11089
+  found particle with pdgcode 2112 and time-stamp 66.7 ms with weight 9.6004
+  found particle with pdgcode 22 and time-stamp 71.6 ms with weight 0.08992
+do_filtermcpl( "dummy.mcpl.gz", "dummyfiltered" )
+MCPL: Compressing file dummyfiltered.mcpl
+MCPL: Compressed file into dummyfiltered.mcpl.gz
+Opened MCPL file dummyfiltered.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 1
+    Header storage     : 170 bytes
+    Data storage       : 36 bytes
+
+  Custom meta data
+    Source             : "my_cool_program_name"
+    Number of comments : 3
+          -> comment 0 : "Some comment."
+          -> comment 1 : "Another comment."
+          -> comment 2 : "Applied custom filter to select neutrons with ekin<0.1MeV"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112    0.030997         -75       -16.4        42.2           0           0           1        29.6      5.8941
+do_readmcpl( "dummyfiltered.mcpl.gz" )
+Opened MCPL file produced with my_cool_program_name
+file had comment: 'Some comment.'
+file had comment: 'Another comment.'
+file had comment: 'Applied custom filter to select neutrons with ekin<0.1MeV'
+File contains 1 particles
+  found particle with pdgcode 2112 and time-stamp 29.6 ms with weight 5.89411

@@ -83,7 +83,7 @@ int main(int argc,char**argv) {
   //times as needed (here everything will simply be filled with some stupid
   //random numbers):
   int i;
-  for (i = 0; i < 1000; ++i) {
+  for (i = 0; i < 100; ++i) {
     //particle type:
     if (rand()%2)
       particle->pdgcode = 2112;//50% neutrons
@@ -115,5 +115,7 @@ int main(int argc,char**argv) {
   //Note: By calling mcpl_closeandgzip_outfile rather than mcpl_close_outfile,
   //the output file will end up being gzipped, resulting in a smaller file. Such
   //files can also be read directly by MCPL.
+
+  return 0;
 }
 

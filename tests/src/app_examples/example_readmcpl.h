@@ -50,7 +50,10 @@ int main(int argc,char**argv) {
   //Now, loop over particles and print some info:
 
   const mcpl_particle_t* p;
-  while ( ( p = mcpl_read(f) ) ) {
+  while ( 1 ) {
+    p = mcpl_read(f);
+    if ( !p )
+      break;
 
     //print some info (see the mcpl_particle_t struct in mcpl.h for more fields):
     printf("  found particle with pdgcode %i and time-stamp %g ms with weight %g\n",
@@ -60,4 +63,5 @@ int main(int argc,char**argv) {
   }
 
   mcpl_close_file(f);
+  return 0;
 }

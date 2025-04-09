@@ -19,45 +19,49 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-// A small standalone example of how to one might extract a subset of particles
-// from an existing MCPL file in order to create a new smaller file.
+// A small standalone example of how to one might read particles from an MCPL
+// file into a C programme.
 
 #include "mcpl.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <memory.h>
 
 int main(int argc,char**argv) {
 
-  if (argc!=3) {
-    printf("Please supply input and output filenames\n");
+  if (argc!=2) {
+    printf("Please supply input filename\n");
     return 1;
   }
 
-  const char * infilename = argv[1];
-  const char * outfilename = argv[2];
+  const char * filename = argv[1];
 
-  // Initialisation, open existing file and create output file handle. Transfer
-  // all meta-data from existing file, and add an extra comment in the output
-  // file to document the process:
+  //Open the file:
+  mcpl_file_t f = mcpl_open_file(filename);
 
-  mcpl_file_t fi = mcpl_open_file(infilename);
-  mcpl_outfile_t fo = mcpl_create_outfile(outfilename);
-  mcpl_transfer_metadata(fi, fo);
-  mcpl_hdr_add_comment(fo,"Applied custom filter to select neutrons with ekin<0.1MeV");
+  //For fun, access and print a bit of the info found in the header (see mcpl.h for more):
 
-  //Loop over particles from input, only adding the chosen particles to the output file:
+  printf("Opened MCPL file produced with %s\n",mcpl_hdr_srcname(f));
+  unsigned i;
+  for (i = 0; i < mcpl_hdr_ncomments(f); ++i)
+    printf("file had comment: '%s'\n",mcpl_hdr_comment(f,i));
+  printf("File contains %llu particles\n",(unsigned long long)mcpl_hdr_nparticles(f));
 
-  const mcpl_particle_t* particle;
-  while ( ( particle = mcpl_read(fi) ) ) {
-    if ( particle->pdgcode == 2112 && particle->ekin < 0.1 ) {
-      mcpl_add_particle(fo,particle);
-      //Note that a guaranteed non-lossy alternative to mcpl_add_particle(fo,particle)
-      //would be mcpl_transfer_last_read_particle(fi,fo) which can work directly on
-      //the serialised on-disk particle data.
-    }
+  //Now, loop over particles and print some info:
+
+  const mcpl_particle_t* p;
+  while ( 1 ) {
+    p = mcpl_read(f);
+    if ( !p )
+      break;
+
+    //print some info (see the mcpl_particle_t struct in mcpl.h for more fields):
+    printf("  found particle with pdgcode %i and time-stamp %g ms with weight %g\n",
+           p->pdgcode, p->time, p->weight);
+
+
   }
 
-  //Close up files:
-  mcpl_closeandgzip_outfile(fo);
-  mcpl_close_file(fi);
+  mcpl_close_file(f);
+  return 0;
 }
-
