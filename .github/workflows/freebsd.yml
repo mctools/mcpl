@@ -81,9 +81,7 @@ jobs:
           run: |
             echo "CMAKE_BUILD_PARALLEL_LEVEL=${CMAKE_BUILD_PARALLEL_LEVEL}"
             echo "CTEST_PARALLEL_LEVEL=${CTEST_PARALLEL_LEVEL}"
-            #NB: py311-setuptools added to avoid spurious failure on pip check
-            #below (not related to mcpl it seems, more likely a bug in the "fs" package):
-            sudo pkg install -y cmake python3 py311-pip py311-numpy py311-matplotlib py311-pyyaml py311-setuptools ruff
+            sudo pkg install -y cmake python3 py311-pip py311-numpy py311-matplotlib py311-pyyaml py311-setuptools py311-wheel py311-scikit-build-core ruff
             #Make sure pip --user bin dir is in PATH:
             PATH="/home/runner/.local/bin:${PATH}"
             export PATH
@@ -100,10 +98,10 @@ jobs:
             python3 -mpip check
             mcpltool -h
             mcpltool ./src/examples/example.mcpl
-            python3 -mpip install --user ./src/mcpl_metapkg
+            python3 -mpip install --user --no-build-isolation ./src/mcpl_metapkg
             python3 -mpip show mcpl
             python3 -mpip check
-            python3 -mpip install --user ./src/mcpl_extra
+            python3 -mpip install --user scikit_build_core ./src/mcpl_extra --no-build-isolation
             mcpl2phits ./src/examples/example.mcpl foo.dmp
             phits2mcpl foo.dmp foo.mcpl
-            mcpltool foo.mcpl
+            mcpltool foo.mcpl.gz
