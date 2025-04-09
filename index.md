@@ -21,6 +21,12 @@ both quick recipes and updated information where needed. You can [download](LOCA
 and try out the MCPL distribution right away, or use the
 menu above to navigate to more information.
 
+* November 2022-June 2023:
+  Several minor maintenance updates were released:
+  [v1.5.1](https://github.com/mctools/mcpl/releases/tag/v1.5.1),
+  [v1.6.0](https://github.com/mctools/mcpl/releases/tag/v1.6.0),
+  [v1.6.1](https://github.com/mctools/mcpl/releases/tag/v1.6.1), and
+  [v1.6.2](https://github.com/mctools/mcpl/releases/tag/v1.6.2).
 * October 14, 2022:
   MCPL is now available on conda! Specifically in the [conda-forge](https://conda-forge.org/)
   channel.  Thus, `conda install -c conda-forge mcpl` now gives access to all the various
