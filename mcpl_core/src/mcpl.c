@@ -269,11 +269,10 @@ MCPL_LOCAL void mcpl_platform_compatibility_check(void) {
   MCPL_STATIC_ASSERT(sizeof(float)==4);
   MCPL_STATIC_ASSERT(sizeof(double)==8);
 
-  //Fixme: add a cast on the right side as well? E.g. = -int32_t(1);
   int32_t m1_32 = -1;
-  int32_t not0_32 = ~0;
+  int32_t not0_32 = ~((int32_t)0);
   int64_t m1_64 = -1;
-  int64_t not0_64 = ~0;
+  int64_t not0_64 = ~((int64_t)0);
   if ( m1_32 != not0_32 || m1_64 != not0_64 )
     mcpl_error("Platform compatibility check failed (integers are not two's complement)");
 
@@ -1230,7 +1229,6 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   for (i = 0; i < f->ncomments; ++i)
     current_pos += mcpl_read_string(f,&(f->comments[i]),errmsg);
 
-  //FIXME: Maybe we should not read in very large blobs initially, but only load them on demand?
   f->blobkeys = NULL;
   f->bloblengths = 0;
   f->blobs = NULL;
@@ -2884,13 +2882,13 @@ MCPL_LOCAL int mcpl_internal_do_gzip(const char *filename)
 int mcpl_gzip_file(const char * filename)
 {
   char * bn = mcpl_basename(filename);
-  printf("MCPL: Attempting to compress file %s with gzip\n",bn);//FIXME should say "with zlib" but trying to preserve reflog outputs right now
+  printf("MCPL: Compressing file %s\n",bn);
   if (!mcpl_internal_do_gzip(filename)) {
     printf("MCPL ERROR: Problems encountered while compressing file %s.\n",bn);
     free(bn);
     return 0;
   }
-  printf("MCPL: Successfully compressed file into %s.gz\n",bn);
+  printf("MCPL: Compressed file into %s.gz\n",bn);
   free(bn);
   return 1;
 }

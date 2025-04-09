@@ -65,8 +65,8 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 4699997        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
 4699998        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
 4699999        2112       0.025           0           0           0           1           0           0           0           1           1           0           0 0x00000000
-MCPL: Attempting to compress file test.mcpl with gzip
-MCPL: Successfully compressed file into test.mcpl.gz
+MCPL: Compressing file test.mcpl
+MCPL: Compressed file into test.mcpl.gz
 Opened MCPL file test.mcpl.gz:
 
   Basic info

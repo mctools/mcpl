@@ -5,8 +5,8 @@ Initiating particle conversion loop.
 Ending particle conversion loop.
 Created føø/hellø.dmp with 5 particles.
 Run phits2mcpl
-MCPL: Attempting to compress file hellø2.mcpl with gzip
-MCPL: Successfully compressed file into hellø2.mcpl.gz
+MCPL: Compressing file hellø2.mcpl
+MCPL: Compressed file into hellø2.mcpl.gz
 Created føø/hellø2.mcpl.gz
 Run mcpltool
 Opened MCPL file hellø2.mcpl.gz:
