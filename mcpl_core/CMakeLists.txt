@@ -174,17 +174,9 @@ mcplfind_relinstpath( MCPL_relpath_CMAKEDIR2BINDIR "${MCPL_BINDIR}" "" )
 mcplfind_relinstpath( MCPL_relpath_CMAKEDIR2LIBDIR "${MCPL_LIBDIR}" "" )
 mcplfind_relinstpath( MCPL_relpath_CMAKEDIR2INCDIR "${MCPL_INCDIR}" "" )
 
-#Dummy interface target for common properties.
-#add_library( mcpl_common INTERFACE )
-#target_compile_features( mcpl_common INTERFACE c_std_99 )
-
-#FIXME: Make sure we exercise strict build flags in CI!
-
 include(CheckCCompilerFlag)
-#
 if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
   set( MCPL_STRICT_COMP_FLAGS "/WX" "/W4" )
-  #fixme: was: set( MCPL_STRICT_COMP_FLAGS "/WX" "/W4" "/WD4324" )
 else()
   set( MCPL_STRICT_COMP_FLAGS -Wall -Wextra -pedantic -Werror )
 endif()

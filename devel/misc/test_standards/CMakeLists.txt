@@ -66,7 +66,7 @@ foreach( extensions ON OFF )
       )
       set_source_files_properties ( ${src} PROPERTIES ${props} )
       add_executable( "test_${bn}" "${src}" )
-      target_link_libraries( "test_${bn}" MCPL::mcpl )#fixme back to MCPL::MCPL
+      target_link_libraries( "test_${bn}" MCPL::MCPL )
       set_target_properties( "test_${bn}" PROPERTIES ${props} )
       target_compile_options( "test_${bn}" PRIVATE ${strict_flags} )
       add_test(
