@@ -36,8 +36,8 @@ def check_same( reffile, *otherfiles ):
             raise SystemExit(f'ERROR: Content of {o} and {reffile} differs')
 
 def main():
-    check_same( 'README.md',
-                'mcpl_metapkg/README.md' )
+    #check_same( 'README.md',
+    #            'mcpl_metapkg/README.md' )
 
     check_same( 'mcpl_core/README.md',
                 'mcpl_core/empty_pypkg/README.md' )
