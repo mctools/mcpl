@@ -3032,7 +3032,6 @@ void mcpl_generic_fread( mcpl_generic_filehandle_t* fh,
   //signed since gzread can read at most INT_MAX).
   const uint64_t chunk_max = INT32_MAX / 4;
   while ( nbytes > chunk_max ) {
-    //fixme: unit test? Or at least test once with very low chunk_max.
     mcpl_generic_fread( fh, dest, chunk_max );
     nbytes -= chunk_max;
     dest += chunk_max;
@@ -3043,13 +3042,10 @@ void mcpl_generic_fread( mcpl_generic_filehandle_t* fh,
 
   unsigned to_read = (unsigned)nbytes;
   unsigned actually_read = mcpl_generic_fread_try( fh, dest, to_read );
-  //fh->current_pos += actually_read;
   if ( actually_read != to_read )
     mcpl_error("Error while reading from file");
 }
 
-//Fixme: unit test that this (and the fct above) has the corrent effect on
-//fh->current_pos.
 unsigned mcpl_generic_fread_try( mcpl_generic_filehandle_t* fh,
                                  char * dest, unsigned nbytes )
 {
@@ -3238,7 +3234,7 @@ void mcpl_read_file_to_buffer( const char * filename,
   mcpl_generic_filehandle_t file = mcpl_generic_fopen( filename );
   mcpl_buffer_t out = mcpl_internal_buf_create( 65536 > maxsize
                                                 ? maxsize
-                                                : 65536 );//fixme try ultra small
+                                                : 65536 );
 
   const unsigned max_at_a_time = INT32_MAX;
 
