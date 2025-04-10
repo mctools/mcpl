@@ -80,17 +80,6 @@ if ( NOT TARGET MCPL::MCPL )
   find_package( MCPL 1.9.80 REQUIRED )
 endif()
 
-# Set module path
-#set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake/modules")
-
-#Define options:
-#include(mcpl_options)
-
-#function( _mcpl_option_force varname value )
-#  message( STATUS "Forcing ${varname}=\"${value}\"" )
-#  set( "${varname}" "${value}" PARENT_SCOPE )
-#endfunction()
-#
 if ( DEFINED SKBUILD_PROJECT_NAME )
   message( STATUS "scikit-build mode detected. Overriding some settings." )
   set( mcplextra_pymodname "_mcpl_extra" )
@@ -113,17 +102,6 @@ include(GNUInstallDirs)
 set(MCPLEXTRA_BINDIR "${CMAKE_INSTALL_BINDIR}")#e.g. <prefix>/bin>
 set(MCPLEXTRA_LIBDIR "${CMAKE_INSTALL_LIBDIR}")#e.g. <prefix>/lib>
 
-#function( mcplfind_relinstpath resultvar srcdir tgtdir )
-#  if ( NOT srcdir OR NOT IS_ABSOLUTE "${srcdir}" )
-#    set( srcdir "${CMAKE_INSTALL_PREFIX}/${srcdir}" )
-#  endif()
-#  if ( NOT tgtdir OR NOT IS_ABSOLUTE "${tgtdir}" )
-#    set( tgtdir "${CMAKE_INSTALL_PREFIX}/${tgtdir}" )
-#  endif()
-#  file(RELATIVE_PATH res "${srcdir}" "${tgtdir}")
-#  set( "${resultvar}" "${res}" PARENT_SCOPE )
-#endfunction()
-
 set(mcplextra_skbuild_shlib_in_wheel_scripts "OFF")
 if ( WIN32 )
   #dll's must be in %PATH% so we put them in bin (same as seems to be the way
@@ -144,27 +122,6 @@ set(MCPLEXTRA_INCDIR "${CMAKE_INSTALL_INCLUDEDIR}")#e.g. <prefix>/include>
 if ( NOT MCPLEXTRA_CMAKEDIR )
   set(MCPLEXTRA_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")#e.g. <prefix>/lib/cmake/MCPL>
 endif()
-
-#Get a few relative paths, mostly for expansion in various installed files (we
-#use PROJECT_BINARY_DIR as prefix here, but it should not matter which as long
-#as it is an absolute path):
-
-#mcplfind_relinstpath( MCPL_relpath_BINDIR2LIBDIR "${MCPLEXTRA_BINDIR}" "${MCPLEXTRA_LIBDIR}" )
-#mcplfind_relinstpath( MCPL_relpath_BINDIR2SHLIBDIR "${MCPLEXTRA_BINDIR}"  "${MCPLEXTRA_SHLIBDIR}" )
-#mcplfind_relinstpath( MCPL_relpath_BINDIR2CMAKEDIR "${MCPLEXTRA_BINDIR}"  "${MCPLEXTRA_CMAKEDIR}" )
-#mcplfind_relinstpath( MCPL_relpath_BINDIR2INCDIR "${MCPLEXTRA_BINDIR}"  "${MCPLEXTRA_INCDIR}" )
-#mcplfind_relinstpath( MCPL_relpath_BINDIR2CMAKEDIR "${MCPLEXTRA_BINDIR}"  "${MCPLEXTRA_CMAKEDIR}" )
-#mcplfind_relinstpath( MCPL_relpath_BINDIR2INCDIR "${MCPLEXTRA_BINDIR}"  "${MCPLEXTRA_INCDIR}" )
-#mcplfind_relinstpath( MCPL_relpath_CMAKEDIR2ROOT "${MCPLEXTRA_CMAKEDIR}" "" )
-#mcplfind_relinstpath( MCPL_relpath_CMAKEDIR2BINDIR "${MCPLEXTRA_BINDIR}" "" )
-#mcplfind_relinstpath( MCPL_relpath_CMAKEDIR2LIBDIR "${MCPLEXTRA_LIBDIR}" "" )
-#mcplfind_relinstpath( MCPL_relpath_CMAKEDIR2INCDIR "${MCPLEXTRA_INCDIR}" "" )
-#
-#Dummy interface target for common properties.
-#add_library( mcpl_common INTERFACE )
-#target_compile_features( mcpl_common INTERFACE c_std_99 )
-
-#FIXME: Make sure we exercise strict build flags in CI!
 
 include(CheckCCompilerFlag)
 #
@@ -253,21 +210,6 @@ elseif( "${CMAKE_VERSION}" VERSION_LESS "3.20" AND "x${CMAKE_C_COMPILER_ID}" STR
   endif()
 endif()
 
-function(set_target_common_props targetname)
-  #Set private non-transitive properties. If strict builds are enabled, this can
-  #enforce no warnings and compilation with a specific standards.
-  #if ( MCPLEXTRA_BUILD_STRICT AND mcplextra_compiler_supports_strict_comp_flags )
-  #  target_compile_options( ${targetname} PRIVATE ${MCPLEXTRA_STRICT_COMP_FLAGS} )
-  #endif()
-  if ( STRICT_CSTD )
-    set_target_properties (
-      ${targetname} PROPERTIES
-      C_STANDARD ${STRICT_CSTD}
-      C_STANDARD_REQUIRED ON C_EXTENSIONS OFF
-    )
-  endif()
-endfunction()
-
 #MCPL library and header files, including optional built-in modules if enabled:
 set(
   mcplsswlib_src_files
@@ -311,7 +253,6 @@ endif()
 
 detect_math_libs()
 
-
 add_executable( ssw2mcpl ${ssw2mcpl_main} ${mcplsswlib_src_files} )
 target_include_directories( ssw2mcpl PRIVATE "${PROJECT_SOURCE_DIR}/src/ssw/common" )
 
@@ -331,15 +272,13 @@ foreach( tgt ${all_targets} )
     TARGETS ${tgt}
     RUNTIME DESTINATION ${MCPLEXTRA_BINDIR}
   )
-  #fixme:
-#  if ( STRICT_CSTD )
-#    set_target_properties (
-#      ${targetname} PROPERTIES
-#      C_STANDARD ${STRICT_CSTD}
-#      C_STANDARD_REQUIRED ON C_EXTENSIONS OFF
-#    )
-#  endif()
-#
+  if ( STRICT_CSTD )
+    set_target_properties (
+      ${tgt} PROPERTIES
+      C_STANDARD ${STRICT_CSTD}
+      C_STANDARD_REQUIRED ON C_EXTENSIONS OFF
+    )
+  endif()
 endforeach()
 
 if ( MCPL_ENABLE_TESTING )
