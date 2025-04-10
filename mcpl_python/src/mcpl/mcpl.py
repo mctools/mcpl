@@ -47,8 +47,6 @@ European Union's Horizon 2020 research and innovation programme under grant
 agreement No 676548 (the BrightnESS project)
 """
 
-#fixme: py3 only
-
 __license__ = "Apache 2.0, http://www.apache.org/licenses/LICENSE-2.0"
 __copyright__ = 'Copyright 2015-2025'
 __version__ = '1.9.80'
@@ -72,14 +70,17 @@ __all__ = ['MCPLFile',
 
 import sys
 import os
-pyversion = sys.version_info[0:3]
-_minpy2=(2,6,6)
-_minpy3=(3,3,2)
-if pyversion < _minpy2 or (pyversion >= (3,0,0) and pyversion < _minpy3):
-    print(('MCPL WARNING: Unsupported python version %s detected (needs at least python2'
-           +' v%s+ or python3 v%s+).')%('.'.join(str(i) for i in pyversion),
-                                        '.'.join(str(i) for i in _minpy2),
-                                        '.'.join(str(i) for i in _minpy3)))
+
+def _checkpyversion():
+    pyversion = sys.version_info[0:3]
+    _minpyv=(3,8,0)
+    if pyversion < _minpyv:
+        a = '.'.join(str(i) for i in pyversion)
+        b = '.'.join(str(i) for i in _minpyv)
+        raise ImportError('MCPL Error: Unsupported python version'
+                          f' {a} detected (needs {b} or later).')
+_checkpyversion()
+
 
 #For raw output of byte-array contents to stdout, without any troubles depending
 #on encoding or python versions:
@@ -172,10 +173,6 @@ else:
         for ib,i in enumerate(indices):
             a[i] += b[ib]
 
-try:
-    import pathlib as _pathlib
-except ImportError:
-    _pathlib = None
 
 class MCPLError(Exception):
     """Common exception class for all exceptions raised by module"""
@@ -512,21 +509,28 @@ class MCPLFile:
     be read in consecutive and forward order, providing either single particles or
     blocks of particles as requested."""
 
+    def __del__(self):
+        self._fileclose()
+        self._fileclose = lambda : None
+
     def __init__(self,filename,blocklength = 10000, raw_strings = False):
         """Open indicated mcpl file, which can either be uncompressed (.mcpl) or
         compressed (.mcpl.gz). The blocklength parameter can be used to control
         the number of particles read by each call to read_block(). The parameter
-        raw_strings has no effect in python2. In python3, it will prevent utf-8
-        decoding of string data loaded from the file."""
+        raw_strings will prevent UTF-8 decoding of string data loaded from the
+        file.
+        """
 
+        self._fileclose = lambda : None
         self._str_decode = (not raw_strings)
 
-        if hasattr(os,'fspath') and hasattr(filename,'__fspath__'):
-            #python >= 3.6, work with all pathlike objects (including str and pathlib.Path):
+        if hasattr(filename,'__fspath__'):
+            #work with all pathlike objects:
             filename = os.fspath(filename)
-        elif _pathlib and hasattr(_pathlib,'PurePath') and isinstance(filename,_pathlib.PurePath):
-            #work with pathlib.Path in python 3.4 and 3.5:
-            filename = str(filename)
+        else:
+            if not isinstance(filename,bytes) and not isinstance(filename,str):
+                raise MCPLError('Unsupported type of filename object'
+                                ' (should be path-like, a string or similar)')
 
         #prepare file i/o (opens file):
         self._open_file(filename)
@@ -585,10 +589,11 @@ class MCPLFile:
         return self._blocklength
 
     def _open_file(self,filename):
+        assert isinstance(filename,bytes) or isinstance(filename,str)
+
+        self._fileclose()
         self._fileclose = lambda : None
 
-        if not hasattr(filename,'endswith'):
-            raise MCPLError('Unsupported type of filename object (should be path-like, a string or similar)')
         #Try to mimic checks and capabilities of mcpl.c as closely as possible
         #here (including the ability of gzopen to open uncompressed files),
         #which is why the slightly odd order of some checks below.
@@ -602,6 +607,9 @@ class MCPLFile:
                 raise
         if not fh:
             raise MCPLError('Unable to open file!')
+
+        self._fileclose()
+        self._fileclose = lambda : fh.close()
 
         is_gz = False
         if filename.endswith('.gz'):
@@ -655,7 +663,6 @@ class MCPLFile:
                     return np.ndarray(dtype=dtype,shape=0)#incomplete read => return empty array
             self._fileread = fread_via_buffer
         self._fileseek = lambda pos : fh.seek(pos)
-        self._fileclose = lambda : fh.close()
 
     #two methods needed for usage in with-statements:
 
@@ -664,6 +671,7 @@ class MCPLFile:
 
     def __exit__(self, ttype, value, traceback):
         self._fileclose()
+        self._fileclose = lambda : None
 
     def read_block(self):
         """Read and return next block of particles (None when EOF). Similar to read(),
@@ -1020,8 +1028,17 @@ def dump_file(filename,header=True,particles=True,limit=10,skip=0,**kwargs):
 
 def convert2ascii(mcplfile,outfile):
     """Read particle contents of mcplfile and write into outfile using a simple ASCII-based format"""
-    fin = mcplfile if isinstance(mcplfile,MCPLFile) else MCPLFile(mcplfile)
-    fout = outfile if hasattr(outfile,'write') else open(outfile,'w')
+    if not hasattr(outfile,'write'):
+        with open(outfile,'w') as fh:
+            convert2ascii(mcplfile,fh)
+        return
+    if not isinstance(mcplfile,MCPLFile):
+        with MCPLFile(mcplfile) as mfh:
+            convert2ascii(mfh,outfile)
+        return
+
+    fout = outfile
+    fin = mcplfile
     fout.write("#MCPL-ASCII\n#ASCII-FORMAT: v1\n#NPARTICLES: %i\n#END-HEADER\n"%fin.nparticles)
     fout.write("index     pdgcode               ekin[MeV]                   x[cm]          "
                +"         y[cm]                   z[cm]                      ux                  "
@@ -1195,14 +1212,15 @@ def app_pymcpltool(argv=None):
         if (os.path.exists(filelist[1])):
             bad("Requested output file already exists.")
         try:
-            #fixme: open with context mgr (also elsewhere... and check noqas in
-            #file):
             fout = open(filelist[1],'w')
         except (IOError, OSError):
             fout = None
         if not fout:
             raise MCPLError('Could not open output file.')
-        convert2ascii(filelist[0],fout)
+        try:
+            convert2ascii(filelist[0],fout)
+        finally:
+            fout.close()
         sys.exit(0)
 
     #Dump or stats:
