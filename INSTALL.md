@@ -1,257 +1,58 @@
-The official and supported way in which to build all files in the MCPL
-distribution is via CMake, however, depending on the use-case it might be more
-appropriate to simply integrate MCPL directly into the build system of a given
-simulation framework, or to use a quick compilation of one of the "fat" versions
-of the command line tools: mcpltool, ssw2mcpl, mcpl2ssw, phits2mcpl, or
-mcpl2phits. Finally, the python module (mcpl.py) and associated tool
-(pymcpltool) can be used directly without any build step. The various options
-are discussed below.
-
-
-
-Building via CMake
-------------------
-
-The MCPL distribution requires CMake version 3.10.0 or later. If you do not have
-CMake installed, or if your platform has an older version installed, you have to
-visit http://cmake.org/ and acquire a recent version. CMake is a very powerful
-cross-platform configuration and build tool and a complete discussion of it is
-beyond the scope of the present instructions. Further in-depth instructions and
-tutorials are available at http://cmake.org/ and elsewhere online. The following
-is a quick recipe (using an in-source build for simplicity):
-
-1. Since you are reading this INSTALL file, it is assumed you have already
-   unpacked the MCPL source distribution somewhere. Assuming this is in a
-   directory called /path/to/mcplsource, step into this directory with:
-
-   cd /path/to/mcplsource
-
-2. Now, configure with CMake (assuming you wish to install the result into a
-   directory called /path/to/mcplinstall):
-
-   cmake . -DCMAKE_INSTALL_PREFIX=/path/to/mcplinstall
-
-   This will fail if your system is missing basic build tools, such as a C/C++
-   capable compiler. In addition to generic CMake options, you can fine-tune
-   what will be build by adding flags to the command. For instance
-   -DMCPL_ENABLE_EXAMPLES=ON would cause the included examples to be built, or
-   -DMCPL_ENABLE_GEANT4 would enable the Geant4 hooks. For a full list of
-   available high-level options, one can simply peek into the file
-   cmake/modules/mcpl_options.cmake, although depending on your CMake client the
-   options might also be available there.
-
-3. Next, perform the build and install in one step with:
-
-   cmake --build . --target install --config Release
-
-4. Now you can use the installed files from /path/to/mcplinstall. For instance,
-   you can invoke the mcpltool with (showing usage instructions):
-
-   /path/to/mcplinstall/bin/mcpltool --help
-
-   The python mcpl tool can also be used directly, assuming your machine
-   contains a python (both python2 and python3 are supported) installation with
-   the NumPy (numpy.org) module available:
-
-   /path/to/mcplinstall/bin/pymcpltool --help
-
-   If you additionally wish be able to use the MCPL python module in custom
-   python code via "import mcpl", you have to add the python subdirectory to
-   your python path:
-
-   export PYTHONPATH=/path/to/mcplinstall/python:$PYTHONPATH
-
-
-
-Building "fat" tools via simple Makefile
-----------------------------------------
-
-Assuming you are only interested in getting access to the commands mcpltool,
-mcpl2ssw, ssw2mcpl, mcpl2phits, or phits2mcpl , and that you are on a standard
-UNIX-like platform such as Linux or OS X, you can forego the CMake build
-described above and simply invoke a simple Makefile
-
-1. Since you are reading this INSTALL file, it is assumed you have already
-   unpacked the MCPL source distribution somewhere. Assuming this is in a
-   directory called /path/to/mcplsource, step into this directory with:
-
-   cd /path/to/mcplsource
-
-2. Invoke the build:
-
-   make -f src_fat/Makefile
-
-3. The resulting binaries are now in src_fat/mcpltool, src_fat/mcpl2ssw,
-   src_fat/ssw2mcpl, src_fat/mcpl2phits, and src_fat/phits2mcpl. You can copy
-   them somewhere else or use them where they are. For instance, you can
-   immediately invoke the mcpltool with (showing usage instructions):
-
-   ./src_fat/mcpltool --help
-
-
-
-Building "fat" tools via quick and dirty one-liners
----------------------------------------------------
-
-If for some reason neither the CMake build nor Makefile above works for you, you
-can skip using a build tool altogether and simply invoke a direct compilation
-command, in order to build one of the command line tools (using one of the "fat"
-source files).
-
-1. Since you are reading this INSTALL file, it is assumed you have already
-   unpacked the MCPL source distribution somewhere. Assuming this is in a
-   directory called /path/to/mcplsource, step into this directory with:
-
-   cd /path/to/mcplsource
-
-2. Assuming you wish to build the mcpltool (exchange "mcpltool" with "ssw2mcpl",
-   "mcpl2ssw", "phits2mcpl", or "mcpl2phits" in the commands below to build a
-   different utility), simply do:
-
-   gcc -std=c99 src_fat/mcpltool_app_fat.c -lm -o mcpltool
-
-   If you have a different compiler than gcc (such as "clang"), of course
-   put that instead of "gcc" in the command above.
-
-3. You can copy the resulting binary somewhere else or use it where it is.
-   For instance, you can immediately invoke the mcpltool with (showing usage
-   instructions):
-
-   ./mcpltool --help
-
-
-
-
-Using just the MCPL python module or pymcpltool
------------------------------------------------
-
-If you just want access to the pymcpltool, you can run it directly from the
-tarball via:
-
-  ./src_fat/pymcpltool
-
-Or you can copy it to a more "proper" location on your system and make sure it
-is in your PATH. For example, if you are using the BASH shell, you could copy it
-into a directory called $HOME/bin and put the following line in your .bashrc
-file:
-
-  export PATH=$HOME/bin:$PATH
-
-If you want access to the MCPL python module, and use it via "import mcpl" in
-your python code, you must simply ensure that the file ./src/python/mcpl.py
-resides somewhere in your PYTHONPATH. For example, if you are using the BASH
-shell, you could copy it into a a directory called $HOME/python and put the
-following line in your .bashrc file:
-
-  export PYTHONPATH=$HOME/python:$PYTHONPATH
-
-Alternatively, depending on your python version and settings, it might simply be
-enough to copy mcpl.py into your run directory.
-
-
-
-Use MCPL from an existing environment
--------------------------------------
-
-Presently (June 2019), MCPL is known to be integrated into McStas, McXtrace,
-VITESS, RESTRAX/SIMRES and the coding framework of the ESS detector group. Users
-of these environments will have already access to MCPL, as it is integrated and
-distributed along with them. For the two former, refer to src/mcstas/README and
-src/mcxtrace/README respectively for how to proceed (instructions for VITESS,
-RESTRAX and SIMRES will be added at a later time).
-
-
-Use MCPL from CMake-based projects
-----------------------------------
-
-Assuming MCPL was built and installed via CMake, it is since MCPL v1.4.0/v1.5.0
-possible for client projects to simply use MCPL as a CMake package in order to
-correctly build their C/C++ code which depends on the inclusion of include
-mcpl.h.
-
-Depending on where MCPL was installed on the system, it might be necessary to
-let CMake know about it via the usual mechanisms (for instance passing
--DMCPL_DIR=/path/to/mcplinstall as an argument to cmake on the command line).
-
-CMake code for a small project using MCPL might look like the following (assume
-that exampleapp.c below includes the mcpl.h header:
-
-  cmake_minimum_required(VERSION 3.10...3.24)
-  project(MyExampleProject LANGUAGES C)
-  find_package(MCPL REQUIRED)
-  add_executable(exampleapp "${PROJECT_SOURCE_DIR}/exampleapp.c")
-  target_link_libraries( exampleapp MCPL::mcpl )
-  install( TARGETS exampleapp DESTINATION bin )
-
-If the MCPL-Geant4 bindings are needed, they must be explicitly requested, and
-the MCPL::g4mcpl target added as a dependency for downstream code:
-
-  find_package(MCPL REQUIRED COMPONENTS GEANT4BINDINGS )
-  target_link_libraries( exampleapp MCPL::g4mcpl )
-
-This will of course fail if MCPL was not build with Geant4 support
-(i.e. configured with -DBUILD_WITHG4=ON).
-
-Integrating MCPL into an existing environment
----------------------------------------------
-
-Maintainers of a given development environment or simulation tool might wish to
-integrate MCPL directly into their code-base, thus providing their users with
-MCPL support and integration out of the box. How to best perform such
-integration will naturally depend on the particular use-case, but a few general
-pieces of advice are provided here (feel free to contact the MCPL team for
-additional advice and feedback, see https://mctools.github.io/mcpl/contact/).
-
-Note that as of MCPL CMake-based projects might wish to ignore the instructions
-below and simply add a find_package(MCPL REQUIRED) statement to their CMake code
-(possibly using the FetchContent CMake module). However, that comes with the
-potential complication of putting an extra potential complication on your users,
-so what is the correct solution most likely depend on the exact use-case.
-
-1. If your users need code-level access to functionality provided in mcpl.h, you
-   should copy src/mcpl/mcpl.h and src/mcpl/mcpl.c into a suitable location in your
-   build system and make sure they are compiled into a library (like
-   libmcpl.so). The compilation can proceed using either a C++ compiler (any
-   standard), or a C compiler (using -std=c99 or later), and must be linked with
-   the math library, due to internal usage of the sqrt function (typically
-   supply -lm at the link stage). It is also highly recommended to enable
-   zlib support by either setting -DMCPL_HASZLIB, as well as
-   the include path for zlib.h and the appropriate link flag (typically
-   -lz). Alternatively, zlib support can be enabled by substituting
-   src/mcpl/mcpl.c with src_fat/mcpl_fat.c.
-2. If you or your users need to use the MCPL python module in python code, copy
-   over src/python/mcpl.py into a suitable location in your framework (should be
-   in the PYTHONPATH).
-3. Provide access to the mcpltool by compiling either src/mcpl/mcpltool_app.c or
-   src_fat/mcpltool_app_fat.c (the former must be linked with the MCPL library
-   compiled in item #1 above). Likewise, provide access to the pymcpltool by
-   copying over either src/python/pymcpltool or src_fat/pymcpltool, depending on
-   whether you also provide access to the mcpl.py module.
-4. If your users use Geant4, you should copy over the two MCPL-G4 interface
-   classes from src/geant4 and make sure the .cc files get compiled and linked
-   with the MCPL library from item #1 above.
-5. If your users use MCNP, or might interact with people who do, you should make
-   sure to provide the mcpl2ssw and ssw2mcpl commands. This can either be done
-   by simply copying over src_fat/ssw2mcpl_app_fat.c and
-   src_fat/mcpl2ssw_app_fat.c and compiling them directly, or by copying over
-   files from src/mcnpssw/, compiling sswmcpl.h, sswmcpl.c, sswread.h and
-   sswread.c into a library (find instructions regarding flags at the top of the
-   two .c files), and subsequently use that library when compiling
-   mcpl2ssw_app.c and ssw2mcpl_app.c into the two command line applications.
-6. If your users use PHITS, or might interact with people who do, you should
-   make sure to provide the mcpl2phits and phits2mcpl commands. This can either
-   be done by simply copying over src_fat/phits2mcpl_app_fat.c and
-   src_fat/mcpl2phits_app_fat.c and compiling them directly, or by copying over
-   files from src/phits/, compiling phitsmcpl.h, phitsmcpl.c, phitsread.h and
-   phitsread.c into a library (find instructions regarding flags at the top of
-   the two .c files), and subsequently use that library when compiling
-   mcpl2phits_app.c and phits2mcpl_app.c into the two command line applications.
-7. If applicable, provide your users with pre-written hooks using MCPL, in
-   whatever form is suitable for your framework. For instance, the McStas
-   developers added two user-visible McStas components: MCPL_input and
-   MCPL_output. Internal code in these two components include and use functions
-   from mcpl.h to implement their functionality (taking care of details such as
-   user-visible parameters and multi-processing in the same way other McStas
-   components do), but McStas users need not worry about those details. The
-   integration is completed by making the mcpltool command available at the
-   command line for McStas users.
+Standard installation
+=====================
+
+The recommended manner in which to install MCPL is via prebuilt Conda or Python
+packages which are available for most modern platforms (including Linux, macOS,
+and Windows for both Intel, AMD and ARM platforms):
+
+If using conda, the `mcpl` package can be installed from the conda-forge
+channel, by running the command (the `mcpl-extra` package can be installed in a
+similar manner):
+
+```
+conda install conda-forge::mcpl
+```
+
+![Conda Version](https://img.shields.io/conda/v/conda-forge/mcpl)
+![Conda Platform](https://img.shields.io/conda/pn/conda-forge/mcpl-core)
+![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/mcpl)
+
+For consistency, it is recommended that your conda environment ONLY uses
+packages from the conda-forge channel.
+
+If not using conda, MCPL packages can be installed via a Python installation
+tool like `pip`, via the command (again, the `mcpl-extra` package can be
+installed in a similar manner):
+
+```
+pip install mcpl
+```
+
+![PyPI - Version](https://img.shields.io/pypi/v/mcpl)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/mcpl)
+
+
+
+Building from source (experts)
+==============================
+
+Advanced users might wish to build MCPL code from the sources in the upstream
+repository (https://github.com/mctools/mcpl). This is considered an
+expert-only procedure, but it *is* based on standard tools such as CMake and
+`pyproject.toml` so should hopefully be somewhat straight forward. A brief
+high-level description will be given in the following, but feel free to reach
+out and ask questions on https://github.com/mctools/mcpl/discussions in case
+something is not clear, or if you run into issues.
+
+Note that to avoid potential conflicts, it is highly recommended that you
+uninstall any existing MCPL packages from your environment before performing
+manual installations! If you are in a conda environment, you should ensure that
+only the conda-forge channel is enabled, and that the following packages are
+also installed into the conda environment: `c-compiler`, `cmake`, and `make`
+(unix only), `zlib`, `numpy`, `pip`, and `python`.
+
+Note that the CTests defined in `tests/` are only meant to be invoked by running
+CMake on the root of the source repository, while actual packages with code is
+meant to be build by running CMake on the `mcpl_xxx/` directory in
+question. There is for various reasons (mostly lack of manpower) no support for
+running CTests directly on a `mcpl_xxx/` subdirectory.
