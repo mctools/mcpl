@@ -69,7 +69,6 @@ def check_versions():
     versions = [
         ( get_versionfile_version, 'VERSION' ),
         ( get_py_version, 'mcpl_python/src/mcpl/__init__.py' ),
-        #FIXME( get_toml_version, 'pyproject.toml' ),
         ( get_toml_version, 'mcpl_core/pyproject.toml' ),
         ( get_toml_version, 'mcpl_core/empty_pypkg/pyproject.toml' ),
         ( check_mcpl_metapkg_version, 'mcpl_metapkg/pyproject.toml' ),

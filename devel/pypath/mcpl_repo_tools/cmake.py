@@ -168,7 +168,6 @@ class CMakeRunner:
                           args + ['--config',self._bt2cmakebt(bt)] )
         self.stage = 'bld'
 
-    #FIXME: Add test which verifies output of e.g. mcpltool --version.
     def do_ctest( self ):
         assert self.mode == 'ctest'
         assert self.stage == 'bld'
@@ -177,7 +176,8 @@ class CMakeRunner:
         args = [ '--output-on-failure',
                  '--test-output-size-failed', '10000',
                  '--test-output-truncation', 'middle',
-                 '--parallel',nprocs]#,'-R','py_rl_forcemerge','-VV' ]
+                 '--parallel',nprocs,
+                ]
 
         for bt in self.build_types:
             self._invoke( self.ctest_cmd,

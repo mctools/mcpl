@@ -24,14 +24,11 @@
 from ._check_fixme import is_well_known_binary
 
 ignore_list = set([
-#    'tests/data/QE_pw_Al.out',
+#    'tests/data/bad.txt',
 ])
 
 ignore_list_nonascii = set([
     'devel/misc/test_encodings.x',
-
-#    'devel/plugin_database.yml',
-#    'devel/plugin_database.yml',
 ])
 
 def get_frel(f):

@@ -32,10 +32,8 @@ def main():
     hits = []
     #Ignore well-known false positives:
     whitelist = {
-#fixme
-#        'tests/scripts/vdos2ncmat.log' : 2,
-#        '.github/workflows/fix'+'me.yml' : 1,
-#        'ncrystal_core/src/phys_utils/NCFreeGasUtils.cc' : 1,
+        '.github/workflows/fix'+'me.yml' : 1,
+        'devel/pypath/mcpl_repo_tools/_check_misc.py' : 1,
     }
     actually_ignored = []
     for f in all_files_iter():
