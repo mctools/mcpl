@@ -3044,7 +3044,6 @@ void mcpl_generic_fclose( mcpl_generic_filehandle_t* fh )
 void mcpl_generic_fread( mcpl_generic_filehandle_t* fh,
                          char * dest, uint64_t nbytes )
 {
-  //fixme: unit test this function??
   MCPL_STATIC_ASSERT( sizeof(size_t) >= sizeof(uint32_t) );
   MCPL_STATIC_ASSERT( sizeof(int) >= sizeof(int32_t) );
   MCPL_STATIC_ASSERT( sizeof(z_off_t) >= sizeof(int32_t) );
@@ -3254,7 +3253,7 @@ void mcpl_read_file_to_buffer( const char * filename,
   MCPL_STATIC_ASSERT( sizeof(size_t) >= sizeof(uint64_t) );
 
   if ( maxsize == 0 )
-    maxsize = UINT64_MAX;//fixme: more consistent to simply not read!
+    maxsize = UINT64_MAX;
 
   mcpl_generic_filehandle_t file = mcpl_generic_fopen( filename );
   mcpl_buffer_t out = mcpl_internal_buf_create( 65536 > maxsize
@@ -3297,18 +3296,3 @@ void mcpl_read_file_to_buffer( const char * filename,
   *user_result_size = out.size;
   *user_result_buf = out.buf;
 }
-
-
-//fixme: we need special CI test exercising files above 2/4GB, including gzipped
-//       files, seeking, closing, rewinding, repairing.
-//       For unit tests in Debug builds we should try to have a static count of
-//       open/closed files, so we can verify that we did not forget a close call
-//       in some exit path.
-
-//Issues: mcpl_skipforward, mcpl_seek
-//        mcpl_actual_open_file/mcpl_rewind (only an issue if header is >2GB)
-//
-//  We need a test with >4gb of header (binary blob data) data and gzipped file.
-//  Also test bigfiles with python reader. Can we have one gzipped reference bigfile perhaps to work on?
-//
-//  Chained files: Open with special chain command. Can do nothing except report nparticles and read particles and skip particles.

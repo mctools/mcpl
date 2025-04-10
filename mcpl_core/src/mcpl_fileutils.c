@@ -1561,7 +1561,10 @@ namespace {
           return rhome;
         }
         const mcu8str_size_t home_size = mctools_strlen( home, 0 );
-        const mcu8str_size_t newsize = (mcu8str_size_t)(home_size + p.size - 1);//fixme overflow if size_t == unsigned. Static assert sizeof(size_t)>sizeof(unsigned)?
+        const mcu8str_size_t newsize = (mcu8str_size_t)(home_size + p.size - 1);
+        if ( ( newsize + 1 != (mcu8str_size_t)(home_size + p.size) )
+             || newsize <= home_size || newsize <= p.size )
+          mctools_impl_error("string length overflow in mctools_expand_path");
         res = mcu8str_create( newsize );
         mcu8str_append_cstr(&res,home);
         mcu8str_append_cstr(&res, p.c_str + 1 );
