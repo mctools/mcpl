@@ -144,6 +144,8 @@ int ssw_loadrecord(ssw_fileinternal_t* f)
     free(f->buf);
     f->lbufmax = f->lbuf;
     f->buf = malloc(f->lbufmax);
+    if (!f->buf)
+      ssw_error("memory allocation failure");
   }
 
   if ( f->lbuf <= SSWREAD_STDBUFSIZE
@@ -153,6 +155,8 @@ int ssw_loadrecord(ssw_fileinternal_t* f)
     free(f->buf);
     f->lbufmax = SSWREAD_STDBUFSIZE;
     f->buf = malloc(f->lbufmax);
+    if (!f->buf)
+      ssw_error("memory allocation failure");
   }
 
   if (!f->buf) {
@@ -217,8 +221,9 @@ ssw_file_t ssw_openerror(ssw_fileinternal_t * f, const char* msg) {
 ssw_file_t ssw_open_and_procrec0( const char * filename )
 {
   ssw_fileinternal_t * f = (ssw_fileinternal_t*)calloc(sizeof(ssw_fileinternal_t),1);
+  if (!f)
+    ssw_error("memory allocation failure");
   f->filehandle.internal = NULL;
-  assert(f);
 
   ssw_file_t out;
   out.internal = f;
@@ -232,6 +237,8 @@ ssw_file_t ssw_open_and_procrec0( const char * filename )
 
   f->lbufmax = SSWREAD_STDBUFSIZE;
   char * buf = malloc(f->lbufmax);
+  if (!buf)
+    ssw_error("memory allocation failure");
   f->buf = buf;
 
   //Fortran data is usually written in "records" with an initial and final 32bit

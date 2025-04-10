@@ -66,6 +66,8 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
   lstrbuf += strlen(ssw_title(f));
   if (lstrbuf<4096) {
     char * buf = (char*)malloc((int)lstrbuf);
+    if (!buf)
+      ssw_error("memory allocation failure");
     buf[0] = '\0';
     strcat(buf,"SSW file from ");
     strcat(buf,ssw_mcnpflavour(f));
@@ -144,6 +146,8 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
   const char * tmp = mcpl_outfile_filename(mcplfh);
   size_t laf = strlen(tmp);
   char * actual_filename = malloc(laf+1);
+  if (!actual_filename)
+    ssw_error("memory allocation failure");
   actual_filename[0]='\0';
   strcat(actual_filename,tmp);
 

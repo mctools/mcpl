@@ -101,6 +101,11 @@ int32_t conv_code_phits2pdg( int32_t c )
   return (int32_t) ( c < 0 ? -abspdgcode : abspdgcode );
 }
 
+void phits_error(const char * msg) {
+  fprintf(phits_stdout(),"ERROR: %s\n",msg);
+  exit(1);
+}
+
 int32_t conv_code_pdg2phits( int32_t c )
 {
   int32_t absc = c < 0 ? -c : c;
@@ -126,7 +131,10 @@ int32_t conv_code_pdg2phits( int32_t c )
     int32_t A = absc%1000;
     absc/=1000;
     int32_t Z = absc % 1000;
-    assert(absc/1000==100);//L=0 guaranteed by enclosing condition.
+    if ( !(absc/1000==100) ) {
+      //L=0 guaranteed by enclosing condition.
+      phits_error("pdgcode conversion logic error");
+    }
     if ( I || !A || !Z || Z>A )
       return 0;
     //PHITS encode nucleis as Z*1000000+A:
@@ -134,11 +142,6 @@ int32_t conv_code_pdg2phits( int32_t c )
     return c < 0 ? -absphitscode : absphitscode;
   }
   return 0;
-}
-
-void phits_error(const char * msg) {
-  fprintf(phits_stdout(),"ERROR: %s\n",msg);
-  exit(1);
 }
 
 //Should be more than large enough to hold all records in all supported PHITS
@@ -204,11 +207,11 @@ phits_file_t phits_openerror(phits_fileinternal_t * f, const char* msg) {
   return out;
 }
 
-//fixme: indentation (and revisit all calloc/mallocs)
 phits_file_t phits_open_internal( const char * filename )
 {
   phits_fileinternal_t * f = (phits_fileinternal_t*)calloc(sizeof(phits_fileinternal_t),1);
-  assert(f);
+  if (!f)
+    phits_error("memory allocation failure");
 
   phits_file_t out;
   out.internal = f;
@@ -315,7 +318,7 @@ const phits_particle_t * phits_load_particle(phits_file_t ff)
     }
   }
 
-  assert( f->lbuf == f->particlesize + f->reclen * 2 );//fixme avoid asserts
+  assert( f->lbuf == f->particlesize + f->reclen * 2 );
   double * pdata = (double*)(f->buf+f->reclen);
   phits_particle_t * pp =  & (f->part);
   pp->rawtype = pdata[0];
@@ -350,16 +353,16 @@ const phits_particle_t * phits_load_particle(phits_file_t ff)
 int phits_has_polarisation(phits_file_t ff)
 {
   phits_fileinternal_t * f = (phits_fileinternal_t *)ff.internal;
-  assert(f);
+  if (!f)
+    phits_error("Invalid file object passed to phits_has_polarisation");
   return f->haspolarisation;
 }
 
-void phits_close_file(phits_file_t ff) {
-
+void phits_close_file(phits_file_t ff)
+{
   phits_fileinternal_t * f = (phits_fileinternal_t *)ff.internal;
-  assert(f);
   if (!f)
-    return;
+    phits_error("Invalid file object passed to phits_close_file");
   if ( f->filehandle.internal ) {
     mcpl_generic_fclose( &f->filehandle );
     f->filehandle.internal = NULL;

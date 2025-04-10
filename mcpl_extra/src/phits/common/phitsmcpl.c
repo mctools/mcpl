@@ -72,7 +72,7 @@ int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
   if (inputdeckfile) {
     char* cfgfile_buf;
     uint64_t cfgfile_lbuf;
-    //fixme: do we unit test this??
+    //fixme: unit test this!
     mcpl_read_file_to_buffer( inputdeckfile,
                               104857600,//100mb max
                               1,//text
@@ -144,6 +144,10 @@ int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
   const char * tmp = mcpl_outfile_filename(mcplfh);
   size_t laf = strlen(tmp);
   char * actual_filename = malloc(laf+1);
+  if (!actual_filename) {
+    printf("Error: Memory allocation error\n");
+    return 0;
+  }
   actual_filename[0]='\0';
   strcat(actual_filename,tmp);
 
@@ -251,7 +255,7 @@ void phits2mcpl_parse_args( int argc,char **argv, const char** infile,
   if (!*outfile)
     *outfile = "output.mcpl";
   if (strcmp(*infile,*outfile)==0) {
-    //basic test, easy to cheat: (fixme!)
+    //basic test, easy to cheat:
     printf("Error: input and output files are identical.\n");
     exit(1);
   }
