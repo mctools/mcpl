@@ -89,8 +89,7 @@ if ( DEFINED SKBUILD_PROJECT_NAME )
 endif()
 
 if ( MCPLEXTRA_ENABLE_CPACK )
-  #Fixme: migrate away from this email:
-  set( CPACK_PACKAGE_CONTACT "mcpl-developers@cern.ch" )
+  set( CPACK_PACKAGE_CONTACT "MCPL developers" )
   set( CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/mctools/mcpl" )
   set( CPACK_NSIS_PACKAGE_NAME "${PROJECT_NAME} ${PROJECT_VERSION}" )
   set( CPACK_NSIS_DISPLAY_NAME "${PROJECT_NAME} ${PROJECT_VERSION}" )
