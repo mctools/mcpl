@@ -53,18 +53,6 @@
 //  1: Format used during early development. No longer supported.             //
 ////////////////////////////////////////////////////////////////////////////////
 
-//Rough platform detection (could be much more fine-grained):
-//fixme: use consistently below (e.g. _WIN32 is used directly as well)
-#if defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__))
-#  define MCPL_THIS_IS_UNIX
-#endif
-#if defined(MSDOS) || defined(OS2) || defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
-#  ifdef MCPL_THIS_IS_UNIX
-#    undef MCPL_THIS_IS_UNIX
-#  endif
-#  define MCPL_THIS_IS_MS
-#endif
-
 //Before including mcpl.h, we attempt to get PRIu64 defined in a relatively
 //robust manner by enabling feature test macros for gcc and including relevant
 //headers:
@@ -503,7 +491,7 @@ void mcpl_enable_universal_weight(mcpl_outfile_t of, double w)
   mcpl_recalc_psize(of);
 }
 
-#ifdef MCPL_THIS_IS_MS
+#ifdef _WIN32
 #  define MCPL_FSEEK( fh, pos)  _fseeki64(fh,(__int64)(pos), SEEK_SET)
 #  define MCPL_FSEEK_CUR( fh, pos)  _fseeki64(fh,(__int64)(pos), SEEK_CUR)
 #  define MCPL_FSEEK_END( fh)  _fseeki64(fh,(__int64)(0), SEEK_END)
@@ -1905,20 +1893,11 @@ int mcpl_can_merge(const char * file1, const char* file2)
   return can_merge;
 }
 
-/* #ifdef MCPL_THIS_IS_UNIX */
-/* #  include <sys/stat.h> */
-/* #endif */
-
 MCPL_LOCAL int mcpl_file_certainly_exists(const char * filename)
 {
   mcu8str fn = mcu8str_view_cstr( filename );
   return mctools_is_file( &fn );
 }
-
-/* #ifdef MCPL_THIS_IS_UNIX */
-/* #  include <sys/types.h> */
-/* #  include <sys/stat.h> */
-/* #endif */
 
 MCPL_LOCAL void mcpl_error_on_dups(unsigned n, const char ** filenames)
 {
@@ -2893,18 +2872,19 @@ int mcpl_gzip_file(const char * filename)
   return 1;
 }
 
-#ifdef MCPL_THIS_IS_MS
-//for _setmode and O_BINARY
+#ifdef _WIN32
+// for _setmode and O_BINARY
 #  include <fcntl.h>
 #  include <io.h>
 #else
-#  include "unistd.h" // for write(..) and unlink()
+// for write(..) and unlink()
+#  include "unistd.h"
 #endif
 
 void mcpl_internal_dump_to_stdout( const char * data,
                                    unsigned long ldata )
 {
-#ifdef MCPL_THIS_IS_MS
+#ifdef _WIN32
   int the_stdout_fileno = _fileno(stdout);
   if ( the_stdout_fileno == -2 )
     mcpl_error("stdout is not associated with an output stream");
@@ -2926,7 +2906,7 @@ void mcpl_internal_dump_to_stdout( const char * data,
 void mcpl_internal_delete_file( const char * filename )
 {
   assert(filename);
-#ifdef MCPL_THIS_IS_MS
+#ifdef _WIN32
   mcu8str f = mcu8str_view_cstr( filename );
   wchar_t* wpath = mctools_path2wpath(&f);//must free(..) return value.
   _wunlink(wpath);

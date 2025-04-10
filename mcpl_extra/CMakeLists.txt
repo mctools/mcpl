@@ -124,10 +124,8 @@ if ( NOT MCPLEXTRA_CMAKEDIR )
 endif()
 
 include(CheckCCompilerFlag)
-#
 if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
   set( MCPLEXTRA_STRICT_COMP_FLAGS "/WX" "/W4" )
-  #fixme: was: set( MCPLEXTRA_STRICT_COMP_FLAGS "/WX" "/W4" "/WD4324" )
 else()
   set( MCPLEXTRA_STRICT_COMP_FLAGS -Wall -Wextra -pedantic -Werror )
 endif()
