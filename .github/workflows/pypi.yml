@@ -372,7 +372,7 @@ jobs:
 
       - name: Prevent libmcpl.so in mcpl-extra wheel (MacOS)
         if: runner.os == 'macOS'
-        #Fixme: --ignore-missing-dependencies is not a great solution! If we go with this, we should absolutely have a step testing the code from the wheel!
+        #NOTE: --ignore-missing-dependencies is not a great solution! But at least we have code below testing the wheels!
         run: echo 'CIBW_REPAIR_WHEEL_COMMAND_MACOS=delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel} --exclude libmcpl --ignore-missing-dependencies' >> $GITHUB_ENV
 
       - name: cibuildwheel

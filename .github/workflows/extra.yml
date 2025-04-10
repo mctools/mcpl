@@ -1,7 +1,7 @@
 name: extra
 
 on:
-  #fixme: Can we make this work in PRs?
+  #TODO: Can we make this work in PRs?
   push:
   pull_request:
   schedule:
@@ -43,11 +43,8 @@ jobs:
     needs: [ mcpldevtool_check ]
     strategy:
       matrix:
-        #fixme: other strict flags?
-        strictflag: [ 'ON' ] #FIXME?, 'OFF' ]
+        strictflag: [ 'ON' ]
         os: [ubuntu-latest, macos-latest, windows-latest]
-        #fixme more, windows-latest, macos-latest, arm/intel]... and intel
-        #oneapi compiler??
 
     name: ${{ matrix.os }}.strict${{ matrix.strictflag }}
     runs-on: ${{ matrix.os }}

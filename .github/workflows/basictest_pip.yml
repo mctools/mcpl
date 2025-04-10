@@ -24,12 +24,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        #fixme: os: [windows-2019, windows-2022]
         os: [ubuntu-latest, windows-latest, macos-latest]
     name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-
-    #windows-latest is windows-2022 (Nov 2024)
 
     steps:
     - name: Checkout
@@ -63,104 +60,4 @@ jobs:
     - name: Check client C/CXX standards (ctest)
       run: ctest --test-dir bldstd --build-config Debug
 
-#    - name: pip install extra test deps
-#      run: python -mpip install matplotlib
-
-
-#    #Two ways of enabling cl.exe and other tools. One is via an external action...:
-#    - name: Setup VS in shell
-#      uses: ilammy/msvc-dev-cmd@v1
-#    #...but a simpler one might be to simply invoke the correct vcvars64.bat
-#    #file first, like...:
-#    #
-#    #    - name: whatever
-#    #      shell: cmd
-#    #      run: |
-#    #        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-#    #        cl /help
-#    #
-#    #...but since we also want to support VS 2019, we use the above action for now
-#
-#    - name: Test downstream compilation and build flags
-#      shell: cmd
-#      run: |
-#
-#        echo "Set BUILDFLAGS variable via ncrystal-config --show buildflags"
-#        if %errorlevel% neq 0 exit /b %errorlevel%
-#        ncrystal-config --show buildflags > buildflags.txt
-#        if %errorlevel% neq 0 exit /b %errorlevel%
-#        set /p BUILDFLAGS=<buildflags.txt
-#        if %errorlevel% neq 0 exit /b %errorlevel%
-#        echo "Got:" %BUILDFLAGS%
-#        if %errorlevel% neq 0 exit /b %errorlevel%
-#
-#        echo "Copying C and C++ examples"
-#        if %errorlevel% neq 0 exit /b %errorlevel%
-#        copy .\src\examples\ncrystal_example_cpp.cc my_cpp_code.cpp
-#        if %errorlevel% neq 0 exit /b %errorlevel%
-#
-#        copy .\src\examples\ncrystal_example_c.c my_c_code.c
-#        if %errorlevel% neq 0 exit /b %errorlevel%
-#
-#        echo "Compiling C code"
-#        cl my_c_code.c %BUILDFLAGS%
-#        if %errorlevel% neq 0 exit /b %errorlevel%
-#        echo "Custom compilation of downstream C code succeeded"
-#
-#        echo "Compiling C++ code"
-#        cl my_cpp_code.cpp %BUILDFLAGS% /EHsc
-#        if %errorlevel% neq 0 exit /b %errorlevel%
-#        echo "Custom compilation of downstream C++ code succeeded"
-#
-#        echo "Set NCSHLIBDIR variable via ncrystal-config --show shlibdir"
-#        if %errorlevel% neq 0 exit /b %errorlevel%
-#        ncrystal-config --show shlibdir > ncshlibdir.txt
-#        if %errorlevel% neq 0 exit /b %errorlevel%
-#        set /p NCSHLIBDIR=<ncshlibdir.txt
-#        if %errorlevel% neq 0 exit /b %errorlevel%
-#        echo "Got:" NCSHLIBDIR
-#        if %errorlevel% neq 0 exit /b %errorlevel%
-#
-#        echo "Running C app"
-#        my_c_code.exe
-#        if %errorlevel% neq 0 exit /b %errorlevel%
-#
-#        echo "Running C++ app"
-#        my_cpp_code.exe
-#        if %errorlevel% neq 0 exit /b %errorlevel%
-#
-#        echo "Compiling C code again (c11)"
-#        cl my_c_code.c %BUILDFLAGS% /std:c11
-#        if %errorlevel% neq 0 exit /b %errorlevel%
-#        echo "Custom compilation of downstream C code succeeded"
-#
-#        echo "Compiling C code again (c17)"
-#        cl my_c_code.c %BUILDFLAGS% /std:c17
-#        if %errorlevel% neq 0 exit /b %errorlevel%
-#        echo "Custom compilation of downstream C code succeeded"
-#
-#        echo "Compiling C code again (clatest)"
-#        cl my_c_code.c %BUILDFLAGS% /std:c17
-#        if %errorlevel% neq 0 exit /b %errorlevel%
-#        echo "Custom compilation of downstream C code succeeded"
-#
-#        echo "Compiling C++ code again (c++14)"
-#        cl my_cpp_code.cpp %BUILDFLAGS% /std:c++14 /EHsc
-#        if %errorlevel% neq 0 exit /b %errorlevel%
-#        echo "Custom compilation of downstream C++ code succeeded"
-#
-#        echo "Compiling C++ code again (c++17)"
-#        cl my_cpp_code.cpp %BUILDFLAGS% /std:c++17 /EHsc
-#        if %errorlevel% neq 0 exit /b %errorlevel%
-#        echo "Custom compilation of downstream C++ code succeeded"
-#
-#        echo "Compiling C++ code again (c++20)"
-#        cl my_cpp_code.cpp %BUILDFLAGS% /std:c++20 /EHsc
-#        if %errorlevel% neq 0 exit /b %errorlevel%
-#        echo "Custom compilation of downstream C++ code succeeded"
-#
-#        echo "Compiling C++ code again (c++latest)"
-#        cl my_cpp_code.cpp %BUILDFLAGS% /std:c++20 /EHsc
-#        if %errorlevel% neq 0 exit /b %errorlevel%
-#        echo "Custom compilation of downstream C++ code succeeded"
-#
+      #FIXME: Exercise mcpl-config --show buildflags here.
