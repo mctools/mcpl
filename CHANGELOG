@@ -3,6 +3,24 @@ v1.9.80 (work in progress)
       * Completely redesigning package layouts.
       * Removing "fat" installation options.
       * Support Windows and MSVC!
+      * Keeping in line with general trends at github, the default branch of the
+        mcpl repository is named main rather than master, from this point
+        on. For a little while we will try to keep the master branch alive, in
+        case of any hardwired usage of the branch name "master" somewhere, but
+        this will not be the case for long. This change does not, however, change
+        the fact that we will in general try to keep default branch (now: main),
+        synchronised with the main release (apart possibly from minor
+        documentation and CI fixes), and keep the "develop" branch as the main
+        branch to target with pull requests between releases.  NOTE: Any local
+        clones of the mcpl code repository should be updated to reflect this
+        change. If there is no local interesting content in the clone, one option
+        is to remove the local clone and get a fresh one from github. Otherwise,
+        GitHub advices the following four commands to "repair" your local clones
+        (experts only):
+          git branch -m master main
+          git fetch origin
+          git branch -u origin/main main
+          git remote set-head origin -a
       * Proper consistent support for files > 2GB, even on Windows and with
         gzipped files.
       * Fall back to statically embedding of zlib into binaries (currently
