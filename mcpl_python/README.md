@@ -15,27 +15,21 @@ and documentation can be found at https://mctools.github.io/mcpl/.
 
 
 
-The mcpl-core package
----------------------
+The mcpl-python package
+-----------------------
 
-The `mcpl-core` package provides:
+The `mcpl-python` package provides a Python API for working with MCPL
+files. More details about the Python API and how to use it can be found at the
+https://mctools.github.io/mcpl/usage_python page.
 
-* The `mcpltool`, a command-line utility for working with MCPL files. For more
-  information about this tool, refer to the
-  https://mctools.github.io/mcpl/usage_cmdline page.
-* The C/C++ API in the form of the `mcpl.h` header file and associated shared
-  library. For more information about this API, refer to the
-  https://mctools.github.io/mcpl/usage_c page.
-* Configuration utilities for working with the C/C++ API in downstream
-  projects. Specifically, CMake configuration code and the `mcpl-config`
-  command-line utility are provided.
-
-In addition to the links above, several examples of how to use the C/C++ API,
-including how to configure a downstream CMake-based project, is provided in the
-https://github.com/mctools/mcpl/tree/HEAD/examples directory.
+Additionally, the package also provides the command-line tool `pymcpltool`,
+which has similar capabilities as the binary `mcpltool` from the `mcpl-core`
+package. The main difference being an ability to extract statistics and plots
+from MCPL files, and that the `pymcpltool` (unlike the `mcpltool`) only provides
+read-only capabilities.
 
 Note that it is recommmended for most users to simply install the package named
-`mcpl`, rather than referring to the package named `mcpl-core` directly.
+`mcpl`, rather than referring to the package named `mcpl-python` directly.
 
 
 
