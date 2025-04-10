@@ -4,6 +4,8 @@ Creating (or overwriting) output PHITS file.
 Initiating particle conversion loop.
 Ending particle conversion loop.
 Created føø/hellø.dmp with 5 particles.
+Size of fake_cfg_file: 30 bytes
+Size of fake_dumpsummary_file: 38 bytes
 Run phits2mcpl
 MCPL: Compressing file hellø2.mcpl
 MCPL: Compressed file into hellø2.mcpl.gz
@@ -14,14 +16,16 @@ Opened MCPL file hellø2.mcpl.gz:
   Basic info
     Format             : MCPL-3
     No. of particles   : 5
-    Header storage     : 97 bytes
+    Header storage     : 220 bytes
     Data storage       : 240 bytes
 
   Custom meta data
     Source             : "PHITS"
     Number of comments : 1
           -> comment 0 : "Converted from PHITS with phits2mcpl"
-    Number of blobs    : 0
+    Number of blobs    : 2
+          -> 30 bytes of data with key "phits_input_deck"
+          -> 38 bytes of data with key "phits_dump_summary_file"
 
   Particle data format
     User flags         : no

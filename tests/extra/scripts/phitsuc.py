@@ -46,10 +46,27 @@ def main():
     if rv.stderr or rv.returncode:
         raise SystemExit(1)
 
+    oslash_b = oslash.encode('utf-8')
+    fake_cfg_file_contents = (
+        b"Bla bla dump blabla\nf%s%s bar."%(oslash_b,oslash_b)
+    )
+    fake_dumpsummary_file_contents = (
+        b"Bla bla dump summary blabla\nf%s%s bar."%(oslash_b,oslash_b)
+    )
+    print( "Size of fake_cfg_file: %i bytes"
+           % len(fake_cfg_file_contents) )
+    print( "Size of fake_dumpsummary_file: %i bytes"
+           % len(fake_dumpsummary_file_contents) )
+    pathlib.Path('fake_cfg_file').write_bytes(fake_cfg_file_contents)
+    pathlib.Path('fake_dumpsummary_file').write_bytes(fake_dumpsummary_file_contents)
+
     print("Run phits2mcpl",flush=True)
     rv = subprocess.run( [ phits2mcpl_cmd,
                            f'f{oslash}{oslash}/hell{oslash}.dmp',
-                           f'f{oslash}{oslash}/hell{oslash}2.mcpl' ],
+                           f'f{oslash}{oslash}/hell{oslash}2.mcpl',
+                           '-c','fake_cfg_file',
+                           '-s','fake_dumpsummary_file',
+                          ],
                          capture_output = True )
     sys.stdout.buffer.write(rv.stdout)
     if rv.stderr:

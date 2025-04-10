@@ -72,7 +72,6 @@ int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
   if (inputdeckfile) {
     char* cfgfile_buf;
     uint64_t cfgfile_lbuf;
-    //fixme: unit test this!
     mcpl_read_file_to_buffer( inputdeckfile,
                               104857600,//100mb max
                               1,//text
