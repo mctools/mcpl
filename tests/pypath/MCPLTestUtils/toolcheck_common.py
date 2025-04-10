@@ -90,7 +90,7 @@ def check_same( f1, f2 ):
         c2 = gzip.decompress( c2 )
     if c1 != c2:
         print("===> Check failed!")
-        #FIXME: raise system exit? Or let the log file check handle it?
+        raise SystemExit(1)
 
 def copy( src, tgt ):
     psrc = Path(src)

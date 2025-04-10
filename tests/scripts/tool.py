@@ -238,7 +238,7 @@ def main():
     cmd(dd('reffile_notreallygz.mcpl.gz'))
     cmd(dd('reffile_uw.mcpl.gz'))
 
-    #This one contains a non-utf8 comment! (fixme: should this actually be forbidden and detected??):
+    #This one contains a non-utf8 comment! (todo: should this actually be forbidden and detected??):
     #print(mcpltool_cmd)
     cmd(dd('reffile_encodings.mcpl.gz'))
 
@@ -247,7 +247,7 @@ def main():
         print(f'====> extracting and calculating md5sum of blob with key "{bk}":')
         cmd(dd('reffile_encodings.mcpl.gz'),f'-b{bk}',print_md5sum_of_output=True)
 
-    #FIXME: Not possible apparently to pass b'notutf8key_\xff\xfe_' to subprocess.run:
+    #NOTE: Not possible apparently to pass b'notutf8key_\xff\xfe_' to subprocess.run:
     #So we are missing the following output:
     #====> extracting and calculating md5sum of blob with key "notutf8key_XXX_":
     #a04637816e7436951f0512d38d48f212

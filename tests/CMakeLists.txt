@@ -136,7 +136,6 @@ set( mcplextratest_base_appenvmod "${mcpltest_appenvmod}" )
 if ( WIN32 )
   set(
     mcplextratest_base_envmod_common
-    #fixme: maybe this does not make a difference now:
     "PATH=path_list_prepend:$<TARGET_FILE_DIR:mcplsswtestlib>"
     "PATH=path_list_prepend:$<TARGET_FILE_DIR:mcplphitstestlib>"
     "PATH=path_list_prepend:$<TARGET_FILE_DIR:${mcpltests_mcpllib_target}>"
@@ -173,9 +172,7 @@ list(
   APPEND mcplextratest_base_appenvmod
   ${mcplextratest_base_envmod_common}
 )
-#message(FATAL_ERROR "test ${MCPLEXTRA_TEST_DIR_LIST}")
 
-#FIXME: Add to the envs vars!
 foreach( mcplextra_testdir ${MCPLEXTRA_TEST_DIR_LIST} )
   set( ntests_before "${mctools_tests_count}" )
   set( tmp_pyenvmod "${mcplextratest_base_pyenvmod}" )

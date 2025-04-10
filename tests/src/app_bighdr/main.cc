@@ -197,7 +197,7 @@ int do_test()
   return 0;
 }
 
-}//fixme in all files
+}
 
 int main( int, char** )
 {
