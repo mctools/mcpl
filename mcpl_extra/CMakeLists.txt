@@ -67,6 +67,10 @@ if( NOT MCPLEXTRA_NOTOUCH_CMAKE_BUILD_TYPE )
   endif()
 endif()
 
+# Set module path and include utils
+set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake/modules")
+include( mctools_utils )
+
 #Find MCPL (mcpl-core):
 if ( NOT TARGET MCPL::MCPL )
   if( NOT DEFINED "MCPL_DIR" )
@@ -120,22 +124,6 @@ endif()
 set(MCPLEXTRA_INCDIR "${CMAKE_INSTALL_INCLUDEDIR}")#e.g. <prefix>/include>
 if ( NOT MCPLEXTRA_CMAKEDIR )
   set(MCPLEXTRA_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")#e.g. <prefix>/lib/cmake/MCPL>
-endif()
-
-include(CheckCCompilerFlag)
-if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
-  set( MCPLEXTRA_STRICT_COMP_FLAGS "/WX" "/W4" )
-else()
-  set( MCPLEXTRA_STRICT_COMP_FLAGS -Wall -Wextra -pedantic -Werror )
-endif()
-
-if ( MCPLEXTRA_BUILD_STRICT )
-  #Set globally warnings -> errors (although only has an effect in CMake 3.24 or
-  #later):
-  set( "CMAKE_COMPILE_WARNING_AS_ERROR" "ON" )
-  # turn list into space separated string for check_c_compiler_flag:
-  string( REPLACE ";" " " tmp "${MCPLEXTRA_STRICT_COMP_FLAGS}" )
-  check_c_compiler_flag( "${tmp}" mcplextra_compiler_supports_strict_comp_flags )
 endif()
 
 set( STRICT_CSTD OFF )
@@ -265,6 +253,7 @@ target_include_directories( mcpl2phits PRIVATE "${PROJECT_SOURCE_DIR}/src/phits/
 foreach( tgt ${all_targets} )
   target_link_libraries( ${tgt} MCPL::MCPL ${MCPL_MATH_LIBRARIES} )
   target_compile_options( ${tgt} PRIVATE ${mcplextra_extra_private_compile_options} )
+  mctools_apply_strict_comp_properties( ${tgt} )
   install(
     TARGETS ${tgt}
     RUNTIME DESTINATION ${MCPLEXTRA_BINDIR}
@@ -280,12 +269,17 @@ endforeach()
 
 if ( MCPL_ENABLE_TESTING )
   #Purely for usage in CTests apps
+
   add_library( mcplsswtestlib SHARED ${mcplsswlib_src_files} )
   target_compile_definitions( mcplsswtestlib PRIVATE MCPLSSW_IS_TEST_LIB )
   target_link_libraries( mcplsswtestlib MCPL::MCPL ${MCPL_MATH_LIBRARIES} )
+  mctools_apply_strict_comp_properties( mcplsswtestlib )
+
   add_library( mcplphitstestlib SHARED ${mcplphitslib_src_files} )
   target_compile_definitions( mcplphitstestlib PRIVATE MCPLPHITS_IS_TEST_LIB )
   target_link_libraries( mcplphitstestlib MCPL::MCPL ${MCPL_MATH_LIBRARIES} )
+  mctools_apply_strict_comp_properties( mcplphitstestlib )
+
   if ( WIN32 )
     set_target_properties(
       mcplsswtestlib PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE

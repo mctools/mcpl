@@ -33,12 +33,12 @@ find_package( MCPL 1.9.80 REQUIRED )
 
 set( origsrc "${PROJECT_SOURCE_DIR}/main.c" )
 
-include(CheckCCompilerFlag)
-if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
-  set( strict_flags "/WX" "/W4" )
-else()
-  set( strict_flags -Wall -Wextra -pedantic -Werror )
-endif()
+set(
+  CMAKE_MODULE_PATH
+  ${CMAKE_MODULE_PATH}
+  "${CMAKE_CURRENT_LIST_DIR}/../../../mcpl_core/cmake/modules"
+)
+include( mctools_utils )
 
 enable_testing()
 
@@ -68,7 +68,7 @@ foreach( extensions ON OFF )
       add_executable( "test_${bn}" "${src}" )
       target_link_libraries( "test_${bn}" MCPL::MCPL )
       set_target_properties( "test_${bn}" PROPERTIES ${props} )
-      target_compile_options( "test_${bn}" PRIVATE ${strict_flags} )
+      mctools_apply_strict_comp_properties( "test_${bn}" )
       add_test(
         NAME "test_${bn}"
         COMMAND "test_${bn}"

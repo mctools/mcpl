@@ -33,7 +33,12 @@ set( mcpltests_mcpllib_target mcpl )
 
 enable_testing()
 
-set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake")
+set(
+  CMAKE_MODULE_PATH
+  ${CMAKE_MODULE_PATH}
+  "${CMAKE_CURRENT_LIST_DIR}/cmake"
+  "${CMAKE_CURRENT_LIST_DIR}/../mcpl_core/cmake/modules"
+)
 include( mctools_testutils )
 
 include( "${CMAKE_CURRENT_LIST_DIR}/../mcpl_core/cmake/modules/mcpl_detectmathlibs.cmake" )

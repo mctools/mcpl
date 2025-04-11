@@ -32,6 +32,8 @@
 
 include_guard()
 
+include( mctools_utils )
+
 set(
   "mctools_launcher_file"
   "${CMAKE_CURRENT_LIST_DIR}/mctools_testlauncher.py"
@@ -52,42 +54,6 @@ if ( NOT DEFINED MCTOOLS_TESTUTILS_PYTHON_EXECUTABLE
      AND NOT DEFINED Python3_EXECUTABLE )
   set( MCTOOLS_TESTUTILS_PYTHON_EXECUTABLE "auto" )
 endif()
-
-function( apply_strict_comp_properties tgtname )
-  if ( NOT DEFINED MCTOOLS_STRICT_COMP_READY )
-    message( FATAL_ERROR "Call detect_strict_comp_properties first" )
-  endif()
-  if( "${CMAKE_VERSION}" VERSION_GREATER_EQUAL "3.24" )
-    set_target_properties( ${tgtname} PROPERTIES COMPILE_WARNING_AS_ERROR ON )
-  endif()
-  if ( MCTOOLS_STRICT_COMP_FLAGS )
-    set_property(
-      TARGET ${tgtname}
-      APPEND PROPERTY COMPILE_OPTIONS "${MCTOOLS_STRICT_COMP_FLAGS}"
-    )
-  endif()
-endfunction()
-
-function( detect_strict_comp_properties )
-  if ( DEFINED MCTOOLS_STRICT_COMP_READY )
-    return()
-  endif()
-  set( MCTOOLS_STRICT_COMP_READY "1" PARENT_SCOPE )
-  if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
-    set( flags "/WX" "/W4" )
-  else()
-    set( flags -Wall -Wextra -pedantic -Werror )
-  endif()
-  include(CheckCCompilerFlag)
-  # turn list into space separated string for check_c_compiler_flag:
-  string( REPLACE ";" " " tmp "${flags}" )
-  check_c_compiler_flag( "${tmp}" flagsok )#assuming same for C and C++
-  if ( NOT flagsok )
-    set( flags "" )
-    message(WARNING "Could not enable strict compilation flags")
-  endif()
-  set( MCTOOLS_STRICT_COMP_FLAGS "${flags}" PARENT_SCOPE )
-endfunction()
 
 function( mctools_testutils_add_tests_pyscripts scriptsdir envmod )
   file(
@@ -338,7 +304,7 @@ function(
 
     target_link_libraries( ${name} PRIVATE ${extra_link_libs} )
     target_include_directories( ${name} ${extra_inc_dirs} )
-    apply_strict_comp_properties( ${name} )
+    mctools_apply_strict_comp_properties( ${name} )
 
     if ( EXISTS "${libdir}/include" )
       if ( is_module )
@@ -385,7 +351,7 @@ function(
     if ( is_cxx )
       target_compile_features( ${bn} PRIVATE cxx_std_11 )
     endif()
-    apply_strict_comp_properties( ${bn} )
+    mctools_apply_strict_comp_properties( ${bn} )
     mctools_testutils_internal_detectlibdeps( "deplist" "${srcfiles}" "" )
     foreach( dep ${deplist} )
       target_link_libraries( ${bn} PRIVATE "TestLib_${dep}" )
@@ -600,5 +566,3 @@ function( mctools_testutils_internal_addtest name cmd_file reflog )
   set_property( TEST "${name}" PROPERTY TIMEOUT "$<IF:$<CONFIG:Debug>,480,240>" )
   #TODO: Support tests/costs.txt for adding cost properties to tests?
 endfunction()
-
-detect_strict_comp_properties()
