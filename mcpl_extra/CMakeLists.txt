@@ -151,35 +151,6 @@ if ( MCPLEXTRA_BUILD_STRICT )
   endif()
 endif()
 
-function( detect_math_libs )
-  #FIXME: To common module (along with the -fp-model=precise, and build_strict
-  #stuff. To be shared between mcpl-core, mcpl-extra, and ncrystal.
-
-  #Make sure we link in math functions correctly (typically the linker needs
-  #libm on unix, but nothing on Windows). Sets MCPL_MATH_LIBRARIES in calling
-  #scope unless already defined.
-  if ( DEFINED MCPL_MATH_LIBRARIES )
-    return()
-  endif()
-  set( result "" )
-  set(TMP_TESTLIBMSRC
-    "#include <math.h>\nint main(int argc,char** argv) { (void)argv;double a=(exp)(argc+1.0); return (int)(a*0.1); }\n")
-  set(TMP_TESTDIR ${PROJECT_BINARY_DIR}/test_libm)
-  file(WRITE ${TMP_TESTDIR}/test.c "${TMP_TESTLIBMSRC}")
-  try_compile(ALWAYS_HAS_MATH "${TMP_TESTDIR}" "${TMP_TESTDIR}/test.c")
-  if (NOT ALWAYS_HAS_MATH)
-    set(TMP_TESTDIR ${PROJECT_BINARY_DIR}/test_libm2)
-    file(WRITE ${TMP_TESTDIR}/test.c "${TMP_TESTLIBMSRC}")
-    try_compile(MATH_NEEDS_LIBM "${TMP_TESTDIR}" "${TMP_TESTDIR}/test.c" LINK_LIBRARIES m)
-    if (MATH_NEEDS_LIBM)
-      set( result "m" )
-    else()
-      message( FATAL_ERROR "Could not figure out link flags needed to enable math functions" )
-    endif()
-  endif()
-  set( "MCPL_MATH_LIBRARIES" "${result}" PARENT_SCOPE )
-endfunction()
-
 set( mcplextra_extra_private_compile_options "" )
 if ( "x${CMAKE_C_COMPILER_ID}" STREQUAL "xIntelLLVM" )
   #Intel defaults to the equivalent of -ffast-math, revert back to proper math:
@@ -236,7 +207,7 @@ if ( MCPLEXTRA_BUILD_STRICT AND mcplextra_compiler_supports_strict_comp_flags )
   )
 endif()
 
-detect_math_libs()
+mctools_detect_math_libs( "MCPL_MATH_LIBRARIES" )
 
 add_executable( ssw2mcpl ${ssw2mcpl_main} ${mcplsswlib_src_files} )
 target_include_directories( ssw2mcpl PRIVATE "${PROJECT_SOURCE_DIR}/src/ssw/common" )

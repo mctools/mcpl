@@ -40,10 +40,9 @@ set(
   "${CMAKE_CURRENT_LIST_DIR}/../mcpl_core/cmake/modules"
 )
 include( mctools_testutils )
+include( mctools_utils )
 
-include( "${CMAKE_CURRENT_LIST_DIR}/../mcpl_core/cmake/modules/mcpl_detectmathlibs.cmake" )
-detect_math_libs()
-
+mctools_detect_math_libs( MCPL_MATH_LIBRARIES )
 
 #We want to symlink so that "import mcpldev" works instead of "import mpcpl" for
 #the tests (to reduce conflicts with MCPL installed in the environment). We copy
@@ -80,7 +79,11 @@ list(
   "PYTHONLEGACYWINDOWSSTDIO=set:UTF-8"
 )
 
-set( mcpltests_extra_link_libs "${mcpltests_mcpllib_target}" ${MCPL_MATH_LIBRARIES} )
+set(
+  mcpltests_extra_link_libs
+  "${mcpltests_mcpllib_target}"
+  ${MCPL_MATH_LIBRARIES}
+)
 
 #backtrace from FPE tests need -lexecinfo on FreeBSD:
 find_package(Backtrace)

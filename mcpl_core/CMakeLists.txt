@@ -314,8 +314,7 @@ include( mcpl_zlib )
 add_zlib_dependency( mcpl )
 add_zlib_dependency( mcpltool )
 
-include( "mcpl_detectmathlibs" )
-detect_math_libs()
+mctools_detect_math_libs( "MCPL_MATH_LIBRARIES" )
 
 target_link_libraries(mcpl PRIVATE ${MCPL_MATH_LIBRARIES} )
 target_link_libraries(mcpltool PRIVATE ${MCPL_MATH_LIBRARIES} )
