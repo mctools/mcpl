@@ -219,15 +219,16 @@ elseif( "${CMAKE_VERSION}" VERSION_LESS "3.20" AND "x${CMAKE_C_COMPILER_ID}" STR
 endif()
 
 function(set_target_common_props targetname)
-  #Set private non-transitive properties. If strict builds are enabled, this can
-  #enforce no warnings and compilation with a specific standards.
-  mctools_apply_strict_comp_properties( ${targetname} )
-  if ( STRICT_CSTD )
-    set_target_properties (
-      ${targetname} PROPERTIES
-      C_STANDARD ${STRICT_CSTD}
-      C_STANDARD_REQUIRED ON C_EXTENSIONS OFF
-    )
+  #NOTE: Only apply strict flags to at the target level if zlib is not built in:
+  if (  "${MCPL_ENABLE_ZLIB}" STREQUAL "USEPREINSTALLED" )
+    mctools_apply_strict_comp_properties( ${targetname} )
+    if ( STRICT_CSTD )
+      set_target_properties (
+        ${targetname} PROPERTIES
+        C_STANDARD ${STRICT_CSTD}
+        C_STANDARD_REQUIRED ON C_EXTENSIONS OFF
+      )
+    endif()
   endif()
 endfunction()
 
@@ -240,6 +241,9 @@ set_source_files_properties(
 add_library( mcpl SHARED ${mcpl_src_files} )
 
 if ( MCPL_BUILD_STRICT )
+  #Always apply any strict flags directly at the source file level as well,
+  #since the target itself might not always get the strict flags (since we don't
+  #want zlib sources to get them):
   mctools_determine_strict_comp_flags( tmp )
   if ( tmp )
     set_property(
@@ -254,36 +258,6 @@ set_target_properties( mcpl PROPERTIES C_VISIBILITY_PRESET "hidden" )
 add_executable( mcpltool "app_tool/mcpltool_app.c" ${mcpl_src_files} )
 target_compile_definitions( mcpltool PRIVATE mcpl_LIB_IS_STATIC )
 
-#target_compile_features( mcpl INTERFACE c_std_99 )
-
-#Libname:
-#set( _tmp_basiclibname "mcpl" )
-#if ( MCPL_NAMESPACE )
-#  set( _tmp_basiclibname "${_tmp_basiclibname}-${MCPL_NAMESPACE}" )
-#endif()
-#set_target_properties( MCPL PROPERTIES OUTPUT_NAME "${_tmp_basiclibname}" )
-
-#Export all symbols on windows if requested:
-#if ( WIN32 AND MCPL_WINEXPORTALL )
-#  #We must export all symbols in libMCPL.so, even those from internal
-#  #headers - since we also use internal files in our tests and plugins. We use
-#  #MCPL_PREVENT_WINDLLEXPORT (in mcpl_ncapi.cmake) to avoid explicitly
-#  #exporting any symbols in this case, since that triggers spurious warnings
-#  #from VisualStudio.
-#  set_target_properties( MCPL PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE )
-#endif()
-
-## Dynamic library loading:
-#if ( MCPL_ENABLE_DYNLOAD )
-#  if ( UNIX AND CMAKE_DL_LIBS )
-#    #Cf. https://gitlab.kitware.com/cmake/cmake/-/merge_requests/1642 for why we
-#    #only do this on UNIX.
-#    target_link_libraries( MCPL PRIVATE ${CMAKE_DL_LIBS} )
-#  endif()
-#else()
-#  target_compile_definitions( MCPL PRIVATE MCPL_DISABLE_DYNLOAD )
-#endif()
-
 include( "mcpl_headercreate" )
 mcpl_create_header( mcplheader_include_path )
 
@@ -297,7 +271,6 @@ target_include_directories(
   mcpl
   PRIVATE "${PROJECT_SOURCE_DIR}/src"
   PUBLIC
-  #$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<BUILD_INTERFACE:${mcplheader_include_path}>
   $<INSTALL_INTERFACE:${MCPL_INCDIR}>
 )
