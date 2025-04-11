@@ -94,7 +94,7 @@ int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
   }
   if (dumpsummaryfile) {
     char* summaryfile_buf;
-    size_t summaryfile_lbuf;
+    uint64_t summaryfile_lbuf;
     mcpl_read_file_to_buffer( dumpsummaryfile,
                               104857600,//100mb max
                               1,//text

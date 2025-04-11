@@ -54,13 +54,13 @@
 #define SSW_MCNPX 2
 #define SSW_MCNP5 3
 
-FILE** ssw_impl_stdout_data()
+FILE** ssw_impl_stdout_data(void)
 {
   static FILE* thefh = NULL;
   return &thefh;
 }
 
-FILE* ssw_stdout()
+FILE* ssw_stdout(void)
 {
   FILE* thefh = *ssw_impl_stdout_data();
   return thefh ? thefh : stdout;
@@ -220,7 +220,7 @@ ssw_file_t ssw_openerror(ssw_fileinternal_t * f, const char* msg) {
 
 ssw_file_t ssw_open_and_procrec0( const char * filename )
 {
-  ssw_fileinternal_t * f = (ssw_fileinternal_t*)calloc(sizeof(ssw_fileinternal_t),1);
+  ssw_fileinternal_t * f = (ssw_fileinternal_t*)calloc(1,sizeof(ssw_fileinternal_t));
   if (!f)
     ssw_error("memory allocation failure");
   f->filehandle.internal = NULL;

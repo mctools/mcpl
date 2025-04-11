@@ -44,13 +44,13 @@
 #include <string.h>
 #include <stdint.h>
 
-FILE** phits_impl_stdout_data()
+FILE** phits_impl_stdout_data(void)
 {
   static FILE* thefh = NULL;
   return &thefh;
 }
 
-FILE* phits_stdout()
+FILE* phits_stdout(void)
 {
   FILE* thefh = *phits_impl_stdout_data();
   return thefh ? thefh : stdout;
@@ -209,7 +209,7 @@ phits_file_t phits_openerror(phits_fileinternal_t * f, const char* msg) {
 
 phits_file_t phits_open_internal( const char * filename )
 {
-  phits_fileinternal_t * f = (phits_fileinternal_t*)calloc(sizeof(phits_fileinternal_t),1);
+  phits_fileinternal_t * f = (phits_fileinternal_t*)calloc(1,sizeof(phits_fileinternal_t));
   if (!f)
     phits_error("memory allocation failure");
 
