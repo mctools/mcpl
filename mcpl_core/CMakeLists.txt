@@ -203,20 +203,6 @@ if ( MCPL_BUILD_STRICT )
   endif()
 endif()
 
-set( mcpl_extra_private_compile_options "" )
-if ( "x${CMAKE_C_COMPILER_ID}" STREQUAL "xIntelLLVM" )
-  #Intel defaults to the equivalent of -ffast-math, revert back to proper math:
-  set( mcpl_extra_private_compile_options -fp-model=precise )
-elseif( "${CMAKE_VERSION}" VERSION_LESS "3.20" AND "x${CMAKE_C_COMPILER_ID}" STREQUAL "xClang" )
-  #Older cmake had the llvm-based intel compiler classified as "Clang". In
-  #this case, we check whether or not the -fp-model=precise flag is supported
-  #or not:
-  include(CheckCCompilerFlag)
-  check_c_compiler_flag( -fp-model=precise mcpl_compiler_supports_fpmodelprecise )
-  if ( mcpl_compiler_supports_fpmodelprecise )
-    set( mcpl_extra_private_compile_options -fp-model=precise )
-  endif()
-endif()
 
 function(set_target_common_props targetname)
   #NOTE: Only apply strict flags to at the target level if zlib is not built in:
@@ -265,6 +251,7 @@ set_target_common_props( mcpl )
 set_target_common_props( mcpltool )
 target_compile_features( mcpl PUBLIC c_std_99 )
 target_compile_features( mcpltool PRIVATE c_std_99 )
+mctools_detect_extra_cflags( mcpl_extra_private_compile_options )
 target_compile_options( mcpl PRIVATE ${mcpl_extra_private_compile_options} )
 target_compile_options( mcpltool PRIVATE ${mcpl_extra_private_compile_options} )
 target_include_directories(

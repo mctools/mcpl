@@ -151,21 +151,6 @@ if ( MCPLEXTRA_BUILD_STRICT )
   endif()
 endif()
 
-set( mcplextra_extra_private_compile_options "" )
-if ( "x${CMAKE_C_COMPILER_ID}" STREQUAL "xIntelLLVM" )
-  #Intel defaults to the equivalent of -ffast-math, revert back to proper math:
-  set( mcplextra_extra_private_compile_options -fp-model=precise )
-elseif( "${CMAKE_VERSION}" VERSION_LESS "3.20" AND "x${CMAKE_C_COMPILER_ID}" STREQUAL "xClang" )
-  #Older cmake had the llvm-based intel compiler classified as "Clang". In
-  #this case, we check whether or not the -fp-model=precise flag is supported
-  #or not:
-  include(CheckCCompilerFlag)
-  check_c_compiler_flag( -fp-model=precise compiler_supports_fpmodelprecise )
-  if ( compiler_supports_fpmodelprecise )
-    set( mcplextra_extra_private_compile_options -fp-model=precise )
-  endif()
-endif()
-
 #MCPL library and header files, including optional built-in modules if enabled:
 set(
   mcplsswlib_src_files
@@ -220,6 +205,8 @@ target_include_directories( phits2mcpl PRIVATE "${PROJECT_SOURCE_DIR}/src/phits/
 
 add_executable( mcpl2phits ${mcpl2phits_main} ${mcplphitslib_src_files} )
 target_include_directories( mcpl2phits PRIVATE "${PROJECT_SOURCE_DIR}/src/phits/common" )
+
+mctools_detect_extra_cflags( mcplextra_extra_private_compile_options )
 
 foreach( tgt ${all_targets} )
   target_link_libraries( ${tgt} MCPL::MCPL ${MCPL_MATH_LIBRARIES} )

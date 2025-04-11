@@ -51,17 +51,18 @@
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-
 #ifdef MCFILEUTILS_CPPNAMESPACE
 #  include <cstdlib>
 #  include <cstring>
 #  include <cassert>
 #  include <new>//for std::bad_alloc
+#  include <cstdint>
 namespace MCFILEUTILS_CPPNAMESPACE {
 #else
 #  include <stdlib.h>
 #  include <string.h>
 #  include <assert.h>
+#  include <stdint.h>
 #endif
 
 #define MCTOOLS_STATIC_ASSERT0(COND,MSG) { typedef char mctools_##MSG[(COND)?1:-1]; mctools_##MSG dummy; (void)dummy; }
@@ -135,7 +136,10 @@ namespace MCFILEUTILS_CPPNAMESPACE {
     //safe strlen which guarantees result can fit in an unsigned integer (or
     //less, when 0<nmax<UINT_MAX is provided).
     if ( nmax == 0 )
-      nmax = UINT_MAX;
+      nmax = ( UINT_MAX > PTRDIFF_MAX ? PTRDIFF_MAX : UINT_MAX );
+
+    if ( nmax > PTRDIFF_MAX )
+      mctools_impl_error("str length out of range");
 
     const char * nullchr = (const char *) STDNS memchr( c_str, '\0', nmax );
     mcu8str_size_t o_size;
@@ -434,12 +438,10 @@ namespace MCFILEUTILS_CPPNAMESPACE {
 #  include <cstdlib>
 #  include <cstring>
 #  include <cassert>
-#  include <cstdint>
 #else
 #  include <stdlib.h>
 #  include <string.h>
 #  include <assert.h>
-#  include <stdint.h>
 #endif
 
 #ifdef __cplusplus
