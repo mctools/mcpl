@@ -174,24 +174,10 @@ mcplfind_relinstpath( MCPL_relpath_CMAKEDIR2BINDIR "${MCPL_BINDIR}" "" )
 mcplfind_relinstpath( MCPL_relpath_CMAKEDIR2LIBDIR "${MCPL_LIBDIR}" "" )
 mcplfind_relinstpath( MCPL_relpath_CMAKEDIR2INCDIR "${MCPL_INCDIR}" "" )
 
-include(CheckCCompilerFlag)
-if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
-  set( MCPL_STRICT_COMP_FLAGS "/WX" "/W4" )
-else()
-  set( MCPL_STRICT_COMP_FLAGS -Wall -Wextra -pedantic -Werror )
-endif()
-
-if ( MCPL_BUILD_STRICT )
-  #Set globally warnings -> errors (although only has an effect in CMake 3.24 or
-  #later):
-  set( "CMAKE_COMPILE_WARNING_AS_ERROR" "ON" )
-  # turn list into space separated string for check_c_compiler_flag:
-  string( REPLACE ";" " " tmp "${MCPL_STRICT_COMP_FLAGS}" )
-  check_c_compiler_flag( "${tmp}" mcpl_compiler_supports_strict_comp_flags )
-endif()
-
 set( STRICT_CSTD OFF )
+
 if ( MCPL_BUILD_STRICT )
+
   #We also want to test the C-example with strict C standard (90, 99, 11). For
   #simplicity we simply pick a C standard value based on the provided c++
   #standard, in a way which allows us to cover the various C standards.
@@ -233,9 +219,7 @@ endif()
 function(set_target_common_props targetname)
   #Set private non-transitive properties. If strict builds are enabled, this can
   #enforce no warnings and compilation with a specific standards.
-  #if ( MCPL_BUILD_STRICT AND mcpl_compiler_supports_strict_comp_flags )
-  #  target_compile_options( ${targetname} PRIVATE ${MCPL_STRICT_COMP_FLAGS} )
-  #endif()
+  mctools_apply_strict_comp_properties( ${targetname} )
   if ( STRICT_CSTD )
     set_target_properties (
       ${targetname} PROPERTIES
@@ -245,16 +229,6 @@ function(set_target_common_props targetname)
   endif()
 endfunction()
 
-
-#function(set_target_common_props targetname)
-#  #Set private non-transitive properties. If strict builds are enabled, this can
-#  #enforce no warnings and compilation with a specific standards.
-#  #do not add to ncapi.h to avoid introducing issues in user code:
-#  if ( mcpl_extra_private_compile_options )
-#    target_compile_options( ${targetname} PRIVATE ${mcpl_extra_private_compile_options} )
-#  endif()
-#endfunction()
-
 #MCPL library and header files, including optional built-in modules if enabled:
 set( mcpl_src_files "src/mcpl.c" "src/mcpl_fileutils.c" "src/mcpl_fileutils.h" )
 set_source_files_properties(
@@ -263,11 +237,14 @@ set_source_files_properties(
 
 add_library( mcpl SHARED ${mcpl_src_files} )
 
-if ( MCPL_BUILD_STRICT AND mcpl_compiler_supports_strict_comp_flags )
-  set_property(
-    SOURCE ${mcpl_src_files}
-    APPEND PROPERTY COMPILE_OPTIONS "${MCPL_STRICT_COMP_FLAGS}"
-  )
+if ( MCPL_BUILD_STRICT )
+  mctools_determine_strict_comp_flags( tmp )
+  if ( tmp )
+    set_property(
+      SOURCE ${mcpl_src_files}
+      APPEND PROPERTY COMPILE_OPTIONS "${tmp}"
+    )
+  endif()
 endif()
 
 set_target_properties( mcpl PROPERTIES C_VISIBILITY_PRESET "hidden" )
