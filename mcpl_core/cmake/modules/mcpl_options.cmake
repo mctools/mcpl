@@ -21,7 +21,7 @@
 
 include_guard()
 
-include( mcpl_utils )
+include( mctools_utils )
 
 #Variables. Note that if changing the default value of a variable with a
 #corresponding deprecated variable below, the default value should be modified

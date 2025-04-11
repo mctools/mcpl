@@ -174,6 +174,8 @@ mcplfind_relinstpath( MCPL_relpath_CMAKEDIR2BINDIR "${MCPL_BINDIR}" "" )
 mcplfind_relinstpath( MCPL_relpath_CMAKEDIR2LIBDIR "${MCPL_LIBDIR}" "" )
 mcplfind_relinstpath( MCPL_relpath_CMAKEDIR2INCDIR "${MCPL_INCDIR}" "" )
 
+include( mctools_utils )
+
 set( STRICT_CSTD OFF )
 
 if ( MCPL_BUILD_STRICT )
