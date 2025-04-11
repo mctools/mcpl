@@ -64,7 +64,7 @@ namespace MCFILEUTILS_CPPNAMESPACE {
 #  include <assert.h>
 #endif
 
-#define MCTOOLS_STATIC_ASSERT0(COND,MSG) { typedef char mcpl_##MSG[(COND)?1:-1]; mcpl_##MSG dummy; (void)dummy; }
+#define MCTOOLS_STATIC_ASSERT0(COND,MSG) { typedef char mctools_##MSG[(COND)?1:-1]; mctools_##MSG dummy; (void)dummy; }
 #define MCTOOLS_STATIC_ASSERT3(expr,x) MCTOOLS_STATIC_ASSERT0(expr,fail_at_line_##x)
 #define MCTOOLS_STATIC_ASSERT2(expr,x) MCTOOLS_STATIC_ASSERT3(expr,x)
 #define MCTOOLS_STATIC_ASSERT(expr)    MCTOOLS_STATIC_ASSERT2(expr,__LINE__)
@@ -130,11 +130,19 @@ namespace MCFILEUTILS_CPPNAMESPACE {
 #endif
 
 #define MCTOOLS_STROKFORUINT( x ) ( (x) < (UINT_MAX-1) )
-  mcu8str_size_t mctools_strlen( const char * c_str, size_t nmax )
+  mcu8str_size_t mctools_strlen( const char * c_str, mcu8str_size_t nmax )
   {
     //safe strlen which guarantees result can fit in an unsigned integer (or
-    //lower, if nmax!=0 is provided).
-    const mcu8str_size_t o_size = STDNS strnlen( c_str, (nmax?nmax:UINT_MAX) );
+    //less, when 0<nmax<UINT_MAX is provided).
+    if ( nmax == 0 )
+      nmax = UINT_MAX;
+
+    const char * nullchr = (const char *) STDNS memchr( c_str, '\0', nmax );
+    mcu8str_size_t o_size;
+    if ( nullchr )
+      o_size = nullchr - c_str;
+    else
+      o_size = nmax;
     if ( !MCTOOLS_STROKFORUINT(o_size) )
       mctools_impl_error("str length out of range");
     return o_size;
