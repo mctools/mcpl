@@ -479,7 +479,6 @@ jobs:
           import pathlib
           versionstr = '${{ needs.preparations.outputs.mcplversion }}'
           def expected_keys(name):
-              #Common wheels for mcpl-core and mcpl-extra:
               keys = [
                   "macosx_10_9_x86_64",
                   "macosx_11_0_arm64",
@@ -489,20 +488,10 @@ jobs:
                   "musllinux_1_2_aarch64",
                   "manylinux_2_17_aarch64.manylinux2014_aarch64.manylinux_2_28_aarch64",
                   "manylinux_2_17_aarch64.manylinux2014_aarch64",
+                  "manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64",
+                  "manylinux_2_17_x86_64.manylinux2014_x86_64",
+
               ]
-              #For some reason the non-aarch manylinux wheels differs (apparently
-              #mcpl-extra wheels use fewer symbols and thus support older standards?):
-              if name == 'core':
-                  keys += [
-                       "manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64",
-                       "manylinux_2_17_x86_64.manylinux2014_x86_64",
-                     ]
-              else:
-                  assert name == 'extra'
-                  keys += [
-                      "manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_28_x86_64",
-                      "manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64",
-                  ]
               return keys
           def testpkg(name):
               print(f"==> Investigating mcpl-{name}")
