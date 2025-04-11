@@ -57,9 +57,9 @@ def main( parser ):
     )
     parser.add_argument(
         '-s','--strict', type = str,
-        choices = ('OFF','ON','11','14','17','20','23'),
-        default = '11',
-        help="""BUILD_STRICT mode (default: '11')."""
+        choices = ('NOTOUCH','OFF','ON','99','11','14','17','23'),
+        default = '99',
+        help="""BUILD_STRICT mode (default: '99')."""
     )
     parser.add_argument(
         '-j',type=int,default=0,
@@ -72,13 +72,30 @@ def main( parser ):
                 removed before being passed on to CMake, which allows usage like
                 '-c @-DSOMEVAR=OFF' (otherwise one can do -c=-DSOMEVAR=OFF)."""
     )
+    parser.add_argument(
+        '-t', '--ctest-args', nargs='+', action='append', default=[],
+        help="""List of strings which will be added as cmdline arguments for
+                ctest when invoking the CTests stage. The argument will be split
+                upon any '@' characters before being passed on to ctest, which
+                allows usage like '-t@-R@app_rl_mytest'."""
+    )
 
     args = parser.parse_args()
     _ = []
     for e in args.cmake_args:
         for s in e:
             _.append(s[1:] if s.startswith('@') else s)
+    if args.strict != 'NOTOUCH' :
+        _.append( f'-DMCPL_BUILD_STRICT={args.strict}' )
     args.cmake_args = _
+
+    _ = []
+    for e in args.ctest_args:
+        for s in e:
+            for ss in s.split('@'):
+                if ss.strip():
+                    _.append(ss.strip())
+    args.ctest_args = _
 
     from .util import get_nprocs
     nprocs = args.j or get_nprocs()
@@ -104,7 +121,7 @@ def main( parser ):
         c.do_cfg()
         c.do_build()
         if mode == 'ctest':
-            c.do_ctest()
+            c.do_ctest( extra_args = args.ctest_args )
         elif mode == 'install':
             c.do_install()
             c.do_test_install()
