@@ -116,8 +116,11 @@ int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
 
   mcpl_particle_t* mcpl_particle = mcpl_get_empty_particle(mcplfh);
 
-  const phits_particle_t * p;
-  while ((p=phits_load_particle(f))) {
+  while ( 1 ) {
+    const phits_particle_t * p = phits_load_particle(f);
+    if (!p)
+      break;
+
     if (!p->pdgcode) {
       printf("Warning: ignored particle with no PDG code set (raw phits kt"
              " code was %li).\n",p->rawtype);
@@ -147,8 +150,7 @@ int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
     printf("Error: Memory allocation error\n");
     return 0;
   }
-  actual_filename[0]='\0';
-  strcat(actual_filename,tmp);
+  memcpy(actual_filename,tmp,laf+1);
 
   int did_gzip = 0;
   if (opt_gzip)
@@ -276,7 +278,9 @@ void phits_writerecord( mcpl_generic_wfilehandle_t* fh,
                         int reclen, size_t lbuf, char* buf )
 {
   if (reclen==4) {
-    uint32_t rl = lbuf;
+    if ( lbuf > UINT32_MAX )
+      phits_error("output record size too large for 32bit records");
+    uint32_t rl = (uint32_t)lbuf;
     mcpl_generic_fwrite( fh, (char*)&rl, sizeof(rl) );
     mcpl_generic_fwrite( fh, buf, lbuf );
     mcpl_generic_fwrite( fh, (char*)&rl, sizeof(rl) );
@@ -290,7 +294,7 @@ void phits_writerecord( mcpl_generic_wfilehandle_t* fh,
 }
 
 int mcpl2phits( const char * inmcplfile, const char * outphitsdumpfile,
-                int use_polarisation, long nparticles_limit, int reclen )
+                int use_polarisation, uint64_t nparticles_limit, int reclen )
 {
   if ( reclen != 4 && reclen != 8 )
     phits_error("Reclen parameter should be 4 (32bit Fortran record markers,"
@@ -310,16 +314,17 @@ int mcpl2phits( const char * inmcplfile, const char * outphitsdumpfile,
   if (!fout.internal)
     phits_error("Problems opening new PHITS file");
 
-  const mcpl_particle_t* mcpl_p;
-
-  long long used = 0;
-  long long skipped_nophitstype = 0;
+  uint64_t used = 0;
+  uint64_t skipped_nophitstype = 0;
 
   printf("Initiating particle conversion loop.\n");
 
   double dumpdata[13] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};//explicit since gcc 4.1-4.6 might warn on ={0}; syntax
 
-  while ( ( mcpl_p = mcpl_read(fmcpl) ) ) {
+  while ( 1 ) {
+    const mcpl_particle_t* mcpl_p = mcpl_read(fmcpl);
+    if ( !mcpl_p )
+      break;
     int32_t rawtype =  conv_code_pdg2phits( mcpl_p->pdgcode );
     if (!rawtype) {
       ++skipped_nophitstype;
@@ -355,10 +360,12 @@ int mcpl2phits( const char * inmcplfile, const char * outphitsdumpfile,
     phits_writerecord(&fout,reclen,sizeof(double)*(use_polarisation?13:10),(char*)&dumpdata[0]);
 
     if (++used==nparticles_limit) {
-      long long remaining = mcpl_hdr_nparticles(fmcpl) - skipped_nophitstype - used;
+      uint64_t remaining = mcpl_hdr_nparticles(fmcpl) - skipped_nophitstype - used;
       if (remaining)
-        printf("Output limit of %li particles reached. Ignoring remaining %lli particles in the MCPL file.\n",
-               nparticles_limit,remaining);
+        printf("Output limit of %llu particles reached. Ignoring"
+               " remaining %llu particles in the MCPL file.\n",
+               (unsigned long long)nparticles_limit,
+               (unsigned long long)remaining );
       break;
     }
 
@@ -418,12 +425,12 @@ int mcpl2phits_app_usage( const char** argv, const char * errmsg ) {
 }
 
 int mcpl2phits_parse_args( int argc,const char **argv, const char** inmcplfile,
-                           const char **outphitsfile, long* nparticles_limit,
+                           const char **outphitsfile, uint64_t* nparticles_limit,
                            int* use64bitreclen, int* nopolarisation ) {
   //returns: 0 all ok, 1: error, -1: all ok but do nothing (-h/--help mode)
   *inmcplfile = 0;
   *outphitsfile = 0;
-  *nparticles_limit = INT32_MAX;
+  *nparticles_limit = UINT64_MAX;
   *use64bitreclen = 0;
   *nopolarisation = 0;
 
@@ -493,7 +500,7 @@ int mcpl2phits_app( int argc, char** argv ) {
 
   const char * inmcplfile;
   const char * outphitsfile;
-  long nparticles_limit;
+  uint64_t nparticles_limit;
   int use64bitreclen, nopolarisation;
 
   int parse = mcpl2phits_parse_args( argc, (const char**)argv, &inmcplfile,

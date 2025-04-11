@@ -22,6 +22,8 @@
 #ifndef phitsmcpl_h
 #define phitsmcpl_h
 
+#include <stdint.h>
+
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 // Functions for converting binary PHITS dump files to and from MCPL files.   //
@@ -87,7 +89,7 @@ int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
 // almost always to use reclen=4.
 
 int mcpl2phits( const char * mcplfile, const char * phitsdumpfile,
-                int usepol, long limit, int reclen );
+                int usepol, uint64_t limit, int reclen );
 
 //////////////////////////////////////////////////////////////////////////////////////
 // For easily creating standard phits2mcpl and mcpl2phits cmdline applications:

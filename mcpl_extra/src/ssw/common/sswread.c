@@ -44,6 +44,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdint.h>
+#include <limits.h>
 
 
 //Should be large enough to hold first record in all supported files:
@@ -103,8 +104,8 @@ typedef struct {
   int mcnp_type;
   mcpl_generic_filehandle_t filehandle;
   ssw_particle_t part;
-  unsigned lbuf;
-  unsigned lbufmax;
+  uint64_t lbuf;
+  uint64_t lbufmax;
   char * buf;
   size_t np1pos;
   size_t nrsspos;
@@ -113,9 +114,9 @@ typedef struct {
 
 #define SSW_FILEDECODE ssw_fileinternal_t * f = (ssw_fileinternal_t *)ff.internal; assert(f)
 
-void ssw_readbytes(ssw_fileinternal_t* f, char * dest, int nbytes)
+void ssw_readbytes(ssw_fileinternal_t* f, char * dest, uint64_t nbytes)
 {
-  mcpl_generic_fread( &f->filehandle, dest, (uint64_t)nbytes );
+  mcpl_generic_fread( &f->filehandle, dest, nbytes );
 }
 
 int ssw_try_readbytes(ssw_fileinternal_t* f, char * dest, int nbytes)
@@ -140,7 +141,10 @@ int ssw_loadrecord(ssw_fileinternal_t* f)
   }
 
   if (f->lbuf > f->lbufmax) {
-    //Very large record, must grow buffer:
+    //Very large record, must grow buffer. But first check it fits in 32 integer
+    //limit (so we can cast below):
+    if (f->lbuf > INT_MAX / 2 )
+      ssw_error("too large record encountered");
     free(f->buf);
     f->lbufmax = f->lbuf;
     f->buf = malloc(f->lbufmax);
@@ -193,29 +197,31 @@ void ssw_close_file(ssw_file_t ff) {
 
 void ssw_strip(char **str) {
   size_t l = strlen(*str);
-  int i = 0;
+  size_t i = 0;
   while ((*str)[i]==' ')
     ++i;
   if (i)
     memmove(*str,*str+i,l+1-i);
-  i = l-i-1;
-  while (i>=0&&(*str)[i]==' ') {
+  if ( l <= i )
+    return;
+  i = (size_t)((l-i)-1);
+  while ( (*str)[i]==' ' ) {
     (*str)[i]='\0';
+    if (!i)
+      break;
     --i;
   }
 }
 
-ssw_file_t ssw_openerror(ssw_fileinternal_t * f, const char* msg) {
+void ssw_openerror(ssw_fileinternal_t * f, const char* msg) {
   if (f) {
     if ( f->filehandle.internal )
       mcpl_generic_fclose( &f->filehandle );
+    f->filehandle.internal = NULL;
     free(f->buf);
     free(f);
   }
   ssw_error(msg);
-  ssw_file_t out;
-  out.internal = 0;
-  return out;
 }
 
 ssw_file_t ssw_open_and_procrec0( const char * filename )
@@ -269,7 +275,7 @@ ssw_file_t ssw_open_and_procrec0( const char * filename )
 
   ssw_readbytes(f,buf,36);
   uint32_t first32 = *((uint32_t*)buf);
-  uint32_t first64 = *((uint64_t*)buf);
+  uint64_t first64 = *((uint64_t*)buf);
 
   f->reclen = 0;
   f->mcnp_type = SSW_MCNP_NOTFOUND;
@@ -331,8 +337,8 @@ ssw_file_t ssw_open_and_procrec0( const char * filename )
   }
 
   if ( f->mcnp_type == SSW_MCNP_NOTFOUND )
-    return ssw_openerror(f,"ssw_open_file error: File does not"
-                         " look like a supported MCNP SSW file");
+    ssw_openerror(f,"ssw_open_file error: File does not"
+                  " look like a supported MCNP SSW file");
 
   assert(f->reclen && rec0begin && lenrec0 && lenrec0<99999 );
 
@@ -353,7 +359,7 @@ ssw_file_t ssw_open_and_procrec0( const char * filename )
   else
     lenrec0_b = *((uint64_t*)(buf+(rec0begin+lenrec0)));
   if (lenrec0!=lenrec0_b)
-    return ssw_openerror(f,"ssw_open_file error: Unexpected header contents\n");
+    ssw_openerror(f,"ssw_open_file error: Unexpected header contents\n");
 
   //decode first record, inspired by ssw.py:
   if (f->mcnp_type == SSW_MCNP6) {
@@ -433,7 +439,7 @@ ssw_file_t ssw_open_file( const char * filename )
 
   //Skip a record:
   if (!ssw_loadrecord(f))
-    return ssw_openerror(f,"ssw_open_file error: problems loading record (A)");
+    ssw_openerror(f,"ssw_open_file error: problems loading record (A)");
 
   //Position of current record payload in file:
   int64_t current_recpos = (int64_t)f->filehandle.current_pos;
@@ -461,14 +467,14 @@ ssw_file_t ssw_open_file( const char * filename )
   } else if ( (f->mcnp_type == SSW_MCNP5) && f->lbuf==32 ) {
     int64_t np1_64 = ((int64_t*)f->buf)[0];
     if (np1_64 > 2147483647 || np1_64 < -2147483647)
-      return ssw_openerror(f,"ssw_open_file error: MCNP5 files with more than 2147483647"
-                           " histories are not supported");
+      ssw_openerror(f,"ssw_open_file error: MCNP5 files with more than 2147483647"
+                    " histories are not supported");
     f->np1 = (int32_t)np1_64;
     f->np1pos = current_recpos + 0 * sizeof(int64_t);
     uint64_t nrss_64 = ((uint64_t*)f->buf)[1];
     if (nrss_64 > 2147483647 )
-      return ssw_openerror(f,"ssw_open_file error: MCNP5 files with more than 2147483647"
-                           " particles are not supported");
+      ssw_openerror(f,"ssw_open_file error: MCNP5 files with more than 2147483647"
+                    " particles are not supported");
     f->nrss = (int32_t)nrss_64;
     f->nrsspos = current_recpos + 1 * sizeof(int64_t);
     f->nrcd = bi[4];
@@ -485,7 +491,7 @@ ssw_file_t ssw_open_file( const char * filename )
     f->njsw = bi[6];
     f->niss = bi[8];
   } else {
-    return ssw_openerror(f,"ssw_open_file error: Unexpected record length");
+    ssw_openerror(f,"ssw_open_file error: Unexpected record length");
   }
 
   fprintf(ssw_stdout(),"ssw_open_file:    File layout detected : %s\n",ssw_mcnpflavour(out));
@@ -504,23 +510,23 @@ ssw_file_t ssw_open_file( const char * filename )
   //  fprintf(ssw_stdout(),"ssw_open_file: File length of SSB array          : %11i\n" , f->nrcd);
 
   if(f->nrcd==6)
-    return ssw_openerror(f,"ssw_open_file error: SSW files with spherical sources are not currently supported.");
+    ssw_openerror(f,"ssw_open_file error: SSW files with spherical sources are not currently supported.");
   if(f->nrcd<10)
-    return ssw_openerror(f,"ssw_open_file error: Too short SSB arrays in file");
+    ssw_openerror(f,"ssw_open_file error: Too short SSB arrays in file");
   if(f->nrcd>11)
-    return ssw_openerror(f,"ssw_open_file error: Unexpected length of SSB arrays in file");
+    ssw_openerror(f,"ssw_open_file error: Unexpected length of SSB arrays in file");
 
   if ( (f->mcnp_type == SSW_MCNP6) && f->nrcd==10 )
-    return ssw_openerror(f,"ssw_open_file error: Unexpected length of SSB arrays in MCNP6 file");
+    ssw_openerror(f,"ssw_open_file error: Unexpected length of SSB arrays in MCNP6 file");
 
   int32_t niwr = 0;
   if (f->np1==0)
-    return ssw_openerror(f,"ssw_open_file error: File has 0 particle histories which should not be possible");
+    ssw_openerror(f,"ssw_open_file error: File has 0 particle histories which should not be possible");
 
   if (f->np1<0) {//Sign is well-defined since f->np1!=0
     f->np1 = - f->np1;
     if (!ssw_loadrecord(f))
-      return ssw_openerror(f,"ssw_open_file error: problems loading record (B)");
+      ssw_openerror(f,"ssw_open_file error: problems loading record (B)");
     niwr = bi[0];
     //mipts = bi[1];//source particle type
     //kjaq  = bi[2];//macrobody facet flag
@@ -530,7 +536,7 @@ ssw_file_t ssw_open_file( const char * filename )
   int i;
   for (i = 0; i < f->njsw+niwr+1; ++i) {
     if (!ssw_loadrecord(f))
-      return ssw_openerror(f,"ssw_open_file error: problems loading record (C)");
+      ssw_openerror(f,"ssw_open_file error: problems loading record (C)");
   }
 
   //End of header? Mark the position:
@@ -550,7 +556,7 @@ ssw_file_t ssw_open_file( const char * filename )
       if (f->nrss==0)
         break;
       //But this is certainly an error for files with >0 particles:
-      return ssw_openerror(f,"ssw_open_file error: problems loading record (D)");
+      ssw_openerror(f,"ssw_open_file error: problems loading record (D)");
     }
     if ( f->nrss > 0 && f->lbuf == (unsigned)8*f->nrcd ) {
       //Looks like we preloaded the first particle of the file!
@@ -559,9 +565,11 @@ ssw_file_t ssw_open_file( const char * filename )
       //Looks like this could not be a particle, so we interpret this as if the
       //header was actually one record longer than previously thought:
       f->headlen += f->reclen * 2 + f->lbuf;
-      fprintf(ssw_stdout(),"ssw_open_file WARNING: Unexpected %i byte record encountered"
-              " at end of header. Continuing under the assumption it"
-              " contains valid configuration data.\n",f->lbuf);
+      fprintf( ssw_stdout(),
+               "ssw_open_file WARNING: Unexpected %llu byte record encountered"
+               " at end of header. Continuing under the assumption it"
+               " contains valid configuration data.\n",
+               (unsigned long long)f->lbuf );
     }
   }
 
@@ -608,14 +616,15 @@ int ssw_is_mcnp5(ssw_file_t ff) {
 
 const char * ssw_mcnpflavour(ssw_file_t ff) {
   SSW_FILEDECODE;
-  switch(f->mcnp_type) {
-  case SSW_MCNP5: return "MCNP5";
-  case SSW_MCNP6: return "MCNP6";
-  case SSW_MCNPX: return "MCNPX";
-  default:
-    ssw_error("ssw_mcnpflavour: logic error.\n");
+  if ( f->mcnp_type == SSW_MCNP6 ) {
+    return "MCNP6";
+  } else if ( f->mcnp_type == SSW_MCNP5 ) {
+    return "MCNP5";
+  } else {
+    if( f->mcnp_type != SSW_MCNPX )
+      ssw_error("ssw_mcnpflavour: logic error.\n");
+    return "MCNPX";
   }
-  return "MCNP_logic_error";
 }
 
 void ssw_layout(ssw_file_t ff, int* reclen, int* ssblen, int64_t* hdrlen, int64_t* np1pos, int64_t* nrsspos)
@@ -642,12 +651,12 @@ const ssw_particle_t * ssw_load_particle(ssw_file_t ff)
   //initialisation, for the others we must consume another record:
   if ( f->pos > 1 && !ssw_loadrecord(f) ) {
     ssw_error("ssw_load error: problems loading particle record (E)\n");
-    return 0;
+    //return 0;
   }
 
-  if (f->lbuf != (unsigned)8*f->nrcd) {
+  if ( f->lbuf != (unsigned)(8*f->nrcd) ) {
     ssw_error("ssw_load error: unexpected particle data length");
-    return 0;
+    //return 0;
   }
 
   double * ssb = (double*)f->buf;
@@ -662,29 +671,44 @@ const ssw_particle_t * ssw_load_particle(ssw_file_t ff)
   p->z = ssb[7];
   p->dirx = ssb[8];
   p->diry = ssb[9];
-  int64_t nx = ssb[1];
+  int64_t nx = (int64_t)ssb[1];//dbl->int
   if (nx<0) nx = - nx;//sign is used for sign of dirz (see below)
 
   if ( f->mcnp_type == SSW_MCNP6 ) {
     assert(f->nrcd==11);
     p->isurf = labs((int32_t)ssb[10]);
     nx /= 4;//ignore two lowest bits, maybe used to indicate cell-source-particle and energy-group mode (??)
-    p->rawtype = nx;
-    p->pdgcode = conv_mcnp6_ssw2pdg(nx);
+    int64_t rawtype0 = nx;
+    if ( rawtype0 < INT32_MIN || rawtype0 > INT32_MAX ) {
+      ssw_error("ssw_load_particle ERROR: MCPN6 particle type field out of range");
+    } else {
+      p->rawtype = (long)(rawtype0);
+    }
+    p->pdgcode = conv_mcnp6_ssw2pdg((int32_t)p->rawtype);
     if (!p->pdgcode)
       fprintf(ssw_stdout(),"ssw_load_particle WARNING: Could not convert raw MCNP6 SSW type (%li) to pdg code\n",(long)(p->rawtype));
   } else if ( f->mcnp_type == SSW_MCNPX ) {
     p->isurf = nx % 1000000;
-    p->rawtype = nx / 1000000;
-    p->pdgcode = conv_mcnpx_ssw2pdg(p->rawtype);
+    int64_t rawtype0 = nx / 1000000;
+    if ( rawtype0 < INT32_MIN || rawtype0 > INT32_MAX ) {
+      ssw_error("ssw_load_particle ERROR: MCPNX particle type field out of range");
+    } else {
+      p->rawtype = (long)(rawtype0);
+    }
+    p->pdgcode = conv_mcnpx_ssw2pdg((int32_t)p->rawtype);
     if (!p->pdgcode)
       fprintf(ssw_stdout(),"ssw_load_particle WARNING: Could not convert raw MCNPX SSW type (%li) to pdg code\n",(long)(p->rawtype));
   } else {
     assert( f->mcnp_type == SSW_MCNP5 );
     nx /= 8;//Guess: Get rid of some bits that might be used for something else
     p->isurf = nx % 1000000;
-    p->rawtype = nx / 1000000;
-    p->rawtype /= 100;//Guess: Get rid of some "bits" that might be used for something else
+    int64_t rawtype0 = nx / 1000000;
+    rawtype0 /= 100;//Guess: Get rid of some "bits" that might be used for something else
+    if ( rawtype0 < LONG_MIN || rawtype0 > LONG_MAX ) {
+      ssw_error("ssw_load_particle ERROR: MCPN5 particle type field out of range");
+    } else {
+      p->rawtype = (long)(rawtype0);
+    }
     p->pdgcode = (p->rawtype==1?2112:(p->rawtype==2?22:0));//only neutrons and gammas in MCNP5
     if (!p->pdgcode)
       fprintf(ssw_stdout(),"ssw_load_particle WARNING: Could not convert raw MCNP5 SSW type (%li) to pdg code\n",(long)(p->rawtype));
@@ -834,9 +858,23 @@ int32_t conv_mcnp6_pdg2ssw( int32_t c )
 #ifdef MCPLSSW_IS_TEST_LIB
 //Function needed for unit tests, outfile must be ascii characters only (for
 //now):
+
+#ifdef _MSC_VER
+#  pragma warning( push )
+#  pragma warning( disable : 4996 )
+#endif
+FILE* ssw_simple_fopenw( const char * fn )
+{
+  return fopen( fn, "w" );
+}
+#ifdef _MSC_VER
+#  pragma warning( pop )
+#endif
+
+
 void ssw_dump( const char * filename, const char * outfile )
 {
-  FILE* outfh = fopen( outfile, "w" ); // Open file for writing
+  FILE* outfh = ssw_simple_fopenw( outfile ); // Open file for writing
   ssw_set_stdout(outfh);
 
   ssw_file_t f = ssw_open_file(filename);

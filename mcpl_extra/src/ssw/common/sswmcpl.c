@@ -52,6 +52,26 @@ int ssw2mcpl(const char * sswfile, const char * mcplfile)
   return ssw2mcpl2(sswfile, mcplfile, 0, 0, 1, 0);
 }
 
+size_t ssw_strlen( const char * str, size_t maxsize )
+{
+  const char * nullchr = (const char *) memchr( str, '\0', maxsize );
+  if ( !nullchr || (size_t)(nullchr-str) >= maxsize )
+    ssw_error("ssw_strlen: could not calculate valid string length");
+  return (size_t)(nullchr-str);
+}
+
+void ssw_strcat( char * dest, const char * src, size_t destbuflen )
+{
+  size_t nd = ssw_strlen( dest, destbuflen );
+  size_t ns = ssw_strlen( src, destbuflen );
+  size_t n = nd + ns;
+  if (!ns)
+    return;
+  if ( n < nd || n < ns || n > destbuflen )
+    ssw_error("ssw_strcat: resulting string size out of range");
+  memcpy( dest + nd, src, ns+1 );
+}
+
 int ssw2mcpl2(const char * sswfile, const char * mcplfile,
               int opt_dp, int opt_surf, int opt_gzip,
               const char * inputdeckfile)
@@ -60,28 +80,28 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
   mcpl_outfile_t mcplfh = mcpl_create_outfile(mcplfile);
   mcpl_hdr_set_srcname(mcplfh,ssw_mcnpflavour(f));
 
-  uint64_t lstrbuf = 1024;
+  size_t lstrbuf = 1024;
   lstrbuf += strlen(ssw_srcname(f));
   lstrbuf += strlen(ssw_srcversion(f));
   lstrbuf += strlen(ssw_title(f));
   if (lstrbuf<4096) {
-    char * buf = (char*)malloc((int)lstrbuf);
+    char * buf = (char*)malloc(lstrbuf);
     if (!buf)
       ssw_error("memory allocation failure");
     buf[0] = '\0';
-    strcat(buf,"SSW file from ");
-    strcat(buf,ssw_mcnpflavour(f));
-    strcat(buf," converted with ssw2mcpl");
+    ssw_strcat(buf,"SSW file from ",lstrbuf);
+    ssw_strcat(buf,ssw_mcnpflavour(f),lstrbuf);
+    ssw_strcat(buf," converted with ssw2mcpl",lstrbuf);
     mcpl_hdr_add_comment(mcplfh,buf);
 
     buf[0] = '\0';
-    strcat(buf,"SSW metadata: [kods='");
-    strcat(buf,ssw_srcname(f));
-    strcat(buf,"', vers='");
-    strcat(buf,ssw_srcversion(f));
-    strcat(buf,"', title='");
-    strcat(buf,ssw_title(f));
-    strcat(buf,"']");
+    ssw_strcat(buf,"SSW metadata: [kods='",lstrbuf);
+    ssw_strcat(buf,ssw_srcname(f),lstrbuf);
+    ssw_strcat(buf,"', vers='",lstrbuf);
+    ssw_strcat(buf,ssw_srcversion(f),lstrbuf);
+    ssw_strcat(buf,"', title='",lstrbuf);
+    ssw_strcat(buf,ssw_title(f),lstrbuf);
+    ssw_strcat(buf,"']",lstrbuf);
     mcpl_hdr_add_comment(mcplfh,buf);
     free(buf);
   } else {
@@ -120,8 +140,10 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
   mcpl_particle_t mcpl_particle;
   memset(&mcpl_particle,0,sizeof(mcpl_particle));
 
-  const ssw_particle_t * p;
-  while ((p=ssw_load_particle(f))) {
+  while ( 1 ) {
+    const ssw_particle_t * p = ssw_load_particle(f);
+    if (!p)
+      break;
     mcpl_particle.pdgcode = p->pdgcode;
     if (!mcpl_particle.pdgcode) {
       printf("Warning: ignored particle with no PDG code set (raw ssw type was %li).\n",p->rawtype);
@@ -149,7 +171,7 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
   if (!actual_filename)
     ssw_error("memory allocation failure");
   actual_filename[0]='\0';
-  strcat(actual_filename,tmp);
+  ssw_strcat(actual_filename,tmp,laf+1);
 
   int did_gzip = 0;
   if (opt_gzip)
@@ -278,7 +300,9 @@ void ssw_writerecord( mcpl_generic_wfilehandle_t* fh,
                       int reclen, size_t lbuf, char* buf )
 {
   if (reclen==4) {
-    uint32_t rl = lbuf;
+    if ( lbuf > UINT32_MAX )
+      ssw_error("output record size too large for 32bit records");
+    uint32_t rl = (uint32_t)lbuf;
     mcpl_generic_fwrite( fh, (char*)&rl, sizeof(rl) );
     mcpl_generic_fwrite( fh, buf, lbuf );
     mcpl_generic_fwrite( fh, (char*)&rl, sizeof(rl) );
@@ -333,7 +357,9 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
   assert(ssw_mcnp_type>0);
   char ref_mcnpflavour_str[64];
   ref_mcnpflavour_str[0] = '\0';
-  strcat(ref_mcnpflavour_str,ssw_mcnpflavour(fsswref));
+  ssw_strcat( ref_mcnpflavour_str,
+              ssw_mcnpflavour(fsswref),
+              sizeof(ref_mcnpflavour_str) );
   ssw_close_file(fsswref);
 
   //Grab the header:
@@ -382,14 +408,16 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
 
   assert(surface_id>=0&&surface_id<1000000);
 
-  const mcpl_particle_t* mcpl_p;
 
   long used = 0;
   long long skipped_nosswtype = 0;
 
   printf("Initiating particle conversion loop.\n");
 
-  while ( ( mcpl_p = mcpl_read(fmcpl) ) ) {
+  while ( 1 ) {
+    const mcpl_particle_t* mcpl_p = mcpl_read(fmcpl);
+    if (!mcpl_p)
+      break;
     ++ssb[0];
     ssb[2] = mcpl_p->weight;
     ssb[3] = mcpl_p->ekin;//already in MeV
@@ -439,9 +467,9 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
     if (ssw_mcnp_type == SSW_MCNP6) {
       assert(ssw_ssblen==11);
       ssb[10] = isurf;//Should we set the sign of ssb[10] to mean something (we take abs(ssb[10]) in sswread.c)?
-      ssb[1] = rawtype*4;//Shift 2 bits (thus we only create files with those two bits zero!)
+      ssb[1] = (double)(((int64_t)rawtype)*4);//Shift 2 bits (thus we only create files with those two bits zero!)
     } else if (ssw_mcnp_type == SSW_MCNPX) {
-      ssb[1] = isurf + 1000000*rawtype;
+      ssb[1] = (double)(isurf + 1000000*((int64_t)rawtype));
       if (ssw_ssblen==11)
         ssb[10] = 1.0;//Cosine of angle at surface? Can't calculate it, so we simply set
                       //it to 1 (seems to be not used anyway?)
@@ -449,7 +477,7 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
       assert(ssw_mcnp_type == SSW_MCNP5);
       //NOTE: We had for MCPL <=1.6.x: ssb[1] = (isurf + 1000000*rawtype)*8; But
       //now we try instead:
-      ssb[1] = (isurf + 100000000*rawtype)*8;
+      ssb[1] = (double)((isurf + 100000000*((int64_t)rawtype))*8);
       if (ssw_ssblen==11)
         ssb[10] = 1.0;//Cosine of angle at surface? Can't calculate it, so we simply set
                       //it to 1 (seems to be not used anyway?)
@@ -609,13 +637,14 @@ int mcpl2ssw_parse_args(int argc,const char **argv, const char** inmcplfile,
     opt_num_limit = INT32_MAX;
   if (opt_num_limit>INT32_MAX)
     return mcpl2ssw_app_usage(argv,"Parameter out of range : SSW files can only hold up to 2147483647 particles.");
-  *nparticles_limit = opt_num_limit;
+  *nparticles_limit = (long)opt_num_limit;
 
   if (opt_num_isurf==0||opt_num_isurf>999999)
     return mcpl2ssw_app_usage(argv,"Parameter out of range : Surface ID must be in range [1,999999].");
   if (opt_num_isurf<0)
     opt_num_isurf = 0;
-  *surface_id = opt_num_isurf;
+
+  *surface_id = (long)opt_num_isurf;
 
   return 0;
 }

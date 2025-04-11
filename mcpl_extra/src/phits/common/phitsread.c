@@ -43,6 +43,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <limits.h>
 
 FILE** phits_impl_stdout_data(void)
 {
@@ -183,7 +184,10 @@ int phits_tryload_reclen(phits_fileinternal_t* f, int reclen ) {
     return 0;
   char * buf = & ( f->buf[0] );
   uint64_t l1 = ( reclen == 4 ? (uint64_t)(*((uint32_t*)buf)) : (uint64_t)(*((uint64_t*)buf)) );
-  if ( ! phits_ensure_load( f, l1 + 2*reclen ) )
+  uint64_t tmp = l1 + 2*reclen;
+  if ( tmp > INT_MAX )
+    phits_error("Unexpectedly large record encountered");
+  if ( ! phits_ensure_load( f, (int)tmp ) )
     return 0;
   buf += (reclen + l1);
   uint64_t l2 = ( reclen == 4 ? (uint64_t)(*((uint32_t*)buf)) : (uint64_t)(*((uint64_t*)buf)) );
@@ -191,20 +195,10 @@ int phits_tryload_reclen(phits_fileinternal_t* f, int reclen ) {
     return 0;
   //All ok!
   f->reclen = reclen;
-  f->particlesize = l1;
+  if ( l1 != 10*8 && l1 != 13*8 )
+    phits_error("Unexpected particle size!");
+  f->particlesize = (unsigned)l1;
   return 1;
-}
-
-phits_file_t phits_openerror(phits_fileinternal_t * f, const char* msg) {
-  if (f) {
-    if ( f->filehandle.internal )
-      mcpl_generic_fclose(&f->filehandle);
-    free(f);
-  }
-  phits_error(msg);
-  phits_file_t out;
-  out.internal = 0;
-  return out;
 }
 
 phits_file_t phits_open_internal( const char * filename )
@@ -309,19 +303,21 @@ const phits_particle_t * phits_load_particle(phits_file_t ff)
     unsigned old_particlesize = f->particlesize;
     if (!phits_tryload_reclen(f,f->reclen)) {
       phits_error("Problems loading particle data record!");
-      return 0;
+      //return 0;
     }
     assert(f->reclen==old_reclen);
     if ( f->particlesize != old_particlesize) {
-      phits_error("Problems loading particle data record - particle data length changed mid-file (perhaps it is not actually a binary PHITS dump file after all?)!");
-      return 0;
+      phits_error("Problems loading particle data record - particle"
+                  " data length changed mid-file (perhaps it is not"
+                  " actually a binary PHITS dump file after all?)!");
+      //return 0;
     }
   }
 
   assert( f->lbuf == f->particlesize + f->reclen * 2 );
   double * pdata = (double*)(f->buf+f->reclen);
   phits_particle_t * pp =  & (f->part);
-  pp->rawtype = pdata[0];
+  pp->rawtype = (long)pdata[0];
   //NB: PHITS units, not MCPL units here (only difference is time unit which is ns in PHITS and ms in MCPL):
   pp->x = pdata[1];//cm
   pp->y = pdata[2];//cm
@@ -374,20 +370,34 @@ void phits_close_file(phits_file_t ff)
 #ifdef MCPLPHITS_IS_TEST_LIB
 //Function needed for unit tests, outfile must be ascii characters only (for
 //now):
+#ifdef _MSC_VER
+#  pragma warning( push )
+#  pragma warning( disable : 4996 )
+#endif
+FILE* phits_simple_fopenw( const char * fn )
+{
+  return fopen( fn, "w" );
+}
+#ifdef _MSC_VER
+#  pragma warning( pop )
+#endif
+
 void phits_dump( const char * filename, const char * outfile )
 {
-  FILE* outfh = fopen( outfile, "w" ); // Open file for writing
+  FILE* outfh = phits_simple_fopenw( outfile ); // Open file for writing
   phits_set_stdout(outfh);
 
   phits_file_t f = phits_open_file(filename);
 
   fprintf(phits_stdout(),"opened binary PHITS dump file with contents:\n");
   int haspol = phits_has_polarisation(f);
-  const phits_particle_t * p;
   fprintf(phits_stdout(),"    pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]"
           "          ux          uy          uz%s"
           "    time[ns]      weight\n",(haspol?"        polx        poly        polz":""));
-  while ((p=phits_load_particle(f))) {
+  while (1) {
+    const phits_particle_t * p = phits_load_particle(f);
+    if (!p)
+      break;
     fprintf(phits_stdout(),"%10li %11.5g %11.5g %11.5g %11.5g"
             " %11.5g %11.5g %11.5g",
             p->pdgcode,p->ekin,p->x,p->y,p->z,
