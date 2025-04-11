@@ -74,36 +74,3 @@ def print_text_file_with_snipping(content,
               f" MD5={md5}>>>")
         for i in range(nend):
             print(f'{prefix}{lines[-nend+i]}')
-
-def fix_mcpl_version_printouts( filtermap = None ):
-    import NCrystalDev._common as nc_common
-    import mcpldev as mcpl
-    orig = nc_common.get_ncrystal_print_fct()
-    if filtermap is None:
-        filtermap = ( 'MCPL v%s'%mcpl.__version__,
-                      'MCPL v<current>' )
-        #filtermap = ( 'MCPL release v%s'%mcpl.__version__,
-        #              'MCPL release v<current>' )
-    def version_filter( s ):
-        return s.replace(*filtermap) if isinstance(s,str) else s
-    def newprint( *a, **kwargs ):
-        orig( *( version_filter(e) for e in a ), **kwargs)
-    nc_common.set_ncrystal_print_fct(newprint)
-
-
-#
-#def fix_mcpl_version_printouts( filtermap = None ):
-#    import NCrystalDev._common as nc_common
-#    import mcpldev as mcpl
-#    orig = nc_common.get_ncrystal_print_fct()
-#    if filtermap is None:
-#        filtermap = ( 'MCPL v%s'%mcpl.__version__,
-#                      'MCPL v<current>' )
-#        #filtermap = ( 'MCPL release v%s'%mcpl.__version__,
-#        #              'MCPL release v<current>' )
-#    def version_filter( s ):
-#        return s.replace(*filtermap) if isinstance(s,str) else s
-#    def newprint( *a, **kwargs ):
-#        orig( *( version_filter(e) for e in a ), **kwargs)
-#    nc_common.set_ncrystal_print_fct(newprint)
-#

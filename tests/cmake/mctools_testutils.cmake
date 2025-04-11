@@ -28,7 +28,8 @@
 #   mctools_testutils_add_test_modules (shared libs for python/ctypes access)
 #
 # This file (and the associated mctools_testlauncher.py file) is intended to be
-# eventually shared between at least NCrystal and MCPL projects.
+# eventually shared between at least NCrystal and MCPL projects. It also needs
+# the common mctools_utils.cmake module.
 
 include_guard()
 
@@ -107,8 +108,6 @@ function( mctools_testutils_add_tests_pyscripts scriptsdir envmod )
   endforeach()
 endfunction()
 
-#NB: a project with both mcpl and ncrystal subdirs would perhaps get a name
-#clash here? (of course in this particular case, that would be a feature)
 set_property(GLOBAL PROPERTY mctools_testutils_internal_pydepspresent "")
 set_property(GLOBAL PROPERTY mctools_testutils_internal_pydepsabsent "")
 

@@ -19,29 +19,16 @@
 /*                                                                            */
 /******************************************************************************/
 
-#ifndef NCrystal_CFileUtils_hh
-#define NCrystal_CFileUtils_hh
-
-//fixme: remove references to NCrystal and add general note about codesharing in
-//NOTICE?
+#ifndef mcpl_fileutils_hh
+#define mcpl_fileutils_hh
 
 // This file provides a C/C++ compatible backend for cross-platform filesystem
-// utilities. It is NOT meant to be included directly (other NCrystal code
-// should use the NCFileUtils.hh header instead!), but is made available here
-// for easier testing, etc.
+// utilities. It is meant as a private backend and NOT to be used directly in
+// user code. It is envisioned to be shared between NCrystal and MCPL projects.
 //
 // This file (and its corresponding implementation file) are deliberately
 // written as to be possible to use in both C and C++ projects (the latter
-// should set MCFILEUTILS_CPPNAMESPACE to an appropriate namespace (handled
-// automatically for NCrystal below). It is also used to implement the
-// ncrystal-config command (written in C for maximal robustness).
-
-#if !defined(MCFILEUTILS_CPPNAMESPACE) && defined(__cplusplus)
-#  if defined(NCrystal_EXPORTS) || defined(NCRYSTAL_PRETEND_EXPORTS)
-#    include "NCrystal/ncapi.h"
-#    define MCFILEUTILS_CPPNAMESPACE NCRYSTAL_NAMESPACE
-#  endif
-#endif
+// should set MCFILEUTILS_CPPNAMESPACE to an appropriate namespace.
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////

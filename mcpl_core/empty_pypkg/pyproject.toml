@@ -19,13 +19,12 @@
 ##                                                                            ##
 ################################################################################
 
-# A pyproject.toml for injecting an empty ncrystal-core package. In case
-# ncrystal-core is installed in a non-python aware fashion, installing this
-# empty ncrystal-core package can be used to ensure that subsequent pip
-# installations of packages needing ncrystal-core (like plugins for ncrystal)
-# will not cause pip to pull down ncrystal-core from pypi. Of course, this is
-# not bullet-proof, since "pip uninstall ncrystal-core" will only uninstall the
-# empty package, not all of ncrystal-core content.
+# A pyproject.toml for injecting an empty mcpl-core package. In case mcpl-core
+# is installed in a non-python aware fashion, installing this empty mcpl-core
+# package can be used to ensure that subsequent pip installations of packages
+# needing mcpl-core will not cause pip to pull down mcpl-core from pypi. Of
+# course, this is not bullet-proof, since "pip uninstall mcpl-core" will only
+# uninstall the empty package, not all of mcpl-core content.
 
 [build-system]
 requires = ["setuptools>=64.0"]

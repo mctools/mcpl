@@ -58,7 +58,7 @@ mcu8str mcplcfg_thiscmdname( nccfgstate* state )
   mcu8str bn = mctools_basename(&self_path);
   mcu8str_dealloc(&self_path);
   if ( bn.size == 0 )
-    mcu8str_append_cstr(&bn,"ncrystal-config");
+    mcu8str_append_cstr(&bn,"mcpl-config");
   return bn;
 }
 
@@ -347,7 +347,7 @@ int mcplcfg_mode_show( nccfgstate* state,
 
 void mcplcfg_show_summary( nccfgstate* state )
 {
-  printf("NCrystal v%s with configuration:\n",mcplcfg_const_version());
+  printf("MCPL v%s with configuration:\n",mcplcfg_const_version());
   printf("\n");
   mcplcfg_strlist items = mcplcfg_show_item_list();
   for ( int i = 0; i < items.size; ++i ) {
@@ -369,8 +369,8 @@ void mcplcfg_show_help( nccfgstate* state )
   printf("options:\n");
   printf("  -h, --help            Show this help message and exit\n");
   printf("\n");
-  printf("  -v, --version         Show the NCrystal version number and exit\n");
-  printf("  -i, --intversion      Show ncrystal version encoded into single integral\n");
+  printf("  -v, --version         Show the MCPL version number and exit\n");
+  printf("  -i, --intversion      Show MCPL version encoded into single integral\n");
   printf("                        number (e.g. v3.9.7 is 3009007) and exit.\n");
   printf("\n");
   printf("  -s, --summary         Print summary information about installation and exit.\n");
@@ -378,7 +378,7 @@ void mcplcfg_show_help( nccfgstate* state )
   printf("                        available via the --show flag.\n");
   printf("\n");
   printf("  --show ITEM           Print value of the requested information ITEM for the\n");
-  printf("                        current NCrystal installation and exit. Run with\n");
+  printf("                        current MCPL installation and exit. Run with\n");
   printf("                        \"--show list\" to get a list of available ITEM values.\n");
   mcu8str_dealloc(&cmdname);
 }
@@ -438,7 +438,7 @@ int main ( int argc, char** argv )
 
   if ( mcplcfg_boolopt_expects_shlibdir_override() ) {
     //Expects hidden trailing arguments '+' 'shlibdir' (to support having
-    //NCrystal.dll in %PATH% on windows)
+    //MCPL.dll in %PATH% on windows)
     if ( argc >= 3 && argv[argc-2][0] == '+' && argv[argc-2][1] == '\0'  ) {
       state.shlibdir_override = mcu8str_create_from_cstr( argv[argc-1] );
       state.argc -= 2;
