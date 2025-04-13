@@ -60,4 +60,35 @@ jobs:
     - name: Check client C/CXX standards (ctest)
       run: ctest --test-dir bldstd --build-config Debug
 
-      #FIXME: Exercise mcpl-config --show buildflags here.
+    #Enable cl.exe usage:
+    - name: Setup VS in shell
+      if: runner.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Test downstream compilation and build flags
+      if: runner.os == 'Windows'
+      shell: cmd
+      run: |
+
+        echo "Set BUILDFLAGS variable via mcpl-config --show buildflags"
+        if %errorlevel% neq 0 exit /b %errorlevel%
+        mcpl-config --show buildflags > buildflags.txt
+        if %errorlevel% neq 0 exit /b %errorlevel%
+        set /p BUILDFLAGS=<buildflags.txt
+        if %errorlevel% neq 0 exit /b %errorlevel%
+        echo "Got:" %BUILDFLAGS%
+        if %errorlevel% neq 0 exit /b %errorlevel%
+
+        echo "Copying C example"
+        if %errorlevel% neq 0 exit /b %errorlevel%
+        copy .\src\examples\example_writemcpl.c my_c_code.c
+        if %errorlevel% neq 0 exit /b %errorlevel%
+
+        echo "Compiling C code"
+        cl my_c_code.c %BUILDFLAGS%
+        if %errorlevel% neq 0 exit /b %errorlevel%
+        echo "Custom compilation of downstream C code succeeded"
+
+        echo "Running C app"
+        my_c_code.exe "bla.mcpl"
+        if %errorlevel% neq 0 exit /b %errorlevel%
