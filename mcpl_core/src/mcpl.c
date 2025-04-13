@@ -1236,8 +1236,8 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   f->first_particle_pos = current_pos;
 
   if ( f->nparticles==0 || caller_is_mcpl_repair ) {
-    //FIXME: Perhaps the placeholder nparticles should be UINT64_MAX so we know
-    //that nparticles=0 is a properly closed file.
+    //TODO: Perhaps the placeholder nparticles should be UINT64_MAX instead of
+    //0, so we know that nparticles=0 is a properly closed file.
 
     //Although empty files are permitted, it is possible that the file was never
     //closed properly (maybe the writing program ended prematurely). Let us
