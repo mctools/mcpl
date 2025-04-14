@@ -21,11 +21,11 @@
 
 from .dirs import reporoot
 
-toml_files =  dict( #monolith = 'pyproject.toml',
-                    core = 'mcpl_core/pyproject.toml',
+toml_files =  dict( core = 'mcpl_core/pyproject.toml',
                     coreempty = 'mcpl_core/empty_pypkg/pyproject.toml',
                     py = 'mcpl_python/pyproject.toml',
                     meta = 'mcpl_metapkg/pyproject.toml',
+                    extra = 'mcpl_extra/pyproject.toml',
                    )
 
 _data_cache = {}
@@ -83,12 +83,14 @@ def check_metadata():
     data_coreempty = load_data( 'coreempty' )
     data_py = load_data( 'py' )
     data_meta = load_data( 'meta' )
+    data_extra = load_data( 'extra' )
 
     #Check that there are no unexpected sections:
     toplvlkeys_notool = set(['build-system','project','__srcloc__'])
     toplvlkeys = toplvlkeys_notool.union( set(['tool']) )
     #assert toplvlkeys == set( data_monolith.keys() )
     assert toplvlkeys == set( data_core.keys() )
+    assert toplvlkeys == set( data_extra.keys() )
     assert toplvlkeys_notool == set( data_coreempty.keys() )
     assert toplvlkeys == set( data_py.keys() )
     assert toplvlkeys_notool == set( data_meta.keys() )
@@ -96,6 +98,7 @@ def check_metadata():
     #Check 'project' section
     version = data_core['project']['version']
     assert data_coreempty['project']['version']==version
+    assert data_extra['project']['version']==version
     #assert data_monolith['project']['version']==version
     assert data_meta['project']['version']==version
     #projkeys_monolith = set( data_monolith['project'].keys() )
@@ -103,19 +106,25 @@ def check_metadata():
     projkeys_coreempty = set( data_coreempty['project'].keys() )
     projkeys_py = set( data_py['project'].keys() )
     projkeys_meta = set( data_meta['project'].keys() )
+    projkeys_extra = set( data_extra['project'].keys() )
     #assert 'dependencies' in projkeys_monolith
     assert 'dependencies' not in projkeys_core
     assert 'dependencies' not in projkeys_coreempty
     assert 'dependencies' in projkeys_py
     assert 'dependencies' in projkeys_meta
+    assert 'dependencies' in projkeys_extra
 
     assert ( set(data_meta['project']['dependencies'])
              == set([f'mcpl-core=={version}',
                      f'mcpl-python=={version}']) )
+    assert ( set(data_extra['project']['dependencies'])
+             == set([f'mcpl-core=={version}']) )
     #assert ( projkeys_monolith - projkeys_core ) == set(['dependencies'])
     #assert ( projkeys_core - projkeys_monolith ) == set([])
     assert ( projkeys_core - projkeys_meta ) == set(['scripts'])
     assert ( projkeys_meta - projkeys_core ) == set(['dependencies'])
+    assert ( projkeys_extra - projkeys_meta ) == set(['scripts'])
+    assert ( projkeys_meta - projkeys_extra ) == set([])
     #assert ( projkeys_py - projkeys_monolith ) == set(['dynamic'])
     #assert ( projkeys_monolith - projkeys_py ) == set(['version'])
     assert ( projkeys_core - projkeys_meta ) == set(['scripts'])
@@ -124,6 +133,10 @@ def check_metadata():
 
     cmp_common_entries( 'project', data_coreempty, data_core )
     cmp_common_entries( 'build-system', data_coreempty, data_py )
+
+    cmp_common_entries( 'build-system', data_core, data_extra,
+                        allow_diff=['requires'])
+
     assert ( data_coreempty['build-system'] == data_py['build-system'] )
 
     cmp_common_entries( 'project', data_coreempty, data_core,
@@ -131,6 +144,8 @@ def check_metadata():
 
     cmp_common_entries( 'project', data_meta, data_core,
                         allow_diff = ['name'] )
+    cmp_common_entries( 'project', data_extra, data_core,
+                        allow_diff = ['name','description','scripts'] )
     #cmp_common_entries( 'project', data_monolith, data_core,
     #                    allow_diff = ['name','scripts','description'] )
     #cmp_common_entries( 'project', data_monolith, data_py,
@@ -160,6 +175,7 @@ def check_all_project_scripts():
     data_core = load_data( 'core' )
     data_py = load_data( 'py' )
     data_meta = load_data( 'meta' )
+    data_extra = load_data( 'extra' )
 
     #extra_mono = [
     #    ('mcpl-config',
@@ -172,6 +188,13 @@ def check_all_project_scripts():
     extra_py = [
         ('pymcpltool','mcpl.mcpl:main'),
     ]
+    extra_extra = [
+        ('mcpl2ssw','_mcpl_extra.cli:cli_wrapper_mcpl2ssw'),
+        ('ssw2mcpl','_mcpl_extra.cli:cli_wrapper_ssw2mcpl'),
+        ('mcpl2phits','_mcpl_extra.cli:cli_wrapper_mcpl2phits'),
+        ('phits2mcpl','_mcpl_extra.cli:cli_wrapper_phits2mcpl'),
+    ]
+
     ok = True
     if not _check_project_scripts_impl( data_py,
                                         extra=extra_py ):
@@ -185,6 +208,9 @@ def check_all_project_scripts():
         ok = False
     if not _check_project_scripts_impl( data_meta,
                                         extra = [] ):
+        ok = False
+    if not _check_project_scripts_impl( data_extra,
+                                        extra = extra_extra ):
         ok = False
     if not ok:
         raise SystemExit('Failures detected in project.scripts')
@@ -217,12 +243,36 @@ def check_all_toml_parsing():
     for f in all_files_iter('toml'):
         print("  Trying to simply load %s"%f.relative_to(reporoot))
         parse_toml(f)
-    print('all ok')
+    print('  -> all parsed ok')
+
+def check_buildsys():
+    version = reporoot.joinpath('VERSION').read_text().strip()
+    for k in sorted(toml_files.keys()):
+        d = load_data(k)
+        fname = describe(d)
+        b = d['build-system']
+        backend = b['build-backend']
+        if backend == 'scikit_build_core.build':
+            if not d.get('tool',{}).get('scikit-build'):
+                raise SystemExit(f'Missing tool.scikit-build section: {fname}')
+            requires = set(["scikit-build-core>=0.11.0"])
+            if k == 'extra':
+                requires.add(f'mcpl-core=={version}')
+        elif backend == 'setuptools.build_meta':
+            requires = set(["setuptools>=75.3.2"])
+        else:
+            raise SystemExit(f'Unexpected backend in {fname}')
+        r = set(b.get('requires',[]))
+        if r != requires:
+            raise SystemExit(f'Bad build-system.requires in {fname}: '
+                             f'Expected {requires}, got {r}')
+
 
 def main():
     check_all_toml_parsing()
     check_all_project_scripts()
     check_metadata()
+    check_buildsys()
     print("All OK!")
 
 if __name__=='__main__':
