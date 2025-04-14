@@ -22,6 +22,7 @@
 [project]
 name = "mcpl-extra"
 version = "1.9.81"
+dependencies = [ 'mcpl-core==1.9.81' ]
 requires-python = ">=3.8"
 readme = "README.md"
 license = {text = "Apache-2.0"}
