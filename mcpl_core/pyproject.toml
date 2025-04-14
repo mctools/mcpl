@@ -24,7 +24,7 @@ name = "mcpl-core"
 version = "1.9.80"
 requires-python = ">=3.8"
 readme = "README.md"
-license = {file = "LICENSE"}
+license = {text = "Apache-2.0"}
 authors = [
   { name="MCPL developers (Thomas Kittelmann, et. al.)" },
 ]

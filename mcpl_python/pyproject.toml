@@ -32,7 +32,7 @@ dynamic = [ 'version' ]
 requires-python = ">=3.8"
 dependencies = [ 'numpy>=1.22' ]
 readme = "README.md"
-license = {file = "LICENSE"}
+license = {text = "Apache-2.0"}
 authors = [
   { name="MCPL developers (Thomas Kittelmann, et. al.)" },
 ]
