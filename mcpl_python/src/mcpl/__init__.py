@@ -57,7 +57,7 @@ __all__ = [ 'MCPLFile',
             'dump_stats',
             'plot_stats']
 
-__version__ = '1.9.80'
+__version__ = '1.9.81'
 
 from .mcpl import ( MCPLFile,
                     MCPLParticle,

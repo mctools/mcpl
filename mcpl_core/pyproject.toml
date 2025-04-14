@@ -21,7 +21,7 @@
 
 [project]
 name = "mcpl-core"
-version = "1.9.80"
+version = "1.9.81"
 requires-python = ">=3.8"
 readme = "README.md"
 license = {text = "Apache-2.0"}

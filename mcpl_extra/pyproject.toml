@@ -21,7 +21,7 @@
 
 [project]
 name = "mcpl-extra"
-version = "1.9.80"
+version = "1.9.81"
 requires-python = ">=3.8"
 readme = "README.md"
 license = {text = "Apache-2.0"}
@@ -45,7 +45,7 @@ phits2mcpl = "_mcpl_extra.cli:cli_wrapper_phits2mcpl"
 mcpl2phits = "_mcpl_extra.cli:cli_wrapper_mcpl2phits"
 
 [build-system]
-requires = ["scikit-build-core>=0.10","mcpl-core>=1.9.80"]
+requires = ["scikit-build-core>=0.10","mcpl-core>=1.9.81"]
 build-backend = "scikit_build_core.build"
 
 [tool.scikit-build]
