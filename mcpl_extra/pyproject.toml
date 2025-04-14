@@ -46,7 +46,7 @@ phits2mcpl = "_mcpl_extra.cli:cli_wrapper_phits2mcpl"
 mcpl2phits = "_mcpl_extra.cli:cli_wrapper_mcpl2phits"
 
 [build-system]
-requires = ["scikit-build-core>=0.10","mcpl-core>=1.9.81"]
+requires = ["scikit-build-core>=0.11.1","mcpl-core==1.9.81"]
 build-backend = "scikit_build_core.build"
 
 [tool.scikit-build]

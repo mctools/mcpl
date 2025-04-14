@@ -27,7 +27,7 @@
 # uninstall the empty package, not all of mcpl-core content.
 
 [build-system]
-requires = ["setuptools>=64.0"]
+requires = ["setuptools>=75.3.2"]
 build-backend = "setuptools.build_meta"
 
 [project]

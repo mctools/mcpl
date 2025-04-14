@@ -43,7 +43,7 @@ mcpl-config = "_mcpl_core.info:_mcpl_config_cli_wrapper"
 mcpltool = "_mcpl_core.info:_mcpl_tool_cli_wrapper"
 
 [build-system]
-requires = ["scikit-build-core>=0.10"]
+requires = ["scikit-build-core>=0.11.1"]
 build-backend = "scikit_build_core.build"
 
 [tool.scikit-build]
