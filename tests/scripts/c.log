@@ -82,7 +82,7 @@ Other options:
   -v, --version   : Display version of MCPL installation.
   -h, --help      : Display this usage information (ignores all other options).
 ===> mcpltool ended with exit code 0
-MCPL version 1.9.80
+MCPL version 99.99.99
 ===> mcpltool ended with exit code 0
 ERROR: Unrecognised option : -y
 

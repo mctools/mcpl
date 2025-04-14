@@ -1201,7 +1201,7 @@ def app_pymcpltool(argv=None):
     if opt_version:
         if filelist:
             bad("Unrecognised arguments for --version.")
-        print("MCPL version %s"%__version__)
+        print("MCPL version %s"%_determine_version())
         sys.exit(0)
 
     if opt_text:
@@ -1736,11 +1736,19 @@ def plot_stats(stats,pdf=False,set_backend=None):
     if pdf:
         if hasattr(pdf,'infodict'):
             d = pdf.infodict()
-            d['Title'] = 'Plots made with mcpl.py version %s'%__version__
-            d['Author'] = 'mcpl.py v%s'%__version__
+            d['Title'] = ( 'Plots made with mcpl.py version %s'
+                           % _determine_version() )
+            d['Author'] = 'mcpl.py v%s' % _determine_version()
             d['Subject'] = 'mcpl plots'
             d['Keywords'] = 'mcpl'
         pdf.close()
+
+def _determine_version():
+    if os.environ.get('PYMCPLTOOL_FAKE_PYVERSION','').strip():
+        return '99.99.99'
+    else:
+        return __version__
+
 
 def main():
     """This function simply calls app_pymcpltool(), but any raised MCPLError

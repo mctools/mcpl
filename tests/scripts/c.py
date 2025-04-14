@@ -43,6 +43,8 @@ import contextlib
 from MCPLTestUtils.dirs import test_data_dir
 from MCPLTestUtils.common import flush
 
+os.environ['PYMCPLTOOL_FAKE_PYVERSION']='1'
+
 _fmt = '%.8g'
 def _fmtitems(items):
     return '  '.join(_fmt%f for f in items)

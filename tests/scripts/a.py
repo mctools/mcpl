@@ -24,6 +24,7 @@
 from MCPLTestUtils.dirs import test_data_dir
 import gzip
 import pathlib
+import os
 
 def run_pymcpltool(*args):
     from mcpldev.mcpl import app_pymcpltool
@@ -39,6 +40,7 @@ def run_pymcpltool(*args):
     print(f"--> ENDED IN EXIT CODE: {ec}")
 
 def main():
+    os.environ['PYMCPLTOOL_FAKE_PYVERSION']='1'
     run_pymcpltool('-h')
     run_pymcpltool('-v')
     f1 = test_data_dir.joinpath('ref','reffile_1.mcpl')
