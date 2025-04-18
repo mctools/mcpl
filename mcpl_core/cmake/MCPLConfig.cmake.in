@@ -34,7 +34,7 @@ cmake_policy(VERSION 3.16...3.30)
 
 #Export a few directory paths (relocatable):
 set( MCPL_CMAKEDIR "${CMAKE_CURRENT_LIST_DIR}" )
-get_filename_component( MCPL_DIR "${MCPL_CMAKEDIR}/@MCPL_relpath_CMAKEDIR2ROOT@" ABSOLUTE )
+#Do not override MCPL_DIR!: get_filename_component( MCPL_DIR "${MCPL_CMAKEDIR}/@MCPL_relpath_CMAKEDIR2ROOT@" ABSOLUTE )
 get_filename_component( MCPL_BINDIR "${MCPL_CMAKEDIR}/@MCPL_relpath_CMAKEDIR2BINDIR@" ABSOLUTE )
 get_filename_component( MCPL_LIBDIR "${MCPL_CMAKEDIR}/@MCPL_relpath_CMAKEDIR2LIBDIR@" ABSOLUTE )
 get_filename_component( MCPL_INCDIR "${MCPL_CMAKEDIR}/@MCPL_relpath_CMAKEDIR2INCDIR@" ABSOLUTE )
