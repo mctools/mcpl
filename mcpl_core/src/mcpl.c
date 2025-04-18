@@ -1784,10 +1784,6 @@ void mcpl_dump_header(mcpl_file_t f)
   printf("\n");
 }
 
-//Not in the public interface, but perhaps it should be to allow custom
-//applications to apply custom filters and see the selected particles. For now,
-//we simply keep the function signature stable, allowing other code to access it
-//by forward declaring it themselves:
 void mcpl_dump_particles(mcpl_file_t f, uint64_t nskip, uint64_t nlimit,
                          int(filter)(const mcpl_particle_t*))
 {
@@ -1842,7 +1838,7 @@ void mcpl_dump(const char * filename, int parts, uint64_t nskip, uint64_t nlimit
   if (parts==0||parts==1)
     mcpl_dump_header(f);
   if (parts==0||parts==2)
-    mcpl_dump_particles(f,nskip,nlimit,0);
+    mcpl_dump_particles(f,nskip,nlimit,NULL);
   mcpl_close_file(f);
 }
 

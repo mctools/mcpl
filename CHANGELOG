@@ -54,6 +54,8 @@ v1.9.81 (work in progress)
         an incorrect manner.
       * Renamed READMEs and INSTALL files to have .md suffix, and removed the
         FILES file since it was annoying to maintain.
+      * Add new mcpl_dump_particles function in mcpl.h, for filtered printing of
+        particles in a file.
 
 v1.9.80 2024-04-14
       * Release candidate number 1 for release 2.0.0 (detailed changelog to be

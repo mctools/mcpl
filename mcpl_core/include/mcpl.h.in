@@ -212,6 +212,12 @@ extern "C" {
   /*   nskip : index of first particle in the file to list.                          */
   MCPL_API void mcpl_dump(const char * file, int parts, uint64_t nskip, uint64_t nlimit);
 
+  /* Dump particles as if using mcpl_dump with parts=2, but only those particles     */
+  /* passing a particular filter function (returning 0 or 1) are printed. A NULL     */
+  /* filter function selects all particles:                                          */
+  MCPL_API void mcpl_dump_particles( mcpl_file_t f, uint64_t nskip, uint64_t nlimit,
+                                     int(filter)(const mcpl_particle_t*) );
+
   /* Merge contents of a list of files by concatenating all particle contents into a   */
   /* new file, file_output. This results in an error unless all meta-data and settings */
   /* in the files are identical. Also fails if file_output already exists. Note that   */
