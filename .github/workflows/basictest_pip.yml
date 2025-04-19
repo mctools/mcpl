@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ ubuntu-latest, windows-latest, macos-latest, windows-11-arm, ubuntu-24.04-arm, macos-13 ]
     name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
 
@@ -62,8 +62,15 @@ jobs:
 
     #Enable cl.exe usage:
     - name: Setup VS in shell
-      if: runner.os == 'Windows'
+      if: runner.os == 'Windows' && matrix.os != 'windows-11-arm'
       uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Setup VS in shell
+      if: runner.os == 'Windows' && matrix.os == 'windows-11-arm'
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: arm64
+
 
     - name: Test downstream compilation and build flags
       if: runner.os == 'Windows'

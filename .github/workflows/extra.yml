@@ -44,7 +44,10 @@ jobs:
     strategy:
       matrix:
         strictflag: [ 'ON', '11', '17' ]
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        #NB (Apr2025): Leaving out windows-11-arm for now, since it gives
+        #problems with the checkout with the private SSH tokens (looks like a
+        #bug in github actions/checkout).
+        os: [ubuntu-latest, macos-latest, windows-latest, ubuntu-24.04-arm, macos-13 ]
 
     name: ${{ matrix.os }}.strict${{ matrix.strictflag }}
     runs-on: ${{ matrix.os }}
