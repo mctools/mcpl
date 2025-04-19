@@ -54,7 +54,7 @@ logging.level = "INFO"
 minimum-version = "build-system.requires"
 wheel.packages = ['pywrapper/_mcpl_extra']
 sdist.include = ["/src/",'/CMakeLists.txt','/pyproject.toml','/pywrapper/']
-sdist.cmake = true
+#sdist.cmake = true
 wheel.py-api = "py3" # as close to "noarch" as possible (ABI3)
 
 [tool.cibuildwheel.linux]
