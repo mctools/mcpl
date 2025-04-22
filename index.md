@@ -21,6 +21,8 @@ both quick recipes and updated information where needed. You can [download](LOCA
 and try out the MCPL distribution right away, or use the
 menu above to navigate to more information.
 
+* April 2025:
+  The milestone release MCPL [v2.0.0](https://github.com/mctools/mcpl/releases/tag/v2.0.0) is out! Most notably this release brings support for Windows, and `pip install mcpl` now provides fully-fledged MCPL installations. The release includes many other changes to both license, packaging and how the project is developed, so be sure to consult the [release announcement](https://github.com/mctools/mcpl/releases/tag/v2.0.0) for all details.
 * November 2022-June 2023:
   Several minor maintenance updates were released:
   [v1.5.1](https://github.com/mctools/mcpl/releases/tag/v1.5.1),
