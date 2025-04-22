@@ -20,12 +20,7 @@ T. Kittelmann, et al., Monte Carlo Particle Lists: MCPL, *Computer Physics Commu
 
 ## License
 
-MCPL is by nature intended to be free to use for anyone. In particular, it is
-intended for the core code to be easy to embed into existing frameworks without
-legal or technical issues. For details, see the file [LICENSE]({{
-"/raw/master/LICENSE" | prepend: site.github.repository_url }}) which is part of
-the distribution. Note that if using one of the "fat" source files, one must also
-adhere to the [zlib license]({{"/raw/master/src_fat/LICENSE.zlib" | prepend: site.github.repository_url }}).
+MCPL is made available under the highly liberal open source Apache 2.0 license. For details, see the http://www.apache.org/licenses/LICENSE-2.0 page.
 
 ## Acknowledgements
 
