@@ -13,7 +13,7 @@ This page includes a few examples of how the command-line tools can be used, but
 
 ## Examples
 
-A few examples of how to use the command-line tools are provided here. Note that a small sample MCPL file is included with the MCPL distribution at [examples/example.mcpl]({{"/raw/HEAD/examples/example.mcpl" | prepend: site.github.repository_url }}), in case new users would like something to try the `mcpltool` on.
+A few examples of how to use the command-line tools are provided here. Note that a small sample MCPL file is available at [examples/example.mcpl]({{"/raw/HEAD/examples/example.mcpl" | prepend: site.github.repository_url }}), in case new users would like something to try the `mcpltool` on.
 
 ### Inspect file contents
 
@@ -268,39 +268,3 @@ files:
 ```shell
 mcpltool --text example.mcpl out.txt
 ```
-
-## Quick and dirty ways to get the mcpltool
-
-### Compile a single C file ...
-
-Rather than downloading and building the full MCPL distribution, it is possible to get hold
-of the `mcpltool` command simply by downloading and saving the
-single-file ("fat") version of the code found at this link: {% include linkfile.html file="src_fat/mcpltool_app_fat.c" download=true %}.
-
-Next, compile it with the command (exchange "gcc" with the name of your compiler - e.g.
-"clang" on OS X):
-
-```shell
-gcc -std=c99 mcpltool_app_fat.c -lm -o mcpltool
-```
-
-And you are ready to run! For instance you can inspect an MCPL file with:
-
-```shell
-./mcpltool <my-mcpl-file>
-```
-
-### ... or just download and run the pymcpltool
-
-Assuming your machine has Python and [NumPy](http://www.numpy.org/) available,
-one can simply download the MCPL Python module, which is a single file with no
-compiled dependencies, and which if executed as a script actually _is_ the `pymcpltool`. So download and save the file: {% include linkfile.html file="src_fat/pymcpltool" download=true %}, and make it executable with `chmod +x ./pymcpltool`. Then you are all set, for instance you can inspect an MCPL file with:
-
-```shell
-./pymcpltool <my-mcpl-file>
-```
-
-An alternative (and possibly simpler) option, is to install the pymcpltool via `python
--mpip install mcpl`, as discussed [here](LOCAL:usage_python#-install-it-via-pip).
-
-Note that as described above, the `pymcpltool` only provides read-only access to MCPL files, but on the other hand it has the advantage of providing statistics and plotting capabilities which are not currently available when using the compiled `mcpltool`. Use `pymcpltool --help` for details.
