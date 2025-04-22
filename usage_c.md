@@ -8,10 +8,8 @@ weight: 10
 {:toc}
 
 It is possible for advanced users to interact directly with MCPL files from C or
-C++ code, by including the header file {% include linkfile.html file="src/mcpl/mcpl.h"
-%} and making sure the resulting library or application
-is linked with the code in the {% include linkfile.html file="src/mcpl/mcpl.c"
-%} file. This is described in more detail in {% include linkpaper.html subsection=2.2
+C++ code, by including the header file {% include linkfile.html file="mccp_core/include/mcpl.h" linkname="mcpl.h" %} and making sure the resulting library or application
+is linked with the code in the {% include linkfile.html file="mcpl_core/src/mcpl.c" %} file. This is described in more detail in {% include linkpaper.html subsection=2.2
 %} and the API is documented in detail in {% include linkpaper.html section=9 linkname="the MCPL paper (appendix C)"
 %}.
 
@@ -26,13 +24,21 @@ For inspiration, please find here a few code examples dealing with MCPL files. N
 Also note that the code below should normally be compiled and linked with appropriate flags, in order to include the mcpl.h header and link against the MCPL library. One simple way to do that in CMake based projects are (assuming MCPL was installed via CMake and your example programme is in a file called `mymcplapp.c`), to use a small CMakeLists.txt file (in the same dir):
 
 ```c
- cmake_minimum_required(VERSION 3.10...3.24)
+ cmake_minimum_required(VERSION 3.16...3.31)
  project(MyExampleProject LANGUAGES C)
- find_package(MCPL REQUIRED)
+ if( NOT DEFINED "MCPL_DIR" )
+   execute_process(
+     COMMAND mcpl-config --show cmakedir
+     OUTPUT_VARIABLE "MCPL_DIR" OUTPUT_STRIP_TRAILING_WHITESPACE
+   )
+ endif()
+ find_package(MCPL 2.0.0 REQUIRED)
  add_executable(mymcplapp "${PROJECT_SOURCE_DIR}/mymcplapp.c")
- target_link_libraries( mymcplapp MCPL::mcpl )
- install( TARGETS mymcplapp DESTINATION bin )
+ target_link_libraries( mymcplapp MCPL::MCPL )
+ install( TARGETS mymcplapp RUNTIME DESTINATION bin )
 ```
+
+The call to `execute_process(..)` above is only needed in order to be able to work with MCPL installed from Python wheels (e.g. after a `pip install mcpl`).
 
 ### Reading MCPL files
 
@@ -130,25 +136,28 @@ int main(int argc,char**argv) {
   const char * infilename = argv[1];
   const char * outfilename = argv[2];
 
-  // Initialisation, open existing file and create output file handle. Transfer
-  // all meta-data from existing file, and add an extra comment in the output
-  // file to document the process:
+  // Initialisation, open existing file and create output file
+  // handle. Transfer all meta-data from existing file, and add
+  // an extra comment in the output file to document the process:
 
   mcpl_file_t fi = mcpl_open_file(infilename);
   mcpl_outfile_t fo = mcpl_create_outfile(outfilename);
   mcpl_transfer_metadata(fi, fo);
-  mcpl_hdr_add_comment(fo,"Applied custom filter to select neutrons with ekin<0.1MeV");
+  mcpl_hdr_add_comment( fo,
+                        "Applied custom filter to select"
+                        " neutrons with ekin<0.1MeV" );
 
-  //Loop over particles from input, only triggering mcpl_add_particle calls for
-  //the chosen particles:
+  //Loop over particles from input, only triggering mcpl_add_particle
+  //calls for the chosen particles:
 
   const mcpl_particle_t* particle;
   while ( ( particle = mcpl_read(fi) ) ) {
     if ( particle->pdgcode == 2112 && particle->ekin < 0.1 ) {
       mcpl_add_particle(fo,particle);
-      //Note that a guaranteed non-lossy alternative to mcpl_add_particle(fo,particle)
-      //would be mcpl_transfer_last_read_particle(fi,fo) which can work directly on
-      //the serialised on-disk particle data.
+      //Note that a guaranteed non-lossy alternative to
+      //mcpl_add_particle(fo,particle) would be
+      //mcpl_transfer_last_read_particle(fi,fo) which can
+      //work directly on the serialised on-disk particle data.
     }
 
   }

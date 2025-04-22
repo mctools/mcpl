@@ -8,7 +8,7 @@ weight: 5
 {:toc}
 
 If desired, it is possible to access the content of MCPL files from Python code
-by using the `mcpl.py` Python module described on this page, available since MCPL
+by using the `mcpl` Python module described on this page, available since MCPL
 release 1.2.0. Notice that most end-users should not normally have to write code in
 order to use MCPL. Rather, they should be able to use pre-existing converters or
 plugins for their Monte Carlo applications (c.f. [hooks](LOCAL:hooks/)).
@@ -76,7 +76,7 @@ documentation by adding a line with `help(mcpl.MCPLFile)`.
 
 Python support for MCPL was added after the release of the {% include
 linkpaper.html %}, so currently the most comprehensive documentation for the API
-provided by the `mcpl.py` Python module is to be found using Python's integrated
+provided by the `mcpl` Python module is to be found using Python's integrated
 `help()` functionality, for instance by running one of the following commands in
 a terminal:
 
@@ -84,52 +84,4 @@ a terminal:
 python -c "import mcpl;help(mcpl.MCPLFile)"     # get documentation of MCPLFile class
 python -c "import mcpl;help(mcpl.MCPLParticle)" # get documentation of MCPLParticle class
 python -c "import mcpl;help(mcpl)"              # get all documentation
-```
-
-## How to install the MCPL Python module
-
-The `mcpl.py` file is a pure Python module implemented in a single file, which
-in addition to Python itself (both Python 2 and 3 are supported) only needs the
-ubiquitous [NumPy](http://www.numpy.org/) module to be available on the
-system. Thus, all that is required before MCPL files can be accessed from Python
-is that the `mcpl.py` file is available somewhere on your system, in a location
-where Python will find it. Running the command `python -c "import mcpl;print
-mcpl.__file__"` can be used to debug that the module is available and in which
-file it is found.
-
-### Just download a single file and use it...
-
-Naturally, one can simply use the following link to download and save the file:
-{% include linkfile.html file="src/python/mcpl.py" download=true %}, and place
-it anywhere in the PYTHONPATH, such as the directory from which you plan to run
-your Python scripts.
-
-### ... install it via pip
-
-The MCPL Python module and pymcpltool was added to [Python Package
-Index](https://pypi.python.org/pypi/mcpl), and therefore it (and the
-[pymcpltool](LOCAL:usage_cmdline#extract-statistics-from-a-file) commandline utility) can be installed via `pip`. Typically the
-command to invoke to install MCPL via pip is therefore something as simple as:
-
-```shell
-python -mpip install mcpl
-```
-
-Of course, tweaks might apply: For instance one will typically either run the
-command under `sudo` or by adding the `--user` flag in order to carry out
-single-user installations. Furthermore, it might be necessary to replace the
-word `python` in the command with either `python2` or `python3`, if a specific
-Python version must be targetted.
-
-### ... or use it as part of the MCPL distribution
-
-The `mcpl.py` file is part of the MCPL distribution starting with release
-1.2.0, and can after installation be used by adding the python subdirectory of
-the installation to your Python path. For example, if you installed the MCPL
-distribution in `/path/to/mcplinstall`, the following line will make the `mcpl.py`
-module available from your Python code (put it somewhere like your `.bashrc` to
-make the setting permanent):
-
-```shell
-export PYTHONPATH=/path/to/mcplinstall/python:$PYTHONPATH
 ```
