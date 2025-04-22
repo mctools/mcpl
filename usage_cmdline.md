@@ -11,11 +11,9 @@ The MCPL distribution includes a handy command-line tool, `mcpltool`, which can 
 This page includes a few examples of how the command-line tools can be used, but users are referred to
 {% include linkpaper.html subsection=2.3 %} for more information.
 
-At the bottom of the page is also included recipes for how the commands can be quickly obtained without first downloading and installing the MCPL distribution (note that users of McStas, McXtrace and the ESS dgcode framework already have access to the command).
-
 ## Examples
 
-A few examples of how to use the command-line tools are provided here. Note that a small sample MCPL file is included with the MCPL distribution at [examples/example.mcpl]({{"/raw/master/examples/example.mcpl" | prepend: site.github.repository_url }}), in case new users would like something to try the `mcpltool` on.
+A few examples of how to use the command-line tools are provided here. Note that a small sample MCPL file is included with the MCPL distribution at [examples/example.mcpl]({{"/raw/HEAD/examples/example.mcpl" | prepend: site.github.repository_url }}), in case new users would like something to try the `mcpltool` on.
 
 ### Inspect file contents
 
