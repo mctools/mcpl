@@ -3,5 +3,9 @@
 {%   if include.download == true %}
 {%     assign dltag = include.file | split: "/" | last | prepend: ' download="' | append: '"' %}
 {%   endif %}
-<a href="{{ include.file | prepend: "/raw/HEAD/" | prepend: site.github.repository_url }}"{{dltag}}>{{include.file | split: "/" | last }}</a>
+{% assign linkname = include.file | split: "/" | last %}
+{% if include.linkname != nil %}
+{%   assign linkname = include.linkname %}
+{% endif %}
+<a href="{{ include.file | prepend: "/raw/HEAD/" | prepend: site.github.repository_url }}"{{dltag}}>{{linkname}}</a>
 {% endcapture %}{{ dummy | strip_newlines | normalize_whitespace }}
