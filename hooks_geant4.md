@@ -9,7 +9,7 @@ weight: 50
 
 The interface between MCPL and [Geant4](http://geant4.cern.ch/) consists of two classes, [G4MCPLGenerator]({{"/blob/HEAD/src/geant4/G4MCPLGenerator.hh" | prepend: site.github.repository_url }}) and [G4MCPLWriter]({{"/blob/HEAD/src/geant4/G4MCPLWriter.hh" | prepend: site.github.repository_url }}), residing in a dedicated `mcpl-geant4` package), which users can use to either generate primary events from the particles in an existing MCPL file (1 particle per event), or to capture the particle state of particles entering one or more specified volumes in the simulation geometry and write them to a new MCPL file. A detailed description of the classes as well as how to use them is given in {% include linkpaper.html subsection=3.1 %}, and the present page will merely provide examples for the most basic usage as well as a brief discussion of how to actually integrate the MCPL code in your Geant4 setup.
 
-Note that users of the [simple-build-dgcode framework](https://mctools.github.io/simplebuild-dgcode) have more powerful Geant4-MCPL hooks available out of the box, and they should refer to the [relevant documentation](https://mctools.github.io/simplebuild-dgcode/mcpl.html) rather than the present page.
+Note that users of the [simple-build-dgcode](https://mctools.github.io/simplebuild-dgcode) framework have more powerful Geant4-MCPL hooks available out of the box, and they should refer to the [relevant documentation](https://mctools.github.io/simplebuild-dgcode/mcpl.html) rather than the present page.
 
 # Basic usage examples
 
