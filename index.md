@@ -7,9 +7,9 @@ underconstruction: true
 ---
 
 
-![MCPL support](/assets/mcpl_support_diagram.png){: .align-right width="50%" }
-
 Welcome to the home of MCPL, a binary file format for usage in physics simulations.
+
+![MCPL support](/assets/mcpl_support_diagram.png){: .align-right width="40%" }
 
 MCPL files contain lists of particle state information, and allows for easy
 storage and interchange of particles between various Monte Carlo simulation
