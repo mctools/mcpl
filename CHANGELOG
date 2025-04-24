@@ -4,7 +4,7 @@ v2.0.0 2024-04-24
         deployment, and a huge restructuring of the environment in which MCPL is
         developed and tested.
       * One highly visible feature is that MCPL wheels on PyPI now provide
-        fully-fledged installations with all features previously only available
+        full-fledged installations with all features previously only available
         via Conda or custom builds. Thus, `pip install mcpl` is now an
         alternative to `conda install -c conda-forge mcpl` for getting all the
         features.
@@ -16,16 +16,18 @@ v2.0.0 2024-04-24
         past. Of course, there might be bugs or issues to iron out, so please
         help us test out the new release on Windows and file issues at
         https://github.com/mctools/mcpl/issues as appropriate!
+      * The website at https://mctools.github.io/mcpl/ has been fully updated
+        for the new release. Also note, that we have enabled the discussion
+        forum at https://github.com/mctools/mcpl/discussions, so feel free to
+        use it for questions or sharing anything with the MCPL community.
       * Another, less exciting but still note-worthy, change is that MCPL code
-        is now released under the highly permissible and OSI approved [Apache
-        2.0 license](http://www.apache.org/licenses/LICENSE-2.0). This change in
+        is now released under the highly permissible and OSI approved Apache
+        2.0 license (http://www.apache.org/licenses/LICENSE-2.0). This change in
         licensing was decided since the previous license (CC0) seems to have
         fallen out of favour in the general open source community.  Of course,
         the license change was agreed to by all contributors, and technically it
         was already applied in the first release candidate for release 2.0.0,
         namely release 1.9.80.
-      * The website at https://mctools.github.io/mcpl/ has been fully updated
-        for the new release.
       * The MCPL-Geant4 hooks are moved out of the mcpl repository and into
         https://github.com/mctools/mcpl-geant4.
       * In order to keep the `mcpl` package more lean, tools like `ssw2mcpl`,
@@ -36,20 +38,21 @@ v2.0.0 2024-04-24
         mcpl repository is named main rather than master, from this point
         on. For a little while we will try to keep the master branch alive, in
         case of any hardwired usage of the branch name "master" somewhere, but
-        this will not be the case for long. This change does not, however, change
-        the fact that we will in general try to keep default branch (now: main),
-        synchronised with the main release (apart possibly from minor
-        documentation and CI fixes), and keep the "develop" branch as the main
-        branch to target with pull requests between releases.  NOTE: Any local
-        clones of the mcpl code repository should be updated to reflect this
-        change. If there is no local interesting content in the clone, one option
-        is to remove the local clone and get a fresh one from github. Otherwise,
-        GitHub advices the following four commands to "repair" your local clones
-        (experts only):
+        this will not be the case for long. This change does not, however,
+        change the fact that we will in general try to keep the default branch
+        (now: main), synchronised with the latest release (apart possibly from
+        minor documentation and CI fixes), and keep the "develop" branch as the
+        main branch to target with pull requests between releases.  NOTE: Any
+        local clones of the mcpl code repository should be updated to reflect
+        this change. If there is no local interesting content in the clone, one
+        option is to remove the local clone and get a fresh one from
+        GitHub. Otherwise, GitHub advices the following four commands to
+        "repair" your local clones (experts only):
           git branch -m master main
           git fetch origin
           git branch -u origin/main main
           git remote set-head origin -a
+      * The rest of this changelog goes through more detailed changes.
       * Add a few utility functions for cross-platform reading of files in
         mcpl.h. This is meant to simplify code in custom mcpl-related utilities,
         and handles issues like gzipped files or filenames with unicode chars on
