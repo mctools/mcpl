@@ -30,7 +30,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-2019, windows-2022, windows-11-arm]
+        #TODO: Add windows-11-arm once it matures a bit and more pypi wheels are ready
+        os: [windows-2019, windows-2022]
 
     steps:
     - name: Checkout
