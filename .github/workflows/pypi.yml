@@ -666,5 +666,5 @@ jobs:
         if: needs.preparations.outputs.dryrun == '0'
         uses: pypa/gh-action-pypi-publish@v1.12.4
         with:
-          packages-dir: ./dist_final_FIXME_MISTYPED_ON_PURPOSE_FOR_SAFETY
+          packages-dir: ./dist_final
           verbose: true
