@@ -51,7 +51,7 @@ endif()
 
 #Setup project:
 
-project( MCPLExtra VERSION 1.9.81
+project( MCPLExtra VERSION 2.0.0
   LANGUAGES C
   DESCRIPTION "Monte Carlo Particle Lists"
   HOMEPAGE_URL "https://github.com/mctools/mcpl"
@@ -81,7 +81,7 @@ if ( NOT TARGET MCPL::MCPL )
       OUTPUT_VARIABLE "MCPL_DIR" OUTPUT_STRIP_TRAILING_WHITESPACE
     )
   endif()
-  find_package( MCPL 1.9.81 REQUIRED )
+  find_package( MCPL 2.0.0 REQUIRED )
 endif()
 
 if ( DEFINED SKBUILD_PROJECT_NAME )
