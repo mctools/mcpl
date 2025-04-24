@@ -126,7 +126,7 @@ jobs:
       SDIST_SUFFIX: "-${{ needs.preparations.outputs.mcplversion }}.tar.gz"
 
     steps:
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: build mcpl-core sdist
         run: pipx run build --sdist ./mcpl_core
