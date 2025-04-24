@@ -1,10 +1,37 @@
-v2.0.0 (work in progress)
-      * Change license to the Apache 2.0 license. This license changed was
-        agreed to by all contributors (technically it was already applied in the
-        first release candidate for release 2.0.0, namely release 1.9.80).
-      * Completely redesigning package layouts.
-      * Removing "fat" installation options.
-      * Support Windows and MSVC!
+v2.0.0 2024-04-24
+      * After more than 200 commits affecting almost 300 files, this milestone
+        release brings new supported user platforms, new packaging and
+        deployment, and a huge restructuring of the environment in which MCPL is
+        developed and tested.
+      * One highly visible feature is that MCPL wheels on PyPI now provide
+        fully-fledged installations with all features previously only available
+        via Conda or custom builds. Thus, `pip install mcpl` is now an
+        alternative to `conda install -c conda-forge mcpl` for getting all the
+        features.
+      * Another, and perhaps the biggest, user-visible feature is that MCPL now
+        also supports usage on Windows! This support is NOT considered
+        experimental, and Windows users can now install the `mcpl` package via
+        tools like `pip` and `conda` and expect the same features on both the
+        command-line and in the Python and C APIs as Unix users have had in the
+        past. Of course, there might be bugs or issues to iron out, so please
+        help us test out the new release on Windows and file issues at
+        https://github.com/mctools/mcpl/issues as appropriate!
+      * Another, less exciting but still note-worthy, change is that MCPL code
+        is now released under the highly permissible and OSI approved [Apache
+        2.0 license](http://www.apache.org/licenses/LICENSE-2.0). This change in
+        licensing was decided since the previous license (CC0) seems to have
+        fallen out of favour in the general open source community.  Of course,
+        the license change was agreed to by all contributors, and technically it
+        was already applied in the first release candidate for release 2.0.0,
+        namely release 1.9.80.
+      * The website at https://mctools.github.io/mcpl/ has been fully updated
+        for the new release.
+      * The MCPL-Geant4 hooks are moved out of the mcpl repository and into
+        https://github.com/mctools/mcpl-geant4.
+      * In order to keep the `mcpl` package more lean, tools like `ssw2mcpl`,
+        `mcpl2ssw`, `phits2mcpl`, and `mcpl2phits` have been moved to a separate
+        package named `mcpl-extra`, which users need to install with `pip` or
+        `conda` if they still need access to them.
       * Keeping in line with general trends at github, the default branch of the
         mcpl repository is named main rather than master, from this point
         on. For a little while we will try to keep the master branch alive, in
@@ -23,19 +50,29 @@ v2.0.0 (work in progress)
           git fetch origin
           git branch -u origin/main main
           git remote set-head origin -a
+      * Add a few utility functions for cross-platform reading of files in
+        mcpl.h. This is meant to simplify code in custom mcpl-related utilities,
+        and handles issues like gzipped files or filenames with unicode chars on
+        Windows.
+      * Add new mcpl_dump_particles function in mcpl.h, for filtered printing of
+        particles in a file.
+      * Completely redesigning package layouts.
+      * Removing "fat" installation options.
       * Proper consistent support for files > 2GB, even on Windows and with
         gzipped files.
-      * Fall back to statically embedding of zlib into binaries (currently
-        v1.3.1). Only envisioned to be used for windows builds.
+      * MCPL will no longer be available for building without zlib support, and
+        going forward all MCPL builds will be able to produce and read gzipped
+        MCPL files. Accordingly, the MCPL_ENABLE_ZLIB flag will now only have
+        the options: USEPREINSTALLED, FETCH and DEFAULT. The DEFAULT value will
+        in general imply USEPREINSTALLED, except on WINDOWS where it will imply
+        FETCH. Thus, the default is to fetch and embed zlib into the binaries in
+        Windows PyPI wheels, where zlib is otherwise unavailable. On
+        conda-forge, zlib is available also on Windows, and the packages will
+        always depend dynamically on zlib there.
+      * Support compilation with the MSVC compiler.
       * Support GCC 14.
       * Support the Intel One API compiler.
       * Completely drop support for Python2.
-      * MCPL will no longer be available for building without zlib support, and
-        going forward all MCPL builds will be able to produce and read with
-        gzipped MCPL files. Accordingly, the MCPL_ENABLE_ZLIB flag will now only
-        have the options: USEPREINSTALLED, FETCH and DEFAULT. The DEFAULT value
-        will in general imply USEPREINSTALLED, except on WINDOWS where it will
-        imply FETCH.
       * Many obsolete CMake options were changed or simply removed.
       * Fix bug when files were not closed properly when merging empty files.
       * When merging files in place, it is now an error if any of the files
@@ -44,18 +81,12 @@ v2.0.0 (work in progress)
         error.
       * Fix potential (but very unlikely) bug in
         mcpl_transfer_last_read_particle.
-      * Add a few utility functions for cross-platform reading of files in
-        mcpl.h. This is meant to simplify code in custom mcpl-related utilities,
-        and handles issues like gzipped files or filenames with unicode chars on
-        Windows.
       * CMake targets MCPL::MCPL and MCPL::mcpl are now both valid aliases for
         the MCPL library target.
       * Fix bug where MCPL->MCNP5 conversion was encoding the particle type in
         an incorrect manner.
       * Renamed READMEs and INSTALL files to have .md suffix, and removed the
         FILES file since it was annoying to maintain.
-      * Add new mcpl_dump_particles function in mcpl.h, for filtered printing of
-        particles in a file.
 
 v1.9.81 2024-04-19
       * Release candidate number 2 for release 2.0.0 (detailed changelog to be
@@ -64,7 +95,7 @@ v1.9.81 2024-04-19
 v1.9.80 2024-04-14
       * Release candidate number 1 for release 2.0.0 (detailed changelog to be
         added only for release 2.0.0).
-      * Change license to the Apache 2.0 license. This license changed was
+      * Change license to the Apache 2.0 license. This license change was
         agreed to by all contributors.
 
 v1.6.2 2023-06-06
