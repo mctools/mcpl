@@ -19,10 +19,7 @@ files must be configured to include the relevant information, the necessary PHIT
 deck configuration will be discussed below. Afterwards, a few typical usage
 examples of  `phits2mcpl` and `mcpl2phits` will be provided.
 
-At the bottom of the page is also included a quick and dirty recipe for how the
-`phits2mcpl` and `mcpl2phits` commands can be obtained without first downloading
-and installing the MCPL distribution. Note that users of the ESS dgcode
-framework already have access to the commands.
+Note that the `phits2mcpl` and `mcpl2phits` are provided as part of the `mcpl-extra` package, so if the commands are missing you should double-check that you have [installed the mcpl-extra package](LOCAL:get/) as well as `mcpl` itself.
 
 ## Configuration for PHITS input deck
 
@@ -41,7 +38,7 @@ added in the relevant tally section:
 Which will result in the binary dump files being produced with the name
 `myout_dmp` alongside a dump summary text file named `myout`. The configuration
 with 13 parameters given above includes polarisation (spin-direction)
-information. The other supported variant foregoes polarisation information
+information. The other supported variant forgoes polarisation information
 and thus saves 22% on the resulting file size:
 
 ```
@@ -105,7 +102,7 @@ Refer to the PHITS manual (linked above) for more details.
 
 ## Examples
 
-A few exampes and instructions of how to use `phits2mcpl` and `mcpl2phits` are provided in the following.
+A few examples and instructions of how to use `phits2mcpl` and `mcpl2phits` are provided in the following.
 
 ### Converting an PHITS file to MCPL
 
@@ -116,7 +113,7 @@ phits2mcpl phits.dmp newfile.mcpl
 ```
 
 Which produces an MCPL file (which has been automatically compressed to
-newfile.mcpl.gz). However, it is possible to add more than the minimal amount of
+`newfile.mcpl.gz`). However, it is possible to add more than the minimal amount of
 information into the output file. First of all, the `-d` flag can be used to
 enable double-precision rather than single-precision storage of floating point
 numbers. Next, specifying `-c <path_to_input_deck>` will cause the PHITS input
@@ -132,7 +129,7 @@ much information as possible in the MCPL file would happen with:
 ```shell
 phits2mcpl -d -c input_deck -s dump_summary phits.dmp newfile.mcpl
 ```
-Inspecting the resulting newfile.mcpl.gz with `mcpltool` might give an output like this (admittedly the PHITS file was not from a very interesting simulation):
+Inspecting the resulting `newfile.mcpl.gz` with `mcpltool` might give an output like this (admittedly the PHITS file was not from a very interesting simulation):
 
 ```shell
 mcpltool newfile.mcpl.gz
@@ -250,32 +247,4 @@ Options:
                  the default (32 bit) is almost always the correct choice.
   -l<LIMIT>    : Limit the number of particles transferred to the PHITS file
                  (defaults to 0, meaning no limit).
-```
-
-## Quick and dirty way to get phits2mcpl and mcpl2phits
-
-Rather than downloading and building the full MCPL distribution, it is possible to get hold
-of the `phits2mcpl` and `mcpl2phits` commands simply by downloading and saving
-the two single-file ("fat") versions of the code with via these links: {% include linkfile.html file="src_fat/phits2mcpl_app_fat.c" %} and {% include linkfile.html file="src_fat/mcpl2phits_app_fat.c"
-%}.
-
-Next, go to a terminal and compile them with two commands (exchange "gcc" with the name of your compiler - e.g.
-"clang" on OSX):
-
-```shell
-gcc -std=c99 phits2mcpl_app_fat.c -lm -o phits2mcpl
-gcc -std=c99 mcpl2phits_app_fat.c -lm -o mcpl2phits
-```
-
-And you are ready to run! For instance:
-
-```shell
-./phits2mcpl <my-phits-file> <my-mcpl-file>
-```
-
-Or get full usage instructions with:
-
-```shell
-./phits2mcpl --help
-./mcpl2phits --help
 ```

@@ -12,11 +12,6 @@ components, MCPL_input and MCPL_output, which users can activate by adding
 entries at relevant points in their instrument files. Please refer to {% include linkpaper.html
 subsection=3.3 %} for a more detailed discussion of these.
 
-Users of McXtrace do not need to download MCPL themselves, as it is included
-inside McXtrace already starting from version 1.4 (expected to be released spring 2017). In addition to the
-MCPL_input and MCPL_output components, this also gives McXtrace users
-access to the [mcpltool](LOCAL:usage_cmdline/) command.
-
 ## How to use the components
 
 ### MCPL_input
