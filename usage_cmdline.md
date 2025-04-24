@@ -14,7 +14,7 @@ This page includes a few examples of how the command-line tools can be used, but
 
 ## Examples
 
-A few examples of how to use the command-line tools are provided here. Note that a small sample MCPL file is available at [examples/example.mcpl]({{"/raw/HEAD/examples/example.mcpl" | prepend: site.github.repository_url }}), in case new users would like something to try the `mcpltool` on.
+A few examples of how to use the command-line tools are provided here. Note that a small sample MCPL file is available at [examples/example.mcpl]({{"/raw/path_to_mcpl2/examples/example.mcpl" | prepend: site.github.repository_url }}), in case new users would like something to try the `mcpltool` on.
 
 ### Inspect file contents
 
