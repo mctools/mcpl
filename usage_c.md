@@ -168,3 +168,7 @@ int main(int argc,char**argv) {
   mcpl_close_file(fi);
 }
 ```
+
+### Example project with C code and CMake configuration
+
+The `mcpl` repository contains two small but complete examples of how to make a CMake-based project using the MCPL C API. Please find the example in the [examples/downstream_cmake]({{"/tree/path_to_mcpl2/examples/downstream_cmake" | prepend: site.github.repository_url }}) folder.
