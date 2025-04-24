@@ -7,7 +7,7 @@ underconstruction: true
 ---
 
 
-![MCPL support](/assets/mcpl_support_diagram.png){: .align-right}
+![MCPL support](/assets/mcpl_support_diagram.png){: .align-right width="50%" }
 
 Welcome to the home of MCPL, a binary file format for usage in physics simulations.
 
