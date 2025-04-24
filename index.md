@@ -6,6 +6,9 @@ weight: 999999
 underconstruction: true
 ---
 
+
+![MCPL support](/assets/mcpl_support_diagram.png){: .align-right}
+
 Welcome to the home of MCPL, a binary file format for usage in physics simulations.
 
 MCPL files contain lists of particle state information, and allows for easy
