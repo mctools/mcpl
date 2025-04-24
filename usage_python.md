@@ -2,7 +2,7 @@
 title: Using MCPL from Python
 navtitle: Python
 weight: 5
-underconstruction: true
+underconstruction: false
 ---
 
 - two magic lines for toc

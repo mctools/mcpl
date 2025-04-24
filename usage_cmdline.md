@@ -1,7 +1,7 @@
 ---
 title: Using MCPL from the command line
 weight: 20
-underconstruction: true
+underconstruction: false
 ---
 
 - two magic lines for toc

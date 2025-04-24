@@ -1,7 +1,7 @@
 ---
 title: Get MCPL
 weight: 9999
-underconstruction: true
+underconstruction: false
 ---
 
 The easiest way to install MCPL is via the prebuilt Python or Conda packages. The package named `mcpl` provides both [command-line tools](LOCAL:usage_cmdline), and API's for [C/C++](LOCAL:usage_c), [Python](LOCAL:usage_python), and CMake configuration.
