@@ -72,4 +72,4 @@ For advanced use-cases, it is possible to fine-tune the way the particles are ca
 
 # Integrating MCPL in a given Geant4 setup
 
-Note that in order to actually install and build with the `G4MCPLGenerator` and `G4MCPLWriter` classes, the simplest approach is to first install MCPL and Geant4, and then `pip install mcpl-geant4`. Finally, follow the instructions and look at the examples provided at https://github.com/mctools/mcpl-geant4 .
+Note that in order to actually install and build with the `G4MCPLGenerator` and `G4MCPLWriter` classes, the simplest approach is to first install MCPL and Geant4, and then `pip install mcpl-geant4`. Finally, follow the instructions and look at the examples provided at <https://github.com/mctools/mcpl-geant4>.

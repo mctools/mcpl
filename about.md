@@ -21,7 +21,7 @@ T. Kittelmann, et al., Monte Carlo Particle Lists: MCPL, *Computer Physics Commu
 
 ## License
 
-MCPL is made available under the highly liberal open source Apache 2.0 license. For details, see the http://www.apache.org/licenses/LICENSE-2.0 page.
+MCPL is made available under the highly liberal open source Apache 2.0 license. For details, see the <http://www.apache.org/licenses/LICENSE-2.0> page.
 
 ## Acknowledgements
 
