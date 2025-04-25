@@ -25,7 +25,7 @@ packages to install are named `mcpl` and, optionally, `mcpl-extra`):
 
 ![PyPI - Version](https://img.shields.io/pypi/v/mcpl)
 ![Conda Version](https://img.shields.io/conda/vn/conda-forge/mcpl)
-![Conda Platform](https://img.shields.io/conda/pn/conda-forge/mcpl-core)
+![Conda Platform](https://img.shields.io/conda/pn/conda-forge/mcpl-lib)
 
 If you have questions or want to report issues, please always use the GitHub
 tools for doing so. Either the issue tracker at
