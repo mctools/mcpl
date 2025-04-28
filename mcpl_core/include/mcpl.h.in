@@ -145,6 +145,20 @@ extern "C" {
   MCPL_API void mcpl_enable_universal_pdgcode(mcpl_outfile_t, int32_t pdgcode);/* All particles are of the same type */
   MCPL_API void mcpl_enable_universal_weight(mcpl_outfile_t, double w);/* All particles have the same weight */
 
+  /* Add named cumulative statistics, encoded in a special comment. This   */
+  /* statistics might typically represent the "simulation size", like      */
+  /* "number of particles going into simulation", or "collisions per       */
+  /* second", or whatnot, and is normally different (but scaling with) the */
+  /* number of particles ending up in the file. If the value of the        */
+  /* statistics is not known initially, it is possible to set value=-1 to  */
+  /* simply reserve space in the header. In that case, one MUST invoke the */
+  /* function again to set the final value before the file is closed.      */
+  /* Keys must be at most 64 chars long and not contain colons (:).        */
+  /* In case custom code is used to truncate particle lists, this function */
+  /* should also be used to modify the statistics of such files.           */
+  MCPL_API void mcpl_hdr_add_statcumul( mcpl_outfile_t,
+                                        const char * key, double value );
+
   /* Optionally (but rarely skipped) add particles, by updating the info in */
   /* and then passing in a pointer to an mcpl_particle_t instance:          */
   MCPL_API void mcpl_add_particle(mcpl_outfile_t,const mcpl_particle_t*);
@@ -187,6 +201,12 @@ extern "C" {
   MCPL_API int32_t mcpl_hdr_universal_pdgcode(mcpl_file_t);/* returns 0 in case of per-particle pdgcode */
   MCPL_API double mcpl_hdr_universal_weight(mcpl_file_t);/* returns 0.0 in case of per-particle weights */
   MCPL_API int mcpl_hdr_little_endian(mcpl_file_t);
+
+  /* Access cumulative statistics by key. Returns a non-negative value if   */
+  /* such a value is present. A value of -2 means "value not present" and a */
+  /* value of -1 indicates that a value is present but not finalised (could */
+  /* for instance happen if the writing application crashed).               */
+  MCPL_API double mcpl_hdr_statcumul( mcpl_file_t, const char * key );
 
   /* Request pointer to particle at current location and skip forward to the next */
   /* particle. Return value will be null in case there was no particle at the     */
