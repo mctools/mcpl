@@ -1,0 +1,68 @@
+Opened MCPL file file1.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 0
+    Header storage     : 137 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 3
+          -> comment 0 : "Some comment."
+          -> comment 1 : "statcumul:nsrc:                     2"
+          -> comment 2 : "Another comment."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+Opened MCPL file file2.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 1000
+    Header storage     : 391 bytes
+    Data storage       : 36000 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 9
+          -> comment 0 : "Some comment."
+          -> comment 1 : "statcumul:nsrc:              0.002123"
+          -> comment 2 : "statcumul:nsrc other:           1234567.123"
+          -> comment 3 : "statcumul:nsrc other2:             123456789"
+          -> comment 4 : "statcumul:aaa:                     1"
+          -> comment 5 : "statcumul:aa2:                    17"
+          -> comment 6 : "statcumul:bbb:                     1"
+          -> comment 7 : "statcumul:bb:                     2"
+          -> comment 8 : "Another comment."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0         212       0.025           0           0           0           0           0           1           0         0.1
+    1         212       0.025           0           0           0           0           0           1           0         0.1
+    2         212       0.025           0           0           0           0           0           1           0         0.1
+    3         212       0.025           0           0           0           0           0           1           0         0.1
+    4         212       0.025           0           0           0           0           0           1           0         0.1
+    5         212       0.025           0           0           0           0           0           1           0         0.1
+    6         212       0.025           0           0           0           0           0           1           0         0.1
+    7         212       0.025           0           0           0           0           0           1           0         0.1
+    8         212       0.025           0           0           0           0           0           1           0         0.1
+    9         212       0.025           0           0           0           0           0           1           0         0.1
