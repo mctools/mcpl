@@ -98,6 +98,47 @@ int main(int argc,char**argv) {
   create_file3("f3_unset.mcpl",-1.0);
   create_file3("f3_2d5.mcpl",2.5);
   create_file3("f3_17.mcpl",17);
+  {
+    const char *fns[2] = {"f3_2d5.mcpl","f3_17.mcpl"};
+    mcpl_outfile_t of = mcpl_merge_files( "f3_mergeok.mcpl", 2, fns );
+    mcpl_close_outfile(of);
+    mcpl_dump("f3_mergeok.mcpl",0,0,10);
+  }
+  {
+    const char *fns[3] = {"f3_unset.mcpl","f3_2d5.mcpl","f3_17.mcpl"};
+    mcpl_outfile_t of = mcpl_merge_files( "f3_mergeall.mcpl", 3, fns );
+    mcpl_close_outfile(of);
+    mcpl_dump("f3_mergeall.mcpl",0,0,10);
+  }
+
+  {
+    //floating point fun: 1.0+1e-16+1e-16+1e-16+1e-16 is 1.0, but 1.0+4e-16 is
+    //not 1.  Without using stablesum for the stats during merges, we would end
+    //up with 1 and not 1.0000000000000004 like we should.
+    create_file3("f4_1.mcpl",1.0);
+    create_file3("f4_epsa.mcpl",1e-16);
+    create_file3("f4_epsb.mcpl",1e-16);
+    create_file3("f4_epsc.mcpl",1e-16);
+    create_file3("f4_epsd.mcpl",1e-16);
+
+    const char *fns[5] = {"f4_1.mcpl","f4_epsa.mcpl",
+                          "f4_epsb.mcpl","f4_epsc.mcpl","f4_epsd.mcpl"};
+    mcpl_outfile_t of = mcpl_merge_files( "f4_mergeall.mcpl", 5, fns );
+    mcpl_close_outfile(of);
+    mcpl_dump("f4_mergeall.mcpl",0,0,10);
+    mcpl_file_t f = mcpl_open_file("f4_mergeall.mcpl");
+    printf("mcpl_hdr_statcumul(\"nsrc\") = %.17g\n",
+           mcpl_hdr_statcumul(f,"nsrc"));
+    printf("mcpl_hdr_statcumul(\"foo\") = %.17g\n",
+           mcpl_hdr_statcumul(f,"foo"));
+    if ( mcpl_hdr_statcumul(f,"nsrc") != 1.0 + 4e-16
+         || !(mcpl_hdr_statcumul(f,"nsrc")>1.0 ) ) {
+      printf("stats were not added in stable manner\n");
+      return 1;
+    }
+
+    mcpl_close_file(f);
+  }
 
   return 0;
 }
