@@ -30,6 +30,11 @@ void create_file1(void)
   mcpl_hdr_add_comment(f,"Some comment.");
   mcpl_hdr_add_statcumul( f, "nsrc", 2.0 );
   mcpl_hdr_add_comment(f,"Another comment.");
+  mcpl_hdr_add_statcumul( f, "nsrc2", -1 );
+  mcpl_hdr_add_comment(f,"Another comment.");
+  mcpl_hdr_add_statcumul( f, "nsrc3", -1 );
+  mcpl_hdr_add_comment(f,"Another comment.");
+  mcpl_hdr_add_statcumul( f, "nsrc3", 2.0 );
   mcpl_close_outfile(f);
 }
 
@@ -54,6 +59,7 @@ void create_file2(void)
   mcpl_hdr_add_statcumul( f, "nsrc other", 123456.123 );
   mcpl_hdr_add_statcumul( f, "nsrc other", 1234567.123 );
   mcpl_hdr_add_statcumul( f, "nsrc other2", 123456789 );
+  mcpl_hdr_add_statcumul( f, "ccc", -1.0 );
   mcpl_hdr_add_statcumul( f, "aaa", 1 );
   mcpl_hdr_add_statcumul( f, "aa2", 2 );
   mcpl_hdr_add_statcumul( f, "bbb", 1 );
@@ -67,6 +73,19 @@ void create_file2(void)
   mcpl_close_outfile(f);
 }
 
+void create_file3(const char * filename,double statval)
+{
+  static int i = 0;
+  mcpl_outfile_t f = mcpl_create_outfile(filename);
+  int delay = ( (i++) %2 == 0 );
+  mcpl_hdr_add_statcumul( f, "nsrc", delay? -1.0 : statval );
+  mcpltests_add_particles(f, 1);
+  if ( delay )
+    mcpl_hdr_add_statcumul( f, "nsrc", statval );
+  mcpl_close_outfile(f);
+  mcpl_dump(filename,0,0,1);
+}
+
 
 int main(int argc,char**argv) {
   (void)argc;
@@ -75,5 +94,10 @@ int main(int argc,char**argv) {
   mcpl_dump("file1.mcpl",0,0,10);
   create_file2();
   mcpl_dump("file2.mcpl",0,0,10);
+
+  create_file3("f3_unset.mcpl",-1.0);
+  create_file3("f3_2d5.mcpl",2.5);
+  create_file3("f3_17.mcpl",17);
+
   return 0;
 }
