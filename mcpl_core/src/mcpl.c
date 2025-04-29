@@ -257,12 +257,11 @@ MCPL_LOCAL int mcpl_internal_fakeconstantversion( int enable )
   return fakev;
 }
 
-
 #define MCPL_STATCUMULINI "stat:cumul:"
 #define MCPL_STATCUMULINI_LENGTH 11
 #define MCPL_STATCUMULKEY_MAXLENGTH 64
 #define MCPL_STATCUMULVAL_LENGTH 22
-#define MCPL_STATCUMULVAL_ENCODEDMINUS1 " -1 (NOT AVAILABLE)   "
+#define MCPL_STATCUMULVAL_ENCODEDMINUS1 "    -1 (NOT AVAILABLE)"
 #define MCPL_STATCUMULBUF_MAXLENGTH (64+22+5+1) //+1 for second colon
 
 typedef struct MCPL_LOCAL {

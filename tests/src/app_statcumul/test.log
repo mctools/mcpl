@@ -3,15 +3,19 @@ Opened MCPL file file1.mcpl:
   Basic info
     Format             : MCPL-3
     No. of particles   : 0
-    Header storage     : 137 bytes
+    Header storage     : 264 bytes
     Data storage       : 0 bytes
 
   Custom meta data
     Source             : "unknown"
-    Number of comments : 3
+    Number of comments : 7
           -> comment 0 : "Some comment."
-          -> comment 1 : "statcumul:nsrc:                     2"
+          -> comment 1 : "stat:cumul:nsrc:                     2"
           -> comment 2 : "Another comment."
+          -> comment 3 : "stat:cumul:nsrc2:    -1 (NOT AVAILABLE)"
+          -> comment 4 : "Another comment."
+          -> comment 5 : "stat:cumul:nsrc3:                     2"
+          -> comment 6 : "Another comment."
     Number of blobs    : 0
 
   Particle data format
@@ -29,21 +33,22 @@ Opened MCPL file file2.mcpl:
   Basic info
     Format             : MCPL-3
     No. of particles   : 1000
-    Header storage     : 391 bytes
+    Header storage     : 439 bytes
     Data storage       : 36000 bytes
 
   Custom meta data
     Source             : "unknown"
-    Number of comments : 9
+    Number of comments : 10
           -> comment 0 : "Some comment."
-          -> comment 1 : "statcumul:nsrc:              0.002123"
-          -> comment 2 : "statcumul:nsrc other:           1234567.123"
-          -> comment 3 : "statcumul:nsrc other2:             123456789"
-          -> comment 4 : "statcumul:aaa:                     1"
-          -> comment 5 : "statcumul:aa2:                    17"
-          -> comment 6 : "statcumul:bbb:                     1"
-          -> comment 7 : "statcumul:bb:                     2"
-          -> comment 8 : "Another comment."
+          -> comment 1 : "stat:cumul:nsrc:              0.002123"
+          -> comment 2 : "stat:cumul:nsrc other:           1234567.123"
+          -> comment 3 : "stat:cumul:nsrc other2:             123456789"
+          -> comment 4 : "stat:cumul:ccc:    -1 (NOT AVAILABLE)"
+          -> comment 5 : "stat:cumul:aaa:                     1"
+          -> comment 6 : "stat:cumul:aa2:                    17"
+          -> comment 7 : "stat:cumul:bbb:                     1"
+          -> comment 8 : "stat:cumul:bb:                     2"
+          -> comment 9 : "Another comment."
     Number of blobs    : 0
 
   Particle data format
@@ -66,3 +71,78 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     7         212       0.025           0           0           0           0           0           1           0         0.1
     8         212       0.025           0           0           0           0           0           1           0         0.1
     9         212       0.025           0           0           0           0           0           1           0         0.1
+Opened MCPL file f3_unset.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 1
+    Header storage     : 101 bytes
+    Data storage       : 36 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 1
+          -> comment 0 : "stat:cumul:nsrc:    -1 (NOT AVAILABLE)"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0         212       0.025           0           0           0           0           0           1           0         0.1
+Opened MCPL file f3_2d5.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 1
+    Header storage     : 101 bytes
+    Data storage       : 36 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 1
+          -> comment 0 : "stat:cumul:nsrc:                   2.5"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0         212       0.025           0           0           0           0           0           1           0         0.1
+Opened MCPL file f3_17.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 1
+    Header storage     : 101 bytes
+    Data storage       : 36 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 1
+          -> comment 0 : "stat:cumul:nsrc:                    17"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0         212       0.025           0           0           0           0           0           1           0         0.1
