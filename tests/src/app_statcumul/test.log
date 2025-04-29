@@ -146,3 +146,212 @@ Opened MCPL file f3_17.mcpl:
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
     0         212       0.025           0           0           0           0           0           1           0         0.1
+Opened MCPL file f3_mergeok.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 2
+    Header storage     : 101 bytes
+    Data storage       : 72 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 1
+          -> comment 0 : "stat:cumul:nsrc:                  19.5"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0         212       0.025           0           0           0           0           0           1           0         0.1
+    1         212       0.025           0           0           0           0           0           1           0         0.1
+Opened MCPL file f3_mergeall.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 3
+    Header storage     : 101 bytes
+    Data storage       : 108 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 1
+          -> comment 0 : "stat:cumul:nsrc:    -1 (NOT AVAILABLE)"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0         212       0.025           0           0           0           0           0           1           0         0.1
+    1         212       0.025           0           0           0           0           0           1           0         0.1
+    2         212       0.025           0           0           0           0           0           1           0         0.1
+Opened MCPL file f4_1.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 1
+    Header storage     : 101 bytes
+    Data storage       : 36 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 1
+          -> comment 0 : "stat:cumul:nsrc:                     1"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0         212       0.025           0           0           0           0           0           1           0         0.1
+Opened MCPL file f4_epsa.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 1
+    Header storage     : 101 bytes
+    Data storage       : 36 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 1
+          -> comment 0 : "stat:cumul:nsrc:                 1e-16"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0         212       0.025           0           0           0           0           0           1           0         0.1
+Opened MCPL file f4_epsb.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 1
+    Header storage     : 101 bytes
+    Data storage       : 36 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 1
+          -> comment 0 : "stat:cumul:nsrc:                 1e-16"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0         212       0.025           0           0           0           0           0           1           0         0.1
+Opened MCPL file f4_epsc.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 1
+    Header storage     : 101 bytes
+    Data storage       : 36 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 1
+          -> comment 0 : "stat:cumul:nsrc:                 1e-16"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0         212       0.025           0           0           0           0           0           1           0         0.1
+Opened MCPL file f4_epsd.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 1
+    Header storage     : 101 bytes
+    Data storage       : 36 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 1
+          -> comment 0 : "stat:cumul:nsrc:                 1e-16"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0         212       0.025           0           0           0           0           0           1           0         0.1
+Opened MCPL file f4_mergeall.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 101 bytes
+    Data storage       : 180 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 1
+          -> comment 0 : "stat:cumul:nsrc:    1.0000000000000004"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0         212       0.025           0           0           0           0           0           1           0         0.1
+    1         212       0.025           0           0           0           0           0           1           0         0.1
+    2         212       0.025           0           0           0           0           0           1           0         0.1
+    3         212       0.025           0           0           0           0           0           1           0         0.1
+    4         212       0.025           0           0           0           0           0           1           0         0.1
+mcpl_hdr_statcumul("nsrc") = 1.0000000000000004
+mcpl_hdr_statcumul("foo") = -2

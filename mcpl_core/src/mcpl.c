@@ -2185,7 +2185,7 @@ MCPL_LOCAL int mcpl_actual_can_merge(mcpl_file_t ff1, mcpl_file_t ff2)
     const char * c2 = f2->comments[i];
     if (strcmp(c1,c2)!=0) {
       //incompatible, unless it represents the same statcumul entry.
-      if ( c1[0] != 's' || c1[0] !='t' || c2[0] != 's' || c2[0] !='t' )
+      if ( c1[0] != 's' || c1[1] !='t' || c2[0] != 's' || c2[1] !='t' )
         return 0;
       double v1, v2;
       char buf1[MCPL_STATCUMULBUF_MAXLENGTH+1];
@@ -2517,13 +2517,16 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
   int warned_oldversion = 0;
 
   unsigned n_scinfo = 0;
-  double * scinfo_values = NULL;
   uint32_t * scinfo_indices = NULL;
+  //values kept in two doubles, s1 and s2, for use with stablesum.
+  double * scinfo_values_s1 = NULL;
+  double * scinfo_values_s2 = NULL;
 
   for (ifile = 0; ifile < nfiles; ++ifile) {
     mcpl_file_t fi = mcpl_open_file(files[ifile]);
     mcpl_fileinternal_t * fi_internal = (mcpl_fileinternal_t *)fi.internal;
     assert( fi_internal );
+
 
     if (ifile==0) {
       //Add metadata from the first file:
@@ -2544,11 +2547,21 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
           if (!scinfo_indices) {
             scinfo_indices
               = (uint32_t*)mcpl_internal_malloc( sizeof(uint32_t)*ncomments );
-            scinfo_values
+            scinfo_values_s1
+              = (double*)mcpl_internal_malloc( sizeof(double)*ncomments );
+            scinfo_values_s2
               = (double*)mcpl_internal_malloc( sizeof(double)*ncomments );
           }
           scinfo_indices[n_scinfo] = ic;
-          scinfo_values[n_scinfo] = v;
+          scinfo_values_s1[n_scinfo] = 0.0;
+          scinfo_values_s2[n_scinfo] = 0.0;
+          if ( v == -1 ) {
+            scinfo_values_s1[n_scinfo] = -1.0;
+          } else {
+            mcpl_impl_stablesum_add( scinfo_values_s1+n_scinfo,
+                                     scinfo_values_s2+n_scinfo,
+                                     v );
+          }
           ++n_scinfo;
           //register -1 for now:
           if ( v != -1 ) {
@@ -2571,9 +2584,13 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
           free(scinfo_indices);
           scinfo_indices = NULL;
         }
-        if ( scinfo_values ) {
-          free(scinfo_values);
-          scinfo_values = NULL;
+        if ( scinfo_values_s1 ) {
+          free(scinfo_values_s1);
+          scinfo_values_s1 = NULL;
+        }
+        if ( scinfo_values_s2 ) {
+          free(scinfo_values_s2);
+          scinfo_values_s2 = NULL;
         }
         mcpl_close_outfile( out );
         mcpl_internal_delete_file( file_output );
@@ -2586,14 +2603,21 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
       if ( n_scinfo ) {
         for ( unsigned isc = 0; isc < n_scinfo; ++isc ) {
           uint32_t isc_idx = scinfo_indices[isc];
-          if ( scinfo_values[isc] == -1.0 )
+          if ( scinfo_values_s1[isc] == -1.0 && scinfo_values_s2[isc] == 0.0 )
             continue;//ignore
           double v;
           char buf[MCPL_STATCUMULBUF_MAXLENGTH+1];
-          if ( !fi_internal || fi_internal->ncomments != out_internal->ncomments )
+          if ( !fi_internal || isc_idx >= fi_internal->ncomments )
             mcpl_error("Number of comments changed during merge");
           mcpl_internal_decodestatcumul( fi_internal->comments[isc_idx], buf, &v );
-          scinfo_values[isc] = ( v >= 0.0 ? scinfo_values[isc] + v: -1.0 );//fixme: stablesum
+          if ( v == -1.0 ) {
+            scinfo_values_s1[isc] = -1.0;
+            scinfo_values_s2[isc] = 0.0;
+          } else {
+            mcpl_impl_stablesum_add( scinfo_values_s1+isc,
+                                     scinfo_values_s2+isc,
+                                     v );
+          }
         }
       }
     }
@@ -2629,11 +2653,11 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
   mcpl_close_file(f1);
 
   //Finally we must update the cumul stats:
-  if ( scinfo_values && scinfo_indices ) {
+  if ( scinfo_values_s1 && scinfo_values_s2 && scinfo_indices ) {
     if ( n_scinfo != out_internal->nstatcumulinfo || !out_internal->statcumulinfo )
       mcpl_error("stat cumul merge logic error");
     for ( unsigned isc = 0; isc < n_scinfo; ++isc ) {
-      double val = scinfo_values[isc];
+      double val = scinfo_values_s1[isc] + scinfo_values_s2[isc];
       if ( val == -1.0 )
         continue;//already at -1
       mcpl_internal_statcumulinfo_t * sci = out_internal->statcumulinfo + isc;
@@ -2641,8 +2665,10 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
       mcpl_internal_encodestatcumul( sci->key, val, comment );
       mcpl_internal_updatestatcumul( out_internal->file, sci, comment, val );
     }
+
     free(scinfo_indices);
-    free(scinfo_values);
+    free(scinfo_values_s1);
+    free(scinfo_values_s2);
   }
   return out;
 }
