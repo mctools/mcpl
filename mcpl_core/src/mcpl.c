@@ -574,29 +574,58 @@ MCPL_LOCAL void mcpl_internal_encodestatcumul( const char * key,
                                                double value,
                                                char * targetbuf )
 {
+  size_t nbufleft = MCPL_STATCUMULBUF_MAXLENGTH+1;
   if ( !(value>=0.0 || value == -1.0 ) || isnan(value) || isinf(value) )
     mcpl_error("Invalid statcumul value (must be -1 or >=0, and not nan/inf");
 
+  //Add initial marker including colon:
+  MCPL_STATIC_ASSERT( MCPL_STATCUMULINI_LENGTH < MCPL_STATCUMULBUF_MAXLENGTH );
   memcpy(targetbuf, MCPL_STATCUMULINI, MCPL_STATCUMULINI_LENGTH);
   targetbuf += MCPL_STATCUMULINI_LENGTH;
+  nbufleft -= MCPL_STATCUMULINI_LENGTH;
+
+  //Add key marker:
   size_t n = strlen(key);
-  if (n<1|| n > MCPL_STATCUMULKEY_MAXLENGTH)
+  if ( n<1|| n > MCPL_STATCUMULKEY_MAXLENGTH )
     mcpl_error("statcumul key length out of range");
+
+  if ( n > nbufleft )
+    mcpl_error("statcumul encode buffer error");
   memcpy(targetbuf, key, n );
-  targetbuf+=n;
+  targetbuf += n;
+  nbufleft -= n;
+
+  //Add colon:
+  if ( !nbufleft )
+    mcpl_error("statcumul encode buffer error");
   *targetbuf = ':';
   ++targetbuf;
-  size_t nbufleft = 1+MCPL_STATCUMULBUF_MAXLENGTH-n-MCPL_STATCUMULINI_LENGTH;
-  if ( value == -1 ) {
+  --nbufleft;
+
+  //Add MCPL_STATCUMULVAL_LENGTH bytes containing the actual value, as well as a
+  //final null termination byte:
+  if ( nbufleft < MCPL_STATCUMULVAL_LENGTH + 1 )
+    mcpl_error("statcumul encode buffer error");
+  if ( value == -1.0 ) {
     //special case, add keyword for readability
-    snprintf( targetbuf, nbufleft, MCPL_STATCUMULVAL_ENCODEDMINUS1 );
+    memcpy( targetbuf,
+            MCPL_STATCUMULVAL_ENCODEDMINUS1,
+            MCPL_STATCUMULVAL_LENGTH + 1 );
   } else {
-    const char * fmt0 = "%22.14g";
-    const char * fmt1 = "%22.17g";
-    snprintf( targetbuf, nbufleft, fmt0,value );
+    //In general lossless encoding of doubles require .17g, but we first try
+    //with .15g to potentially avoid messy encodings like 0.1 being encoded as
+    //"0.10000000000000001" rather than "0.1". And the 22 is needed to ensure
+    //the full width of the string fits in 22 chars.
+    int w1 = snprintf( targetbuf, nbufleft, "%22.15g",value );
+    if ( w1 != MCPL_STATCUMULVAL_LENGTH )
+      mcpl_error("statcumul value encoding error");
     double v = strtod( targetbuf, NULL );
-    if ( v != value )
-      snprintf( targetbuf, nbufleft, fmt1,value );
+    if ( v != value ) {
+      //ok, .15g was not good enough, go for full .17g:
+      int w2 = snprintf( targetbuf, nbufleft, "%22.17g",value );
+      if ( w2 != MCPL_STATCUMULVAL_LENGTH )
+        mcpl_error("statcumul value encoding error");
+    }
   }
 
   if ( strlen( targetbuf ) != MCPL_STATCUMULVAL_LENGTH )
