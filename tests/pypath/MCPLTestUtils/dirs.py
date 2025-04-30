@@ -41,9 +41,17 @@ def _find_data_dir():
 def _find_mcpltool_cmd():
     import os
     import pathlib
-    f=pathlib.Path(os.environ['MCPL_TOOL_FILE'])
+    f=pathlib.Path(os.environ['MCPL_TOOL_FILE']).absolute()
+    assert f.is_file()
+    return f
+
+def _find_mcpllib():
+    import os
+    import pathlib
+    f=pathlib.Path(os.environ['MCPL_LIB']).absolute()
     assert f.is_file()
     return f
 
 test_data_dir = _find_data_dir()
 mcpltool_cmd = _find_mcpltool_cmd()
+mcpllib = _find_mcpllib()

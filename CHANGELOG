@@ -4,6 +4,9 @@ v2.0.1 (work in progress):
         simply putting them onto stdout via a call to printf. One use-case for
         this would be for Python which wants to load the MCPL library and ensure
         that all printouts are directed into the Python stdout streams.
+      * Add support for compiled C code in python tests, allowing c code in
+        tests/modules/lib_xxx/*.c to be accessed in Python test scripts in
+        tests/scripts.
       * ...
 
 v2.0.0 2024-04-24

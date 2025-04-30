@@ -63,10 +63,10 @@ list(
   "PYTHONPATH=path_list_prepend:${mcpltest_pypath}"
   "PYTHONPATH=path_list_prepend:${PROJECT_SOURCE_DIR}/pypath"
 )
-#list(
-#  APPEND mcpltest_pyenvmod
-#  "MCPL_LIB=set:$<TARGET_FILE:${mcpltests_mcpllib_target}>"
-#)
+list(
+  APPEND mcpltest_pyenvmod
+  "MCPL_LIB=set:$<TARGET_FILE:${mcpltests_mcpllib_target}>"
+)
 
 list(
   APPEND mcpltest_pyenvmod
@@ -99,11 +99,11 @@ set( mcpltests_extra_inc_dirs PUBLIC "${CMAKE_CURRENT_LIST_DIR}/include" )
 #TEMP   "${mcpltests_extra_link_libs}"
 #TEMP   "${mcpltests_extra_inc_dirs}"
 #TEMP )
-#TEMP mctools_testutils_add_test_modules(
-#TEMP   "${CMAKE_CURRENT_LIST_DIR}/modules"
-#TEMP   "${mcpltests_extra_link_libs}"
-#TEMP   "${mcpltests_extra_inc_dirs}"
-#TEMP )
+mctools_testutils_add_test_modules(
+  "${CMAKE_CURRENT_LIST_DIR}/modules"
+  "${mcpltests_extra_link_libs}"
+  "${mcpltests_extra_inc_dirs}"
+)
 
 set( mcpltest_appenvmod "" )
 
