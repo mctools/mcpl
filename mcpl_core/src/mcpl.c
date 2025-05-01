@@ -262,7 +262,7 @@ MCPL_LOCAL int mcpl_internal_fakeconstantversion( int enable )
 
 #define MCPL_STATCUMULINI "stat:cumul:"
 #define MCPL_STATCUMULINI_LENGTH (sizeof(MCPL_STATCUMULINI)-1)
-#define MCPL_STATCUMULKEY_MAXLENGTH 128
+#define MCPL_STATCUMULKEY_MAXLENGTH 64
 #define MCPL_STATCUMULVAL_LENGTH 22
 #define MCPL_STATCUMULVAL_ENCODEDMINUS1 "    -1 (NOT AVAILABLE)"
 #define MCPL_STATCUMULBUF_MAXLENGTH ( MCPL_STATCUMULKEY_MAXLENGTH + \
@@ -593,10 +593,16 @@ MCPL_LOCAL void mcpl_internal_encodestatcumul( const char * key,
   //Add key marker:
   size_t n = strlen(key);
   if ( n<1|| n > MCPL_STATCUMULKEY_MAXLENGTH ) {
-    printf("MCPL ERROR: statcumul key \"%s\" too long"
-           " (%llu chars, max %i allowed)\n",
-           key, (unsigned long long)n, (int)(MCPL_STATCUMULKEY_MAXLENGTH) );
-    mcpl_error("statcumul key length out of range");
+    size_t nbuf = 128 + n;
+    char fixbuf[2056];
+    char * buf = fixbuf;
+    if ( nbuf > sizeof(fixbuf) )
+      buf = mcpl_internal_malloc(nbuf);//never freed, but need to pass to
+                                       //non-returning mcpl_error so we can not.
+    snprintf(buf,nbuf,
+             "statcumul key \"%s\" too long (%llu chars, max %i allowed)",
+             key, (unsigned long long)n, (int)(MCPL_STATCUMULKEY_MAXLENGTH) );
+    mcpl_error(buf);
   }
 
   if ( n > nbufleft )
