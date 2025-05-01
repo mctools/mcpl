@@ -1,4 +1,9 @@
 v2.0.1 (work in progress):
+      * Add new mcpl_set_print_handler function in the C API which can be used
+        to handle printouts from the MCPL library in a different manner than
+        simply putting them onto stdout via a call to printf. One use-case for
+        this would be for Python which wants to load the MCPL library and ensure
+        that all printouts are directed into the Python stdout streams.
       * ...
 
 v2.0.0 2024-04-24

@@ -107,25 +107,65 @@
 #define MCPL_STATIC_ASSERT2(expr,x) MCPL_STATIC_ASSERT3(expr,x)
 #define MCPL_STATIC_ASSERT(expr)    MCPL_STATIC_ASSERT2(expr,__LINE__)
 
-MCPL_LOCAL int mcpl_platform_is_little_endian(void) {
-  //Return 0 for big endian, 1 for little endian.
-  volatile uint32_t i=0x01234567;
-  return (*((uint8_t*)(&i))) == 0x67;
+MCPL_LOCAL void mcpl_default_print_handler( const char * msg )
+{
+  printf("%s",msg);
+}
+
+//Make sure we don't have any raw printf's below
+#ifdef printf
+#  undef printf
+#endif
+#define printf MCPLNOUSEPRINTF
+
+typedef void (*MCPL_CHARTOVOID_FCT)(const char *);
+
+MCPL_LOCAL MCPL_CHARTOVOID_FCT* mcpl_current_print_handler(void)
+{
+  static MCPL_CHARTOVOID_FCT current = NULL;
+  return &current;
+}
+
+MCPL_LOCAL void mcpl_print( const char * msg )
+{
+  MCPL_CHARTOVOID_FCT current = *mcpl_current_print_handler();
+  if (!current) {
+    mcpl_default_print_handler(msg);
+  } else {
+    current(msg);
+  }
 }
 
 MCPL_LOCAL void mcpl_default_error_handler(const char * msg) {
-  printf("MCPL ERROR: %s\n",msg);
+  char buf[4096];
+  if ( strlen(msg)+64 < sizeof(buf) ) {
+    snprintf(buf,sizeof(buf),"MCPL ERROR: %s\n",msg);
+    mcpl_print(buf);
+  } else {
+    mcpl_print("MCPL ERROR:\n");
+    mcpl_print(msg);
+  }
   exit(1);
 }
 
-static void (*mcpl_error_handler)(const char *) = &mcpl_default_error_handler;
+MCPL_LOCAL MCPL_CHARTOVOID_FCT* mcpl_current_error_handler(void)
+{
+  static MCPL_CHARTOVOID_FCT current = NULL;
+  return &current;
+}
 
-MCPL_LOCAL void mcpl_error(const char * msg) {
-  mcpl_error_handler(msg);
-  //Error handler should not return, but in case it does anyway, we at least
-  //ensure a hard exit!
-  mcpl_default_error_handler("Handler given to mcpl_set_error_handler returns"
-                             " to calling code which is not allowed!");
+MCPL_LOCAL void mcpl_error(const char * msg)
+{
+  MCPL_CHARTOVOID_FCT current = *mcpl_current_error_handler();
+  if (!current) {
+    mcpl_default_error_handler(msg);
+  } else {
+    current(msg);
+    //Error handler should not return, but in case it does anyway, we use the
+    //default handler to ensure a hard exit.
+    mcpl_default_error_handler("Handler given to mcpl_set_error_handler returns"
+                               " to calling code which is not allowed!");
+  }
 }
 
 MCPL_LOCAL char * mcpl_internal_malloc(size_t n)
@@ -155,7 +195,20 @@ MCPL_LOCAL void * mcpl_internal_realloc( void* mem, size_t new_size)
 
 void mcpl_set_error_handler(void (*handler)(const char *))
 {
-  mcpl_error_handler = handler;
+  MCPL_CHARTOVOID_FCT* cptr = mcpl_current_error_handler();
+  *cptr = handler;
+}
+
+void mcpl_set_print_handler(void (*handler)(const char *))
+{
+  MCPL_CHARTOVOID_FCT* cptr = mcpl_current_print_handler();
+  *cptr = handler;
+}
+
+MCPL_LOCAL int mcpl_platform_is_little_endian(void) {
+  //Return 0 for big endian, 1 for little endian.
+  volatile uint32_t i=0x01234567;
+  return (*((uint8_t*)(&i))) == 0x67;
 }
 
 MCPL_LOCAL void mcpl_store_string(char** dest, const char * src)
@@ -885,9 +938,9 @@ void mcpl_transfer_metadata(mcpl_file_t source, mcpl_outfile_t target)
 
 int mcpl_closeandgzip_outfile_rc(mcpl_outfile_t of)
 {
-  printf("MCPL WARNING: Usage of function mcpl_closeandgzip_outfile_rc is obsolete as"
-         " mcpl_closeandgzip_outfile now also returns the status. Please update your code"
-         " to use mcpl_closeandgzip_outfile instead.\n");
+  mcpl_print("MCPL WARNING: Usage of function mcpl_closeandgzip_outfile_rc is obsolete as"
+             " mcpl_closeandgzip_outfile now also returns the status. Please update your code"
+             " to use mcpl_closeandgzip_outfile instead.\n");
   return mcpl_closeandgzip_outfile(of);
 }
 
@@ -1286,8 +1339,11 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
             } else {
               if (f->nparticles!=0)
                 mcpl_error("unexpected nparticles value");
-              printf("MCPL WARNING: Input file appears to not have been"
-                     " closed properly. Recovered %" PRIu64 " particles.\n",np);
+              char buf[256];
+              snprintf(buf,sizeof(buf),"MCPL WARNING: Input file appears to"
+                       " not have been closed properly. Recovered %"
+                       PRIu64 " particles.\n",np);
+              mcpl_print(buf);
             }
             f->nparticles = np;
           }
@@ -1334,7 +1390,10 @@ void mcpl_repair(const char * filename)
   uint64_t nparticles2 = mcpl_hdr_nparticles(f);
   mcpl_close_file(f);
   if (repair_status==0&&nparticles==nparticles2) {
-    printf("MCPL: Successfully repaired file with %" PRIu64 " particles.\n",nparticles);
+    char buf[256];
+    snprintf(buf,sizeof(buf),"MCPL: Successfully repaired file with %"
+             PRIu64 " particles.\n",nparticles);
+    mcpl_print(buf);
   } else {
     mcpl_error("Something went wrong while attempting to repair file.");
   }
@@ -1643,8 +1702,9 @@ int mcpl_hdr_universal_pdgcode(mcpl_file_t ff)
 
 int mcpl_hdr_universel_pdgcode(mcpl_file_t ff)
 {
-  printf("MCPL WARNING: Usage of function mcpl_hdr_universel_pdgcode is obsolete as it has"
-         " been renamed to mcpl_hdr_universal_pdgcode. Please update your code.\n");
+  mcpl_print("MCPL WARNING: Usage of function mcpl_hdr_universel_pdgcode"
+             " is obsolete as it has been renamed to"
+             " mcpl_hdr_universal_pdgcode. Please update your code.\n");
   return mcpl_hdr_universal_pdgcode(ff);
 }
 
@@ -1675,15 +1735,23 @@ void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
 
   //Sanity checks for universal fields here (but not in mcpl_add_particle since users are allowed to create files by setting just the universal fields):
   if ( ft->opt_universalpdgcode && fs->particle->pdgcode != ft->opt_universalpdgcode) {
-    printf("MCPL ERROR: mcpl_transfer_last_read_particle asked to transfer particle with pdgcode %li into a file with universal pdgcode of %li\n",
-           (long)fs->particle->pdgcode,(long)ft->opt_universalpdgcode);
-    mcpl_error("mcpl_transfer_last_read_particle got incompatible pdgcode\n");
+    char buf[256];
+    snprintf(buf,sizeof(buf),"mcpl_transfer_last_read_particle asked to"
+             " transfer particle with pdgcode %li into a file with"
+             " universal pdgcode of %li\n",
+             (long)fs->particle->pdgcode,
+             (long)ft->opt_universalpdgcode);
+    mcpl_error(buf);
     return;
   }
   if ( ft->opt_universalweight && fs->particle->weight != ft->opt_universalweight) {
-    printf("MCPL ERROR: mcpl_transfer_last_read_particle asked to transfer particle with weight %g into a file with universal weight of %g\n",
-           fs->particle->weight,ft->opt_universalweight);
-    mcpl_error("mcpl_transfer_last_read_particle got incompatible weight\n");
+    char buf[256];
+    snprintf(buf,sizeof(buf),"mcpl_transfer_last_read_particle asked to"
+             " transfer particle with weight %g into a file with universal"
+             " weight of %g\n",
+             fs->particle->weight,
+             ft->opt_universalweight );
+    mcpl_error(buf);
     return;
   }
   //NB: We don't sanity check that polarisation/userflags are enabled if present
@@ -1737,51 +1805,121 @@ void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
 
 void mcpl_dump_header(mcpl_file_t f)
 {
-  printf("\n  Basic info\n");
-  printf("    Format             : MCPL-%i\n",mcpl_hdr_version(f));
-  printf("    No. of particles   : %" PRIu64 "\n",mcpl_hdr_nparticles(f));
-  printf("    Header storage     : %" PRIu64 " bytes\n",mcpl_hdr_header_size(f));
-  printf("    Data storage       : %" PRIu64 " bytes\n",mcpl_hdr_nparticles(f)*mcpl_hdr_particle_size(f));
-  printf("\n  Custom meta data\n");
-  printf("    Source             : \"%s\"\n",mcpl_hdr_srcname(f));
-  unsigned nc=mcpl_hdr_ncomments(f);
-  printf("    Number of comments : %i\n",nc);
-  unsigned ic;
-  for (ic = 0; ic < nc; ++ic)
-    printf("          -> comment %i : \"%s\"\n",ic,mcpl_hdr_comment(f,ic));
-  unsigned nb = mcpl_hdr_nblobs(f);
-  printf("    Number of blobs    : %i\n",nb);
+  char buf[4096];
+  mcpl_print("\n  Basic info\n");
+  snprintf(buf,sizeof(buf),
+           "    Format             : MCPL-%i\n",mcpl_hdr_version(f));
+  mcpl_print(buf);
+  snprintf(buf,sizeof(buf),
+           "    No. of particles   : %" PRIu64 "\n",mcpl_hdr_nparticles(f) );
+  mcpl_print(buf);
+  snprintf(buf,sizeof(buf),
+           "    Header storage     : %" PRIu64 " bytes\n",
+           mcpl_hdr_header_size(f));
+  mcpl_print(buf);
+  snprintf(buf,sizeof(buf),
+           "    Data storage       : %" PRIu64 " bytes\n",
+           mcpl_hdr_nparticles(f)*mcpl_hdr_particle_size(f));
+  mcpl_print(buf);
+  mcpl_print("\n  Custom meta data\n");
+
+  //srcname or comments might be too long for our static print buffer, so we use
+  //a dynamic buffer if needed.
+  unsigned ncomments = mcpl_hdr_ncomments(f);
+  unsigned nblobs = mcpl_hdr_nblobs(f);
   const char** blobkeys = mcpl_hdr_blobkeys(f);
-  uint32_t ib;
-  for (ib = 0; ib < nb; ++ib) {
+  size_t lmax = strlen(mcpl_hdr_srcname(f));
+  {
+    for (unsigned ic = 0; ic < ncomments; ++ic) {
+      size_t lc = strlen(mcpl_hdr_comment(f,ic));
+      if ( lc > lmax )
+        lmax = lc;
+    }
+    for (uint32_t ib = 0; ib < nblobs; ++ib) {
+      size_t lbk = strlen(blobkeys[ib]);
+      if ( lbk > lmax )
+        lmax = lbk;
+    }
+  }
+  lmax += 128;//safe + other parts of the printed lines
+
+  char * flexbuf = buf;
+  size_t lflexbuf = sizeof(buf);
+  if ( lmax > lflexbuf ) {
+    lflexbuf = lmax;
+    flexbuf = mcpl_internal_malloc( lflexbuf );
+  }
+
+  snprintf(flexbuf,lflexbuf,
+           "    Source             : \"%s\"\n",mcpl_hdr_srcname(f));
+  mcpl_print(flexbuf);
+  snprintf(buf,sizeof(buf),
+           "    Number of comments : %i\n",ncomments);
+  mcpl_print(buf);
+  unsigned ic;
+  for (ic = 0; ic < ncomments; ++ic) {
+    snprintf(flexbuf,lflexbuf,
+             "          -> comment %i : \"%s\"\n",ic,mcpl_hdr_comment(f,ic));
+    mcpl_print(flexbuf);
+  }
+  snprintf(buf,sizeof(buf),
+           "    Number of blobs    : %i\n",nblobs);
+  mcpl_print(buf);
+  for (uint32_t ib = 0; ib < nblobs; ++ib) {
     const char * data;
     uint32_t ldata;
     int ok = mcpl_hdr_blob(f, blobkeys[ib], &ldata, &data);
-    if (!ok)
+    if (!ok) {
+      if ( flexbuf != buf )
+        free(flexbuf);
       mcpl_error("Unexpected blob access error");
-    printf("          -> %lu bytes of data with key \"%s\"\n",(unsigned long)ldata,blobkeys[ib]);
+    }
+    snprintf(flexbuf,lflexbuf,
+             "          -> %lu bytes of data with key \"%s\"\n",
+             (unsigned long)ldata,blobkeys[ib]);
+    mcpl_print(flexbuf);
   }
 
-  printf("\n  Particle data format\n");
-  printf("    User flags         : %s\n",(mcpl_hdr_has_userflags(f)?"yes":"no"));
-  printf("    Polarisation info  : %s\n",(mcpl_hdr_has_polarisation(f)?"yes":"no"));
-  printf("    Fixed part. type   : ");
-  int32_t updg = mcpl_hdr_universal_pdgcode(f);
-  if (updg)
-    printf("yes (pdgcode %li)\n",(long)updg);
-  else
-    printf("no\n");
-  printf("    Fixed part. weight : ");
-  double uw = mcpl_hdr_universal_weight(f);
-  if (uw)
-    printf("yes (weight %g)\n",uw);
-  else
-    printf("no\n");
-  printf("    FP precision       : %s\n",(mcpl_hdr_has_doubleprec(f)?"double":"single"));
-  printf("    Endianness         : %s\n",(mcpl_hdr_little_endian(f)?"little":"big"));
-  printf("    Storage            : %i bytes/particle\n",mcpl_hdr_particle_size(f));
+  if ( flexbuf != buf )
+    free(flexbuf);
 
-  printf("\n");
+  mcpl_print("\n  Particle data format\n");
+  snprintf(buf,sizeof(buf),
+           "    User flags         : %s\n",
+           (mcpl_hdr_has_userflags(f)?"yes":"no") );
+  mcpl_print(buf);
+  snprintf(buf,sizeof(buf),
+           "    Polarisation info  : %s\n",
+           (mcpl_hdr_has_polarisation(f)?"yes":"no"));
+  mcpl_print(buf);
+  mcpl_print("    Fixed part. type   : ");
+  int32_t updg = mcpl_hdr_universal_pdgcode(f);
+  if (updg) {
+    snprintf(buf,sizeof(buf),"yes (pdgcode %li)\n",(long)updg);
+    mcpl_print(buf);
+  } else {
+    mcpl_print("no\n");
+  }
+  mcpl_print("    Fixed part. weight : ");
+  double uw = mcpl_hdr_universal_weight(f);
+  if (uw) {
+    snprintf(buf,sizeof(buf),"yes (weight %g)\n",uw);
+    mcpl_print(buf);
+  } else {
+    mcpl_print("no\n");
+  }
+  snprintf(buf,sizeof(buf),
+           "    FP precision       : %s\n",
+           (mcpl_hdr_has_doubleprec(f)?"double":"single"));
+  mcpl_print(buf);
+  snprintf(buf,sizeof(buf),
+           "    Endianness         : %s\n",
+           (mcpl_hdr_little_endian(f)?"little":"big"));
+  mcpl_print(buf);
+  snprintf(buf,sizeof(buf),
+           "    Storage            : %i bytes/particle\n\n",
+           mcpl_hdr_particle_size(f));
+  mcpl_print(buf);
 }
 
 void mcpl_dump_particles(mcpl_file_t f, uint64_t nskip, uint64_t nlimit,
@@ -1790,16 +1928,18 @@ void mcpl_dump_particles(mcpl_file_t f, uint64_t nskip, uint64_t nlimit,
   int has_uf = mcpl_hdr_has_userflags(f);
   int has_pol = mcpl_hdr_has_polarisation(f);
   double uweight = mcpl_hdr_universal_weight(f);
-  printf("index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]");
+  mcpl_print("index     pdgcode   ekin[MeV]       x[cm]       y[cm]"
+             "       z[cm]          ux          uy          uz    time[ms]");
   if (!uweight)
-    printf("      weight");
+    mcpl_print("      weight");
   if (has_pol)
-    printf("       pol-x       pol-y       pol-z");
+    mcpl_print("       pol-x       pol-y       pol-z");
   if (has_uf)
-    printf("  userflags");
-  printf("\n");
+    mcpl_print("  userflags");
+  mcpl_print("\n");
   mcpl_skipforward(f,nskip);
   //Writing the next loop in an annoying way to silence MSVC C4706 warning:
+  char buf[256];
   for ( uint64_t count = nlimit ; ( nlimit==0 || count-- ) ; ) {
     const mcpl_particle_t* p = mcpl_read(f);
     if (!p)
@@ -1809,19 +1949,29 @@ void mcpl_dump_particles(mcpl_file_t f, uint64_t nskip, uint64_t nlimit,
       continue;
     }
     uint64_t idx = mcpl_currentposition(f)-1;//-1 since mcpl_read skipped ahead
-    printf( "%5" PRIu64
+    snprintf(buf,sizeof(buf),
+             "%5" PRIu64
             " %11i %11.5g %11.5g %11.5g %11.5g %11.5g %11.5g %11.5g %11.5g",
             idx, p->pdgcode, p->ekin,
             p->position[0], p->position[1], p->position[2],
             p->direction[0], p->direction[1], p->direction[2],
             p->time );
-    if (!uweight)
-      printf(" %11.5g",p->weight);
-    if (has_pol)
-      printf(" %11.5g %11.5g %11.5g",p->polarisation[0],p->polarisation[1],p->polarisation[2]);
-    if (has_uf)
-      printf(" 0x%08x",p->userflags);
-    printf("\n");
+    mcpl_print(buf);
+    if (!uweight) {
+      snprintf(buf,sizeof(buf)," %11.5g",p->weight);
+      mcpl_print(buf);
+    }
+    if (has_pol) {
+      snprintf(buf,sizeof(buf),
+               " %11.5g %11.5g %11.5g",
+               p->polarisation[0],p->polarisation[1],p->polarisation[2]);
+      mcpl_print(buf);
+    }
+    if (has_uf) {
+      snprintf(buf,sizeof(buf)," 0x%08x",p->userflags);
+      mcpl_print(buf);
+    }
+    mcpl_print("\n");
   }
 }
 
@@ -1832,8 +1982,12 @@ void mcpl_dump(const char * filename, int parts, uint64_t nskip, uint64_t nlimit
   mcpl_file_t f = mcpl_open_file(filename);
   {
     char * bn = mcpl_basename(filename);
-    printf("Opened MCPL file %s:\n",bn);
+    size_t n = 128 + strlen(bn);
+    char * buf = mcpl_internal_malloc( n );
+    snprintf(buf,n,"Opened MCPL file %s:\n",bn);
+    mcpl_print(buf);
     free(bn);
+    free(buf);
   }
   if (parts==0||parts==1)
     mcpl_dump_header(f);
@@ -2001,9 +2155,12 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
     }
   }
   if (normal_merge_ok) {
-    printf("MCPL mcpl_forcemerge_files called with %i files that are"
-           " compatible for a standard merge => falling back to"
-           " standard mcpl_merge_files function\n",nfiles);
+    char prbuf[256];
+    snprintf(prbuf,sizeof(prbuf),
+             "MCPL mcpl_forcemerge_files called with %i files that are"
+             " compatible for a standard merge => falling back to"
+             " standard mcpl_merge_files function\n", nfiles );
+    mcpl_print(prbuf);
     return mcpl_merge_files(file_output,nfiles,files);
   }
 
@@ -2072,13 +2229,24 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
   if ( !disallow_universalweight && lastseen_universalweight )
     mcpl_enable_universal_weight(out,lastseen_universalweight);
 
+  //Figure out largest filename for print buffer:
+  size_t nbuf = strlen(file_output);
+  for (ifile = 0; ifile < nfiles; ++ifile) {
+    size_t nf = strlen(files[ifile]);
+    if ( nf > nbuf )
+      nbuf = nf;
+  }
+  nbuf += 128;//other stuff on the lines
+  char * buf = mcpl_internal_malloc(nbuf);
+
   //Finally, perform the transfer:
   for (ifile = 0; ifile < nfiles; ++ifile) {
     mcpl_file_t f = mcpl_open_file(files[ifile]);
     uint64_t np = mcpl_hdr_nparticles(f);
-    printf("MCPL force-merge: Transferring %" PRIu64
-           " particle%s from file %s\n",
-           np,(np==1?"":"s"),files[ifile]);
+    snprintf(buf,nbuf,"MCPL force-merge: Transferring %" PRIu64
+             " particle%s from file %s\n",
+             np,(np==1?"":"s"),files[ifile]);
+    mcpl_print(buf);
     while ( mcpl_read(f) != 0 )
       mcpl_transfer_last_read_particle(f, out);//lossless transfer when possible
     mcpl_close_file(f);
@@ -2086,9 +2254,12 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
 
   mcpl_outfileinternal_t * out_internal = (mcpl_outfileinternal_t *)out.internal;
   uint64_t np = out_internal->nparticles;
-  printf("MCPL force-merge: Transferred a total of %" PRIu64
-         " particle%s to new file %s\n",
-         np,(np==1?"":"s"),file_output);
+  snprintf(buf,nbuf,
+           "MCPL force-merge: Transferred a total of %" PRIu64
+           " particle%s to new file %s\n",
+           np,(np==1?"":"s"),file_output);
+  mcpl_print(buf);
+  free(buf);
   return out;
 }
 
@@ -2154,8 +2325,8 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
       //particle data for latest format:
       if (!warned_oldversion) {
         warned_oldversion = 1;
-        printf("MCPL WARNING: Merging files from older MCPL"
-               " format. Output will be in latest format.\n");
+        mcpl_print("MCPL WARNING: Merging files from older MCPL"
+                   " format. Output will be in latest format.\n");
       }
 
       //Writing the next loop in an annoying way to silence MSVC C4706 warning:
@@ -2178,8 +2349,8 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
 
 void mcpl_merge(const char * file1, const char* file2)
 {
-  printf("MCPL WARNING: Usage of function mcpl_merge is obsolete as it has"
-         " been renamed to mcpl_merge_inplace. Please update your code.\n");
+  mcpl_print("MCPL WARNING: Usage of function mcpl_merge is obsolete as it has"
+             " been renamed to mcpl_merge_inplace. Please update your code.\n");
   mcpl_merge_inplace(file1, file2);
 }
 
@@ -2293,65 +2464,92 @@ char* mcpl_usage_progname( const char * argv0 )
 
 MCPL_LOCAL int mcpl_tool_usage( char** argv, const char * errmsg ) {
   if (errmsg) {
-    printf("ERROR: %s\n\n",errmsg);
-    printf("Run with -h or --help for usage information\n");
+    size_t n = strlen(errmsg) + 128;
+    char * ebuf = mcpl_internal_malloc(n);
+    snprintf(ebuf,n,
+             "ERROR: %s\n\n"
+             "Run with -h or --help for usage information\n",
+             errmsg);
+    mcpl_print(ebuf);
+    free(ebuf);
     return 1;
   }
   char * progname = mcpl_usage_progname(argv[0]);
-  printf("Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.\n");
-  printf("\n");
-  printf("The default behaviour is to display the contents of the FILE in human readable\n");
-  printf("format (see Dump Options below for how to modify what is displayed).\n");
-  printf("\n");
-  printf("This installation supports direct reading of gzipped files (.mcpl.gz).\n");
-  printf("\n");
-  printf("Usage:\n");
-  printf("  %s [dump-options] FILE\n",progname);
-  printf("  %s --merge [merge-options] FILE1 FILE2\n",progname);
-  printf("  %s --extract [extract-options] FILE1 FILE2\n",progname);
-  printf("  %s --repair FILE\n",progname);
-  printf("  %s --version\n",progname);
-  printf("  %s --help\n",progname);
-  printf("\n");
-  printf("Dump options:\n");
-  printf("  By default include the info in the FILE header plus the first ten contained\n");
-  printf("  particles. Modify with the following options:\n");
+  size_t nbuf = 256 + strlen(progname);
+  char * buf = mcpl_internal_malloc(nbuf);
+  mcpl_print("Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.\n");
+  mcpl_print("\n");
+  mcpl_print("The default behaviour is to display the contents of the FILE in human readable\n");
+  mcpl_print("format (see Dump Options below for how to modify what is displayed).\n");
+  mcpl_print("\n");
+  mcpl_print("This installation supports direct reading of gzipped files (.mcpl.gz).\n");
+  mcpl_print("\n");
+  mcpl_print("Usage:\n");
+  snprintf(buf,nbuf,
+           "  %s [dump-options] FILE\n",progname);
+  mcpl_print(buf);
+  snprintf(buf,nbuf,
+           "  %s --merge [merge-options] FILE1 FILE2\n",progname);
+  mcpl_print(buf);
+  snprintf(buf,nbuf,
+           "  %s --extract [extract-options] FILE1 FILE2\n",progname);
+  mcpl_print(buf);
+  snprintf(buf,nbuf,
+           "  %s --repair FILE\n",progname);
+  mcpl_print(buf);
+  snprintf(buf,nbuf,
+           "  %s --version\n",progname);
+  mcpl_print(buf);
+  snprintf(buf,nbuf,
+           "  %s --help\n",progname);
+  mcpl_print(buf);
+  mcpl_print("\n");
+  mcpl_print("Dump options:\n");
+  mcpl_print("  By default include the info in the FILE header plus the first ten contained\n");
+  mcpl_print("  particles. Modify with the following options:\n");
   MCPL_STATIC_ASSERT(MCPLIMP_TOOL_DEFAULT_NLIMIT==10);
-  printf("  -j, --justhead  : Dump just header info and no particle info.\n");
-  printf("  -n, --nohead    : Dump just particle info and no header info.\n");
-  printf("  -lN             : Dump up to N particles from the file (default %i). You\n",MCPLIMP_TOOL_DEFAULT_NLIMIT);
-  printf("                    can specify -l0 to disable this limit.\n");
-  printf("  -sN             : Skip past the first N particles in the file (default %i).\n",MCPLIMP_TOOL_DEFAULT_NSKIP);
-  printf("  -bKEY           : Dump binary blob stored under KEY to standard output.\n");
-  printf("\n");
-  printf("Merge options:\n");
-  printf("  -m, --merge FILEOUT FILE1 FILE2 ... FILEN\n");
-  printf("                    Creates new FILEOUT with combined particle contents from\n");
-  printf("                    specified list of N existing and compatible files.\n");
-  printf("  -m, --merge --inplace FILE1 FILE2 ... FILEN\n");
-  printf("                    Appends the particle contents in FILE2 ... FILEN into\n");
-  printf("                    FILE1. Note that this action modifies FILE1!\n");
-  printf("  --forcemerge [--keepuserflags] FILEOUT FILE1 FILE2 ... FILEN\n");
-  printf("               Like --merge but works with incompatible files as well, at the\n");
-  printf("               heavy price of discarding most metadata like comments and blobs.\n");
-  printf("               Userflags will be discarded unless --keepuserflags is specified.\n");
-  printf("\n");
-  printf("Extract options:\n");
-  printf("  -e, --extract FILE1 FILE2\n");
-  printf("                    Extracts particles from FILE1 into a new FILE2.\n");
-  printf("  -lN, -sN        : Select range of particles in FILE1 (as above).\n");
-  printf("  -pPDGCODE       : Select particles of type given by PDGCODE.\n");
-  printf("\n");
-  printf("Other options:\n");
-  printf("  -r, --repair FILE\n");
-  printf("                    Attempt to repair FILE which was not properly closed, by up-\n");
-  printf("                    dating the file header with the correct number of particles.\n");
-  printf("  -t, --text MCPLFILE OUTFILE\n");
-  printf("                    Read particle contents of MCPLFILE and write into OUTFILE\n");
-  printf("                    using a simple ASCII-based format.\n");
-  printf("  -v, --version   : Display version of MCPL installation.\n");
-  printf("  -h, --help      : Display this usage information (ignores all other options).\n");
+  mcpl_print("  -j, --justhead  : Dump just header info and no particle info.\n");
+  mcpl_print("  -n, --nohead    : Dump just particle info and no header info.\n");
+  snprintf(buf,nbuf,
+           "  -lN             : Dump up to N particles from the file (default %i). You\n",
+           MCPLIMP_TOOL_DEFAULT_NLIMIT);
+  mcpl_print(buf);
+  mcpl_print("                    can specify -l0 to disable this limit.\n");
+  snprintf(buf,nbuf,
+           "  -sN             : Skip past the first N particles in the file (default %i).\n",
+           MCPLIMP_TOOL_DEFAULT_NSKIP);
+  mcpl_print(buf);
+  mcpl_print("  -bKEY           : Dump binary blob stored under KEY to standard output.\n");
+  mcpl_print("\n");
+  mcpl_print("Merge options:\n");
+  mcpl_print("  -m, --merge FILEOUT FILE1 FILE2 ... FILEN\n");
+  mcpl_print("                    Creates new FILEOUT with combined particle contents from\n");
+  mcpl_print("                    specified list of N existing and compatible files.\n");
+  mcpl_print("  -m, --merge --inplace FILE1 FILE2 ... FILEN\n");
+  mcpl_print("                    Appends the particle contents in FILE2 ... FILEN into\n");
+  mcpl_print("                    FILE1. Note that this action modifies FILE1!\n");
+  mcpl_print("  --forcemerge [--keepuserflags] FILEOUT FILE1 FILE2 ... FILEN\n");
+  mcpl_print("               Like --merge but works with incompatible files as well, at the\n");
+  mcpl_print("               heavy price of discarding most metadata like comments and blobs.\n");
+  mcpl_print("               Userflags will be discarded unless --keepuserflags is specified.\n");
+  mcpl_print("\n");
+  mcpl_print("Extract options:\n");
+  mcpl_print("  -e, --extract FILE1 FILE2\n");
+  mcpl_print("                    Extracts particles from FILE1 into a new FILE2.\n");
+  mcpl_print("  -lN, -sN        : Select range of particles in FILE1 (as above).\n");
+  mcpl_print("  -pPDGCODE       : Select particles of type given by PDGCODE.\n");
+  mcpl_print("\n");
+  mcpl_print("Other options:\n");
+  mcpl_print("  -r, --repair FILE\n");
+  mcpl_print("                    Attempt to repair FILE which was not properly closed, by up-\n");
+  mcpl_print("                    dating the file header with the correct number of particles.\n");
+  mcpl_print("  -t, --text MCPLFILE OUTFILE\n");
+  mcpl_print("                    Read particle contents of MCPLFILE and write into OUTFILE\n");
+  mcpl_print("                    using a simple ASCII-based format.\n");
+  mcpl_print("  -v, --version   : Display version of MCPL installation.\n");
+  mcpl_print("  -h, --help      : Display this usage information (ignores all other options).\n");
 
+  free(buf);
   free(progname);
   return 0;
 }
@@ -2578,9 +2776,9 @@ int mcpl_tool(int argc,char** argv) {
       return mcpl_tool_usage(argv,"Unrecognised arguments for --version.");
 
     if ( mcpl_internal_fakeconstantversion(0) )
-      printf("MCPL version " "99.99.99" "\n");
+      mcpl_print("MCPL version " "99.99.99" "\n");
     else
-      printf("MCPL version " MCPL_VERSION_STR "\n");
+      mcpl_print("MCPL version " MCPL_VERSION_STR "\n");
     return 0;
   }
 
@@ -2625,8 +2823,11 @@ int mcpl_tool(int argc,char** argv) {
                             mcpl_forcemerge_files( outfn, nfilenames-1, (const char**)filenames + 1, opt_keepuserflags) :
                             mcpl_merge_files( outfn, nfilenames-1, (const char**)filenames + 1) );
       if (attempt_gzip) {
-        if (!mcpl_closeandgzip_outfile(mf))
-          printf("MCPL WARNING: Failed to gzip output. Non-gzipped output is found in %s\n",outfn);
+        if (!mcpl_closeandgzip_outfile(mf)) {
+          mcpl_print("MCPL WARNING: Failed to gzip output. Non-gzipped output is found in ");
+          mcpl_print(outfn);
+          mcpl_print("\n");
+        }
       } else {
         mcpl_close_outfile(mf);
       }
@@ -2699,8 +2900,15 @@ int mcpl_tool(int argc,char** argv) {
     //strncat(fo_filename,".gz",3);
     mcpl_close_file(fi);
 
-    printf("MCPL: Successfully extracted %" PRIu64 " / %" PRIu64 " particles from %s into %s\n",
-           added,fi_nparticles,filenames[0],fo_filename);
+    char buf[256];
+    snprintf(buf,sizeof(buf),
+             "MCPL: Successfully extracted %" PRIu64 " / %"
+             PRIu64 " particles from ",added,fi_nparticles);
+    mcpl_print(buf);
+    mcpl_print(filenames[0]);
+    mcpl_print(" into ");
+    mcpl_print(fo_filename);
+    mcpl_print("\n");
     free(fo_filename);
     free(filenames);
     return 0;
@@ -2795,9 +3003,9 @@ int mcpl_tool(int argc,char** argv) {
 
 int mcpl_gzip_file_rc(const char * filename)
 {
-  printf("MCPL WARNING: Usage of function mcpl_gzip_file_rc is obsolete as"
-         " mcpl_gzip_file now also returns the status. Please update your code"
-         " to use mcpl_gzip_file instead.\n");
+  mcpl_print("MCPL WARNING: Usage of function mcpl_gzip_file_rc is obsolete as"
+             " mcpl_gzip_file now also returns the status. Please update your"
+             " code to use mcpl_gzip_file instead.\n");
   return mcpl_gzip_file(filename);
 }
 
@@ -2857,15 +3065,24 @@ MCPL_LOCAL int mcpl_internal_do_gzip(const char *filename)
 int mcpl_gzip_file(const char * filename)
 {
   char * bn = mcpl_basename(filename);
-  printf("MCPL: Compressing file %s\n",bn);
+  size_t n = 128 + strlen(bn);
+  char * buf = mcpl_internal_malloc(n);
+  snprintf(buf,n,"MCPL: Compressing file %s\n",bn);
+  mcpl_print(buf);
+  int ec;
   if (!mcpl_internal_do_gzip(filename)) {
-    printf("MCPL ERROR: Problems encountered while compressing file %s.\n",bn);
-    free(bn);
-    return 0;
+    ec = 0;
+    snprintf(buf,n,
+             "MCPL ERROR: Problems encountered while compressing file %s.\n",
+             bn);
+  } else {
+    ec = 1;
+    snprintf(buf,n,"MCPL: Compressed file into %s.gz\n",bn);
   }
-  printf("MCPL: Compressed file into %s.gz\n",bn);
+  mcpl_print(buf);
   free(bn);
-  return 1;
+  free(buf);
+  return ec;
 }
 
 #ifdef _WIN32

@@ -278,6 +278,16 @@ extern "C" {
   /* process terminated. An error handler should not return to the calling code.  */
   MCPL_API void mcpl_set_error_handler(void (*handler)(const char *));
 
+  /*******/
+  /* I/O */
+  /*******/
+
+  /* By default messages are printed to stdout via a printf call, but it is */
+  /* possible to override this and pass all messages to a custom function   */
+  /* instead. Calling with NULL resets to original. Note that this might    */
+  /* get invoked with multiple or partial lines.                            */
+  MCPL_API void mcpl_set_print_handler(void (*handler)(const char *));
+
   /**********************/
   /* Obsolete functions */
   /**********************/
