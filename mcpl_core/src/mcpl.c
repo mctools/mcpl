@@ -264,7 +264,7 @@ MCPL_LOCAL int mcpl_internal_fakeconstantversion( int enable )
 #define MCPL_STATCUMULINI_LENGTH (sizeof(MCPL_STATCUMULINI)-1)
 #define MCPL_STATCUMULKEY_MAXLENGTH 64
 #define MCPL_STATCUMULVAL_LENGTH 24
-#define MCPL_STATCUMULVAL_ENCODEDMINUS1 "      -1 (NOT AVAILABLE)"
+#define MCPL_STATCUMULVAL_ENCODEDMINUS1 "        -1 NOT AVAILABLE"
 #define MCPL_STATCUMULVAL_ENCODEDZERO   "                       0"
 #define MCPL_STATCUMULBUF_MAXLENGTH ( MCPL_STATCUMULKEY_MAXLENGTH + \
                                       MCPL_STATCUMULVAL_LENGTH + \
@@ -576,6 +576,36 @@ void mcpl_enable_universal_weight(mcpl_outfile_t of, double w)
   mcpl_recalc_psize(of);
 }
 
+MCPL_LOCAL int mcpl_check_char( const char * c, int allow_extra )
+{
+  // Check that cstr only contains certain allowed characters. This is
+  // alphanumeric or underscore ("a-zA-Z0-9_"), and if allow_extra is set, also
+  // "+-.:"
+  while ( *c ) {
+    int isanum = ( ( *c >= 'a' && *c <= 'z' )
+                   || ( *c >= 'A' && *c <= 'Z' )
+                   || ( *c >= '0' && *c <= '9' ) );
+    if ( !isanum && *c != '_' ) {
+      if ( allow_extra ) {
+        if ( *c != '+' && *c != '-'  && *c != '.' && *c != ':' )
+          return 0;
+      } else {
+        return 0;
+      }
+    }
+    ++c;
+  }
+  return 1;
+}
+
+MCPL_LOCAL int mcpl_check_isident( const char * c )
+{
+  //Check if could be used as an identifier in Python/C++/C (not counting
+  //reserved words and so on). Must be nonempty, only alphanumeric + underscore,
+  //and must start with a letter.
+  return ( ( (*c>='a'&&*c<='z')||(*c>='A'&&*c<='Z') )
+           && mcpl_check_char( c, 0 ) );
+}
 
 MCPL_LOCAL void mcpl_internal_encodestatcumul( const char * key,
                                                double value,
@@ -585,16 +615,12 @@ MCPL_LOCAL void mcpl_internal_encodestatcumul( const char * key,
   if ( !(value>=0.0 || value == -1.0 ) || isnan(value) || isinf(value) )
     mcpl_error("Invalid statcumul value (must be -1 or >=0, and not nan/inf");
 
-  //Add initial marker including colon:
-  MCPL_STATIC_ASSERT( MCPL_STATCUMULINI_LENGTH < MCPL_STATCUMULBUF_MAXLENGTH );
-  memcpy(targetbuf, MCPL_STATCUMULINI, MCPL_STATCUMULINI_LENGTH);
-  targetbuf += MCPL_STATCUMULINI_LENGTH;
-  nbufleft -= MCPL_STATCUMULINI_LENGTH;
-
-  //Add key marker:
-  size_t n = strlen(key);
-  if ( n<1|| n > MCPL_STATCUMULKEY_MAXLENGTH ) {
-    size_t nbuf = 128 + n;
+  //Check key:
+  size_t nkey = strlen(key);
+  if ( nkey < 1 )
+    mcpl_error("statcumul key must not be empty");
+  if ( nkey > MCPL_STATCUMULKEY_MAXLENGTH ) {
+    size_t nbuf = 128 + nkey;
     char fixbuf[2056];
     char * buf = fixbuf;
     if ( nbuf > sizeof(fixbuf) )
@@ -602,15 +628,33 @@ MCPL_LOCAL void mcpl_internal_encodestatcumul( const char * key,
                                        //non-returning mcpl_error so we can not.
     snprintf(buf,nbuf,
              "statcumul key \"%s\" too long (%llu chars, max %i allowed)",
-             key, (unsigned long long)n, (int)(MCPL_STATCUMULKEY_MAXLENGTH) );
+             key,
+             (unsigned long long)nkey,
+             (int)(MCPL_STATCUMULKEY_MAXLENGTH) );
     mcpl_error(buf);
   }
 
-  if ( n > nbufleft )
+  if ( !mcpl_check_isident(key) ) {
+    char buf[MCPL_STATCUMULKEY_MAXLENGTH+256];
+    snprintf(buf,sizeof(buf),
+             "Invalid statcumul key \"%s\" (must begin with a letter and"
+             " otherwise only contain alphanumeric characters and underscores)",
+             key);
+    mcpl_error(buf);
+  }
+
+  //Add initial marker including colon:
+  MCPL_STATIC_ASSERT( MCPL_STATCUMULINI_LENGTH < MCPL_STATCUMULBUF_MAXLENGTH );
+  memcpy(targetbuf, MCPL_STATCUMULINI, MCPL_STATCUMULINI_LENGTH);
+  targetbuf += MCPL_STATCUMULINI_LENGTH;
+  nbufleft -= MCPL_STATCUMULINI_LENGTH;
+
+  //Add key marker:
+  if ( nkey > nbufleft )
     mcpl_error("statcumul encode buffer error");
-  memcpy(targetbuf, key, n );
-  targetbuf += n;
-  nbufleft -= n;
+  memcpy(targetbuf, key, nkey );
+  targetbuf += nkey;
+  nbufleft -= nkey;
 
   //Add colon:
   if ( !nbufleft )
