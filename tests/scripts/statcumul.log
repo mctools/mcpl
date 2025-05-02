@@ -115,7 +115,7 @@ Opened MCPL file f.mcpl:
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:cumul:hello:      -1 (NOT AVAILABLE)"
+          -> comment 0 : "stat:cumul:hello:        -1 NOT AVAILABLE"
     Number of blobs    : 0
 
   Particle data format
@@ -177,3 +177,39 @@ Opened MCPL file f.mcpl:
     Storage            : 36 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+Got expected MCPL ERROR: Invalid statcumul key " hello" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
+Got expected MCPL ERROR: Invalid statcumul key "hello " (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
+Got expected MCPL ERROR: Invalid statcumul key "hellø" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
+Got expected MCPL ERROR: Invalid statcumul key "hel lo" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
+Got expected MCPL ERROR: Invalid statcumul key "hel
+lo" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
+Got expected MCPL ERROR: Invalid statcumul key "hel.lo" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
+Got expected MCPL ERROR: Invalid statcumul key "hel	lo" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
+Got expected MCPL ERROR: statcumul key must not be empty
+Got expected MCPL ERROR: Invalid statcumul key " " (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
+Opened MCPL file f.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 0
+    Header storage     : 105 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 1
+          -> comment 0 : "stat:cumul:hel_lo:                       5"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+Got expected MCPL ERROR: Invalid statcumul key "1hello" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
+Got expected MCPL ERROR: Invalid statcumul key "_hello" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
