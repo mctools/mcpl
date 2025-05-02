@@ -263,8 +263,9 @@ MCPL_LOCAL int mcpl_internal_fakeconstantversion( int enable )
 #define MCPL_STATCUMULINI "stat:cumul:"
 #define MCPL_STATCUMULINI_LENGTH (sizeof(MCPL_STATCUMULINI)-1)
 #define MCPL_STATCUMULKEY_MAXLENGTH 64
-#define MCPL_STATCUMULVAL_LENGTH 22
-#define MCPL_STATCUMULVAL_ENCODEDMINUS1 "    -1 (NOT AVAILABLE)"
+#define MCPL_STATCUMULVAL_LENGTH 24
+#define MCPL_STATCUMULVAL_ENCODEDMINUS1 "      -1 (NOT AVAILABLE)"
+#define MCPL_STATCUMULVAL_ENCODEDZERO   "                       0"
 #define MCPL_STATCUMULBUF_MAXLENGTH ( MCPL_STATCUMULKEY_MAXLENGTH + \
                                       MCPL_STATCUMULVAL_LENGTH + \
                                       MCPL_STATCUMULINI_LENGTH + \
@@ -622,8 +623,17 @@ MCPL_LOCAL void mcpl_internal_encodestatcumul( const char * key,
   //final null termination byte:
   if ( nbufleft < MCPL_STATCUMULVAL_LENGTH + 1 )
     mcpl_error("statcumul encode buffer error");
-  if ( value == -1.0 ) {
+  if ( value == 0.0 ) {
+    //special case, like this to ensure we do not format a negative zero with
+    //the sign.
+    MCPL_STATIC_ASSERT(sizeof(MCPL_STATCUMULVAL_ENCODEDZERO) == MCPL_STATCUMULVAL_LENGTH + 1 );
+    memcpy( targetbuf,
+            MCPL_STATCUMULVAL_ENCODEDZERO,
+            MCPL_STATCUMULVAL_LENGTH + 1 );
+
+  } else if ( value == -1.0 ) {
     //special case, add keyword for readability
+    MCPL_STATIC_ASSERT(sizeof(MCPL_STATCUMULVAL_ENCODEDMINUS1) == MCPL_STATCUMULVAL_LENGTH + 1 );
     memcpy( targetbuf,
             MCPL_STATCUMULVAL_ENCODEDMINUS1,
             MCPL_STATCUMULVAL_LENGTH + 1 );
@@ -635,7 +645,7 @@ MCPL_LOCAL void mcpl_internal_encodestatcumul( const char * key,
                        "%" MCPL_STRINGIFY(MCPL_STATCUMULVAL_LENGTH) ".15g",
                        value );
     if ( w1 != MCPL_STATCUMULVAL_LENGTH )
-      mcpl_error("statcumul value encoding error");
+      mcpl_error("statcumul value encoding length error");
     double v = strtod( targetbuf, NULL );
     if ( v != value ) {
       //ok, .15g was not good enough, go for full .17g:
@@ -644,7 +654,7 @@ MCPL_LOCAL void mcpl_internal_encodestatcumul( const char * key,
                          "%" MCPL_STRINGIFY(MCPL_STATCUMULVAL_LENGTH) ".17g",
                          value );
       if ( w2 != MCPL_STATCUMULVAL_LENGTH )
-        mcpl_error("statcumul value encoding error");
+        mcpl_error("statcumul value encoding length error");
     }
   }
 
