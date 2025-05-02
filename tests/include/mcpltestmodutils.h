@@ -44,5 +44,25 @@
 #  include "mcpl.h"
 #endif
 
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+MCPLTEST_CTYPES void mcpltestdetail_set_print_handler(void (*handler)(const char *))
+{
+  mcpl_set_print_handler(handler);
+}
+
+MCPLTEST_CTYPES void mcpltestdetail_set_error_handler(void (*handler)(const char *))
+{
+  mcpl_set_error_handler(handler);
+}
+
+MCPLTEST_CTYPES void mcpltestdetail_exit1()
+{
+  exit(1);
+}
+
+
 
 #endif
