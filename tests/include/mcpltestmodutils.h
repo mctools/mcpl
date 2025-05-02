@@ -38,7 +38,7 @@
 #  define MCPLTEST_CTYPES MCPLTEST_API
 #endif
 
-#define MCPLTEST_CTYPE_DICTIONARY MCPLTEST_CTYPES const char * mcpltest_ctypes_dictionary()
+#define MCPLTEST_CTYPE_DICTIONARY MCPLTEST_CTYPES const char * mcpltest_ctypes_dictionary(void)
 
 #ifndef MCPLTESTMODUTILS_NO_MCPL_INCLUDE
 #  include "mcpl.h"
@@ -58,7 +58,7 @@ MCPLTEST_CTYPES void mcpltestdetail_set_error_handler(void (*handler)(const char
   mcpl_set_error_handler(handler);
 }
 
-MCPLTEST_CTYPES void mcpltestdetail_exit1()
+MCPLTEST_CTYPES void mcpltestdetail_exit1(void)
 {
   exit(1);
 }

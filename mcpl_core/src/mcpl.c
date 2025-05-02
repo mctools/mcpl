@@ -247,7 +247,7 @@ MCPL_LOCAL void mcpl_write_string(FILE* f, const char * str, const char * errmsg
 {
   size_t n = strlen(str);
   if ( n >= 4294967295 )
-    mcpl_error("too large string encountered ");
+    mcpl_error("too large string encountered");
   mcpl_write_buffer(f,(uint32_t)n,str,errmsg);//nb: we don't write the terminating null-char
 }
 
@@ -649,7 +649,7 @@ MCPL_LOCAL void mcpl_internal_encodestatcumul( const char * key,
   }
 
   if ( strlen( targetbuf ) != MCPL_STATCUMULVAL_LENGTH )
-    mcpl_error("Unexpected encoding of stat cumul value\n");
+    mcpl_error("Unexpected encoding of stat cumul value");
 }
 
 MCPL_LOCAL void mcpl_internal_decodestatcumul( const char * c,
