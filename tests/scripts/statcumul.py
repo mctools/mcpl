@@ -62,7 +62,19 @@ def main():
     create(statcumul=('a'*63,0.0))
     create(statcumul=('a'*64,0.0))
     create_bad(statcumul=('a'*65,0.0))
-    print("after fail")
+    create(statcumul=('hello',1.7976931348623157e+308))#largest dbl not inf
+    create_bad(statcumul=('hello',1.7976931348623159e+308))#a bit larger
+    create_bad(statcumul=('hello',float('inf')))
+    create_bad(statcumul=('hello',-float('inf')))
+    create_bad(statcumul=('hello',float('nan')))
+    create(statcumul=('hello',-1))
+    create_bad(statcumul=('hello',-1.000000001))
+    create(statcumul=('hello',-0.0))
+    create(statcumul=('hello',5.0))
+
+    #    oslash='\u00f8'
+    #    create_bad(statcumul=('hell{oslash}',5.0))
+
 
 if __name__ == '__main__':
     main()

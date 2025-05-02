@@ -32,13 +32,13 @@ Opened MCPL file f.mcpl:
   Basic info
     Format             : MCPL-3
     No. of particles   : 0
-    Header storage     : 160 bytes
+    Header storage     : 162 bytes
     Data storage       : 0 bytes
 
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:cumul:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:                     0"
+          -> comment 0 : "stat:cumul:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:                       0"
     Number of blobs    : 0
 
   Particle data format
@@ -56,13 +56,13 @@ Opened MCPL file f.mcpl:
   Basic info
     Format             : MCPL-3
     No. of particles   : 0
-    Header storage     : 161 bytes
+    Header storage     : 163 bytes
     Data storage       : 0 bytes
 
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:cumul:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:                     0"
+          -> comment 0 : "stat:cumul:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:                       0"
     Number of blobs    : 0
 
   Particle data format
@@ -76,4 +76,104 @@ Opened MCPL file f.mcpl:
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
 Got expected MCPL ERROR: statcumul key "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" too long (65 chars, max 64 allowed)
-after fail
+Opened MCPL file f.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 0
+    Header storage     : 104 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 1
+          -> comment 0 : "stat:cumul:hello: 1.7976931348623157e+308"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+Got expected MCPL ERROR: Invalid statcumul value (must be -1 or >=0, and not nan/inf
+Got expected MCPL ERROR: Invalid statcumul value (must be -1 or >=0, and not nan/inf
+Got expected MCPL ERROR: Invalid statcumul value (must be -1 or >=0, and not nan/inf
+Got expected MCPL ERROR: Invalid statcumul value (must be -1 or >=0, and not nan/inf
+Opened MCPL file f.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 0
+    Header storage     : 104 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 1
+          -> comment 0 : "stat:cumul:hello:      -1 (NOT AVAILABLE)"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+Got expected MCPL ERROR: Invalid statcumul value (must be -1 or >=0, and not nan/inf
+Opened MCPL file f.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 0
+    Header storage     : 104 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 1
+          -> comment 0 : "stat:cumul:hello:                       0"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+Opened MCPL file f.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 0
+    Header storage     : 104 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 1
+          -> comment 0 : "stat:cumul:hello:                       5"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
