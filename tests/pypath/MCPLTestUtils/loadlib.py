@@ -41,6 +41,18 @@
 
 import ctypes
 
+_libdb = {}
+def getlib( libname ):
+    n = _normalise_testmod_name(libname)
+    if n not in _libdb:
+        _libdb[n] = Lib(n)
+    return _libdb[n]
+
+def _run_fail_fct(libname,realfct,*args,**kwargs):
+    lib = getlib(libname)
+    with lib.mcplerror_print_prefix_mgr('Got expected MCPL ERROR'):
+        realfct(*args,**kwargs)
+
 class Lib:
     def __init__( self, test_shlib_name ):
         self.__name = _normalise_testmod_name( test_shlib_name )
@@ -54,11 +66,57 @@ class Lib:
                                           'mcpltest_ctypes_dictionary',
                                           ctypes.c_char_p )
             dictfctlist = dictfct().split(';')
+            dictfctlist += [
+                'void mcpltestdetail_set_print_handler(VOIDFCT_CSTR_ARG)',
+                'void mcpltestdetail_set_error_handler(VOIDFCT_CSTR_ARG)',
+                'void mcpltestdetail_exit1()'
+            ]
             for e in dictfctlist:
                 e=e.strip()
                 if e:
                     self.add_signature(e)
             del dictfct
+        self._redirect_stdout()
+
+    def _redirect_stdout(self):
+        #Make sure mcpl printouts go via Python stdout stream:
+        self.mcpltestdetail_set_print_handler(
+            lambda msg : print( msg,end='',flush=True)
+        )
+
+    def mcplerror_print_prefix(self, prefix):
+        if prefix is None:
+            #Revert to builtin:
+            self.mcpltestdetail_set_error_handler(None)
+            return
+        #Make sure mcpl printouts go via Python stdout stream:
+        exit1_fct = self.mcpltestdetail_exit1
+        def error_handler(msg):
+            print('%s: %s'%(prefix,msg),flush=True)
+            exit1_fct()
+        self.mcpltestdetail_set_error_handler(error_handler)
+
+    def mcplerror_print_prefix_mgr(self, prefix):
+        ppfct = self.mcplerror_print_prefix
+        class M:
+            def __enter__(self):
+                ppfct(prefix)
+            def __exit__(self,*args):
+                ppfct(None)
+        return M()
+
+    def run_fct_expected_to_fail(self,fct,*args,**kwargs):
+        import multiprocessing as mp
+        mp = mp.get_context(None) # Note: None->'spawn' can be used to emulate
+                                  # macos/windows behaviour (it is perhaps ~10
+                                  # times slower).
+        p = mp.Process( target =_run_fail_fct,
+                        args =[ self.__name,fct,*args],
+                        kwargs=kwargs )
+        p.start()
+        p.join()
+        if p.exitcode == 0:
+            raise RuntimeError('Function call did not fail as expected')
 
     def add_signature( self, fct_signature ):
         return self.add(fct_signature,
@@ -101,11 +159,19 @@ class Lib:
             a=', '.join([_ctype_2_str(e) for e in argtypes])
             print(f"{prefix}  {rt} {fctname}({a})")
 
+
+VOIDFCT_NO_ARG = ctypes.CFUNCTYPE( None )
+VOIDFCT_CSTR_ARG = ctypes.CFUNCTYPE( None, ctypes.c_char_p )
+
 _map_str2ctype = { 'const char *':ctypes.c_char_p,
                    'void' : 'void',
                    'int':ctypes.c_int,
                    'uint':ctypes.c_uint,
-                   'double':ctypes.c_double }
+                   'unsigned':ctypes.c_uint,
+                   'double':ctypes.c_double,
+                   'VOIDFCT_NO_ARG': VOIDFCT_NO_ARG,
+                   'VOIDFCT_CSTR_ARG': VOIDFCT_CSTR_ARG,
+                  }
 
 def _decode_type_str( s ):
     s=' '.join(s.replace('*',' * ').strip().split())
@@ -184,6 +250,8 @@ def _cstr2str(s):
     except UnicodeDecodeError as e:
         raise RuntimeError("Only UTF8-encoded C-strings are supported") from e
 
+_keepalive_fcts = []
+
 def _ctypes_create_fct( lib, fctname, restype, *argtypes, libobj = None ):
 
     def resolve_type( tpe ):
@@ -205,6 +273,21 @@ def _ctypes_create_fct( lib, fctname, restype, *argtypes, libobj = None ):
         for a,at in zip(args,argtypes):
             if at == ctypes.c_char_p:
                 al.append( _str2cstr(a) )
+            elif at == VOIDFCT_NO_ARG:
+                if a is not None:
+                    _keepalive_fcts.append(a)
+                al.append( ctypes.cast( a, VOIDFCT_NO_ARG ) )
+            elif at == VOIDFCT_CSTR_ARG:
+                if a is None:
+                    al.append( ctypes.cast( None, VOIDFCT_CSTR_ARG ) )
+                else:
+                    def afct( arg_cstr ):
+                        pystr = _cstr2str(arg_cstr)#todo: allow binary (non-utf8)?
+                        a(pystr)
+                    afct2 = VOIDFCT_CSTR_ARG(afct)
+                    _keepalive_fcts.append(afct)
+                    _keepalive_fcts.append(afct2)
+                    al.append( ctypes.cast( afct2, VOIDFCT_CSTR_ARG ) )
             else:
                 al.append( a )
         rv = rawfct( *al )
