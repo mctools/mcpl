@@ -72,9 +72,19 @@ def main():
     create(statcumul=('hello',-0.0))
     create(statcumul=('hello',5.0))
 
-    #    oslash='\u00f8'
-    #    create_bad(statcumul=('hell{oslash}',5.0))
-
+    create_bad(statcumul=(' hello',5.0))
+    create_bad(statcumul=('hello ',5.0))
+    oslash='\u00f8'
+    create_bad(statcumul=(f'hell{oslash}',5.0))
+    create_bad(statcumul=('hel lo',5.0))
+    create_bad(statcumul=('hel\rlo',5.0))
+    create_bad(statcumul=('hel.lo',5.0))
+    create_bad(statcumul=('hel\tlo',5.0))
+    create_bad(statcumul=('',5.0))
+    create_bad(statcumul=(' ',5.0))
+    create(statcumul=('hel_lo',5.0))
+    create_bad(statcumul=('1hello',5.0))
+    create_bad(statcumul=('_hello',5.0))
 
 if __name__ == '__main__':
     main()
