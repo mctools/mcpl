@@ -56,9 +56,9 @@ void create_file2(void)
   mcpl_outfile_t f = mcpl_create_outfile("file2.mcpl");
   mcpl_hdr_add_comment(f,"Some comment.");
   mcpl_hdr_add_statcumul( f, "nsrc", -1.0 );
-  mcpl_hdr_add_statcumul( f, "nsrc other", 123456.123 );
-  mcpl_hdr_add_statcumul( f, "nsrc other", 1234567.123 );
-  mcpl_hdr_add_statcumul( f, "nsrc other2", 123456789 );
+  mcpl_hdr_add_statcumul( f, "nsrc_other", 123456.123 );
+  mcpl_hdr_add_statcumul( f, "nsrc_other", 1234567.123 );
+  mcpl_hdr_add_statcumul( f, "nsrc_other2", 123456789 );
   mcpl_hdr_add_statcumul( f, "ccc", -1.0 );
   mcpl_hdr_add_statcumul( f, "aaa", 1 );
   mcpl_hdr_add_statcumul( f, "aa2", 2 );
