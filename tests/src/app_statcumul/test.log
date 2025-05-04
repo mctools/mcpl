@@ -3,18 +3,18 @@ Opened MCPL file file1.mcpl:
   Basic info
     Format             : MCPL-3
     No. of particles   : 0
-    Header storage     : 264 bytes
+    Header storage     : 270 bytes
     Data storage       : 0 bytes
 
   Custom meta data
     Source             : "unknown"
     Number of comments : 7
           -> comment 0 : "Some comment."
-          -> comment 1 : "stat:cumul:nsrc:                     2"
+          -> comment 1 : "stat:cumul:nsrc:                       2"
           -> comment 2 : "Another comment."
-          -> comment 3 : "stat:cumul:nsrc2:    -1 (NOT AVAILABLE)"
+          -> comment 3 : "stat:cumul:nsrc2:        -1 NOT AVAILABLE"
           -> comment 4 : "Another comment."
-          -> comment 5 : "stat:cumul:nsrc3:                     2"
+          -> comment 5 : "stat:cumul:nsrc3:                       2"
           -> comment 6 : "Another comment."
     Number of blobs    : 0
 
@@ -33,21 +33,21 @@ Opened MCPL file file2.mcpl:
   Basic info
     Format             : MCPL-3
     No. of particles   : 1000
-    Header storage     : 439 bytes
+    Header storage     : 455 bytes
     Data storage       : 36000 bytes
 
   Custom meta data
     Source             : "unknown"
     Number of comments : 10
           -> comment 0 : "Some comment."
-          -> comment 1 : "stat:cumul:nsrc:              0.002123"
-          -> comment 2 : "stat:cumul:nsrc other:           1234567.123"
-          -> comment 3 : "stat:cumul:nsrc other2:             123456789"
-          -> comment 4 : "stat:cumul:ccc:    -1 (NOT AVAILABLE)"
-          -> comment 5 : "stat:cumul:aaa:                     1"
-          -> comment 6 : "stat:cumul:aa2:                    17"
-          -> comment 7 : "stat:cumul:bbb:                     1"
-          -> comment 8 : "stat:cumul:bb:                     2"
+          -> comment 1 : "stat:cumul:nsrc:                0.002123"
+          -> comment 2 : "stat:cumul:nsrc_other:             1234567.123"
+          -> comment 3 : "stat:cumul:nsrc_other2:               123456789"
+          -> comment 4 : "stat:cumul:ccc:        -1 NOT AVAILABLE"
+          -> comment 5 : "stat:cumul:aaa:                       1"
+          -> comment 6 : "stat:cumul:aa2:                      17"
+          -> comment 7 : "stat:cumul:bbb:                       1"
+          -> comment 8 : "stat:cumul:bb:                       2"
           -> comment 9 : "Another comment."
     Number of blobs    : 0
 
@@ -76,13 +76,13 @@ Opened MCPL file f3_unset.mcpl:
   Basic info
     Format             : MCPL-3
     No. of particles   : 1
-    Header storage     : 101 bytes
+    Header storage     : 103 bytes
     Data storage       : 36 bytes
 
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:cumul:nsrc:    -1 (NOT AVAILABLE)"
+          -> comment 0 : "stat:cumul:nsrc:        -1 NOT AVAILABLE"
     Number of blobs    : 0
 
   Particle data format
@@ -101,13 +101,13 @@ Opened MCPL file f3_2d5.mcpl:
   Basic info
     Format             : MCPL-3
     No. of particles   : 1
-    Header storage     : 101 bytes
+    Header storage     : 103 bytes
     Data storage       : 36 bytes
 
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:cumul:nsrc:                   2.5"
+          -> comment 0 : "stat:cumul:nsrc:                     2.5"
     Number of blobs    : 0
 
   Particle data format
@@ -126,13 +126,13 @@ Opened MCPL file f3_17.mcpl:
   Basic info
     Format             : MCPL-3
     No. of particles   : 1
-    Header storage     : 101 bytes
+    Header storage     : 103 bytes
     Data storage       : 36 bytes
 
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:cumul:nsrc:                    17"
+          -> comment 0 : "stat:cumul:nsrc:                      17"
     Number of blobs    : 0
 
   Particle data format
@@ -151,13 +151,13 @@ Opened MCPL file f3_mergeok.mcpl:
   Basic info
     Format             : MCPL-3
     No. of particles   : 2
-    Header storage     : 101 bytes
+    Header storage     : 103 bytes
     Data storage       : 72 bytes
 
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:cumul:nsrc:                  19.5"
+          -> comment 0 : "stat:cumul:nsrc:                    19.5"
     Number of blobs    : 0
 
   Particle data format
@@ -177,13 +177,13 @@ Opened MCPL file f3_mergeall.mcpl:
   Basic info
     Format             : MCPL-3
     No. of particles   : 3
-    Header storage     : 101 bytes
+    Header storage     : 103 bytes
     Data storage       : 108 bytes
 
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:cumul:nsrc:    -1 (NOT AVAILABLE)"
+          -> comment 0 : "stat:cumul:nsrc:        -1 NOT AVAILABLE"
     Number of blobs    : 0
 
   Particle data format
@@ -204,13 +204,13 @@ Opened MCPL file f4_1.mcpl:
   Basic info
     Format             : MCPL-3
     No. of particles   : 1
-    Header storage     : 101 bytes
+    Header storage     : 103 bytes
     Data storage       : 36 bytes
 
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:cumul:nsrc:                     1"
+          -> comment 0 : "stat:cumul:nsrc:                       1"
     Number of blobs    : 0
 
   Particle data format
@@ -229,13 +229,13 @@ Opened MCPL file f4_epsa.mcpl:
   Basic info
     Format             : MCPL-3
     No. of particles   : 1
-    Header storage     : 101 bytes
+    Header storage     : 103 bytes
     Data storage       : 36 bytes
 
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:cumul:nsrc:                 1e-16"
+          -> comment 0 : "stat:cumul:nsrc:                   1e-16"
     Number of blobs    : 0
 
   Particle data format
@@ -254,13 +254,13 @@ Opened MCPL file f4_epsb.mcpl:
   Basic info
     Format             : MCPL-3
     No. of particles   : 1
-    Header storage     : 101 bytes
+    Header storage     : 103 bytes
     Data storage       : 36 bytes
 
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:cumul:nsrc:                 1e-16"
+          -> comment 0 : "stat:cumul:nsrc:                   1e-16"
     Number of blobs    : 0
 
   Particle data format
@@ -279,13 +279,13 @@ Opened MCPL file f4_epsc.mcpl:
   Basic info
     Format             : MCPL-3
     No. of particles   : 1
-    Header storage     : 101 bytes
+    Header storage     : 103 bytes
     Data storage       : 36 bytes
 
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:cumul:nsrc:                 1e-16"
+          -> comment 0 : "stat:cumul:nsrc:                   1e-16"
     Number of blobs    : 0
 
   Particle data format
@@ -304,13 +304,13 @@ Opened MCPL file f4_epsd.mcpl:
   Basic info
     Format             : MCPL-3
     No. of particles   : 1
-    Header storage     : 101 bytes
+    Header storage     : 103 bytes
     Data storage       : 36 bytes
 
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:cumul:nsrc:                 1e-16"
+          -> comment 0 : "stat:cumul:nsrc:                   1e-16"
     Number of blobs    : 0
 
   Particle data format
@@ -329,13 +329,13 @@ Opened MCPL file f4_mergeall.mcpl:
   Basic info
     Format             : MCPL-3
     No. of particles   : 5
-    Header storage     : 101 bytes
+    Header storage     : 103 bytes
     Data storage       : 180 bytes
 
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:cumul:nsrc:    1.0000000000000004"
+          -> comment 0 : "stat:cumul:nsrc:      1.0000000000000004"
     Number of blobs    : 0
 
   Particle data format
