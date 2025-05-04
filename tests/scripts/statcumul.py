@@ -86,5 +86,14 @@ def main():
     create_bad(statcumul=('1hello',5.0))
     create_bad(statcumul=('_hello',5.0))
 
+    #Adding stat:cumul: comments directly is allowed, but will result in a
+    #warning in case of failure to adhere to the convention (but when writing or
+    #reading).
+    create_bad(comment='stat:cumul:bla:1.2432245')#too short value buffer
+    create(    comment='stat:cumul:bla:1.1234567801234567891234')
+    create(comment='stat:cumul:bla:1.123456780123456789123 ')
+    create_bad(comment='stat:cumul:bla:1.123456780123456789123\t')
+    create_bad(comment='stat:cumul:bla: 1e999                  ')
+
 if __name__ == '__main__':
     main()

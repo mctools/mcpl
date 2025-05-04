@@ -452,11 +452,175 @@ void mcpl_hdr_set_srcname(mcpl_outfile_t of,const char * spn)
   mcpl_store_string(&(f->hdr_srcprogname),spn);
 }
 
+MCPL_LOCAL int mcpl_check_char( const char * c, int allow_extra )
+{
+  // Check that cstr only contains certain allowed characters. This is
+  // alphanumeric or underscore ("a-zA-Z0-9_"), and if allow_extra is set, also
+  // "+-.:"
+  while ( *c ) {
+    int isanum = ( ( *c >= 'a' && *c <= 'z' )
+                   || ( *c >= 'A' && *c <= 'Z' )
+                   || ( *c >= '0' && *c <= '9' ) );
+    if ( !isanum && *c != '_' ) {
+      if ( allow_extra ) {
+        if ( *c != '+' && *c != '-'  && *c != '.' && *c != ':' )
+          return 0;
+      } else {
+        return 0;
+      }
+    }
+    ++c;
+  }
+  return 1;
+}
+
+MCPL_LOCAL int mcpl_check_isidentifier( const char * c )
+{
+  //Check if could be used as an identifier in Python/C++/C (not counting
+  //reserved words and so on). Must be nonempty, only alphanumeric + underscore,
+  //and must start with a letter.
+  return ( ( (*c>='a'&&*c<='z')||(*c>='A'&&*c<='Z') )
+           && mcpl_check_char( c, 0 ) );
+}
+
+#define MCPL_COMMENT_IS_STATCUMUL(x) ( *x == 's' \
+                                       && strncmp(x,MCPL_STATCUMULINI, \
+                                                  MCPL_STATCUMULINI_LENGTH)==0 )
+
+
+typedef struct MCPL_LOCAL {
+  //The rest is only if actually starts with "stat:cumul:":
+
+  //Error message in case of syntax errors (NULL means OK):
+  const char * errmsg;
+  double value;//-1 or >=0 (never inf or nan)
+  char key[MCPL_STATCUMULKEY_MAXLENGTH+1];
+} mcpl_internal_statcumul_t;
+
+MCPL_LOCAL void mcpl_internal_statcumulparse( const char * comment,
+                                              mcpl_internal_statcumul_t* res )
+{
+  res->key[0] = 0;
+  res->value = -2;
+  res->errmsg = NULL;
+
+  if ( !MCPL_COMMENT_IS_STATCUMUL(comment) )
+    return;
+
+  res->key[0] = 0;
+  res->value = -2;
+  res->errmsg = NULL;
+
+  const char * c = comment + MCPL_STATCUMULINI_LENGTH;
+  const char * csep = strchr(c,':');
+  if (!csep) {
+    res->errmsg = "did not find colon separating key and value";
+    return;
+  }
+  size_t nkey = csep - c;
+  if ( nkey < 1 ) {
+    res->errmsg = "empty key";
+    return;
+  }
+  if ( nkey > MCPL_STATCUMULKEY_MAXLENGTH ) {
+    res->errmsg = ( "key length exceeds "
+                   MCPL_STRINGIFY(MCPL_STATCUMULKEY_MAXLENGTH) " characters" );
+    return;
+  }
+  memcpy( res->key, c, nkey );
+  res->key[nkey] = 0;
+  if (!mcpl_check_isidentifier(res->key)) {
+    res->errmsg = ( "key does not adhere to naming [a-zA-Z][a-zA-Z0-9_]*" );
+    res->key[0] = 0;
+    return;
+  }
+  c += nkey;
+  if ( !*c || csep != c )
+    mcpl_error("mcpl_internal_statcumulparse logic error");
+  ++c; //skip colon as well
+  if ( strlen(c) != MCPL_STATCUMULVAL_LENGTH ) {
+    res->errmsg = ( "value field is not exactly "
+                    MCPL_STRINGIFY(MCPL_STATCUMULVAL_LENGTH)
+                    " characters wide" );
+    return;
+  }
+  if ( strcmp( c, MCPL_STATCUMULVAL_ENCODEDMINUS1 ) == 0 ) {
+    //special encoding of -1
+    res->value = -1;
+    return;
+  }
+
+  //We will ultimately use strtod to parse the value, but first we will
+  //explicitly strip trailing or leading simply space (' ') chars:
+  char bufval[MCPL_STATCUMULVAL_LENGTH+1];
+  const char * expected_str_end = NULL;
+  {
+    const char * cE = c + MCPL_STATCUMULVAL_LENGTH;
+    while ( *c == ' ' )
+      ++c;//ignore initial space
+    while ( cE > c && *(cE-1)==' ' )
+      --cE;
+    if ( c == cE ) {
+      res->errmsg = "value field missing actual value";
+      return;
+    }
+    memcpy(bufval,c,cE-c);
+    bufval[cE-c] = 0;
+    expected_str_end = &(bufval[cE-c]);
+  }
+  char * str_end;
+  double val = strtod( bufval, &str_end );
+  if ( str_end != expected_str_end ) {
+    res->errmsg = "could not decode contents of value field";
+    return;
+  }
+  if ( isnan(val) ) {
+    res->errmsg = "value field holds forbidden value (NaN)";
+    return;
+  }
+  if ( !( val>=0.0 || val == -1.0 ) ) {
+    res->errmsg = "value field must hold non-zero value or -1";
+    return;
+  }
+  if ( isinf(val) ) {
+    res->errmsg = "value field holds forbidden value (+INFINITY)";
+    return;
+  }
+  res->value = val;
+  return;
+}
+
+MCPL_LOCAL void mcpl_internal_statcumul_parse_or_emit_err( const char * comment,
+                                                           mcpl_internal_statcumul_t* res )
+{
+  mcpl_internal_statcumulparse( comment, res );
+  if ( !res->errmsg )
+    return;
+  if ( strlen(comment) > 16*MCPL_STATCUMULBUF_MAXLENGTH
+       || strlen(res->errmsg) > 1024 ) {
+    mcpl_error("Syntax error: could not properly decode comment "
+               "starting with \"stat:cumul:\" (content too long to show)");
+  } else {
+    char buf[1200+16*MCPL_STATCUMULBUF_MAXLENGTH];
+    snprintf(buf,sizeof(buf),
+             "Syntax error: could not properly decode comment starting"
+             " with \"stat:cumul:\" (%s). Issue with comment \"%s\"",
+             res->errmsg,comment);
+    mcpl_error(buf);
+  }
+}
+
 void mcpl_hdr_add_comment(mcpl_outfile_t of,const char *comment)
 {
   MCPLIMP_OUTFILEDECODE;
   if (!f->header_notwritten)
     mcpl_error("mcpl_hdr_add_comment called too late.");
+  if ( MCPL_COMMENT_IS_STATCUMUL(comment) ) {
+    //comment starts with "stat:cumul:". Let us require it to live up to the
+    //syntax by decoding it, to trigger any issues:
+    mcpl_internal_statcumul_t sc;
+    mcpl_internal_statcumul_parse_or_emit_err( comment, &sc );
+  }
   size_t oldn = f->ncomments;
   f->ncomments += 1;
   if (oldn)
@@ -576,37 +740,6 @@ void mcpl_enable_universal_weight(mcpl_outfile_t of, double w)
   mcpl_recalc_psize(of);
 }
 
-MCPL_LOCAL int mcpl_check_char( const char * c, int allow_extra )
-{
-  // Check that cstr only contains certain allowed characters. This is
-  // alphanumeric or underscore ("a-zA-Z0-9_"), and if allow_extra is set, also
-  // "+-.:"
-  while ( *c ) {
-    int isanum = ( ( *c >= 'a' && *c <= 'z' )
-                   || ( *c >= 'A' && *c <= 'Z' )
-                   || ( *c >= '0' && *c <= '9' ) );
-    if ( !isanum && *c != '_' ) {
-      if ( allow_extra ) {
-        if ( *c != '+' && *c != '-'  && *c != '.' && *c != ':' )
-          return 0;
-      } else {
-        return 0;
-      }
-    }
-    ++c;
-  }
-  return 1;
-}
-
-MCPL_LOCAL int mcpl_check_isident( const char * c )
-{
-  //Check if could be used as an identifier in Python/C++/C (not counting
-  //reserved words and so on). Must be nonempty, only alphanumeric + underscore,
-  //and must start with a letter.
-  return ( ( (*c>='a'&&*c<='z')||(*c>='A'&&*c<='Z') )
-           && mcpl_check_char( c, 0 ) );
-}
-
 MCPL_LOCAL void mcpl_internal_encodestatcumul( const char * key,
                                                double value,
                                                char * targetbuf )
@@ -634,7 +767,7 @@ MCPL_LOCAL void mcpl_internal_encodestatcumul( const char * key,
     mcpl_error(buf);
   }
 
-  if ( !mcpl_check_isident(key) ) {
+  if ( !mcpl_check_isidentifier(key) ) {
     char buf[MCPL_STATCUMULKEY_MAXLENGTH+256];
     snprintf(buf,sizeof(buf),
              "Invalid statcumul key \"%s\" (must begin with a letter and"
@@ -706,68 +839,6 @@ MCPL_LOCAL void mcpl_internal_encodestatcumul( const char * key,
     mcpl_error("Unexpected encoding of stat cumul value");
 }
 
-MCPL_LOCAL void mcpl_internal_decodestatcumul( const char * c,
-                                               char * targetbuf,
-                                               double * targetval )
-{
-  //Parse keys of form "statcumul:<KEY>:<VALUE>".
-  targetbuf[0] = 0;
-  *targetval = -1.0;
-  const char ini[] = MCPL_STATCUMULINI;
-  MCPL_STATIC_ASSERT( sizeof(ini) == (MCPL_STATCUMULINI_LENGTH+1) );
-
-  for ( size_t i = 0; i < MCPL_STATCUMULINI_LENGTH; ++i )
-    if ( ini[0] != c[0] )
-      return;
-  c += MCPL_STATCUMULINI_LENGTH;
-
-  size_t idx_colon = 0;
-  while ( 1 ) {
-    if ( c[idx_colon] == 0 )
-      return;
-    if ( c[idx_colon] == ':' )
-      break;
-    ++idx_colon;
-    if ( idx_colon == MCPL_STATCUMULKEY_MAXLENGTH )
-      return;
-  }
-  double val = -1.0;
-  {
-    const char * cc = c + idx_colon + 1;//+1 to skip colon
-    if ( strcmp( cc, MCPL_STATCUMULVAL_ENCODEDMINUS1 ) == 0 ) {
-      //special encoding of -1
-      val = -1.0;
-    } else {
-      char * ccE = (char*)cc;
-      while ( *ccE != 0 )
-        ++ccE;
-      val = strtod( cc, &ccE );
-      while ( *ccE == ' ' )
-        ++ccE;
-      if ( *ccE != 0 )
-        return;
-    }
-  }
-  {
-    size_t iE = idx_colon;
-    while ( iE && c[iE] == ' ' )
-      --iE;
-    size_t i = 0;
-    while ( c[i] == ' ' )
-      ++i;
-    if ( !(iE>i) )
-      return;
-    size_t n = iE-i;
-    memcpy(targetbuf,c+i,n);
-    targetbuf[n] = 0;
-  }
-
-  if ( !(val>=0.0 || val == -1.0 ) || isnan(val) || isinf(val) )
-    mcpl_error("Invalid statcumul value (must be -1 or >=0, and not nan/inf");
-
-  *targetval = val;
-}
-
 #ifdef _WIN32
 #  define MCPL_FSEEK( fh, pos)  _fseeki64(fh,(__int64)(pos), SEEK_SET)
 #  define MCPL_FSEEK_CUR( fh, pos)  _fseeki64(fh,(__int64)(pos), SEEK_CUR)
@@ -834,14 +905,11 @@ MCPL_LOCAL void mcpl_write_header(mcpl_outfileinternal_t * f)
   mcpl_write_string(f->file,f->hdr_srcprogname?f->hdr_srcprogname:"unknown",errmsg);
 
   //Write comments and record positions of any statcumul entries:
+
+  //First just count and allocate memory structure for statcumul entries:
   for (uint32_t i = 0; i < f->ncomments; ++i) {
     char * c = f->comments[i];
-    if ( c[0] != 's' || c[1] != 't' )
-      continue;
-    double v;
-    char buf[MCPL_STATCUMULBUF_MAXLENGTH+1];
-    mcpl_internal_decodestatcumul( c, buf, &v );
-    if ( buf[0] )
+    if ( MCPL_COMMENT_IS_STATCUMUL(c) )
       ++(f->nstatcumulinfo);
   }
 
@@ -851,25 +919,25 @@ MCPL_LOCAL void mcpl_write_header(mcpl_outfileinternal_t * f)
                             sizeof(mcpl_internal_statcumulinfo_t) );
   }
 
+  //Now fill statcumulinfo and write comment strings to file:
   uint32_t i;
   unsigned nstatcumulinfo_written = 0;
   for (i = 0; i < f->ncomments; ++i) {
-    if ( nstatcumulinfo_written < f->nstatcumulinfo ) {
-      double v;
-      char buf[MCPL_STATCUMULBUF_MAXLENGTH+1];
-      memset(buf,0,MCPL_STATCUMULBUF_MAXLENGTH+1);
-      mcpl_internal_decodestatcumul( f->comments[i], buf, &v );
-      if ( buf[0] ) {
-        mcpl_internal_statcumulinfo_t * statcumulinfo
-          = &f->statcumulinfo[nstatcumulinfo_written++];
-        statcumulinfo->writtenstrlen = (unsigned)strlen(f->comments[i]);
-        statcumulinfo->writtenpos = MCPL_FTELL( f->file );
-        statcumulinfo->writtenvalue = v;
-        size_t nn = strlen(buf);
-        if ( nn > MCPL_STATCUMULBUF_MAXLENGTH )
-          mcpl_error("statcumul key unexpected strlen");
-        memcpy( statcumulinfo->key, buf, nn );
-      }
+    if ( nstatcumulinfo_written < f->nstatcumulinfo
+         && MCPL_COMMENT_IS_STATCUMUL(f->comments[i]) ) {
+      mcpl_internal_statcumul_t sc;
+      mcpl_internal_statcumul_parse_or_emit_err( f->comments[i], &sc );
+      if ( !sc.key[0] )
+        mcpl_error("logic error while writing statcumul comments to header");
+      mcpl_internal_statcumulinfo_t * statcumulinfo
+        = &f->statcumulinfo[nstatcumulinfo_written++];
+      statcumulinfo->writtenstrlen = (unsigned)strlen(f->comments[i]);
+      statcumulinfo->writtenpos = MCPL_FTELL( f->file );
+      statcumulinfo->writtenvalue = sc.value;
+      size_t nn = strlen(sc.key);
+      if ( nn > MCPL_STATCUMULBUF_MAXLENGTH )
+        mcpl_error("statcumul key unexpected strlen");
+      memcpy( statcumulinfo->key, sc.key, nn );
     }
     mcpl_write_string(f->file,f->comments[i],errmsg);
   }
@@ -2292,18 +2360,14 @@ MCPL_LOCAL int mcpl_actual_can_merge(mcpl_file_t ff1, mcpl_file_t ff2)
     const char * c2 = f2->comments[i];
     if (strcmp(c1,c2)!=0) {
       //incompatible, unless it represents the same statcumul entry.
-      if ( c1[0] != 's' || c1[1] !='t' || c2[0] != 's' || c2[1] !='t' )
+      if ( !MCPL_COMMENT_IS_STATCUMUL(c1) || !MCPL_COMMENT_IS_STATCUMUL(c2) )
         return 0;
-      double v1, v2;
-      char buf1[MCPL_STATCUMULBUF_MAXLENGTH+1];
-      char buf2[MCPL_STATCUMULBUF_MAXLENGTH+1];
-      mcpl_internal_decodestatcumul( c1, buf1, &v1 );
-      if (!buf1[0])
+      mcpl_internal_statcumul_t sc1, sc2;
+      mcpl_internal_statcumul_parse_or_emit_err( c1, &sc1 );
+      mcpl_internal_statcumul_parse_or_emit_err( c2, &sc2 );
+      if ( !sc1.key[0] || !sc2.key[0])
         return 0;
-      mcpl_internal_decodestatcumul( c1, buf2, &v2 );
-      if (!buf2[0])
-        return 0;
-      if ( strcmp( buf1, buf2 ) != 0 )
+      if ( strcmp( sc1.key, sc2.key ) != 0 )
         return 0;
     }
   }
@@ -2647,10 +2711,10 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
       if ( !fi_internal || fi_internal->ncomments != ncomments )
         mcpl_error("unexpected ncomments after transfer");
       for ( uint32_t ic = 0; ic < ncomments; ++ic ) {
-        char buf[MCPL_STATCUMULBUF_MAXLENGTH+1];
-        double v;
-        mcpl_internal_decodestatcumul( fi_internal->comments[ic], buf, &v );
-        if ( buf[0] ) {
+        if ( MCPL_COMMENT_IS_STATCUMUL(fi_internal->comments[ic]) ) {
+          mcpl_internal_statcumul_t sc;
+          mcpl_internal_statcumul_parse_or_emit_err( fi_internal->comments[ic],
+                                                     &sc );
           if (!scinfo_indices) {
             scinfo_indices
               = (uint32_t*)mcpl_internal_malloc( sizeof(uint32_t)*ncomments );
@@ -2662,18 +2726,18 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
           scinfo_indices[n_scinfo] = ic;
           scinfo_values_s1[n_scinfo] = 0.0;
           scinfo_values_s2[n_scinfo] = 0.0;
-          if ( v == -1 ) {
+          if ( sc.value == -1 ) {
             scinfo_values_s1[n_scinfo] = -1.0;
           } else {
             mcpl_impl_stablesum_add( scinfo_values_s1+n_scinfo,
                                      scinfo_values_s2+n_scinfo,
-                                     v );
+                                     sc.value );
           }
           ++n_scinfo;
           //register -1 for now:
-          if ( v != -1 ) {
+          if ( sc.value != -1.0 ) {
             char new_comment[MCPL_STATCUMULBUF_MAXLENGTH+1];
-            mcpl_internal_encodestatcumul( buf, -1.0, new_comment );
+            mcpl_internal_encodestatcumul( sc.key, -1.0, new_comment );
             size_t nn = strlen(fi_internal->comments[ic]);
             if ( nn != strlen(new_comment) )
               mcpl_error("inconsistent length of statcumul comment");
@@ -2712,18 +2776,22 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
           uint32_t isc_idx = scinfo_indices[isc];
           if ( scinfo_values_s1[isc] == -1.0 && scinfo_values_s2[isc] == 0.0 )
             continue;//ignore
-          double v;
-          char buf[MCPL_STATCUMULBUF_MAXLENGTH+1];
+          //double v;
+          //char buf[MCPL_STATCUMULBUF_MAXLENGTH+1];
           if ( !fi_internal || isc_idx >= fi_internal->ncomments )
             mcpl_error("Number of comments changed during merge");
-          mcpl_internal_decodestatcumul( fi_internal->comments[isc_idx], buf, &v );
-          if ( v == -1.0 ) {
+          if ( !MCPL_COMMENT_IS_STATCUMUL(fi_internal->comments[isc_idx]) )
+            mcpl_error("logic error during statcumul merge");
+          mcpl_internal_statcumul_t sc;
+          mcpl_internal_statcumul_parse_or_emit_err( fi_internal->comments[isc_idx],
+                                                     &sc );
+          if ( sc.value == -1.0 ) {
             scinfo_values_s1[isc] = -1.0;
             scinfo_values_s2[isc] = 0.0;
           } else {
             mcpl_impl_stablesum_add( scinfo_values_s1+isc,
                                      scinfo_values_s2+isc,
-                                     v );
+                                     sc.value );
           }
         }
       }
@@ -3934,11 +4002,12 @@ void mcpl_hdr_add_statcumul( mcpl_outfile_t of,
   MCPLIMP_OUTFILEDECODE;
   if (f->header_notwritten) {
     //Header not written yet, simply check other in-mem comments for clashes.
-    char buf[MCPL_STATCUMULBUF_MAXLENGTH+1];
     for ( uint32_t i = 0; i < f->ncomments; ++i ) {
-      double v;
-      mcpl_internal_decodestatcumul( f->comments[i], buf, &v );
-      if ( buf[0] && memcmp(buf,key,nkey+1)==0 ) {
+      if ( !MCPL_COMMENT_IS_STATCUMUL(f->comments[i]) )
+        continue;
+      mcpl_internal_statcumul_t sc;
+      mcpl_internal_statcumul_parse_or_emit_err( f->comments[i], &sc );
+      if ( strlen(sc.key)==nkey && memcmp(sc.key,key,nkey+1)==0 ) {
         //Same variable! Simply update in place.
         size_t n = strlen(comment);
         size_t nalloc = strlen(f->comments[i]);
@@ -3976,12 +4045,11 @@ double mcpl_hdr_statcumul( mcpl_file_t ff, const char * key )
   MCPLIMP_FILEDECODE;
   for ( uint32_t i = 0; i < f->ncomments; ++i ) {
     const char * c = f->comments[i];
-    if ( c[0] == 's' && c[1] == 't' ) {
-      char ckey[MCPL_STATCUMULKEY_MAXLENGTH+1];
-      double val;
-      mcpl_internal_decodestatcumul( c, ckey, &val );
-      if ( ckey[0] && strcmp(key,ckey)==0 )
-        return val;
+    if ( MCPL_COMMENT_IS_STATCUMUL(c) ) {
+      mcpl_internal_statcumul_t sc;
+      mcpl_internal_statcumul_parse_or_emit_err( c, &sc );
+      if ( strcmp(key,sc.key)==0 )
+        return sc.value;
     }
   }
   return -2.0;//not present
