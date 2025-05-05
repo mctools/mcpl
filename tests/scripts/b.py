@@ -116,6 +116,7 @@ for file_key in sorted(files.keys()):
         run_pymcpltool('--text',file_path,'dump_ascii_py.txt')
     out_py = pathlib.Path('out_pymcpltool.txt').read_bytes()
     if out_c!=out_py:
+        errors = True
         print("ERRORS DETECTED in stdout during creation of ascii output")
     incompat_errmsg = check_compat('./dump_ascii_c.txt','./dump_ascii_py.txt')
     if incompat_errmsg is not None:

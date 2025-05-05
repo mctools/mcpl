@@ -294,3 +294,4 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 ======================================
 Got expected MCPL ERROR: Syntax error: could not properly decode comment starting with "stat:sum:" (could not decode contents of value field). Issue with comment "stat:sum:bla:1.123456780123456789123	"
 Got expected MCPL ERROR: Syntax error: could not properly decode comment starting with "stat:sum:" (value field holds forbidden value (+INFINITY)). Issue with comment "stat:sum:bla: 1e999                  "
+Got expected MCPL ERROR: Refusing to create file with comments starting with "stat:" unless starting with "stat:sum:", as such syntax is reserved for future usage.
