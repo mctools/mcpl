@@ -930,6 +930,16 @@ class MCPLFile:
                        + sum(8+len(bk)+len(bv) for bk,bv in blobs.items()) )
         h['headersize'] = headersize
         h['statsum'] = _parse_statsum(comments)
+
+        for c in comments:
+            if c.startswith(b'stat:') and not c.startswith(b'stat:sum:'):
+                print("MCPL WARNING: Opened file with unknown \"stat:...\" "
+                      "syntax in comments. The present installation only has"
+                      " special support for \"stat:sum:...\" comments. It"
+                      " might be a sign that your installation of MCPL is"
+                      " too old.")
+                break
+
         if self._str_decode:
             #attributes return python strings since raw_strings was not set, so
             #we must decode these before returning to the user. But for output
