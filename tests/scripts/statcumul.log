@@ -27,6 +27,9 @@ Opened MCPL file f.mcpl:
     Storage            : 36 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+=== PyAPI view of f.mcpl stat:cumul: ===
+<no stat cumul entries>
+========================================
 Opened MCPL file f.mcpl:
 
   Basic info
@@ -51,6 +54,9 @@ Opened MCPL file f.mcpl:
     Storage            : 36 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+=== PyAPI view of f.mcpl stat:cumul: ===
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa = 0
+========================================
 Opened MCPL file f.mcpl:
 
   Basic info
@@ -75,6 +81,9 @@ Opened MCPL file f.mcpl:
     Storage            : 36 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+=== PyAPI view of f.mcpl stat:cumul: ===
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa = 0
+========================================
 Got expected MCPL ERROR: statcumul key "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" too long (65 chars, max 64 allowed)
 Opened MCPL file f.mcpl:
 
@@ -100,6 +109,9 @@ Opened MCPL file f.mcpl:
     Storage            : 36 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+=== PyAPI view of f.mcpl stat:cumul: ===
+    hello = 1.79769313486232e+308
+========================================
 Got expected MCPL ERROR: Invalid statcumul value (must be -1 or >=0, and not nan/inf
 Got expected MCPL ERROR: Invalid statcumul value (must be -1 or >=0, and not nan/inf
 Got expected MCPL ERROR: Invalid statcumul value (must be -1 or >=0, and not nan/inf
@@ -128,6 +140,9 @@ Opened MCPL file f.mcpl:
     Storage            : 36 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+=== PyAPI view of f.mcpl stat:cumul: ===
+    hello = None
+========================================
 Got expected MCPL ERROR: Invalid statcumul value (must be -1 or >=0, and not nan/inf
 Opened MCPL file f.mcpl:
 
@@ -153,6 +168,9 @@ Opened MCPL file f.mcpl:
     Storage            : 36 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+=== PyAPI view of f.mcpl stat:cumul: ===
+    hello = 0
+========================================
 Opened MCPL file f.mcpl:
 
   Basic info
@@ -177,6 +195,9 @@ Opened MCPL file f.mcpl:
     Storage            : 36 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+=== PyAPI view of f.mcpl stat:cumul: ===
+    hello = 5
+========================================
 Got expected MCPL ERROR: Invalid statcumul key " hello" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
 Got expected MCPL ERROR: Invalid statcumul key "hello " (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
 Got expected MCPL ERROR: Invalid statcumul key "hellø" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
@@ -211,6 +232,9 @@ Opened MCPL file f.mcpl:
     Storage            : 36 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+=== PyAPI view of f.mcpl stat:cumul: ===
+    hel_lo = 5
+========================================
 Got expected MCPL ERROR: Invalid statcumul key "1hello" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
 Got expected MCPL ERROR: Invalid statcumul key "_hello" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
 Got expected MCPL ERROR: Syntax error: could not properly decode comment starting with "stat:cumul:" (value field is not exactly 24 characters wide). Issue with comment "stat:cumul:bla:1.2432245"
@@ -238,6 +262,9 @@ Opened MCPL file f.mcpl:
     Storage            : 36 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+=== PyAPI view of f.mcpl stat:cumul: ===
+    bla = 1.12345678012346
+========================================
 Opened MCPL file f.mcpl:
 
   Basic info
@@ -262,5 +289,8 @@ Opened MCPL file f.mcpl:
     Storage            : 36 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+=== PyAPI view of f.mcpl stat:cumul: ===
+    bla = 1.12345678012346
+========================================
 Got expected MCPL ERROR: Syntax error: could not properly decode comment starting with "stat:cumul:" (could not decode contents of value field). Issue with comment "stat:cumul:bla:1.123456780123456789123	"
 Got expected MCPL ERROR: Syntax error: could not properly decode comment starting with "stat:cumul:" (value field holds forbidden value (+INFINITY)). Issue with comment "stat:cumul:bla: 1e999                  "
