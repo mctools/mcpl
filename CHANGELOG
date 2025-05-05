@@ -7,6 +7,8 @@ v2.0.1 (work in progress):
       * Add support for compiled C code in python tests, allowing c code in
         tests/modules/lib_xxx/*.c to be accessed in Python test scripts in
         tests/scripts.
+      * stat:sum:.... new convention, merges, C api, Python API (including
+        helper functions), ...
       * ...
 
 v2.0.0 2024-04-24
