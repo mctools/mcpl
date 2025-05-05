@@ -34,6 +34,7 @@ def create( filename='f.mcpl', *,
             comment = None,
             nparticles = 0,
             do_dump = True ):
+    print(flush=True,end='')
     p = pathlib.Path(filename)
     if p.is_file():
         p.unlink()
@@ -59,18 +60,18 @@ def create_bad( *a, **kw ):
 
 def print_pystatsum( filename ):
     s = f"=== PyAPI view of {filename} stat:sum: ==="
-    print(s)
+    print(s,flush=True)
     import mcpldev as mcpl
     m = mcpl.MCPLFile(filename)
     d = m.stat_sum
     if not d:
-        print( "<no stat sum entries>")
+        print( "<no stat sum entries>",flush=True)
     else:
         for k,v in d.items():
             if v is not None:
                 v = '%.15g'%v
-            print(f'    {k} = {v}')
-    print('='*len(s))
+            print(f'    {k} = {v}',flush=True)
+    print('='*len(s),flush=True)
 
 def main():
     lib.dump()
