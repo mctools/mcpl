@@ -845,6 +845,23 @@ class MCPLFile:
         """In-file storage order of binary blobs (as list of keys)."""
         return self._hdr['blobkeys']
 
+    @property
+    def stat_cumul(self):
+        """Access "stat:cumul:..." data from file comments as a convenient
+        key->value dictionary. Note that any key present with a value of -1 in
+        the file will get the value None here in the Python interface.
+        """
+        h = self._hdr
+        d = h.get('stat_cumul')
+        if d is not None:
+            return d
+        from types import MappingProxyType # read-only view of dict
+        d = MappingProxyType(
+            _parse_statcumul( h.get('comments_raw',None) or h.get('comments') )
+        )
+        h['stat_cumul'] = d
+        return d
+
     def _loadhdr(self):
         self._hdr={}
         h=self._hdr
@@ -912,6 +929,7 @@ class MCPLFile:
                        + sum(4+len(c) for c in comments)
                        + sum(8+len(bk)+len(bv) for bk,bv in blobs.items()) )
         h['headersize'] = headersize
+        h['statcumul'] = _parse_statcumul(comments)
         if self._str_decode:
             #attributes return python strings since raw_strings was not set, so
             #we must decode these before returning to the user. But for output
@@ -1749,6 +1767,79 @@ def _determine_version():
     else:
         return __version__
 
+def encode_statcumul( key, value ):
+    """
+    Function which can help encode a key and value into the special format
+    needed for "stat:cumul:..." comments in MCPL headers.
+    """
+    import math
+    if not is_valid_statcumul_key(key):
+        raise MCPLError(f'invalid key for scat:cumul: entries: "{key}"')
+    if hasattr(key,'decode'):
+        key = key.decode('ascii')
+    value = value(float)
+    if math.isinf(value) or math.isnan(value):
+        raise MCPLError('stat:cumul: values must be non-nan, '
+                        'non-inf and either -1.0 or >=0.0')
+    v = '%24.15g'%value
+    if float(v)!=value:
+        v = '%24.17g'%value
+    return 'stat:cumul:{key}:{v}'.encode('ascii')
+
+def is_valid_statcumul_key( key ):
+    """
+    Function which can be used to verify that a particular key has the correct
+    format needed for "stat:cumul:..." comments in MCPL headers.
+    """
+    if not ( ( 1<=len(key)<=64 ) and key.isascii() and key.isidentifier() ):
+        return False
+    k0 = key[0].lower()
+    if hasattr(k0,'decode'):
+        return b'a' <= k0 <= b'z'
+    else:
+        return 'a' <= k0 <= 'z'
+
+def _parse_statcumul( comments ):
+    #Parse list of byte strings for any stat:cumul: entries.
+    d = {}
+    prefix = b'stat:cumul:'
+    encodedminus1 = b"        -1 NOT AVAILABLE"
+    lval = 24
+    ignored = []
+    for comment in comments:
+        if not comment.startswith(prefix):
+            continue
+        c = comment[len(prefix):].split(b':')
+        if ( len(c) != 2 or len(c[1])!=lval ):
+            ignored.append(comment)
+            continue
+        keyb, valstr = c
+        key = keyb.decode('ascii',errors='ignore')
+        if len(keyb) != len(key) or not is_valid_statcumul_key(key):
+            ignored.append(comment)
+            continue
+        if valstr==encodedminus1:
+            d[key] = None
+            continue
+        valstr = valstr.strip(b' ')#remove leading and trailing simple spaces
+        if not all(e in b'0123456789.-+=eE' for e in valstr):#fixme: also test this in C
+            ignored.append(comment)
+            continue
+        try:
+            val = float(valstr)
+        except ValueError:
+            val = None
+        import math
+        if ( val is None or math.isinf(val) or math.isnan(val)
+             or not (val == -1.0 or val>=0.0) ):
+            ignored.append(comment)
+            continue
+        d[key] = val
+    if ignored:
+        example = ignored[0].decode('utf-8',errors='backslashreplace')
+        raise MCPLError('Input has "stat:cumul:..." comment entry not'
+                        f' following the specification: "{example}"')
+    return d
 
 def main():
     """This function simply calls app_pymcpltool(), but any raised MCPLError
