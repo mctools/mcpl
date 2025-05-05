@@ -260,23 +260,23 @@ MCPL_LOCAL int mcpl_internal_fakeconstantversion( int enable )
   return fakev;
 }
 
-#define MCPL_STATCUMULINI "stat:cumul:"
-#define MCPL_STATCUMULINI_LENGTH (sizeof(MCPL_STATCUMULINI)-1)
-#define MCPL_STATCUMULKEY_MAXLENGTH 64
-#define MCPL_STATCUMULVAL_LENGTH 24
-#define MCPL_STATCUMULVAL_ENCODEDMINUS1 "        -1 NOT AVAILABLE"
-#define MCPL_STATCUMULVAL_ENCODEDZERO   "                       0"
-#define MCPL_STATCUMULBUF_MAXLENGTH ( MCPL_STATCUMULKEY_MAXLENGTH + \
-                                      MCPL_STATCUMULVAL_LENGTH + \
-                                      MCPL_STATCUMULINI_LENGTH + \
-                                      1 ) //+1 for final colon
+#define MCPL_STATSUMINI "stat:sum:"
+#define MCPL_STATSUMINI_LENGTH (sizeof(MCPL_STATSUMINI)-1)
+#define MCPL_STATSUMKEY_MAXLENGTH 64
+#define MCPL_STATSUMVAL_LENGTH 24
+#define MCPL_STATSUMVAL_ENCODEDMINUS1 "        -1 NOT AVAILABLE"
+#define MCPL_STATSUMVAL_ENCODEDZERO   "                       0"
+#define MCPL_STATSUMBUF_MAXLENGTH ( MCPL_STATSUMKEY_MAXLENGTH + \
+                                    MCPL_STATSUMVAL_LENGTH +    \
+                                    MCPL_STATSUMINI_LENGTH +   \
+                                    1 ) //+1 for final colon
 
 typedef struct MCPL_LOCAL {
-  char key[MCPL_STATCUMULKEY_MAXLENGTH+1];
+  char key[MCPL_STATSUMKEY_MAXLENGTH+1];
   unsigned writtenstrlen;
   uint64_t writtenpos;
   double writtenvalue;
-} mcpl_internal_statcumulinfo_t;
+} mcpl_internal_statsuminfo_t;
 
 typedef struct MCPL_LOCAL {
   char * filename;
@@ -300,8 +300,8 @@ typedef struct MCPL_LOCAL {
   unsigned opt_signature;
   char particle_buffer[MCPLIMP_MAX_PARTICLE_SIZE];
 
-  mcpl_internal_statcumulinfo_t * statcumulinfo;
-  unsigned nstatcumulinfo;
+  mcpl_internal_statsuminfo_t * statsuminfo;
+  unsigned nstatsuminfo;
 } mcpl_outfileinternal_t;
 
 #define MCPLIMP_OUTFILEDECODE mcpl_outfileinternal_t * f = (mcpl_outfileinternal_t *)of.internal; assert(f)
@@ -371,9 +371,9 @@ MCPL_LOCAL void mcpl_internal_cleanup_outfile(mcpl_outfileinternal_t * f)
     free(f->puser);
     f->puser = NULL;
   }
-  if ( f->statcumulinfo ) {
-    free(f->statcumulinfo);
-    f->statcumulinfo = NULL;
+  if ( f->statsuminfo ) {
+    free(f->statsuminfo);
+    f->statsuminfo = NULL;
   }
   free(f);
 }
@@ -427,8 +427,8 @@ mcpl_outfile_t mcpl_create_outfile(const char * filename)
   f->nparticles = 0;
 
   f->puser = NULL;
-  f->statcumulinfo = NULL;
-  f->nstatcumulinfo = 0;
+  f->statsuminfo = NULL;
+  f->nstatsuminfo = 0;
   f->file = mcpl_internal_fopen(f->filename,"wb");
   if (!f->file) {
     mcpl_internal_cleanup_outfile(f);
@@ -483,35 +483,35 @@ MCPL_LOCAL int mcpl_check_isidentifier( const char * c )
            && mcpl_check_char( c, 0 ) );
 }
 
-#define MCPL_COMMENT_IS_STATCUMUL(x) ( *x == 's' \
-                                       && strncmp(x,MCPL_STATCUMULINI, \
-                                                  MCPL_STATCUMULINI_LENGTH)==0 )
+#define MCPL_COMMENT_IS_STATSUM(x) ( *x == 's' \
+                                     && strncmp(x,MCPL_STATSUMINI,      \
+                                                MCPL_STATSUMINI_LENGTH)==0 )
 
 
 typedef struct MCPL_LOCAL {
-  //The rest is only if actually starts with "stat:cumul:":
+  //The rest is only if actually starts with "stat:sum:":
 
   //Error message in case of syntax errors (NULL means OK):
   const char * errmsg;
   double value;//-1 or >=0 (never inf or nan)
-  char key[MCPL_STATCUMULKEY_MAXLENGTH+1];
-} mcpl_internal_statcumul_t;
+  char key[MCPL_STATSUMKEY_MAXLENGTH+1];
+} mcpl_internal_statsum_t;
 
-MCPL_LOCAL void mcpl_internal_statcumulparse( const char * comment,
-                                              mcpl_internal_statcumul_t* res )
+MCPL_LOCAL void mcpl_internal_statsumparse( const char * comment,
+                                            mcpl_internal_statsum_t* res )
 {
   res->key[0] = 0;
   res->value = -2;
   res->errmsg = NULL;
 
-  if ( !MCPL_COMMENT_IS_STATCUMUL(comment) )
+  if ( !MCPL_COMMENT_IS_STATSUM(comment) )
     return;
 
   res->key[0] = 0;
   res->value = -2;
   res->errmsg = NULL;
 
-  const char * c = comment + MCPL_STATCUMULINI_LENGTH;
+  const char * c = comment + MCPL_STATSUMINI_LENGTH;
   const char * csep = strchr(c,':');
   if (!csep) {
     res->errmsg = "did not find colon separating key and value";
@@ -522,9 +522,9 @@ MCPL_LOCAL void mcpl_internal_statcumulparse( const char * comment,
     res->errmsg = "empty key";
     return;
   }
-  if ( nkey > MCPL_STATCUMULKEY_MAXLENGTH ) {
+  if ( nkey > MCPL_STATSUMKEY_MAXLENGTH ) {
     res->errmsg = ( "key length exceeds "
-                   MCPL_STRINGIFY(MCPL_STATCUMULKEY_MAXLENGTH) " characters" );
+                   MCPL_STRINGIFY(MCPL_STATSUMKEY_MAXLENGTH) " characters" );
     return;
   }
   memcpy( res->key, c, nkey );
@@ -536,15 +536,15 @@ MCPL_LOCAL void mcpl_internal_statcumulparse( const char * comment,
   }
   c += nkey;
   if ( !*c || csep != c )
-    mcpl_error("mcpl_internal_statcumulparse logic error");
+    mcpl_error("mcpl_internal_statsumparse logic error");
   ++c; //skip colon as well
-  if ( strlen(c) != MCPL_STATCUMULVAL_LENGTH ) {
+  if ( strlen(c) != MCPL_STATSUMVAL_LENGTH ) {
     res->errmsg = ( "value field is not exactly "
-                    MCPL_STRINGIFY(MCPL_STATCUMULVAL_LENGTH)
+                    MCPL_STRINGIFY(MCPL_STATSUMVAL_LENGTH)
                     " characters wide" );
     return;
   }
-  if ( strcmp( c, MCPL_STATCUMULVAL_ENCODEDMINUS1 ) == 0 ) {
+  if ( strcmp( c, MCPL_STATSUMVAL_ENCODEDMINUS1 ) == 0 ) {
     //special encoding of -1
     res->value = -1;
     return;
@@ -552,10 +552,10 @@ MCPL_LOCAL void mcpl_internal_statcumulparse( const char * comment,
 
   //We will ultimately use strtod to parse the value, but first we will
   //explicitly strip trailing or leading simply space (' ') chars:
-  char bufval[MCPL_STATCUMULVAL_LENGTH+1];
+  char bufval[MCPL_STATSUMVAL_LENGTH+1];
   const char * expected_str_end = NULL;
   {
-    const char * cE = c + MCPL_STATCUMULVAL_LENGTH;
+    const char * cE = c + MCPL_STATSUMVAL_LENGTH;
     while ( *c == ' ' )
       ++c;//ignore initial space
     while ( cE > c && *(cE-1)==' ' )
@@ -590,21 +590,21 @@ MCPL_LOCAL void mcpl_internal_statcumulparse( const char * comment,
   return;
 }
 
-MCPL_LOCAL void mcpl_internal_statcumul_parse_or_emit_err( const char * comment,
-                                                           mcpl_internal_statcumul_t* res )
+MCPL_LOCAL void mcpl_internal_statsum_parse_or_emit_err( const char * comment,
+                                                         mcpl_internal_statsum_t* res )
 {
-  mcpl_internal_statcumulparse( comment, res );
+  mcpl_internal_statsumparse( comment, res );
   if ( !res->errmsg )
     return;
-  if ( strlen(comment) > 16*MCPL_STATCUMULBUF_MAXLENGTH
+  if ( strlen(comment) > 16*MCPL_STATSUMBUF_MAXLENGTH
        || strlen(res->errmsg) > 1024 ) {
     mcpl_error("Syntax error: could not properly decode comment "
-               "starting with \"stat:cumul:\" (content too long to show)");
+               "starting with \"stat:sum:\" (content too long to show)");
   } else {
-    char buf[1200+16*MCPL_STATCUMULBUF_MAXLENGTH];
+    char buf[1200+16*MCPL_STATSUMBUF_MAXLENGTH];
     snprintf(buf,sizeof(buf),
              "Syntax error: could not properly decode comment starting"
-             " with \"stat:cumul:\" (%s). Issue with comment \"%s\"",
+             " with \"stat:sum:\" (%s). Issue with comment \"%s\"",
              res->errmsg,comment);
     mcpl_error(buf);
   }
@@ -615,11 +615,11 @@ void mcpl_hdr_add_comment(mcpl_outfile_t of,const char *comment)
   MCPLIMP_OUTFILEDECODE;
   if (!f->header_notwritten)
     mcpl_error("mcpl_hdr_add_comment called too late.");
-  if ( MCPL_COMMENT_IS_STATCUMUL(comment) ) {
-    //comment starts with "stat:cumul:". Let us require it to live up to the
+  if ( MCPL_COMMENT_IS_STATSUM(comment) ) {
+    //comment starts with "stat:sum:". Let us require it to live up to the
     //syntax by decoding it, to trigger any issues:
-    mcpl_internal_statcumul_t sc;
-    mcpl_internal_statcumul_parse_or_emit_err( comment, &sc );
+    mcpl_internal_statsum_t sc;
+    mcpl_internal_statsum_parse_or_emit_err( comment, &sc );
   }
   size_t oldn = f->ncomments;
   f->ncomments += 1;
@@ -740,19 +740,19 @@ void mcpl_enable_universal_weight(mcpl_outfile_t of, double w)
   mcpl_recalc_psize(of);
 }
 
-MCPL_LOCAL void mcpl_internal_encodestatcumul( const char * key,
-                                               double value,
-                                               char * targetbuf )
+MCPL_LOCAL void mcpl_internal_encodestatsum( const char * key,
+                                             double value,
+                                             char * targetbuf )
 {
-  size_t nbufleft = MCPL_STATCUMULBUF_MAXLENGTH+1;
+  size_t nbufleft = MCPL_STATSUMBUF_MAXLENGTH+1;
   if ( !(value>=0.0 || value == -1.0 ) || isnan(value) || isinf(value) )
-    mcpl_error("Invalid statcumul value (must be -1 or >=0, and not nan/inf");
+    mcpl_error("Invalid stat:sum: value (must be -1 or >=0, and not nan/inf");
 
   //Check key:
   size_t nkey = strlen(key);
   if ( nkey < 1 )
-    mcpl_error("statcumul key must not be empty");
-  if ( nkey > MCPL_STATCUMULKEY_MAXLENGTH ) {
+    mcpl_error("stat:sum: key must not be empty");
+  if ( nkey > MCPL_STATSUMKEY_MAXLENGTH ) {
     size_t nbuf = 128 + nkey;
     char fixbuf[2056];
     char * buf = fixbuf;
@@ -760,83 +760,83 @@ MCPL_LOCAL void mcpl_internal_encodestatcumul( const char * key,
       buf = mcpl_internal_malloc(nbuf);//never freed, but need to pass to
                                        //non-returning mcpl_error so we can not.
     snprintf(buf,nbuf,
-             "statcumul key \"%s\" too long (%llu chars, max %i allowed)",
+             "stat:sum: key \"%s\" too long (%llu chars, max %i allowed)",
              key,
              (unsigned long long)nkey,
-             (int)(MCPL_STATCUMULKEY_MAXLENGTH) );
+             (int)(MCPL_STATSUMKEY_MAXLENGTH) );
     mcpl_error(buf);
   }
 
   if ( !mcpl_check_isidentifier(key) ) {
-    char buf[MCPL_STATCUMULKEY_MAXLENGTH+256];
+    char buf[MCPL_STATSUMKEY_MAXLENGTH+256];
     snprintf(buf,sizeof(buf),
-             "Invalid statcumul key \"%s\" (must begin with a letter and"
+             "Invalid stat:sum: key \"%s\" (must begin with a letter and"
              " otherwise only contain alphanumeric characters and underscores)",
              key);
     mcpl_error(buf);
   }
 
   //Add initial marker including colon:
-  MCPL_STATIC_ASSERT( MCPL_STATCUMULINI_LENGTH < MCPL_STATCUMULBUF_MAXLENGTH );
-  memcpy(targetbuf, MCPL_STATCUMULINI, MCPL_STATCUMULINI_LENGTH);
-  targetbuf += MCPL_STATCUMULINI_LENGTH;
-  nbufleft -= MCPL_STATCUMULINI_LENGTH;
+  MCPL_STATIC_ASSERT( MCPL_STATSUMINI_LENGTH < MCPL_STATSUMBUF_MAXLENGTH );
+  memcpy(targetbuf, MCPL_STATSUMINI, MCPL_STATSUMINI_LENGTH);
+  targetbuf += MCPL_STATSUMINI_LENGTH;
+  nbufleft -= MCPL_STATSUMINI_LENGTH;
 
   //Add key marker:
   if ( nkey > nbufleft )
-    mcpl_error("statcumul encode buffer error");
+    mcpl_error("stat:sum: encode buffer error");
   memcpy(targetbuf, key, nkey );
   targetbuf += nkey;
   nbufleft -= nkey;
 
   //Add colon:
   if ( !nbufleft )
-    mcpl_error("statcumul encode buffer error");
+    mcpl_error("stat:sum: encode buffer error");
   *targetbuf = ':';
   ++targetbuf;
   --nbufleft;
 
-  //Add MCPL_STATCUMULVAL_LENGTH bytes containing the actual value, as well as a
+  //Add MCPL_STATSUMVAL_LENGTH bytes containing the actual value, as well as a
   //final null termination byte:
-  if ( nbufleft < MCPL_STATCUMULVAL_LENGTH + 1 )
-    mcpl_error("statcumul encode buffer error");
+  if ( nbufleft < MCPL_STATSUMVAL_LENGTH + 1 )
+    mcpl_error("stat:sum: encode buffer error");
   if ( value == 0.0 ) {
     //special case, like this to ensure we do not format a negative zero with
     //the sign.
-    MCPL_STATIC_ASSERT(sizeof(MCPL_STATCUMULVAL_ENCODEDZERO) == MCPL_STATCUMULVAL_LENGTH + 1 );
+    MCPL_STATIC_ASSERT(sizeof(MCPL_STATSUMVAL_ENCODEDZERO) == MCPL_STATSUMVAL_LENGTH + 1 );
     memcpy( targetbuf,
-            MCPL_STATCUMULVAL_ENCODEDZERO,
-            MCPL_STATCUMULVAL_LENGTH + 1 );
+            MCPL_STATSUMVAL_ENCODEDZERO,
+            MCPL_STATSUMVAL_LENGTH + 1 );
 
   } else if ( value == -1.0 ) {
     //special case, add keyword for readability
-    MCPL_STATIC_ASSERT(sizeof(MCPL_STATCUMULVAL_ENCODEDMINUS1) == MCPL_STATCUMULVAL_LENGTH + 1 );
+    MCPL_STATIC_ASSERT(sizeof(MCPL_STATSUMVAL_ENCODEDMINUS1) == MCPL_STATSUMVAL_LENGTH + 1 );
     memcpy( targetbuf,
-            MCPL_STATCUMULVAL_ENCODEDMINUS1,
-            MCPL_STATCUMULVAL_LENGTH + 1 );
+            MCPL_STATSUMVAL_ENCODEDMINUS1,
+            MCPL_STATSUMVAL_LENGTH + 1 );
   } else {
     //In general lossless encoding of doubles require .17g, but we first try
     //with .15g to potentially avoid messy encodings like 0.1 being encoded as
     //"0.10000000000000001" rather than "0.1".
     int w1 = snprintf( targetbuf, nbufleft,
-                       "%" MCPL_STRINGIFY(MCPL_STATCUMULVAL_LENGTH) ".15g",
+                       "%" MCPL_STRINGIFY(MCPL_STATSUMVAL_LENGTH) ".15g",
                        value );
-    if ( w1 != MCPL_STATCUMULVAL_LENGTH )
-      mcpl_error("statcumul value encoding length error");
+    if ( w1 != MCPL_STATSUMVAL_LENGTH )
+      mcpl_error("stat:sum: value encoding length error");
     double v = strtod( targetbuf, NULL );
     if ( v != value ) {
       //ok, .15g was not good enough, go for full .17g:
       int w2 = snprintf( targetbuf,
                          nbufleft,
-                         "%" MCPL_STRINGIFY(MCPL_STATCUMULVAL_LENGTH) ".17g",
+                         "%" MCPL_STRINGIFY(MCPL_STATSUMVAL_LENGTH) ".17g",
                          value );
-      if ( w2 != MCPL_STATCUMULVAL_LENGTH )
-        mcpl_error("statcumul value encoding length error");
+      if ( w2 != MCPL_STATSUMVAL_LENGTH )
+        mcpl_error("stat:sum: value encoding length error");
     }
   }
 
-  if ( strlen( targetbuf ) != MCPL_STATCUMULVAL_LENGTH )
-    mcpl_error("Unexpected encoding of stat cumul value");
+  if ( strlen( targetbuf ) != MCPL_STATSUMVAL_LENGTH )
+    mcpl_error("Unexpected encoding of stat:sum: value");
 }
 
 #ifdef _WIN32
@@ -904,40 +904,40 @@ MCPL_LOCAL void mcpl_write_header(mcpl_outfileinternal_t * f)
   //src progname:
   mcpl_write_string(f->file,f->hdr_srcprogname?f->hdr_srcprogname:"unknown",errmsg);
 
-  //Write comments and record positions of any statcumul entries:
+  //Write comments and record positions of any stat:sum: entries:
 
-  //First just count and allocate memory structure for statcumul entries:
+  //First just count and allocate memory structure for stat:sum: entries:
   for (uint32_t i = 0; i < f->ncomments; ++i) {
     char * c = f->comments[i];
-    if ( MCPL_COMMENT_IS_STATCUMUL(c) )
-      ++(f->nstatcumulinfo);
+    if ( MCPL_COMMENT_IS_STATSUM(c) )
+      ++(f->nstatsuminfo);
   }
 
-  if ( f->nstatcumulinfo ) {
-    f->statcumulinfo = (mcpl_internal_statcumulinfo_t *)
-      mcpl_internal_calloc( f->nstatcumulinfo,
-                            sizeof(mcpl_internal_statcumulinfo_t) );
+  if ( f->nstatsuminfo ) {
+    f->statsuminfo = (mcpl_internal_statsuminfo_t *)
+      mcpl_internal_calloc( f->nstatsuminfo,
+                            sizeof(mcpl_internal_statsuminfo_t) );
   }
 
-  //Now fill statcumulinfo and write comment strings to file:
+  //Now fill statsuminfo and write comment strings to file:
   uint32_t i;
-  unsigned nstatcumulinfo_written = 0;
+  unsigned nstatsuminfo_written = 0;
   for (i = 0; i < f->ncomments; ++i) {
-    if ( nstatcumulinfo_written < f->nstatcumulinfo
-         && MCPL_COMMENT_IS_STATCUMUL(f->comments[i]) ) {
-      mcpl_internal_statcumul_t sc;
-      mcpl_internal_statcumul_parse_or_emit_err( f->comments[i], &sc );
+    if ( nstatsuminfo_written < f->nstatsuminfo
+         && MCPL_COMMENT_IS_STATSUM(f->comments[i]) ) {
+      mcpl_internal_statsum_t sc;
+      mcpl_internal_statsum_parse_or_emit_err( f->comments[i], &sc );
       if ( !sc.key[0] )
-        mcpl_error("logic error while writing statcumul comments to header");
-      mcpl_internal_statcumulinfo_t * statcumulinfo
-        = &f->statcumulinfo[nstatcumulinfo_written++];
-      statcumulinfo->writtenstrlen = (unsigned)strlen(f->comments[i]);
-      statcumulinfo->writtenpos = MCPL_FTELL( f->file );
-      statcumulinfo->writtenvalue = sc.value;
+        mcpl_error("logic error while writing stat:sum: comments to header");
+      mcpl_internal_statsuminfo_t * statsuminfo
+        = &f->statsuminfo[nstatsuminfo_written++];
+      statsuminfo->writtenstrlen = (unsigned)strlen(f->comments[i]);
+      statsuminfo->writtenpos = MCPL_FTELL( f->file );
+      statsuminfo->writtenvalue = sc.value;
       size_t nn = strlen(sc.key);
-      if ( nn > MCPL_STATCUMULBUF_MAXLENGTH )
-        mcpl_error("statcumul key unexpected strlen");
-      memcpy( statcumulinfo->key, sc.key, nn );
+      if ( nn > MCPL_STATSUMBUF_MAXLENGTH )
+        mcpl_error("stat:sum: key unexpected strlen");
+      memcpy( statsuminfo->key, sc.key, nn );
     }
     mcpl_write_string(f->file,f->comments[i],errmsg);
   }
@@ -2359,12 +2359,12 @@ MCPL_LOCAL int mcpl_actual_can_merge(mcpl_file_t ff1, mcpl_file_t ff2)
     const char * c1 = f1->comments[i];
     const char * c2 = f2->comments[i];
     if (strcmp(c1,c2)!=0) {
-      //incompatible, unless it represents the same statcumul entry.
-      if ( !MCPL_COMMENT_IS_STATCUMUL(c1) || !MCPL_COMMENT_IS_STATCUMUL(c2) )
+      //incompatible, unless it represents the same stat:sum: entry.
+      if ( !MCPL_COMMENT_IS_STATSUM(c1) || !MCPL_COMMENT_IS_STATSUM(c2) )
         return 0;
-      mcpl_internal_statcumul_t sc1, sc2;
-      mcpl_internal_statcumul_parse_or_emit_err( c1, &sc1 );
-      mcpl_internal_statcumul_parse_or_emit_err( c2, &sc2 );
+      mcpl_internal_statsum_t sc1, sc2;
+      mcpl_internal_statsum_parse_or_emit_err( c1, &sc1 );
+      mcpl_internal_statsum_parse_or_emit_err( c2, &sc2 );
       if ( !sc1.key[0] || !sc2.key[0])
         return 0;
       if ( strcmp( sc1.key, sc2.key ) != 0 )
@@ -2612,21 +2612,21 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
 
 MCPL_LOCAL void mcpl_internal_delete_file( const char * filename );
 
-MCPL_LOCAL void mcpl_internal_updatestatcumul( FILE * f,
-                                               mcpl_internal_statcumulinfo_t*sc,
-                                               const char * new_comment,
-                                               double new_value )
+MCPL_LOCAL void mcpl_internal_updatestatsum( FILE * f,
+                                             mcpl_internal_statsuminfo_t*sc,
+                                             const char * new_comment,
+                                             double new_value )
 {
   //Seek and update comment at correct location in header.
 
   const char * errmsg = ( "Errors encountered while attempting "
-                          "to update statcumul header in file." );
+                          "to update stat:sum: header in file." );
   if (!f||!sc||!new_comment)
     mcpl_error(errmsg);
 
   unsigned n = sc->writtenstrlen;
   if ( n != strlen(new_comment) )
-    mcpl_error("preallocated space for statcumul update does not fit (2)");
+    mcpl_error("preallocated space for stat:sum: update does not fit (2)");
 
   int64_t savedpos = MCPL_FTELL(f);
   if (savedpos<0)
@@ -2703,7 +2703,7 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
       //Add metadata from the first file:
       mcpl_transfer_metadata(fi, out);
 
-      //Check for statcumul info, and convert all values in the output file to
+      //Check for stat:sum: info, and convert all values in the output file to
       //-1 initially (and update only just before returning the file handle):
       if ( !(out_internal->header_notwritten) )
         mcpl_error("unexpected early header write");
@@ -2711,10 +2711,10 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
       if ( !fi_internal || fi_internal->ncomments != ncomments )
         mcpl_error("unexpected ncomments after transfer");
       for ( uint32_t ic = 0; ic < ncomments; ++ic ) {
-        if ( MCPL_COMMENT_IS_STATCUMUL(fi_internal->comments[ic]) ) {
-          mcpl_internal_statcumul_t sc;
-          mcpl_internal_statcumul_parse_or_emit_err( fi_internal->comments[ic],
-                                                     &sc );
+        if ( MCPL_COMMENT_IS_STATSUM(fi_internal->comments[ic]) ) {
+          mcpl_internal_statsum_t sc;
+          mcpl_internal_statsum_parse_or_emit_err( fi_internal->comments[ic],
+                                                   &sc );
           if (!scinfo_indices) {
             scinfo_indices
               = (uint32_t*)mcpl_internal_malloc( sizeof(uint32_t)*ncomments );
@@ -2736,11 +2736,11 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
           ++n_scinfo;
           //register -1 for now:
           if ( sc.value != -1.0 ) {
-            char new_comment[MCPL_STATCUMULBUF_MAXLENGTH+1];
-            mcpl_internal_encodestatcumul( sc.key, -1.0, new_comment );
+            char new_comment[MCPL_STATSUMBUF_MAXLENGTH+1];
+            mcpl_internal_encodestatsum( sc.key, -1.0, new_comment );
             size_t nn = strlen(fi_internal->comments[ic]);
             if ( nn != strlen(new_comment) )
-              mcpl_error("inconsistent length of statcumul comment");
+              mcpl_error("inconsistent length of stat:sum: comment");
             memcpy(fi_internal->comments[ic],new_comment,nn);
           }
         }
@@ -2769,22 +2769,20 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
         mcpl_close_file(f1);
         mcpl_error("Aborting merge of suddenly incompatible files.");
       }
-      //Update statcumul data (adding up, except that -1 combines with anything
+      //Update stat:sum: data (adding up, except that -1 combines with anything
       //to give -1):
       if ( n_scinfo ) {
         for ( unsigned isc = 0; isc < n_scinfo; ++isc ) {
           uint32_t isc_idx = scinfo_indices[isc];
           if ( scinfo_values_s1[isc] == -1.0 && scinfo_values_s2[isc] == 0.0 )
             continue;//ignore
-          //double v;
-          //char buf[MCPL_STATCUMULBUF_MAXLENGTH+1];
           if ( !fi_internal || isc_idx >= fi_internal->ncomments )
             mcpl_error("Number of comments changed during merge");
-          if ( !MCPL_COMMENT_IS_STATCUMUL(fi_internal->comments[isc_idx]) )
-            mcpl_error("logic error during statcumul merge");
-          mcpl_internal_statcumul_t sc;
-          mcpl_internal_statcumul_parse_or_emit_err( fi_internal->comments[isc_idx],
-                                                     &sc );
+          if ( !MCPL_COMMENT_IS_STATSUM(fi_internal->comments[isc_idx]) )
+            mcpl_error("logic error during stat:sum: merge");
+          mcpl_internal_statsum_t sc;
+          mcpl_internal_statsum_parse_or_emit_err( fi_internal->comments[isc_idx],
+                                                   &sc );
           if ( sc.value == -1.0 ) {
             scinfo_values_s1[isc] = -1.0;
             scinfo_values_s2[isc] = 0.0;
@@ -2827,18 +2825,18 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
 
   mcpl_close_file(f1);
 
-  //Finally we must update the cumul stats:
+  //Finally we must update the sum stats:
   if ( scinfo_values_s1 && scinfo_values_s2 && scinfo_indices ) {
-    if ( n_scinfo != out_internal->nstatcumulinfo || !out_internal->statcumulinfo )
-      mcpl_error("stat cumul merge logic error");
+    if ( n_scinfo != out_internal->nstatsuminfo || !out_internal->statsuminfo )
+      mcpl_error("stat:sum: merge logic error");
     for ( unsigned isc = 0; isc < n_scinfo; ++isc ) {
       double val = scinfo_values_s1[isc] + scinfo_values_s2[isc];
       if ( val == -1.0 )
         continue;//already at -1
-      mcpl_internal_statcumulinfo_t * sci = out_internal->statcumulinfo + isc;
-      char comment[MCPL_STATCUMULBUF_MAXLENGTH+1];
-      mcpl_internal_encodestatcumul( sci->key, val, comment );
-      mcpl_internal_updatestatcumul( out_internal->file, sci, comment, val );
+      mcpl_internal_statsuminfo_t * sci = out_internal->statsuminfo + isc;
+      char comment[MCPL_STATSUMBUF_MAXLENGTH+1];
+      mcpl_internal_encodestatsum( sci->key, val, comment );
+      mcpl_internal_updatestatsum( out_internal->file, sci, comment, val );
     }
 
     free(scinfo_indices);
@@ -3987,15 +3985,15 @@ void mcpl_read_file_to_buffer( const char * filename,
   *user_result_buf = out.buf;
 }
 
-void mcpl_hdr_add_statcumul( mcpl_outfile_t of,
-                             const char * key, double value )
+void mcpl_hdr_add_stat_sum( mcpl_outfile_t of,
+                            const char * key, double value )
 {
   if ( !(value>=0.0 || value == -1.0 ) || isnan(value) || isinf(value) )
-    mcpl_error("Invalid statcumul value (must be -1 or >=0, and not nan/inf");
+    mcpl_error("Invalid stat:sum: value (must be -1 or >=0, and not nan/inf");
 
 
-  char comment[MCPL_STATCUMULBUF_MAXLENGTH+1];
-  mcpl_internal_encodestatcumul( key, value, comment );
+  char comment[MCPL_STATSUMBUF_MAXLENGTH+1];
+  mcpl_internal_encodestatsum( key, value, comment );
 
   size_t nkey = strlen(key);
 
@@ -4003,16 +4001,16 @@ void mcpl_hdr_add_statcumul( mcpl_outfile_t of,
   if (f->header_notwritten) {
     //Header not written yet, simply check other in-mem comments for clashes.
     for ( uint32_t i = 0; i < f->ncomments; ++i ) {
-      if ( !MCPL_COMMENT_IS_STATCUMUL(f->comments[i]) )
+      if ( !MCPL_COMMENT_IS_STATSUM(f->comments[i]) )
         continue;
-      mcpl_internal_statcumul_t sc;
-      mcpl_internal_statcumul_parse_or_emit_err( f->comments[i], &sc );
+      mcpl_internal_statsum_t sc;
+      mcpl_internal_statsum_parse_or_emit_err( f->comments[i], &sc );
       if ( strlen(sc.key)==nkey && memcmp(sc.key,key,nkey+1)==0 ) {
         //Same variable! Simply update in place.
         size_t n = strlen(comment);
         size_t nalloc = strlen(f->comments[i]);
         if ( n != nalloc )
-          mcpl_error("preallocated space for statcumul update does not fit (1)");
+          mcpl_error("preallocated space for stat:sum: update does not fit (1)");
         memcpy(f->comments[i],comment,nalloc);
         return;
       }
@@ -4024,30 +4022,30 @@ void mcpl_hdr_add_statcumul( mcpl_outfile_t of,
 
   //Header was already written, so we must jump back and figure out where to
   //update in the file!
-  mcpl_internal_statcumulinfo_t * sc_to_update = NULL;
+  mcpl_internal_statsuminfo_t * sc_to_update = NULL;
 
-  for ( unsigned i = 0; i < f->nstatcumulinfo; ++i ) {
-    if ( memcmp( f->statcumulinfo[i].key, key, nkey+1 ) == 0 ) {
-      sc_to_update = f->statcumulinfo + i;
+  for ( unsigned i = 0; i < f->nstatsuminfo; ++i ) {
+    if ( memcmp( f->statsuminfo[i].key, key, nkey+1 ) == 0 ) {
+      sc_to_update = f->statsuminfo + i;
       break;
     }
   }
   if (!sc_to_update)
-    mcpl_error("mcpl_hdr_add_statcumul called after first particle was added "
+    mcpl_error("mcpl_hdr_add_stat:sum: called after first particle was added "
                "to file, but without first registering a value for the same "
                "key earlier (the special value -1 can be used for this)");
 
-  mcpl_internal_updatestatcumul( f->file, sc_to_update, comment, value );
+  mcpl_internal_updatestatsum( f->file, sc_to_update, comment, value );
 }
 
-double mcpl_hdr_statcumul( mcpl_file_t ff, const char * key )
+double mcpl_hdr_stat_sum( mcpl_file_t ff, const char * key )
 {
   MCPLIMP_FILEDECODE;
   for ( uint32_t i = 0; i < f->ncomments; ++i ) {
     const char * c = f->comments[i];
-    if ( MCPL_COMMENT_IS_STATCUMUL(c) ) {
-      mcpl_internal_statcumul_t sc;
-      mcpl_internal_statcumul_parse_or_emit_err( c, &sc );
+    if ( MCPL_COMMENT_IS_STATSUM(c) ) {
+      mcpl_internal_statsum_t sc;
+      mcpl_internal_statsum_parse_or_emit_err( c, &sc );
       if ( strcmp(key,sc.key)==0 )
         return sc.value;
     }

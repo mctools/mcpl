@@ -19,7 +19,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-//Example creating files with statcumul.
+//Example creating files with stat:sum:.
 
 #include "mcpl.h"
 #include <stdio.h>
@@ -28,13 +28,13 @@ void create_file1(void)
 {
   mcpl_outfile_t f = mcpl_create_outfile("file1.mcpl");
   mcpl_hdr_add_comment(f,"Some comment.");
-  mcpl_hdr_add_statcumul( f, "nsrc", 2.0 );
+  mcpl_hdr_add_stat_sum( f, "nsrc", 2.0 );
   mcpl_hdr_add_comment(f,"Another comment.");
-  mcpl_hdr_add_statcumul( f, "nsrc2", -1 );
+  mcpl_hdr_add_stat_sum( f, "nsrc2", -1 );
   mcpl_hdr_add_comment(f,"Another comment.");
-  mcpl_hdr_add_statcumul( f, "nsrc3", -1 );
+  mcpl_hdr_add_stat_sum( f, "nsrc3", -1 );
   mcpl_hdr_add_comment(f,"Another comment.");
-  mcpl_hdr_add_statcumul( f, "nsrc3", 2.0 );
+  mcpl_hdr_add_stat_sum( f, "nsrc3", 2.0 );
   mcpl_close_outfile(f);
 }
 
@@ -55,20 +55,20 @@ void create_file2(void)
 {
   mcpl_outfile_t f = mcpl_create_outfile("file2.mcpl");
   mcpl_hdr_add_comment(f,"Some comment.");
-  mcpl_hdr_add_statcumul( f, "nsrc", -1.0 );
-  mcpl_hdr_add_statcumul( f, "nsrc_other", 123456.123 );
-  mcpl_hdr_add_statcumul( f, "nsrc_other", 1234567.123 );
-  mcpl_hdr_add_statcumul( f, "nsrc_other2", 123456789 );
-  mcpl_hdr_add_statcumul( f, "ccc", -1.0 );
-  mcpl_hdr_add_statcumul( f, "aaa", 1 );
-  mcpl_hdr_add_statcumul( f, "aa2", 2 );
-  mcpl_hdr_add_statcumul( f, "bbb", 1 );
-  mcpl_hdr_add_statcumul( f, "bb", 2 );
+  mcpl_hdr_add_stat_sum( f, "nsrc", -1.0 );
+  mcpl_hdr_add_stat_sum( f, "nsrc_other", 123456.123 );
+  mcpl_hdr_add_stat_sum( f, "nsrc_other", 1234567.123 );
+  mcpl_hdr_add_stat_sum( f, "nsrc_other2", 123456789 );
+  mcpl_hdr_add_stat_sum( f, "ccc", -1.0 );
+  mcpl_hdr_add_stat_sum( f, "aaa", 1 );
+  mcpl_hdr_add_stat_sum( f, "aa2", 2 );
+  mcpl_hdr_add_stat_sum( f, "bbb", 1 );
+  mcpl_hdr_add_stat_sum( f, "bb", 2 );
   mcpl_hdr_add_comment(f,"Another comment.");
 
-  mcpl_hdr_add_statcumul( f, "nsrc", 2.123e-3 );
+  mcpl_hdr_add_stat_sum( f, "nsrc", 2.123e-3 );
   mcpltests_add_particles(f, 1000);
-  mcpl_hdr_add_statcumul( f, "aa2", 17 );
+  mcpl_hdr_add_stat_sum( f, "aa2", 17 );
 
   mcpl_close_outfile(f);
 }
@@ -78,10 +78,10 @@ void create_file3(const char * filename,double statval)
   static int i = 0;
   mcpl_outfile_t f = mcpl_create_outfile(filename);
   int delay = ( (i++) %2 == 0 );
-  mcpl_hdr_add_statcumul( f, "nsrc", delay? -1.0 : statval );
+  mcpl_hdr_add_stat_sum( f, "nsrc", delay? -1.0 : statval );
   mcpltests_add_particles(f, 1);
   if ( delay )
-    mcpl_hdr_add_statcumul( f, "nsrc", statval );
+    mcpl_hdr_add_stat_sum( f, "nsrc", statval );
   mcpl_close_outfile(f);
   mcpl_dump(filename,0,0,1);
 }
@@ -127,12 +127,12 @@ int main(int argc,char**argv) {
     mcpl_close_outfile(of);
     mcpl_dump("f4_mergeall.mcpl",0,0,10);
     mcpl_file_t f = mcpl_open_file("f4_mergeall.mcpl");
-    printf("mcpl_hdr_statcumul(\"nsrc\") = %.17g\n",
-           mcpl_hdr_statcumul(f,"nsrc"));
-    printf("mcpl_hdr_statcumul(\"foo\") = %.17g\n",
-           mcpl_hdr_statcumul(f,"foo"));
-    if ( mcpl_hdr_statcumul(f,"nsrc") != 1.0 + 4e-16
-         || !(mcpl_hdr_statcumul(f,"nsrc")>1.0 ) ) {
+    printf("mcpl_hdr_stat_sum(\"nsrc\") = %.17g\n",
+           mcpl_hdr_stat_sum(f,"nsrc"));
+    printf("mcpl_hdr_stat_sum(\"foo\") = %.17g\n",
+           mcpl_hdr_stat_sum(f,"foo"));
+    if ( mcpl_hdr_stat_sum(f,"nsrc") != 1.0 + 4e-16
+         || !(mcpl_hdr_stat_sum(f,"nsrc")>1.0 ) ) {
       printf("stats were not added in stable manner\n");
       return 1;
     }
