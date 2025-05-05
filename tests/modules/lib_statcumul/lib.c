@@ -24,21 +24,21 @@
 MCPLTEST_CTYPE_DICTIONARY
 {
   return
-    "void mcpltest_createstatcumulfile("
+    "void mcpltest_createstatsumfile("
     "       const char *,const char *,double,const char *,unsigned);"
     "void mcpltest_dump( const char * );"
     ;
 }
 
-MCPLTEST_CTYPES void mcpltest_createstatcumulfile( const char * filename,
-                                                   const char * statcumulname,
-                                                   double statcumulvalue,
-                                                   const char * customcomment,
-                                                   unsigned nparticles )
+MCPLTEST_CTYPES void mcpltest_createstatsumfile( const char * filename,
+                                                 const char * statsumname,
+                                                 double statsumvalue,
+                                                 const char * customcomment,
+                                                 unsigned nparticles )
 {
   mcpl_outfile_t f = mcpl_create_outfile( filename );
-  if ( strcmp(statcumulname,"<NONE>") != 0 )
-    mcpl_hdr_add_statcumul(f,statcumulname,statcumulvalue);
+  if ( strcmp(statsumname,"<NONE>") != 0 )
+    mcpl_hdr_add_stat_sum(f,statsumname,statsumvalue);
   if ( strcmp(customcomment,"<NONE>") != 0 )
     mcpl_hdr_add_comment(f,customcomment);
 

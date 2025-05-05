@@ -30,21 +30,21 @@ def dump( filename ):
     lib.mcpltest_dump( filename )
 
 def create( filename='f.mcpl', *,
-            statcumul = None,
+            statsum = None,
             comment = None,
             nparticles = 0,
             do_dump = True ):
     p = pathlib.Path(filename)
     if p.is_file():
         p.unlink()
-    if statcumul:
-        sc_name,sc_val = statcumul
+    if statsum:
+        sc_name,sc_val = statsum
     else:
         sc_name,sc_val = '<NONE>',-99.0
     if comment is None:
         comment = '<NONE>'
     assert 0 <= nparticles <= 4294967295
-    lib.mcpltest_createstatcumulfile( filename,
+    lib.mcpltest_createstatsumfile( filename,
                                       sc_name,
                                       sc_val,
                                       comment,
@@ -52,19 +52,19 @@ def create( filename='f.mcpl', *,
     assert p.is_file()
     if do_dump:
         dump(filename)
-        print_pystatcumul(filename)
+        print_pystatsum(filename)
 
 def create_bad( *a, **kw ):
     lib.run_fct_expected_to_fail(create,*a,**kw)
 
-def print_pystatcumul( filename ):
-    s = f"=== PyAPI view of {filename} stat:cumul: ==="
+def print_pystatsum( filename ):
+    s = f"=== PyAPI view of {filename} stat:sum: ==="
     print(s)
     import mcpldev as mcpl
     m = mcpl.MCPLFile(filename)
-    d = m.stat_cumul
+    d = m.stat_sum
     if not d:
-        print( "<no stat cumul entries>")
+        print( "<no stat sum entries>")
     else:
         for k,v in d.items():
             if v is not None:
@@ -75,41 +75,41 @@ def print_pystatcumul( filename ):
 def main():
     lib.dump()
     create()
-    create(statcumul=('a'*63,0.0))
-    create(statcumul=('a'*64,0.0))
-    create_bad(statcumul=('a'*65,0.0))
-    create(statcumul=('hello',1.7976931348623157e+308))#largest dbl not inf
-    create_bad(statcumul=('hello',1.7976931348623159e+308))#a bit larger
-    create_bad(statcumul=('hello',float('inf')))
-    create_bad(statcumul=('hello',-float('inf')))
-    create_bad(statcumul=('hello',float('nan')))
-    create(statcumul=('hello',-1))
-    create_bad(statcumul=('hello',-1.000000001))
-    create(statcumul=('hello',-0.0))
-    create(statcumul=('hello',5.0))
+    create(statsum=('a'*63,0.0))
+    create(statsum=('a'*64,0.0))
+    create_bad(statsum=('a'*65,0.0))
+    create(statsum=('hello',1.7976931348623157e+308))#largest dbl not inf
+    create_bad(statsum=('hello',1.7976931348623159e+308))#a bit larger
+    create_bad(statsum=('hello',float('inf')))
+    create_bad(statsum=('hello',-float('inf')))
+    create_bad(statsum=('hello',float('nan')))
+    create(statsum=('hello',-1))
+    create_bad(statsum=('hello',-1.000000001))
+    create(statsum=('hello',-0.0))
+    create(statsum=('hello',5.0))
 
-    create_bad(statcumul=(' hello',5.0))
-    create_bad(statcumul=('hello ',5.0))
+    create_bad(statsum=(' hello',5.0))
+    create_bad(statsum=('hello ',5.0))
     oslash='\u00f8'
-    create_bad(statcumul=(f'hell{oslash}',5.0))
-    create_bad(statcumul=('hel lo',5.0))
-    create_bad(statcumul=('hel\rlo',5.0))
-    create_bad(statcumul=('hel.lo',5.0))
-    create_bad(statcumul=('hel\tlo',5.0))
-    create_bad(statcumul=('',5.0))
-    create_bad(statcumul=(' ',5.0))
-    create(statcumul=('hel_lo',5.0))
-    create_bad(statcumul=('1hello',5.0))
-    create_bad(statcumul=('_hello',5.0))
+    create_bad(statsum=(f'hell{oslash}',5.0))
+    create_bad(statsum=('hel lo',5.0))
+    create_bad(statsum=('hel\rlo',5.0))
+    create_bad(statsum=('hel.lo',5.0))
+    create_bad(statsum=('hel\tlo',5.0))
+    create_bad(statsum=('',5.0))
+    create_bad(statsum=(' ',5.0))
+    create(statsum=('hel_lo',5.0))
+    create_bad(statsum=('1hello',5.0))
+    create_bad(statsum=('_hello',5.0))
 
-    #Adding stat:cumul: comments directly is allowed, but will result in a
+    #Adding stat:sum: comments directly is allowed, but will result in a
     #warning in case of failure to adhere to the convention (but when writing or
     #reading).
-    create_bad(comment='stat:cumul:bla:1.2432245')#too short value buffer
-    create(    comment='stat:cumul:bla:1.1234567801234567891234')
-    create(comment='stat:cumul:bla:1.123456780123456789123 ')
-    create_bad(comment='stat:cumul:bla:1.123456780123456789123\t')
-    create_bad(comment='stat:cumul:bla: 1e999                  ')
+    create_bad(comment='stat:sum:bla:1.2432245')#too short value buffer
+    create(    comment='stat:sum:bla:1.1234567801234567891234')
+    create(comment='stat:sum:bla:1.123456780123456789123 ')
+    create_bad(comment='stat:sum:bla:1.123456780123456789123\t')
+    create_bad(comment='stat:sum:bla: 1e999                  ')
 
 if __name__ == '__main__':
     main()
