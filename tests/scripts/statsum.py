@@ -46,10 +46,10 @@ def create( filename='f.mcpl', *,
         comment = '<NONE>'
     assert 0 <= nparticles <= 4294967295
     lib.mcpltest_createstatsumfile( filename,
-                                      sc_name,
-                                      sc_val,
-                                      comment,
-                                      int(nparticles) )
+                                    sc_name,
+                                    sc_val,
+                                    comment,
+                                    int(nparticles) )
     assert p.is_file()
     if do_dump:
         dump(filename)
@@ -111,6 +111,8 @@ def main():
     create(comment='stat:sum:bla:1.123456780123456789123 ')
     create_bad(comment='stat:sum:bla:1.123456780123456789123\t')
     create_bad(comment='stat:sum:bla: 1e999                  ')
+    create_bad(comment='stat:whatever')
+
 
 if __name__ == '__main__':
     main()

@@ -56,6 +56,7 @@ def main():
     max_size_overrides = {
         'mcpl_core/src/mcpl.c' : 150,
         'tests/scripts/forcemerge.log' : 500,
+        'tests/scripts/pystat.log' : 500,
         'mcpl_python/src/mcpl/mcpl.py' : 80,
     }
     for f in all_files_iter():
