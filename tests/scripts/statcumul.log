@@ -1,5 +1,5 @@
 Library "TestMod_statcumul" (5 functions):
-  void mcpltest_createstatcumulfile(const char *, const char *, double, const char *, uint)
+  void mcpltest_createstatsumfile(const char *, const char *, double, const char *, uint)
   void mcpltest_dump(const char *)
   void mcpltestdetail_exit1()
   void mcpltestdetail_set_error_handler(VOIDFCT_CSTR_ARG)
@@ -27,21 +27,21 @@ Opened MCPL file f.mcpl:
     Storage            : 36 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
-=== PyAPI view of f.mcpl stat:cumul: ===
-<no stat cumul entries>
-========================================
+=== PyAPI view of f.mcpl stat:sum: ===
+<no stat sum entries>
+======================================
 Opened MCPL file f.mcpl:
 
   Basic info
     Format             : MCPL-3
     No. of particles   : 0
-    Header storage     : 162 bytes
+    Header storage     : 160 bytes
     Data storage       : 0 bytes
 
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:cumul:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:                       0"
+          -> comment 0 : "stat:sum:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:                       0"
     Number of blobs    : 0
 
   Particle data format
@@ -54,21 +54,21 @@ Opened MCPL file f.mcpl:
     Storage            : 36 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
-=== PyAPI view of f.mcpl stat:cumul: ===
+=== PyAPI view of f.mcpl stat:sum: ===
     aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa = 0
-========================================
+======================================
 Opened MCPL file f.mcpl:
 
   Basic info
     Format             : MCPL-3
     No. of particles   : 0
-    Header storage     : 163 bytes
+    Header storage     : 161 bytes
     Data storage       : 0 bytes
 
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:cumul:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:                       0"
+          -> comment 0 : "stat:sum:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:                       0"
     Number of blobs    : 0
 
   Particle data format
@@ -81,22 +81,22 @@ Opened MCPL file f.mcpl:
     Storage            : 36 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
-=== PyAPI view of f.mcpl stat:cumul: ===
+=== PyAPI view of f.mcpl stat:sum: ===
     aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa = 0
-========================================
-Got expected MCPL ERROR: statcumul key "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" too long (65 chars, max 64 allowed)
+======================================
+Got expected MCPL ERROR: stat:sum: key "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" too long (65 chars, max 64 allowed)
 Opened MCPL file f.mcpl:
 
   Basic info
     Format             : MCPL-3
     No. of particles   : 0
-    Header storage     : 104 bytes
+    Header storage     : 102 bytes
     Data storage       : 0 bytes
 
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:cumul:hello: 1.7976931348623157e+308"
+          -> comment 0 : "stat:sum:hello: 1.7976931348623157e+308"
     Number of blobs    : 0
 
   Particle data format
@@ -109,25 +109,25 @@ Opened MCPL file f.mcpl:
     Storage            : 36 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
-=== PyAPI view of f.mcpl stat:cumul: ===
+=== PyAPI view of f.mcpl stat:sum: ===
     hello = 1.79769313486232e+308
-========================================
-Got expected MCPL ERROR: Invalid statcumul value (must be -1 or >=0, and not nan/inf
-Got expected MCPL ERROR: Invalid statcumul value (must be -1 or >=0, and not nan/inf
-Got expected MCPL ERROR: Invalid statcumul value (must be -1 or >=0, and not nan/inf
-Got expected MCPL ERROR: Invalid statcumul value (must be -1 or >=0, and not nan/inf
+======================================
+Got expected MCPL ERROR: Invalid stat:sum: value (must be -1 or >=0, and not nan/inf
+Got expected MCPL ERROR: Invalid stat:sum: value (must be -1 or >=0, and not nan/inf
+Got expected MCPL ERROR: Invalid stat:sum: value (must be -1 or >=0, and not nan/inf
+Got expected MCPL ERROR: Invalid stat:sum: value (must be -1 or >=0, and not nan/inf
 Opened MCPL file f.mcpl:
 
   Basic info
     Format             : MCPL-3
     No. of particles   : 0
-    Header storage     : 104 bytes
+    Header storage     : 102 bytes
     Data storage       : 0 bytes
 
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:cumul:hello:        -1 NOT AVAILABLE"
+          -> comment 0 : "stat:sum:hello:        -1 NOT AVAILABLE"
     Number of blobs    : 0
 
   Particle data format
@@ -140,22 +140,22 @@ Opened MCPL file f.mcpl:
     Storage            : 36 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
-=== PyAPI view of f.mcpl stat:cumul: ===
+=== PyAPI view of f.mcpl stat:sum: ===
     hello = None
-========================================
-Got expected MCPL ERROR: Invalid statcumul value (must be -1 or >=0, and not nan/inf
+======================================
+Got expected MCPL ERROR: Invalid stat:sum: value (must be -1 or >=0, and not nan/inf
 Opened MCPL file f.mcpl:
 
   Basic info
     Format             : MCPL-3
     No. of particles   : 0
-    Header storage     : 104 bytes
+    Header storage     : 102 bytes
     Data storage       : 0 bytes
 
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:cumul:hello:                       0"
+          -> comment 0 : "stat:sum:hello:                       0"
     Number of blobs    : 0
 
   Particle data format
@@ -168,21 +168,21 @@ Opened MCPL file f.mcpl:
     Storage            : 36 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
-=== PyAPI view of f.mcpl stat:cumul: ===
+=== PyAPI view of f.mcpl stat:sum: ===
     hello = 0
-========================================
+======================================
 Opened MCPL file f.mcpl:
 
   Basic info
     Format             : MCPL-3
     No. of particles   : 0
-    Header storage     : 104 bytes
+    Header storage     : 102 bytes
     Data storage       : 0 bytes
 
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:cumul:hello:                       5"
+          -> comment 0 : "stat:sum:hello:                       5"
     Number of blobs    : 0
 
   Particle data format
@@ -195,31 +195,31 @@ Opened MCPL file f.mcpl:
     Storage            : 36 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
-=== PyAPI view of f.mcpl stat:cumul: ===
+=== PyAPI view of f.mcpl stat:sum: ===
     hello = 5
-========================================
-Got expected MCPL ERROR: Invalid statcumul key " hello" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
-Got expected MCPL ERROR: Invalid statcumul key "hello " (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
-Got expected MCPL ERROR: Invalid statcumul key "hellø" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
-Got expected MCPL ERROR: Invalid statcumul key "hel lo" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
-Got expected MCPL ERROR: Invalid statcumul key "hel
+======================================
+Got expected MCPL ERROR: Invalid stat:sum: key " hello" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
+Got expected MCPL ERROR: Invalid stat:sum: key "hello " (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
+Got expected MCPL ERROR: Invalid stat:sum: key "hellø" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
+Got expected MCPL ERROR: Invalid stat:sum: key "hel lo" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
+Got expected MCPL ERROR: Invalid stat:sum: key "hel
 lo" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
-Got expected MCPL ERROR: Invalid statcumul key "hel.lo" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
-Got expected MCPL ERROR: Invalid statcumul key "hel	lo" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
-Got expected MCPL ERROR: statcumul key must not be empty
-Got expected MCPL ERROR: Invalid statcumul key " " (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
+Got expected MCPL ERROR: Invalid stat:sum: key "hel.lo" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
+Got expected MCPL ERROR: Invalid stat:sum: key "hel	lo" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
+Got expected MCPL ERROR: stat:sum: key must not be empty
+Got expected MCPL ERROR: Invalid stat:sum: key " " (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
 Opened MCPL file f.mcpl:
 
   Basic info
     Format             : MCPL-3
     No. of particles   : 0
-    Header storage     : 105 bytes
+    Header storage     : 103 bytes
     Data storage       : 0 bytes
 
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:cumul:hel_lo:                       5"
+          -> comment 0 : "stat:sum:hel_lo:                       5"
     Number of blobs    : 0
 
   Particle data format
@@ -232,24 +232,24 @@ Opened MCPL file f.mcpl:
     Storage            : 36 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
-=== PyAPI view of f.mcpl stat:cumul: ===
+=== PyAPI view of f.mcpl stat:sum: ===
     hel_lo = 5
-========================================
-Got expected MCPL ERROR: Invalid statcumul key "1hello" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
-Got expected MCPL ERROR: Invalid statcumul key "_hello" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
-Got expected MCPL ERROR: Syntax error: could not properly decode comment starting with "stat:cumul:" (value field is not exactly 24 characters wide). Issue with comment "stat:cumul:bla:1.2432245"
+======================================
+Got expected MCPL ERROR: Invalid stat:sum: key "1hello" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
+Got expected MCPL ERROR: Invalid stat:sum: key "_hello" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
+Got expected MCPL ERROR: Syntax error: could not properly decode comment starting with "stat:sum:" (value field is not exactly 24 characters wide). Issue with comment "stat:sum:bla:1.2432245"
 Opened MCPL file f.mcpl:
 
   Basic info
     Format             : MCPL-3
     No. of particles   : 0
-    Header storage     : 102 bytes
+    Header storage     : 100 bytes
     Data storage       : 0 bytes
 
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:cumul:bla:1.1234567801234567891234"
+          -> comment 0 : "stat:sum:bla:1.1234567801234567891234"
     Number of blobs    : 0
 
   Particle data format
@@ -262,21 +262,21 @@ Opened MCPL file f.mcpl:
     Storage            : 36 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
-=== PyAPI view of f.mcpl stat:cumul: ===
+=== PyAPI view of f.mcpl stat:sum: ===
     bla = 1.12345678012346
-========================================
+======================================
 Opened MCPL file f.mcpl:
 
   Basic info
     Format             : MCPL-3
     No. of particles   : 0
-    Header storage     : 102 bytes
+    Header storage     : 100 bytes
     Data storage       : 0 bytes
 
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:cumul:bla:1.123456780123456789123 "
+          -> comment 0 : "stat:sum:bla:1.123456780123456789123 "
     Number of blobs    : 0
 
   Particle data format
@@ -289,8 +289,8 @@ Opened MCPL file f.mcpl:
     Storage            : 36 bytes/particle
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
-=== PyAPI view of f.mcpl stat:cumul: ===
+=== PyAPI view of f.mcpl stat:sum: ===
     bla = 1.12345678012346
-========================================
-Got expected MCPL ERROR: Syntax error: could not properly decode comment starting with "stat:cumul:" (could not decode contents of value field). Issue with comment "stat:cumul:bla:1.123456780123456789123	"
-Got expected MCPL ERROR: Syntax error: could not properly decode comment starting with "stat:cumul:" (value field holds forbidden value (+INFINITY)). Issue with comment "stat:cumul:bla: 1e999                  "
+======================================
+Got expected MCPL ERROR: Syntax error: could not properly decode comment starting with "stat:sum:" (could not decode contents of value field). Issue with comment "stat:sum:bla:1.123456780123456789123	"
+Got expected MCPL ERROR: Syntax error: could not properly decode comment starting with "stat:sum:" (value field holds forbidden value (+INFINITY)). Issue with comment "stat:sum:bla: 1e999                  "

@@ -846,20 +846,20 @@ class MCPLFile:
         return self._hdr['blobkeys']
 
     @property
-    def stat_cumul(self):
-        """Access "stat:cumul:..." data from file comments as a convenient
+    def stat_sum(self):
+        """Access "stat:sum:..." data from file comments as a convenient
         key->value dictionary. Note that any key present with a value of -1 in
         the file will get the value None here in the Python interface.
         """
         h = self._hdr
-        d = h.get('stat_cumul')
+        d = h.get('stat_sum')
         if d is not None:
             return d
         from types import MappingProxyType # read-only view of dict
         d = MappingProxyType(
-            _parse_statcumul( h.get('comments_raw',None) or h.get('comments') )
+            _parse_statsum( h.get('comments_raw',None) or h.get('comments') )
         )
-        h['stat_cumul'] = d
+        h['stat_sum'] = d
         return d
 
     def _loadhdr(self):
@@ -929,7 +929,7 @@ class MCPLFile:
                        + sum(4+len(c) for c in comments)
                        + sum(8+len(bk)+len(bv) for bk,bv in blobs.items()) )
         h['headersize'] = headersize
-        h['statcumul'] = _parse_statcumul(comments)
+        h['statsum'] = _parse_statsum(comments)
         if self._str_decode:
             #attributes return python strings since raw_strings was not set, so
             #we must decode these before returning to the user. But for output
@@ -1767,29 +1767,30 @@ def _determine_version():
     else:
         return __version__
 
-def encode_statcumul( key, value ):
+def encode_stat_sum( key, value ):
     """
     Function which can help encode a key and value into the special format
-    needed for "stat:cumul:..." comments in MCPL headers.
+    needed for "stat:sum:..." comments in MCPL headers.
     """
+    #Fixme unit test
     import math
-    if not is_valid_statcumul_key(key):
-        raise MCPLError(f'invalid key for scat:cumul: entries: "{key}"')
+    if not is_valid_stat_sum_key(key):
+        raise MCPLError(f'invalid key for scat:sum: entries: "{key}"')
     if hasattr(key,'decode'):
         key = key.decode('ascii')
     value = value(float)
     if math.isinf(value) or math.isnan(value):
-        raise MCPLError('stat:cumul: values must be non-nan, '
+        raise MCPLError('stat:sum: values must be non-nan, '
                         'non-inf and either -1.0 or >=0.0')
     v = '%24.15g'%value
     if float(v)!=value:
         v = '%24.17g'%value
-    return 'stat:cumul:{key}:{v}'.encode('ascii')
+    return 'stat:sum:{key}:{v}'.encode('ascii')
 
-def is_valid_statcumul_key( key ):
+def is_valid_stat_sum_key( key ):
     """
     Function which can be used to verify that a particular key has the correct
-    format needed for "stat:cumul:..." comments in MCPL headers.
+    format needed for "stat:sum:..." comments in MCPL headers.
     """
     if not ( ( 1<=len(key)<=64 ) and key.isascii() and key.isidentifier() ):
         return False
@@ -1799,10 +1800,10 @@ def is_valid_statcumul_key( key ):
     else:
         return 'a' <= k0 <= 'z'
 
-def _parse_statcumul( comments ):
-    #Parse list of byte strings for any stat:cumul: entries.
+def _parse_statsum( comments ):
+    #Parse list of byte strings for any stat:sum: entries.
     d = {}
-    prefix = b'stat:cumul:'
+    prefix = b'stat:sum:'
     encodedminus1 = b"        -1 NOT AVAILABLE"
     lval = 24
     ignored = []
@@ -1815,7 +1816,7 @@ def _parse_statcumul( comments ):
             continue
         keyb, valstr = c
         key = keyb.decode('ascii',errors='ignore')
-        if len(keyb) != len(key) or not is_valid_statcumul_key(key):
+        if len(keyb) != len(key) or not is_valid_stat_sum_key(key):
             ignored.append(comment)
             continue
         if valstr==encodedminus1:
@@ -1837,7 +1838,7 @@ def _parse_statcumul( comments ):
         d[key] = val
     if ignored:
         example = ignored[0].decode('utf-8',errors='backslashreplace')
-        raise MCPLError('Input has "stat:cumul:..." comment entry not'
+        raise MCPLError('Input has "stat:sum:..." comment entry not'
                         f' following the specification: "{example}"')
     return d
 
