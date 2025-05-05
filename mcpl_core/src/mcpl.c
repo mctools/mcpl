@@ -620,6 +620,11 @@ void mcpl_hdr_add_comment(mcpl_outfile_t of,const char *comment)
     //syntax by decoding it, to trigger any issues:
     mcpl_internal_statsum_t sc;
     mcpl_internal_statsum_parse_or_emit_err( comment, &sc );
+  } else {
+    if ( strncmp( comment, "stat:", 5 ) == 0 )
+      mcpl_error("Refusing to create file with comments starting with"
+                 " \"stat:\" unless starting with \"stat:sum:\", as such"
+                 " syntax is reserved for future usage.");
   }
   size_t oldn = f->ncomments;
   f->ncomments += 1;
@@ -1601,8 +1606,21 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
                   ? (char **)mcpl_internal_calloc(f->ncomments,sizeof(char*))
                   : NULL );
   uint32_t i;
-  for (i = 0; i < f->ncomments; ++i)
+  int unknown_stat_syntax = 0;
+  for (i = 0; i < f->ncomments; ++i) {
     current_pos += mcpl_read_string(f,&(f->comments[i]),errmsg);
+    if ( !unknown_stat_syntax
+         && strncmp( f->comments[i], "stat:", 5 ) == 0
+         && !MCPL_COMMENT_IS_STATSUM(f->comments[i]) ) {
+      unknown_stat_syntax = 1;
+    }
+  }
+  if (unknown_stat_syntax) {
+    mcpl_print("MCPL WARNING: Opened file with unknown \"stat:...\" syntax in"
+               " comments. The present installation only has special support"
+               " for \"stat:sum:...\" comments. It might be a sign that your"
+               " installation of MCPL is too old.\n");
+  }
 
   f->blobkeys = NULL;
   f->bloblengths = 0;
