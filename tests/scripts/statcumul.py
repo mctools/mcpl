@@ -52,9 +52,25 @@ def create( filename='f.mcpl', *,
     assert p.is_file()
     if do_dump:
         dump(filename)
+        print_pystatcumul(filename)
 
 def create_bad( *a, **kw ):
     lib.run_fct_expected_to_fail(create,*a,**kw)
+
+def print_pystatcumul( filename ):
+    s = f"=== PyAPI view of {filename} stat:cumul: ==="
+    print(s)
+    import mcpldev as mcpl
+    m = mcpl.MCPLFile(filename)
+    d = m.stat_cumul
+    if not d:
+        print( "<no stat cumul entries>")
+    else:
+        for k,v in d.items():
+            if v is not None:
+                v = '%.15g'%v
+            print(f'    {k} = {v}')
+    print('='*len(s))
 
 def main():
     lib.dump()
