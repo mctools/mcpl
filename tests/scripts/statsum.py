@@ -58,20 +58,47 @@ def create( filename='f.mcpl', *,
 def create_bad( *a, **kw ):
     lib.run_fct_expected_to_fail(create,*a,**kw)
 
+def decodestatsum(s):
+    assert s.isascii()
+    assert s.startswith('stat:sum:')
+    _,_,key,value = s.split(':')
+    assert 1<=len(key)<=64
+    assert key.isidentifier()
+    assert len(value)==24
+    if value == '        -1 NOT AVAILABLE':
+        val = -1.0
+    else:
+        if not all(e in '0123456789.-+eE' for e in value.strip(' ')):
+            raise RuntimeError('Issues with statsum valstr: "%s"'%value)
+        val = float(value.strip(' '))
+    return key, val
+
 def print_pystatsum( filename ):
     s = f"=== PyAPI view of {filename} stat:sum: ==="
     print(s,flush=True)
-    import mcpldev as mcpl
-    m = mcpl.MCPLFile(filename)
+    import mcpldev as mcplpy
+
+    m = mcplpy.MCPLFile(filename)
     d = m.stat_sum
+    expected_comments = []
     if not d:
         print( "<no stat sum entries>",flush=True)
     else:
         for k,v in d.items():
+            expected_comments.append(mcplpy.encode_stat_sum( k, v ))
             if v is not None:
                 v = '%.15g'%v
             print(f'    {k} = {v}',flush=True)
     print('='*len(s),flush=True)
+
+    actual_statsums = [ decodestatsum(e) for e in m.comments
+                        if e.startswith('stat:sum:') ]
+
+    for e in expected_comments:
+        keyval = decodestatsum( e )
+        if keyval not in actual_statsums:
+            raise SystemExit('Problems with python encoding to "%s"'%e)
+
 
 def main():
     lib.dump()
@@ -108,10 +135,13 @@ def main():
     #reading).
     create_bad(comment='stat:sum:bla:1.2432245')#too short value buffer
     create(    comment='stat:sum:bla:1.1234567801234567891234')
-    create(comment='stat:sum:bla:1.123456780123456789123 ')
+    create(    comment='stat:sum:bla: .1234567801234567891234')
+    create_bad(comment='stat:sum:bla:\t.1234567801234567891234')
+    create(    comment='stat:sum:bla:1.123456780123456789123 ')
     create_bad(comment='stat:sum:bla:1.123456780123456789123\t')
     create_bad(comment='stat:sum:bla: 1e999                  ')
     create_bad(comment='stat:whatever')
+
 
 
 if __name__ == '__main__':

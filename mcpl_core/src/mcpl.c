@@ -573,6 +573,23 @@ MCPL_LOCAL void mcpl_internal_statsumparse( const char * comment,
     bufval[cE-c] = 0;
     expected_str_end = &(bufval[cE-c]);
   }
+  {
+    //check that only chars in "0123456789.-+eE" are allowed.
+    const char * bp = bufval;
+    while ( *bp ) {
+      char b = *bp;
+      if ( ! ( ('0'<= b && b<='9')
+               || b=='.' || b=='-' || b== '+'
+               || b=='e' || b=='E' ) ) {
+        res->errmsg = ( "value field holds forbidden characters, only"
+                        " 0123456789.-+eE are allowed in addition to leading"
+                        " or trailing simply spaces)" );
+        return;
+      }
+      ++bp;
+    }
+  }
+
   char * str_end;
   double val = strtod( bufval, &str_end );
   if ( str_end != expected_str_end ) {

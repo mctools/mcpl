@@ -55,7 +55,10 @@ __all__ = [ 'MCPLFile',
             'app_pymcpltool',
             'collect_stats',
             'dump_stats',
-            'plot_stats']
+            'plot_stats',
+            'encode_stat_sum',
+            'is_valid_stat_sum_key'
+           ]
 
 __version__ = '2.0.1'
 
@@ -68,4 +71,6 @@ from .mcpl import ( MCPLFile,
                     app_pymcpltool,
                     collect_stats,
                     dump_stats,
-                    plot_stats )
+                    plot_stats,
+                    encode_stat_sum,
+                    is_valid_stat_sum_key )

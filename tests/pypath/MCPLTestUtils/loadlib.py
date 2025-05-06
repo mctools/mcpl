@@ -282,7 +282,7 @@ def _ctypes_create_fct( lib, fctname, restype, *argtypes, libobj = None ):
                     al.append( ctypes.cast( None, VOIDFCT_CSTR_ARG ) )
                 else:
                     def afct( arg_cstr ):
-                        pystr = _cstr2str(arg_cstr)#fixme: allow binary (non-utf8)?
+                        pystr = _cstr2str(arg_cstr)#todo: allow binary (non-utf8)?
                         a(pystr)
                     afct2 = VOIDFCT_CSTR_ARG(afct)
                     _keepalive_fcts.append(afct)
