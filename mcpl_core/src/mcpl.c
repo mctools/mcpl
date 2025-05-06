@@ -269,7 +269,6 @@ MCPL_LOCAL int mcpl_internal_fakeconstantversion( int enable )
 #define MCPL_STATSUMINI_LENGTH (sizeof(MCPL_STATSUMINI)-1)
 #define MCPL_STATSUMKEY_MAXLENGTH 64
 #define MCPL_STATSUMVAL_LENGTH 24
-#define MCPL_STATSUMVAL_ENCODEDMINUS1 "        -1 NOT AVAILABLE"
 #define MCPL_STATSUMVAL_ENCODEDZERO   "                       0"
 #define MCPL_STATSUMBUF_MAXLENGTH ( MCPL_STATSUMKEY_MAXLENGTH + \
                                     MCPL_STATSUMVAL_LENGTH +    \
@@ -547,11 +546,6 @@ MCPL_LOCAL void mcpl_internal_statsumparse( const char * comment,
     res->errmsg = ( "value field is not exactly "
                     MCPL_STRINGIFY(MCPL_STATSUMVAL_LENGTH)
                     " characters wide" );
-    return;
-  }
-  if ( strcmp( c, MCPL_STATSUMVAL_ENCODEDMINUS1 ) == 0 ) {
-    //special encoding of -1
-    res->value = -1;
     return;
   }
 
@@ -843,16 +837,7 @@ MCPL_LOCAL void mcpl_internal_encodestatsum( const char * key,
     //special case, like this to ensure we do not format a negative zero with
     //the sign.
     MCPL_STATIC_ASSERT(sizeof(MCPL_STATSUMVAL_ENCODEDZERO) == MCPL_STATSUMVAL_LENGTH + 1 );
-    memcpy( targetbuf,
-            MCPL_STATSUMVAL_ENCODEDZERO,
-            MCPL_STATSUMVAL_LENGTH + 1 );
-
-  } else if ( value == -1.0 ) {
-    //special case, add keyword for readability
-    MCPL_STATIC_ASSERT(sizeof(MCPL_STATSUMVAL_ENCODEDMINUS1) == MCPL_STATSUMVAL_LENGTH + 1 );
-    memcpy( targetbuf,
-            MCPL_STATSUMVAL_ENCODEDMINUS1,
-            MCPL_STATSUMVAL_LENGTH + 1 );
+    memcpy( targetbuf, MCPL_STATSUMVAL_ENCODEDZERO, MCPL_STATSUMVAL_LENGTH + 1 );
   } else {
     //In general lossless encoding of doubles require .17g, but we first try
     //with .15g to potentially avoid messy encodings like 0.1 being encoded as
