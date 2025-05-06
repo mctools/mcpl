@@ -64,7 +64,9 @@ __all__ = ['MCPLFile',
            'collect_stats',
            'dump_stats',
            'plot_stats',
-           'main']
+           'main',
+           'encode_stat_sum',
+           'is_valid_stat_sum_key']
 
 #Python version checks and workarounds:
 
@@ -1780,22 +1782,24 @@ def _determine_version():
 def encode_stat_sum( key, value ):
     """
     Function which can help encode a key and value into the special format
-    needed for "stat:sum:..." comments in MCPL headers.
+    needed for "stat:sum:..." comments in MCPL headers. A value of either None
+    or -1.0 maps to -1.0 in the encoding.
     """
-    #Fixme unit test
     import math
     if not is_valid_stat_sum_key(key):
         raise MCPLError(f'invalid key for scat:sum: entries: "{key}"')
     if hasattr(key,'decode'):
         key = key.decode('ascii')
-    value = value(float)
-    if math.isinf(value) or math.isnan(value):
+    value = float(-1.0 if value is None else value)
+    if ( math.isinf(value)
+         or math.isnan(value)
+         or not ( value==-1.0 or value>=0.0) ):
         raise MCPLError('stat:sum: values must be non-nan, '
                         'non-inf and either -1.0 or >=0.0')
     v = '%24.15g'%value
     if float(v)!=value:
         v = '%24.17g'%value
-    return 'stat:sum:{key}:{v}'.encode('ascii')
+    return f'stat:sum:{key}:{v}'
 
 def is_valid_stat_sum_key( key ):
     """
@@ -1833,7 +1837,7 @@ def _parse_statsum( comments ):
             d[key] = None
             continue
         valstr = valstr.strip(b' ')#remove leading and trailing simple spaces
-        if not all(e in b'0123456789.-+=eE' for e in valstr):#fixme: also test this in C
+        if not all(e in b'0123456789.-+eE' for e in valstr):
             ignored.append(comment)
             continue
         try:

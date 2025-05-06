@@ -276,6 +276,34 @@ Opened MCPL file f.mcpl:
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
+          -> comment 0 : "stat:sum:bla: .1234567801234567891234"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+=== PyAPI view of f.mcpl stat:sum: ===
+    bla = 0.123456780123457
+======================================
+Got expected MCPL ERROR: Syntax error: could not properly decode comment starting with "stat:sum:" (value field holds forbidden characters, only 0123456789.-+eE are allowed in addition to leading or trailing simply spaces)). Issue with comment "stat:sum:bla:	.1234567801234567891234"
+Opened MCPL file f.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 0
+    Header storage     : 100 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 1
           -> comment 0 : "stat:sum:bla:1.123456780123456789123 "
     Number of blobs    : 0
 
@@ -292,6 +320,6 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 === PyAPI view of f.mcpl stat:sum: ===
     bla = 1.12345678012346
 ======================================
-Got expected MCPL ERROR: Syntax error: could not properly decode comment starting with "stat:sum:" (could not decode contents of value field). Issue with comment "stat:sum:bla:1.123456780123456789123	"
+Got expected MCPL ERROR: Syntax error: could not properly decode comment starting with "stat:sum:" (value field holds forbidden characters, only 0123456789.-+eE are allowed in addition to leading or trailing simply spaces)). Issue with comment "stat:sum:bla:1.123456780123456789123	"
 Got expected MCPL ERROR: Syntax error: could not properly decode comment starting with "stat:sum:" (value field holds forbidden value (+INFINITY)). Issue with comment "stat:sum:bla: 1e999                  "
 Got expected MCPL ERROR: Refusing to create file with comments starting with "stat:" unless starting with "stat:sum:", as such syntax is reserved for future usage.
