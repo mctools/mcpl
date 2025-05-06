@@ -1,6 +1,7 @@
 Testing ref/difficult_unitvector.mcpl.gz
 Testing ref/gammas_uw.mcpl.gz
 Testing ref/miscphys.mcpl.gz
+Testing ref/ref_statsum.mcpl.gz
 Testing ref/ref_statunsupported.mcpl.gz
 MCPL WARNING: Opened file with unknown "stat:..." syntax in comments. The present installation only has special support for "stat:sum:..." comments. It might be a sign that your installation of MCPL is too old.
 Testing ref/reffile_1.mcpl

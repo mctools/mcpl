@@ -23,6 +23,7 @@
 #pythons multiprocessing
 
 from MCPLTestUtils.loadlib import getlib
+from MCPLTestUtils.dirs import test_data_dir
 import pathlib
 lib = getlib('statsum')
 
@@ -74,7 +75,8 @@ def decodestatsum(s):
     return key, val
 
 def print_pystatsum( filename ):
-    s = f"=== PyAPI view of {filename} stat:sum: ==="
+    filenamebn = str(filename).replace('\\','/').split('/')[-1]
+    s = f"=== PyAPI view of {filenamebn} stat:sum: ==="
     print(s,flush=True)
     import mcpldev as mcplpy
 
@@ -142,7 +144,8 @@ def main():
     create_bad(comment='stat:sum:bla: 1e999                  ')
     create_bad(comment='stat:whatever')
 
-
+    for f in ['ref_statunsupported.mcpl.gz','ref_statsum.mcpl.gz']:
+        print_pystatsum( test_data_dir.joinpath('ref',f))
 
 if __name__ == '__main__':
     main()
