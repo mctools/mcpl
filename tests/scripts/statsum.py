@@ -66,12 +66,9 @@ def decodestatsum(s):
     assert 1<=len(key)<=64
     assert key.isidentifier()
     assert len(value)==24
-    if value == '        -1 NOT AVAILABLE':
-        val = -1.0
-    else:
-        if not all(e in '0123456789.-+eE' for e in value.strip(' ')):
-            raise RuntimeError('Issues with statsum valstr: "%s"'%value)
-        val = float(value.strip(' '))
+    if not all(e in '0123456789.-+eE' for e in value.strip(' ')):
+        raise RuntimeError('Issues with statsum valstr: "%s"'%value)
+    val = float(value.strip(' '))
     return key, val
 
 def print_pystatsum( filename ):

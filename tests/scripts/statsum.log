@@ -127,7 +127,7 @@ Opened MCPL file f.mcpl:
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:sum:hello:        -1 NOT AVAILABLE"
+          -> comment 0 : "stat:sum:hello:                      -1"
     Number of blobs    : 0
 
   Particle data format

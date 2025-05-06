@@ -931,7 +931,6 @@ class MCPLFile:
                        + sum(4+len(c) for c in comments)
                        + sum(8+len(bk)+len(bv) for bk,bv in blobs.items()) )
         h['headersize'] = headersize
-        h['statsum'] = _parse_statsum(comments)
 
         for c in comments:
             if c.startswith(b'stat:') and not c.startswith(b'stat:sum:'):
@@ -1818,7 +1817,6 @@ def _parse_statsum( comments ):
     #Parse list of byte strings for any stat:sum: entries.
     d = {}
     prefix = b'stat:sum:'
-    encodedminus1 = b"        -1 NOT AVAILABLE"
     lval = 24
     ignored = []
     for comment in comments:
@@ -1833,9 +1831,6 @@ def _parse_statsum( comments ):
         if len(keyb) != len(key) or not is_valid_stat_sum_key(key):
             ignored.append(comment)
             continue
-        if valstr==encodedminus1:
-            d[key] = None
-            continue
         valstr = valstr.strip(b' ')#remove leading and trailing simple spaces
         if not all(e in b'0123456789.-+eE' for e in valstr):
             ignored.append(comment)
@@ -1849,7 +1844,7 @@ def _parse_statsum( comments ):
              or not (val == -1.0 or val>=0.0) ):
             ignored.append(comment)
             continue
-        d[key] = val
+        d[key] = None if val == -1.0 else val
     if ignored:
         example = ignored[0].decode('utf-8',errors='backslashreplace')
         raise MCPLError('Input has "stat:sum:..." comment entry not'
