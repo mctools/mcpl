@@ -98,6 +98,11 @@
 #  error "MCPL needs zlib with gzip functionality"
 #endif
 
+#ifndef INFINITY
+//Missing in ICC 12 C99 compilation:
+#  define  INFINITY (__builtin_inf())
+#endif
+
 #include "mcpl_fileutils.h"
 
 #define MCPLIMP_NPARTICLES_POS 8
@@ -749,10 +754,22 @@ MCPL_LOCAL void mcpl_internal_encodestatsum( const char * key,
                                              double value,
                                              char * targetbuf )
 {
+  //Sanity check value:
   size_t nbufleft = MCPL_STATSUMBUF_MAXLENGTH+1;
-  if ( !(value>=0.0 || value == -1.0 ) || isnan(value) || isinf(value) )
-    mcpl_error("Invalid stat:sum: value (must be -1 or >=0, and not nan/inf");
-
+  if ( isnan(value) )
+    mcpl_error("Invalid value for \"stat:sum:...\". Value is invalid (NaN)");
+  if ( isinf(value) ) {
+    if ( value > 0.0 )
+      mcpl_error("Invalid value for \"stat:sum:...\". Value is invalid (+INF).");
+    else
+      mcpl_error("Invalid value for \"stat:sum:...\". Value is invalid (-INF).");
+  }
+  if ( !( value>=0.0 || value==-1.0 ) ) {
+      char ebuf[256];
+      snprintf(ebuf,sizeof(ebuf),"Invalid value for \"stat:sum:...\"."
+               " Value is negative but is not -1.0 (it is %.15g).",value);
+      mcpl_error(ebuf);
+  }
   //Check key:
   size_t nkey = strlen(key);
   if ( nkey < 1 )
@@ -984,11 +1001,6 @@ MCPL_LOCAL void mcpl_write_header(mcpl_outfileinternal_t * f)
   }
   f->header_notwritten = 0;
 }
-
-#ifndef INFINITY
-//Missing in ICC 12 C99 compilation:
-#  define  INFINITY (__builtin_inf())
-#endif
 
 MCPL_LOCAL void mcpl_unitvect_pack_adaptproj(const double* in, double* out) {
 
@@ -2671,8 +2683,19 @@ MCPL_LOCAL void mcpl_impl_stablesum_add( double* s1, double* s2, double x )
   //s1 is the naive sum, s2 is the correction. Both should be initialised to 0,
   //and the final sum is simply their sum (s1+s2).
   double t = *s1 + x;
+  if ( isinf(t) || isinf(*s1) || isinf(x) ) {
+    if ( (*s1 >= 0.0) == ( x >= 0.0 ) ) {
+      //same sign infinities, we can avoid NaN in this case by going directly to
+      //infinity: For the use-case in MCPL this overhead is not important, but
+      //avoiding the NaN is.
+      *s1 = INFINITY;
+      *s2 = 0.0;
+      return;
+    }
+  }
   *s2 += fabs(*s1) >= fabs(x)  ? (*s1-t)+x : (x-t)+*s1;
   *s1 = t;
+
 }
 
 mcpl_outfile_t mcpl_merge_files( const char* file_output,
@@ -2759,7 +2782,7 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
             size_t nn = strlen(fi_internal->comments[ic]);
             if ( nn != strlen(new_comment) )
               mcpl_error("inconsistent length of stat:sum: comment");
-            memcpy(fi_internal->comments[ic],new_comment,nn);
+            memcpy(out_internal->comments[ic],new_comment,nn);
           }
         }
       }
@@ -2845,12 +2868,23 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
 
   //Finally we must update the sum stats:
   if ( scinfo_values_s1 && scinfo_values_s2 && scinfo_indices ) {
+    int warned_statsuminf = 0;
     if ( n_scinfo != out_internal->nstatsuminfo || !out_internal->statsuminfo )
       mcpl_error("stat:sum: merge logic error");
     for ( unsigned isc = 0; isc < n_scinfo; ++isc ) {
       double val = scinfo_values_s1[isc] + scinfo_values_s2[isc];
       if ( val == -1.0 )
         continue;//already at -1
+      if ( isinf(val) ) {
+        if ( !warned_statsuminf ) {
+          warned_statsuminf = 1;
+          mcpl_print("MCPL WARNING: Merging files results in one or more"
+                     " stat:sum: entries overflowing floating point"
+                     " range and producing infinity. Reverting value to -1"
+                     " to indicate that a precise result is not available.\n");
+        }
+        continue;//leave at -1
+      }
       mcpl_internal_statsuminfo_t * sci = out_internal->statsuminfo + isc;
       char comment[MCPL_STATSUMBUF_MAXLENGTH+1];
       mcpl_internal_encodestatsum( sci->key, val, comment );
@@ -4006,12 +4040,11 @@ void mcpl_read_file_to_buffer( const char * filename,
 void mcpl_hdr_add_stat_sum( mcpl_outfile_t of,
                             const char * key, double value )
 {
-  if ( !(value>=0.0 || value == -1.0 ) || isnan(value) || isinf(value) )
-    mcpl_error("Invalid stat:sum: value (must be -1 or >=0, and not nan/inf");
-
 
   char comment[MCPL_STATSUMBUF_MAXLENGTH+1];
   mcpl_internal_encodestatsum( key, value, comment );
+  if ( !(value>=0.0 || value == -1.0 ) || isnan(value) || isinf(value) )
+    mcpl_error("logic error: lack of expected input sanitisation.");
 
   size_t nkey = strlen(key);
 

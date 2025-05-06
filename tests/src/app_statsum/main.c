@@ -140,5 +140,29 @@ int main(int argc,char**argv) {
     mcpl_close_file(f);
   }
 
+
+  {
+    //1.7976931348623157e+308 is largest dbl which is not inf, so merging these
+    //two files will overflow the FP range:
+    create_file3("f5_a.mcpl",1.2e308);
+    create_file3("f5_b.mcpl",1.1e308);
+    const char *fns[2] = {"f5_a.mcpl","f5_b.mcpl"};
+    mcpl_outfile_t of = mcpl_merge_files( "f5_merge.mcpl", 2, fns );
+    mcpl_close_outfile(of);
+    mcpl_dump("f5_merge.mcpl",0,0,10);
+  }
+
+  {
+    //Like previous test, but slightly smaller so should be in range:
+    create_file3("f6_a.mcpl",0.8e308);
+    create_file3("f6_b.mcpl",0.9e308);
+    const char *fns[2] = {"f6_a.mcpl","f6_b.mcpl"};
+    mcpl_outfile_t of = mcpl_merge_files( "f6_merge.mcpl", 2, fns );
+    mcpl_close_outfile(of);
+    mcpl_dump("f6_merge.mcpl",0,0,10);
+  }
+
+
+
   return 0;
 }
