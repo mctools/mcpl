@@ -12,7 +12,7 @@ Opened MCPL file file1.mcpl:
           -> comment 0 : "Some comment."
           -> comment 1 : "stat:sum:nsrc:                       2"
           -> comment 2 : "Another comment."
-          -> comment 3 : "stat:sum:nsrc2:        -1 NOT AVAILABLE"
+          -> comment 3 : "stat:sum:nsrc2:                      -1"
           -> comment 4 : "Another comment."
           -> comment 5 : "stat:sum:nsrc3:                       2"
           -> comment 6 : "Another comment."
@@ -43,7 +43,7 @@ Opened MCPL file file2.mcpl:
           -> comment 1 : "stat:sum:nsrc:                0.002123"
           -> comment 2 : "stat:sum:nsrc_other:             1234567.123"
           -> comment 3 : "stat:sum:nsrc_other2:               123456789"
-          -> comment 4 : "stat:sum:ccc:        -1 NOT AVAILABLE"
+          -> comment 4 : "stat:sum:ccc:                      -1"
           -> comment 5 : "stat:sum:aaa:                       1"
           -> comment 6 : "stat:sum:aa2:                      17"
           -> comment 7 : "stat:sum:bbb:                       1"
@@ -82,7 +82,7 @@ Opened MCPL file f3_unset.mcpl:
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:sum:nsrc:        -1 NOT AVAILABLE"
+          -> comment 0 : "stat:sum:nsrc:                      -1"
     Number of blobs    : 0
 
   Particle data format
@@ -183,7 +183,7 @@ Opened MCPL file f3_mergeall.mcpl:
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:sum:nsrc:        -1 NOT AVAILABLE"
+          -> comment 0 : "stat:sum:nsrc:                      -1"
     Number of blobs    : 0
 
   Particle data format
@@ -417,7 +417,7 @@ Opened MCPL file f5_merge.mcpl:
   Custom meta data
     Source             : "unknown"
     Number of comments : 1
-          -> comment 0 : "stat:sum:nsrc:        -1 NOT AVAILABLE"
+          -> comment 0 : "stat:sum:nsrc:                      -1"
     Number of blobs    : 0
 
   Particle data format
