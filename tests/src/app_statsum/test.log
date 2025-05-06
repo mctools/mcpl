@@ -355,3 +355,156 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     4         212       0.025           0           0           0           0           0           1           0         0.1
 mcpl_hdr_stat_sum("nsrc") = 1.0000000000000004
 mcpl_hdr_stat_sum("foo") = -2
+Opened MCPL file f5_a.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 1
+    Header storage     : 101 bytes
+    Data storage       : 36 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 1
+          -> comment 0 : "stat:sum:nsrc:                1.2e+308"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0         212       0.025           0           0           0           0           0           1           0         0.1
+Opened MCPL file f5_b.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 1
+    Header storage     : 101 bytes
+    Data storage       : 36 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 1
+          -> comment 0 : "stat:sum:nsrc:                1.1e+308"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0         212       0.025           0           0           0           0           0           1           0         0.1
+MCPL WARNING: Merging files results in one or more stat:sum: entries overflowing floating point range and producing infinity. Reverting value to -1 to indicate that a precise result is not available.
+Opened MCPL file f5_merge.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 2
+    Header storage     : 101 bytes
+    Data storage       : 72 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 1
+          -> comment 0 : "stat:sum:nsrc:        -1 NOT AVAILABLE"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0         212       0.025           0           0           0           0           0           1           0         0.1
+    1         212       0.025           0           0           0           0           0           1           0         0.1
+Opened MCPL file f6_a.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 1
+    Header storage     : 101 bytes
+    Data storage       : 36 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 1
+          -> comment 0 : "stat:sum:nsrc:                  8e+307"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0         212       0.025           0           0           0           0           0           1           0         0.1
+Opened MCPL file f6_b.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 1
+    Header storage     : 101 bytes
+    Data storage       : 36 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 1
+          -> comment 0 : "stat:sum:nsrc:                  9e+307"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0         212       0.025           0           0           0           0           0           1           0         0.1
+Opened MCPL file f6_merge.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 2
+    Header storage     : 101 bytes
+    Data storage       : 72 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 1
+          -> comment 0 : "stat:sum:nsrc:                1.7e+308"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0         212       0.025           0           0           0           0           0           1           0         0.1
+    1         212       0.025           0           0           0           0           0           1           0         0.1
