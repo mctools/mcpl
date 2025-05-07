@@ -140,6 +140,7 @@ def main():
     create_bad(comment='stat:sum:bla:1.123456780123456789123\t')
     create_bad(comment='stat:sum:bla: 1e999                  ')
     create_bad(comment='stat:whatever')
+    create_bad(comment='stat:sum:bla:                        ')
 
     for f in ['ref_statunsupported.mcpl.gz','ref_statsum.mcpl.gz']:
         print_pystatsum( test_data_dir.joinpath('ref',f))
