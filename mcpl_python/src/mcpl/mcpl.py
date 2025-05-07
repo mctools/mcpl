@@ -557,6 +557,37 @@ class MCPLFile:
                     self._hdr['nparticles'] = np_rec
                     print ("MCPL WARNING: Input file appears to not have been closed"
                            +" properly. Recovered %i particles."%np_rec)
+
+                    comments = ( self._hdr.get('comments_raw')
+                                 or self._hdr['comments'] )[:]
+                    for ic in range(len(comments)):
+                        c = comments[ic]
+                        if not c.startswith(b'stat:sum:'):
+                            continue
+                        ok, (key,val) = _parse_statsum_comment( c)
+                        if not ok:
+                            raise MCPLError('Unexpected problems decoding'
+                                            'stat:sum: comment second time')
+                        if val != -1.0:
+                            newc = encode_stat_sum( key, -1.0 ).encode('ascii')
+                            if len(c) != len(newc):
+                                raise MCPLError("Unexpected statsum encoding"
+                                                " length")
+                            comments[ic] = newc
+                            print(f"MCPL WARNING: Marking stat:sum:{key} "
+                                  "entry as not available (-1) since file"
+                                  " not closed properly.")
+                    if 'comments_raw' in self._hdr:
+                        self._hdr['comments_raw'] = comments
+                        self._hdr['comments'] = [c.decode('utf-8','replace')
+                                                 for c in comments]
+                    else:
+                        self._hdr['comments'] = comments
+                    #If stat_sum was already called we would have to invalidate
+                    #it now, but it should not have been:
+                    assert 'stat_sum' not in self._hdr
+
+        #FIXME: error or warn on any unsupported stat: entry
         #prepare dtype for reading 1 particle:
         fp = 'f4' if self.opt_singleprec else 'f8'
         fields = []
@@ -1813,40 +1844,48 @@ def is_valid_stat_sum_key( key ):
     else:
         return 'a' <= k0 <= 'z'
 
+def _parse_statsum_comment( comment ):
+    prefix = b'stat:sum:'
+    lval = 24
+    err = ( False, (None, None) )
+    if not comment.startswith(prefix):
+        return err
+    c = comment[len(prefix):].split(b':')
+    if ( len(c) != 2 or len(c[1])!=lval ):
+        return err
+    keyb, valstr = c
+    key = keyb.decode('ascii',errors='ignore')
+    if len(keyb) != len(key) or not is_valid_stat_sum_key(key):
+        return err
+    valstr = valstr.strip(b' ')#remove leading and trailing simple spaces
+    if not all(e in b'0123456789.-+eE' for e in valstr):
+        return err
+    try:
+        val = float(valstr)
+    except ValueError:
+        val = None
+    import math
+    if ( val is None or math.isinf(val) or math.isnan(val)
+         or not (val == -1.0 or val>=0.0) ):
+        return err
+    return ( True, (key,val) )
+
 def _parse_statsum( comments ):
     #Parse list of byte strings for any stat:sum: entries.
     d = {}
     prefix = b'stat:sum:'
-    lval = 24
-    ignored = []
+    error_comment = None
     for comment in comments:
         if not comment.startswith(prefix):
             continue
-        c = comment[len(prefix):].split(b':')
-        if ( len(c) != 2 or len(c[1])!=lval ):
-            ignored.append(comment)
-            continue
-        keyb, valstr = c
-        key = keyb.decode('ascii',errors='ignore')
-        if len(keyb) != len(key) or not is_valid_stat_sum_key(key):
-            ignored.append(comment)
-            continue
-        valstr = valstr.strip(b' ')#remove leading and trailing simple spaces
-        if not all(e in b'0123456789.-+eE' for e in valstr):
-            ignored.append(comment)
-            continue
-        try:
-            val = float(valstr)
-        except ValueError:
-            val = None
-        import math
-        if ( val is None or math.isinf(val) or math.isnan(val)
-             or not (val == -1.0 or val>=0.0) ):
-            ignored.append(comment)
-            continue
-        d[key] = None if val == -1.0 else val
-    if ignored:
-        example = ignored[0].decode('utf-8',errors='backslashreplace')
+        ok, (key,val) = _parse_statsum_comment( comment)
+        if ok:
+            d[key] = None if val == -1.0 else val
+        else:
+            error_comment = comment
+            break
+    if error_comment:
+        example = error_comment.decode('utf-8',errors='backslashreplace')
         raise MCPLError('Input has "stat:sum:..." comment entry not'
                         f' following the specification: "{example}"')
     return d
