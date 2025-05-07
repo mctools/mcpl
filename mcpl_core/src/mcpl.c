@@ -620,6 +620,10 @@ MCPL_LOCAL void mcpl_write_header(mcpl_outfileinternal_t * f)
   for (i = 0; i < f->nblobs; ++i)
     mcpl_write_buffer(f->file, f->bloblengths[i], f->blobs[i],errmsg);
 
+  //Reduce the likelihood of partially written headers (not guaranteed to have
+  //an effect, but can't hurt):
+  fflush(f->file);
+
   //Free up acquired memory only needed for header writing:
   free(f->hdr_srcprogname);
   f->hdr_srcprogname = NULL;
