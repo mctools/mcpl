@@ -1619,9 +1619,8 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   f->comments = ( f->ncomments
                   ? (char **)mcpl_internal_calloc(f->ncomments,sizeof(char*))
                   : NULL );
-  uint32_t i;
   int unknown_stat_syntax = 0;
-  for (i = 0; i < f->ncomments; ++i) {
+  for (uint32_t i = 0; i < f->ncomments; ++i) {
     current_pos += mcpl_read_string(f,&(f->comments[i]),errmsg);
     if ( !unknown_stat_syntax
          && strncmp( f->comments[i], "stat:", 5 ) == 0
@@ -1643,9 +1642,9 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
     f->blobs = (char **)mcpl_internal_calloc(f->nblobs,sizeof(char*));
     f->blobkeys = (char **)mcpl_internal_calloc(f->nblobs,sizeof(char*));
     f->bloblengths = (uint32_t *)mcpl_internal_calloc(f->nblobs,sizeof(uint32_t));
-    for (i =0; i < f->nblobs; ++i)
+    for (uint32_t i =0; i < f->nblobs; ++i)
       current_pos += mcpl_read_string(f,&(f->blobkeys[i]),errmsg);
-    for (i =0; i < f->nblobs; ++i)
+    for (uint32_t i =0; i < f->nblobs; ++i)
       current_pos += mcpl_read_buffer(f, &(f->bloblengths[i]), &(f->blobs[i]), errmsg);
   }
   f->particle = (mcpl_particle_t*)mcpl_internal_calloc(1,sizeof(mcpl_particle_t));
@@ -1712,6 +1711,28 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
               mcpl_print(buf);
             }
             f->nparticles = np;
+            //If we have any stat:sum: entries, their values will be
+            //untrustworthy, so we mark them as unavailable.
+            for (uint32_t i = 0; i < f->ncomments; ++i) {
+              if (!MCPL_COMMENT_IS_STATSUM(f->comments[i]))
+                continue;
+              mcpl_internal_statsum_t sc;
+              mcpl_internal_statsum_parse_or_emit_err( f->comments[i], &sc );
+              if ( sc.value == -1.0 )
+                continue;//already marked as not available
+              char buf[256+MCPL_STATSUMKEY_MAXLENGTH];
+              snprintf(buf,sizeof(buf),
+                       "MCPL WARNING: Marking stat:sum:%s entry as not avail"
+                       "able (-1) since file not closed properly.\n",sc.key);
+              mcpl_print(buf);
+
+              char new_comment[MCPL_STATSUMBUF_MAXLENGTH+1];
+              mcpl_internal_encodestatsum( sc.key, -1.0, new_comment );
+              size_t nn = strlen(f->comments[i]);
+              if ( nn != strlen(new_comment) )
+                mcpl_error("inconsistent length of stat:sum: comment");
+              memcpy(f->comments[i],new_comment,nn);
+            }
           }
         }
       }
@@ -2781,7 +2802,7 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
           if ( sc.value != -1.0 ) {
             char new_comment[MCPL_STATSUMBUF_MAXLENGTH+1];
             mcpl_internal_encodestatsum( sc.key, -1.0, new_comment );
-            size_t nn = strlen(fi_internal->comments[ic]);
+            size_t nn = strlen(out_internal->comments[ic]);
             if ( nn != strlen(new_comment) )
               mcpl_error("inconsistent length of stat:sum: comment");
             memcpy(out_internal->comments[ic],new_comment,nn);

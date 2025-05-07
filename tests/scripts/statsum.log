@@ -323,6 +323,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 Got expected MCPL ERROR: Syntax error: could not properly decode comment starting with "stat:sum:" (value field holds forbidden characters, only 0123456789.-+eE are allowed in addition to leading or trailing simply spaces)). Issue with comment "stat:sum:bla:1.123456780123456789123	"
 Got expected MCPL ERROR: Syntax error: could not properly decode comment starting with "stat:sum:" (value field holds forbidden value (+INFINITY)). Issue with comment "stat:sum:bla: 1e999                  "
 Got expected MCPL ERROR: Refusing to create file with comments starting with "stat:" unless starting with "stat:sum:", as such syntax is reserved for future usage.
+Got expected MCPL ERROR: Syntax error: could not properly decode comment starting with "stat:sum:" (value field missing actual value). Issue with comment "stat:sum:bla:                        "
 === PyAPI view of ref_statunsupported.mcpl.gz stat:sum: ===
 MCPL WARNING: Opened file with unknown "stat:..." syntax in comments. The present installation only has special support for "stat:sum:..." comments. It might be a sign that your installation of MCPL is too old.
     BLA = 5
