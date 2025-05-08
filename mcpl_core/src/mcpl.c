@@ -277,7 +277,7 @@ MCPL_LOCAL int mcpl_internal_fakeconstantversion( int enable )
 
 typedef struct MCPL_LOCAL {
   char key[MCPL_STATSUMKEY_MAXLENGTH+1];
-  unsigned writtenstrlen;
+  uint32_t writtenstrlen;
   uint64_t writtenpos;
 } mcpl_internal_statsuminfo_t;
 
@@ -953,7 +953,10 @@ MCPL_LOCAL void mcpl_write_header(mcpl_outfileinternal_t * f)
         mcpl_error("logic error while writing stat:sum: comments to header");
       mcpl_internal_statsuminfo_t * statsuminfo
         = &f->statsuminfo[nstatsuminfo_written++];
-      statsuminfo->writtenstrlen = (unsigned)strlen(f->comments[i]);
+      size_t lcomment = strlen(f->comments[i]);
+      if ( lcomment > (size_t)(UINT32_MAX) )
+        mcpl_error("logic error: unexpected large comment strlen");
+      statsuminfo->writtenstrlen = (uint32_t)lcomment;
       statsuminfo->writtenpos = MCPL_FTELL( f->file );
       size_t nn = strlen(sc.key);
       if ( nn > MCPL_STATSUMBUF_MAXLENGTH )
@@ -1782,7 +1785,7 @@ MCPL_LOCAL void mcpl_internal_updatestatsum( FILE * f,
   if (!f||!sc||!new_comment)
     mcpl_error(errmsg);
 
-  unsigned n = sc->writtenstrlen;
+  uint32_t n = sc->writtenstrlen;
   if ( n != strlen(new_comment) )
     mcpl_error("preallocated space for stat:sum: update does not fit (2)");
 
@@ -1837,7 +1840,9 @@ void mcpl_repair(const char * filename)
         }
         mcpl_internal_statsuminfo_t * s = &ssi[nssi_repair_check++];
         memcpy( s->key, sc.key, strlen(sc.key) + 1 );
-        s->writtenstrlen = lcomment;
+        if ( lcomment > (size_t)(UINT32_MAX) )
+          mcpl_error("logic error: unexpected large stat:sum comment strlen");
+        s->writtenstrlen = (uint32_t)lcomment;
         s->writtenpos = writtenpos;
       }
     }
@@ -4158,7 +4163,7 @@ void mcpl_hdr_add_stat_sum( mcpl_outfile_t of,
         size_t n = strlen(comment);
         size_t nalloc = strlen(f->comments[i]);
         if ( n != nalloc )
-          mcpl_error("preallocated space for stat:sum: update does not fit (1)");
+          mcpl_error("preallocated space for stat:sum: update does not fit");
         memcpy(f->comments[i],comment,nalloc);
         return;
       }
