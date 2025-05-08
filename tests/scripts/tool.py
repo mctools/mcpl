@@ -39,6 +39,11 @@ def main():
     f_statsum_crash = Path('f_statsum_crash.mcpl')
     copy( dd('ref_statsum_crash.mcpl'), f_statsum_crash)
 
+    copy( dd('ref_statsum.mcpl.gz'), 'statsum_copy_a.mcpl.gz')
+    copy( dd('ref_statsum.mcpl.gz'), 'statsum_copy_b.mcpl.gz')
+    gunzip('statsum_copy_a.mcpl.gz')
+    gunzip('statsum_copy_b.mcpl.gz')
+
     #hard link:
     f1_hl=Path('rf16cp_hl.mcpl')
     os.link(f1,f1_hl)
@@ -144,6 +149,11 @@ def main():
     cmd('-r',f_statsum_crash)
     cmd(f_statsum_crash)
 
+    cmd('statsum_copy_a.mcpl')
+    cmd('statsum_copy_b.mcpl')
+    cmd('--merge','--inplace','statsum_copy_a.mcpl','statsum_copy_b.mcpl')
+    cmd('statsum_copy_a.mcpl')
+    cmd('statsum_copy_b.mcpl')
 
     copy(dd('reffile_truncated.mcpl.gz'),'rftrunc.mcpl.gz')
     cmd('-r','rftrunc.mcpl.gz',fail=True)

@@ -3061,6 +3061,52 @@ void mcpl_merge_inplace(const char * file1, const char* file2)
        || first_particle_pos != f2->first_particle_pos )
     mcpl_error("mcpl_merge_inplace: unexpected particle size or position");
 
+  //Collect information on any stat:sum entries needing to be updated
+  //post-merge:
+
+  mcpl_internal_statsuminfo_t * statsuminfo = NULL;
+  double * statsuminfo_newvalues = NULL;
+  uint32_t nssi = 0;
+  {
+    uint64_t next_comment_pos = f1->first_comment_pos;
+    for (uint32_t i = 0; i < f1->ncomments; ++i) {
+      char * comment = f1->comments[i];
+      size_t lcomment = strlen(comment);
+      uint64_t writtenpos = next_comment_pos;
+      next_comment_pos += ( lcomment + sizeof(uint32_t) );
+      if ( !MCPL_COMMENT_IS_STATSUM(comment) )
+        continue;
+      mcpl_internal_statsum_t sc, sc2;
+      mcpl_internal_statsum_parse_or_emit_err( comment, &sc );
+      mcpl_internal_statsum_parse_or_emit_err( f2->comments[i], &sc2 );
+      if (!statsuminfo) {
+        statsuminfo = (mcpl_internal_statsuminfo_t *)
+          mcpl_internal_calloc( f1->ncomments-i,
+                                sizeof(mcpl_internal_statsuminfo_t) );
+        statsuminfo_newvalues = (double*) mcpl_internal_calloc( f1->ncomments-i,
+                                                                sizeof(double) );
+      }
+      uint32_t idx = nssi++;
+      mcpl_internal_statsuminfo_t * s = &statsuminfo[idx];
+      statsuminfo_newvalues[idx] = -1;
+      if ( sc.value != -1.0 && sc2.value != -1.0 ) {
+        statsuminfo_newvalues[idx] = sc.value + sc2.value;
+        if ( isinf(statsuminfo_newvalues[idx]) ) {
+          mcpl_print("MCPL WARNING: Merging files results in one or more"
+                     " stat:sum: entries overflowing floating point"
+                     " range and producing infinity. Reverting value to -1"
+                     " to indicate that a precise result is not available.\n");
+          statsuminfo_newvalues[idx] = -1.0;
+        }
+      }
+      memcpy( s->key, sc.key, strlen(sc.key) + 1 );
+      if ( lcomment > (size_t)(UINT32_MAX) )
+        mcpl_error("logic error: unexpected large stat:sum comment strlen");
+      s->writtenstrlen = (uint32_t)lcomment;
+      s->writtenpos = writtenpos;
+    }
+  }
+
   //Now, close file1 and reopen a file handle in append mode:
   mcpl_close_file(ff1);
   FILE * f1a = mcpl_internal_fopen(file1,"r+b");
@@ -3070,25 +3116,58 @@ void mcpl_merge_inplace(const char * file1, const char* file2)
   //partial entries at the end, which could be there if the file was in need of
   //mcpl_repair:
   if (!f1a) {
+    free(statsuminfo);
+    free(statsuminfo_newvalues);
     mcpl_close_file(ff2);
     mcpl_error("Unable to open file1 in update mode!");
   }
   if (MCPL_FSEEK( f1a, first_particle_pos + particle_size*np1 )) {
+    free(statsuminfo);
+    free(statsuminfo_newvalues);
     mcpl_close_file(ff2);
     fclose(f1a);
     mcpl_error("Unable to seek to end of file1 in update mode");
   }
 
-  //Transfer particle contents, setting nparticles to 0 during the operation (so
-  //the file appears broken and in need of mcpl_repair in case of errors during
-  //the transfer):
+  //Transfer particle contents, and update stat:sum: comments. We set nparticles
+  //to 0 and stat sums to -1 during the operation (so the file appears broken
+  //and in need of mcpl_repair in case of errors during the transfer):
   mcpl_update_nparticles(f1a,0);
+
+  fflush(f1a);
+
+  //Set stat:sum entries to -1:
+  if ( nssi && statsuminfo && statsuminfo_newvalues ) {
+    for ( uint32_t i = 0; i < nssi; ++i ) {
+      char new_comment[MCPL_STATSUMBUF_MAXLENGTH+1];
+      mcpl_internal_encodestatsum( statsuminfo[i].key, -1.0, new_comment );
+      mcpl_internal_updatestatsum( f1a, &statsuminfo[i], new_comment );
+    }
+  }
+  //Transfer particles (potentially a lot of work and chance of running out of
+  //quota, etc.):
   mcpl_transfer_particle_contents(f1a, ff2, np2);
+
+  //Set stat:sum entries to final values:
+  if ( nssi && statsuminfo && statsuminfo_newvalues ) {
+    for ( uint32_t i = 0; i < nssi; ++i ) {
+      double newval = statsuminfo_newvalues[i];
+      if ( newval == -1.0 )
+        continue;//already fine
+      char new_comment[MCPL_STATSUMBUF_MAXLENGTH+1];
+      mcpl_internal_encodestatsum( statsuminfo[i].key, newval, new_comment );
+      mcpl_internal_updatestatsum( f1a, &statsuminfo[i], new_comment );
+    }
+  }
+
+  //Finally we can update nparticles:
   mcpl_update_nparticles(f1a,np1+np2);
 
   //Finish up.
-  mcpl_close_file(ff2);
   fclose(f1a);
+  mcpl_close_file(ff2);
+  free(statsuminfo);
+  free(statsuminfo_newvalues);
 }
 
 #define MCPLIMP_TOOL_DEFAULT_NLIMIT 10
@@ -3451,6 +3530,9 @@ int mcpl_tool(int argc,char** argv) {
     if (opt_inplace) {
       if ( ! ( !opt_forcemerge && opt_merge) )
         mcpl_error("logic error in argument parsing");
+      //Note that if there are more than two files merged this way, that we do
+      //not get the same stablesum combination of stat:sum: values as with
+      //mcpl_merge_files!
       for (i = ifirstinfile+1; i < nfilenames; ++i)
         mcpl_merge_inplace(filenames[ifirstinfile],filenames[i]);
     } else {
