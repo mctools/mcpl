@@ -3,7 +3,7 @@ Testing ref/gammas_uw.mcpl.gz
 Testing ref/miscphys.mcpl.gz
 Testing ref/ref_statsum.mcpl.gz
 Testing ref/ref_statsum_crash.mcpl
-MCPL WARNING: Input file appears to not have been closed properly. Recovered 100 particles.
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
 MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
 MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
 Testing ref/ref_statunsupported.mcpl.gz
