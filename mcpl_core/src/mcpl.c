@@ -1627,14 +1627,46 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
                   ? (char **)mcpl_internal_calloc(f->ncomments,sizeof(char*))
                   : NULL );
   f->first_comment_pos = current_pos;
+
+  //Validate stat: entries to get error on load rather than later on use:
   int unknown_stat_syntax = 0;
+  uint32_t n_statsum_comments = 0;
   for (uint32_t i = 0; i < f->ncomments; ++i) {
     current_pos += mcpl_read_string(f,&(f->comments[i]),errmsg);
-    if ( !unknown_stat_syntax
-         && strncmp( f->comments[i], "stat:", 5 ) == 0
-         && !MCPL_COMMENT_IS_STATSUM(f->comments[i]) ) {
+    if ( strncmp( f->comments[i], "stat:", 5 ) != 0 )
+      continue;
+    if ( MCPL_COMMENT_IS_STATSUM(f->comments[i]) )
+      ++n_statsum_comments;
+    else
       unknown_stat_syntax = 1;
+  }
+  if ( n_statsum_comments ) {
+    //Check for correct syntax as well as duplicate keys. We reuse
+    //mcpl_internal_statsum_t although we will only use the key field.
+    mcpl_internal_statsum_t * ssi_buf
+      = (mcpl_internal_statsum_t*)
+      mcpl_internal_calloc( n_statsum_comments,
+                            sizeof(mcpl_internal_statsum_t) );
+    mcpl_internal_statsum_t * ssi_buf_next = ssi_buf;
+    for (uint32_t i = 0; i < f->ncomments; ++i) {
+      if ( !MCPL_COMMENT_IS_STATSUM(f->comments[i]) )
+        continue;
+      mcpl_internal_statsum_parse_or_emit_err( f->comments[i], ssi_buf_next );
+      for ( mcpl_internal_statsum_t * it = ssi_buf;
+            it < ssi_buf_next; ++it ) {
+        if ( strcmp( it->key, ssi_buf_next->key ) == 0 ) {
+          //emit error!
+          char buf[MCPL_STATSUMKEY_MAXLENGTH+256];
+          snprintf(buf,sizeof(buf),
+                   "Duplicate stat:sum: key. The key \"%s\" appears"
+                   " more than once in the file.",it->key);
+          free(ssi_buf);
+          mcpl_error(buf);
+        }
+      }
+      ++ssi_buf_next;
     }
+    free(ssi_buf);
   }
   if (unknown_stat_syntax) {
     mcpl_print("MCPL WARNING: Opened file with unknown \"stat:...\" syntax in"
