@@ -279,7 +279,6 @@ typedef struct MCPL_LOCAL {
   char key[MCPL_STATSUMKEY_MAXLENGTH+1];
   unsigned writtenstrlen;
   uint64_t writtenpos;
-  double writtenvalue;
 } mcpl_internal_statsuminfo_t;
 
 typedef struct MCPL_LOCAL {
@@ -303,7 +302,6 @@ typedef struct MCPL_LOCAL {
   mcpl_particle_t* puser;
   unsigned opt_signature;
   char particle_buffer[MCPLIMP_MAX_PARTICLE_SIZE];
-
   mcpl_internal_statsuminfo_t * statsuminfo;
   unsigned nstatsuminfo;
 } mcpl_outfileinternal_t;
@@ -957,7 +955,6 @@ MCPL_LOCAL void mcpl_write_header(mcpl_outfileinternal_t * f)
         = &f->statsuminfo[nstatsuminfo_written++];
       statsuminfo->writtenstrlen = (unsigned)strlen(f->comments[i]);
       statsuminfo->writtenpos = MCPL_FTELL( f->file );
-      statsuminfo->writtenvalue = sc.value;
       size_t nn = strlen(sc.key);
       if ( nn > MCPL_STATSUMBUF_MAXLENGTH )
         mcpl_error("stat:sum: key unexpected strlen");
@@ -1332,6 +1329,8 @@ typedef struct {
   mcpl_particle_t* particle;
   unsigned opt_signature;
   char particle_buffer[MCPLIMP_MAX_PARTICLE_SIZE];
+  uint64_t first_comment_pos;
+  uint32_t * repaired_statsum_icomments;
 } mcpl_fileinternal_t;
 
 #define MCPLIMP_FILEDECODE mcpl_fileinternal_t * f = (mcpl_fileinternal_t *)ff.internal; assert(f)
@@ -1376,6 +1375,8 @@ MCPL_LOCAL uint64_t mcpl_read_string(mcpl_fileinternal_t* f, char ** dest, const
     mcpl_error(errmsg);
   s[n] = '\0';
   *dest = s;
+  if ( strlen(s) != n )
+    mcpl_error("encountered unexpected null-byte in string read from file");
   return sizeof(n) + n;
 }
 
@@ -1486,10 +1487,13 @@ MCPL_LOCAL void mcpl_internal_cleanup_file(mcpl_fileinternal_t * f)
     free(f->blobs);
     f->blobs = NULL;
   }
-
   if ( f->bloblengths ) {
     free(f->bloblengths);
     f->bloblengths = NULL;
+  }
+  if ( f->repaired_statsum_icomments ) {
+    free( f->repaired_statsum_icomments );
+    f->repaired_statsum_icomments = NULL;
   }
   if ( f->particle ) {
     free(f->particle);
@@ -1619,6 +1623,7 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   f->comments = ( f->ncomments
                   ? (char **)mcpl_internal_calloc(f->ncomments,sizeof(char*))
                   : NULL );
+  f->first_comment_pos = current_pos;
   int unknown_stat_syntax = 0;
   for (uint32_t i = 0; i < f->ncomments; ++i) {
     current_pos += mcpl_read_string(f,&(f->comments[i]),errmsg);
@@ -1636,7 +1641,7 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   }
 
   f->blobkeys = NULL;
-  f->bloblengths = 0;
+  f->bloblengths = NULL;
   f->blobs = NULL;
   if (f->nblobs) {
     f->blobs = (char **)mcpl_internal_calloc(f->nblobs,sizeof(char*));
@@ -1652,6 +1657,7 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   //At first event now:
   f->current_particle_idx = 0;
   f->first_particle_pos = current_pos;
+  f->repaired_statsum_icomments = NULL;
 
   if ( f->nparticles==0 || caller_is_mcpl_repair ) {
     //TODO: Perhaps the placeholder nparticles should be UINT64_MAX instead of
@@ -1726,6 +1732,19 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
                        "able (-1) since file not closed properly.\n",sc.key);
               mcpl_print(buf);
 
+              if ( caller_is_mcpl_repair ) {
+                //record indices of statsum comments that must be repaired
+                //also on-disk later.
+                if (!f->repaired_statsum_icomments) {
+                  //allocate array. First entry will be the size.
+                  f->repaired_statsum_icomments
+                    = (uint32_t *)mcpl_internal_calloc(f->ncomments+1,
+                                                       sizeof(uint32_t));
+                  f->repaired_statsum_icomments[0] = 0;
+                }
+                uint32_t ir = ((f->repaired_statsum_icomments[0])++) + 1;
+                f->repaired_statsum_icomments[ir] = i;
+              }
               char new_comment[MCPL_STATSUMBUF_MAXLENGTH+1];
               mcpl_internal_encodestatsum( sc.key, -1.0, new_comment );
               size_t nn = strlen(f->comments[i]);
@@ -1752,31 +1771,120 @@ mcpl_file_t mcpl_open_file(const char * filename)
   return mcpl_actual_open_file(filename,&repair_status);
 }
 
+MCPL_LOCAL void mcpl_internal_updatestatsum( FILE * f,
+                                             mcpl_internal_statsuminfo_t*sc,
+                                             const char * new_comment )
+{
+  //Seek and update comment at correct location in header.
+
+  const char * errmsg = ( "Errors encountered while attempting "
+                          "to update stat:sum: header in file." );
+  if (!f||!sc||!new_comment)
+    mcpl_error(errmsg);
+
+  unsigned n = sc->writtenstrlen;
+  if ( n != strlen(new_comment) )
+    mcpl_error("preallocated space for stat:sum: update does not fit (2)");
+
+  int64_t savedpos = MCPL_FTELL(f);
+  if (savedpos<0)
+    mcpl_error(errmsg);
+  uint64_t updatepos = sc->writtenpos;
+  updatepos += sizeof(uint32_t);//skip strlen data (no, we can't read it since
+                                //the file is in output mode)
+  if (MCPL_FSEEK( f, updatepos ))
+    mcpl_error(errmsg);
+  size_t nb = fwrite( new_comment, 1, n, f);
+  if ( nb != n )
+    mcpl_error(errmsg);
+  if (MCPL_FSEEK( f, savedpos ))
+    mcpl_error(errmsg);
+
+}
+
 void mcpl_repair(const char * filename)
 {
   int repair_status = 1;
   mcpl_file_t f = mcpl_actual_open_file(filename,&repair_status);
   uint64_t nparticles = mcpl_hdr_nparticles(f);
+  mcpl_fileinternal_t * fi = (mcpl_fileinternal_t *)f.internal;
+
+  //Collect information about any stat:sum: entries that we must modify during
+  //the repair (i.e. we must mark then as unavailable by setting them to -1).
+  mcpl_internal_statsuminfo_t * ssi = NULL;
+  uint32_t nssi_to_repair = 0;
+  if ( fi->repaired_statsum_icomments ) {
+    nssi_to_repair = fi->repaired_statsum_icomments[0];
+    ssi = (mcpl_internal_statsuminfo_t *)
+      mcpl_internal_calloc( nssi_to_repair,
+                            sizeof(mcpl_internal_statsuminfo_t) );
+    uint32_t nssi_repair_check = 0;
+    uint64_t next_comment_pos = fi->first_comment_pos;
+    uint32_t* icmt_next_to_repair = &fi->repaired_statsum_icomments[1];
+    for (uint32_t i = 0; i < fi->ncomments; ++i) {
+      const char * comment = fi->comments[i];
+      size_t lcomment = strlen(comment);
+      uint64_t writtenpos = next_comment_pos;
+      next_comment_pos += ( lcomment + sizeof(uint32_t) );
+      if ( i == *icmt_next_to_repair ) {
+        ++icmt_next_to_repair;
+        mcpl_internal_statsum_t sc;
+        mcpl_internal_statsum_parse_or_emit_err( comment, &sc );
+        if ( !(sc.value==-1.0) ) {
+          //value should already have been repaired to be -1 in the in-mem
+          //comment string.
+          mcpl_error("unexpected stat:sum value in file");
+        }
+        mcpl_internal_statsuminfo_t * s = &ssi[nssi_repair_check++];
+        memcpy( s->key, sc.key, strlen(sc.key) + 1 );
+        s->writtenstrlen = lcomment;
+        s->writtenpos = writtenpos;
+      }
+    }
+    if ( nssi_to_repair != nssi_repair_check )
+      mcpl_error("logic error during stat:sum repair");
+  }
+
   mcpl_close_file(f);
+  fi = NULL;
+
   if (repair_status==0) {
+    free(ssi);
     mcpl_error("File does not appear to be broken.");
   } else if (repair_status==1) {
+    free(ssi);
     mcpl_error("Input file is indeed broken, but must be gunzipped before it can be repaired.");
   } else if (repair_status==2) {
+    free(ssi);
     mcpl_error("File must be gunzipped before it can be checked and possibly repaired.");
   }
-  //Ok, we should repair the file by updating nparticles in the header:
+
+  //Ok, we should repair the file by updating nparticles in the header, and also
+  //possibly by setting any stat:sum comment entries to the value -1 since they
+  //are not trustworthy. We update nparticles last, since after that the file
+  //will appear as already having been repaired:
+
   FILE * fh = mcpl_internal_fopen(filename,"r+b");
   if (!fh)
     mcpl_error("Unable to open file in update mode!");
+
+  if ( ssi ) {
+    for ( uint32_t i = 0; i < nssi_to_repair; ++i ) {
+      char new_comment[MCPL_STATSUMBUF_MAXLENGTH+1];
+      mcpl_internal_encodestatsum( ssi[i].key, -1.0, new_comment );
+      mcpl_internal_updatestatsum( fh, &ssi[i], new_comment );
+    }
+    free(ssi);
+  }
+
   mcpl_update_nparticles(fh, nparticles);
   fclose(fh);
   //Verify that we fixed it:
   repair_status = 1;
-  f = mcpl_actual_open_file(filename,&repair_status);
+  f = mcpl_actual_open_file( filename, &repair_status );
   uint64_t nparticles2 = mcpl_hdr_nparticles(f);
   mcpl_close_file(f);
-  if (repair_status==0&&nparticles==nparticles2) {
+  if ( repair_status == 0 && nparticles == nparticles2 ) {
     char buf[256];
     snprintf(buf,sizeof(buf),"MCPL: Successfully repaired file with %"
              PRIu64 " particles.\n",nparticles);
@@ -1785,7 +1893,6 @@ void mcpl_repair(const char * filename)
     mcpl_error("Something went wrong while attempting to repair file.");
   }
 }
-
 
 void mcpl_close_file(mcpl_file_t ff)
 {
@@ -2665,39 +2772,6 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
 
 MCPL_LOCAL void mcpl_internal_delete_file( const char * filename );
 
-MCPL_LOCAL void mcpl_internal_updatestatsum( FILE * f,
-                                             mcpl_internal_statsuminfo_t*sc,
-                                             const char * new_comment,
-                                             double new_value )
-{
-  //Seek and update comment at correct location in header.
-
-  const char * errmsg = ( "Errors encountered while attempting "
-                          "to update stat:sum: header in file." );
-  if (!f||!sc||!new_comment)
-    mcpl_error(errmsg);
-
-  unsigned n = sc->writtenstrlen;
-  if ( n != strlen(new_comment) )
-    mcpl_error("preallocated space for stat:sum: update does not fit (2)");
-
-  int64_t savedpos = MCPL_FTELL(f);
-  if (savedpos<0)
-    mcpl_error(errmsg);
-  uint64_t updatepos = sc->writtenpos;
-  updatepos += sizeof(uint32_t);//skip strlen data (no, we can't read it since
-                                //the file is in output mode)
-  if (MCPL_FSEEK( f, updatepos ))
-    mcpl_error(errmsg);
-  size_t nb = fwrite( new_comment, 1, n, f);
-  if ( nb != n )
-    mcpl_error(errmsg);
-  sc->writtenvalue = new_value;
-  if (MCPL_FSEEK( f, savedpos ))
-    mcpl_error(errmsg);
-
-}
-
 MCPL_LOCAL void mcpl_impl_stablesum_add( double* s1, double* s2, double x )
 {
   //Numerically stable summation, based on Neumaier's algorithm
@@ -2911,7 +2985,7 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
       mcpl_internal_statsuminfo_t * sci = out_internal->statsuminfo + isc;
       char comment[MCPL_STATSUMBUF_MAXLENGTH+1];
       mcpl_internal_encodestatsum( sci->key, val, comment );
-      mcpl_internal_updatestatsum( out_internal->file, sci, comment, val );
+      mcpl_internal_updatestatsum( out_internal->file, sci, comment );
     }
 
     free(scinfo_indices);
@@ -4109,7 +4183,7 @@ void mcpl_hdr_add_stat_sum( mcpl_outfile_t of,
                "to file, but without first registering a value for the same "
                "key earlier (the special value -1 can be used for this)");
 
-  mcpl_internal_updatestatsum( f->file, sc_to_update, comment, value );
+  mcpl_internal_updatestatsum( f->file, sc_to_update, comment );
 }
 
 double mcpl_hdr_stat_sum( mcpl_file_t ff, const char * key )
