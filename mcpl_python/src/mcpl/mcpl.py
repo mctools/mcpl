@@ -583,9 +583,9 @@ class MCPLFile:
                                                  for c in comments]
                     else:
                         self._hdr['comments'] = comments
-                    #If stat_sum was already called we would have to invalidate
-                    #it now, but it should not have been:
-                    assert 'stat_sum' not in self._hdr
+                    #Invalidate any already loaded stat sum dict:
+                    if 'stat_sum' in self._hdr:
+                        del self._hdr['stat_sum']
 
         #prepare dtype for reading 1 particle:
         fp = 'f4' if self.opt_singleprec else 'f8'
@@ -962,14 +962,15 @@ class MCPLFile:
                        + sum(8+len(bk)+len(bv) for bk,bv in blobs.items()) )
         h['headersize'] = headersize
 
+        saw_any_statsum = False
+        saw_any_unsupportedstat = False
         for c in comments:
-            if c.startswith(b'stat:') and not c.startswith(b'stat:sum:'):
-                print("MCPL WARNING: Opened file with unknown \"stat:...\" "
-                      "syntax in comments. The present installation only has"
-                      " special support for \"stat:sum:...\" comments. It"
-                      " might be a sign that your installation of MCPL is"
-                      " too old.")
-                break
+            if not c.startswith(b'stat:'):
+                continue
+            if c.startswith(b'stat:sum:'):
+                saw_any_statsum = True
+            else:
+                saw_any_unsupportedstat = True
 
         if self._str_decode:
             #attributes return python strings since raw_strings was not set, so
@@ -990,6 +991,17 @@ class MCPLFile:
             h['comments'] = comments
             h['blobs'] = blobs
             h['blobkeys'] = blobkeys
+
+        if saw_any_statsum:
+            #Trigger loading of stat:sum:'s already, to emit errors in case of
+            #detected issues.
+            self.stat_sum
+        if saw_any_unsupportedstat:
+            print("MCPL WARNING: Opened file with unknown \"stat:...\" "
+                  "syntax in comments. The present installation only has"
+                  " special support for \"stat:sum:...\" comments. It"
+                  " might be a sign that your installation of MCPL is"
+                  " too old.")
 
     def dump_hdr(self):
         """Dump file header to stdout (using a format identical to the one from
@@ -1879,6 +1891,9 @@ def _parse_statsum( comments ):
             continue
         ok, (key,val) = _parse_statsum_comment( comment)
         if ok:
+            if key in d:
+                raise MCPLError('Duplicate stat:sum: key. The key '
+                                f'"{key}" appears more than once in the file.')
             d[key] = None if val == -1.0 else val
         else:
             error_comment = comment

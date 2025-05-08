@@ -84,7 +84,7 @@ filecrash = test_data_dir.joinpath('ref','reffile_crash.mcpl')
 
 badfiles = sorted(test_data_dir.joinpath('ref').glob('reffile_bad*.mcpl*'))
 
-assert len(badfiles)==8
+assert len(badfiles)==9
 
 def testtool(args,testnone=False):
     flush()

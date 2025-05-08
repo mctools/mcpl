@@ -79,7 +79,7 @@ for file_key in sorted(files.keys()):
         except MCPLError as mpe:
             print('MCPL ERROR: %s'%str(mpe))
             ec=1
-    if (ec!=0) !=  expect_crash:
+    if (ec!=0) != expect_crash:
         errors = True
         print("ERRORS DETECTED in python dump (unexpected exception status)")
         continue

@@ -145,9 +145,18 @@ def main():
     create_bad(comment='stat:sum:bla: 1e999                  ')
     create_bad(comment='stat:whatever')
     create_bad(comment='stat:sum:bla:                        ')
+    create(    comment='stat:sum:bla:                     1.2',
+               comment2='stat:sum:bla2:                     3.4')
+    create_bad(comment='stat:sum:bla:                     1.2',
+               comment2='stat:sum:bla:                     3.4')
+    create_bad(statsum=('bla',4.0),
+               comment='stat:sum:bla:                     1.2',
+               comment2='stat:sum:bla2:                     3.4')
 
     for f in ['ref_statunsupported.mcpl.gz','ref_statsum.mcpl.gz']:
         print_pystatsum( test_data_dir.joinpath('ref',f))
+
+
 
 if __name__ == '__main__':
     main()

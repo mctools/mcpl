@@ -547,6 +547,7 @@ MCPL ERROR: File is in an unsupported MCPL version!
 MCPL ERROR: File is in an unsupported MCPL version!
 MCPL ERROR: Unexpected value in endianness field!
 MCPL ERROR: Unexpected value in endianness field!
+MCPL ERROR: Duplicate stat:sum: key. The key "bla" appears more than once in the file.
 ---> testing array access
 position: (0, 0, 0), [ 0  0  0 ], <type 'numpy.ndarray'>, (0, 0, 0)
 polarisation: (-0, 0, 0), [ -0  0  0 ], <type 'numpy.ndarray'>, (-0, 0, 0)
