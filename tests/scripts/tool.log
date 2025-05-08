@@ -1046,6 +1046,98 @@ Opened MCPL file rfempty.mcpl.gz:
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
 
 ----------------------------------------------
+Running mcpltool f_statsum_crash.mcpl
+----------------------------------------------
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 100 particles.
+MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+Opened MCPL file f_statsum_crash.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 100
+    Header storage     : 201 bytes
+    Data storage       : 3600 bytes
+
+  Custom meta data
+    Source             : "my_cool_program_name"
+    Number of comments : 4
+          -> comment 0 : "stat:sum:BLA:                      -1"
+          -> comment 1 : "stat:sum:some_stat_key:                      -1"
+          -> comment 2 : "Some comment."
+          -> comment 3 : "Another comment."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112      9.1166     -21.123       56.62      59.688           0           0           1      19.755      3.3589
+    1          22      6.2891     -44.445      10.794     -4.5206           0           0           1      36.478      5.1389
+    2        2112      1.4169      83.239      27.142      43.459           0           0           1      60.697     0.17284
+    3          22        4.01     -72.554      60.835     -68.664           0           0           1      12.979       1.097
+    4        2112      6.1268     -56.349      2.5865      67.822           0           0           1      29.603      6.3791
+    5        2112      7.7138     -1.2834      94.555     -41.497           0           0           1      52.674      7.7014
+    6        2112      8.0774      78.306     -43.337     -29.508           0           0           1      91.903     0.70686
+    7          22      6.6326      5.1991     -82.789     -61.557           0           0           1      89.023      3.4954
+    8          22      2.3836     -95.995     -8.4597     -87.381           0           0           1      97.063      9.0231
+    9        2112      7.6027     -46.667      7.9521     -24.959           0           0           1      51.254      6.6806
+
+----------------------------------------------
+Running mcpltool -r f_statsum_crash.mcpl
+----------------------------------------------
+MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+MCPL: Successfully repaired file with 100 particles.
+
+----------------------------------------------
+Running mcpltool f_statsum_crash.mcpl
+----------------------------------------------
+Opened MCPL file f_statsum_crash.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 100
+    Header storage     : 201 bytes
+    Data storage       : 3600 bytes
+
+  Custom meta data
+    Source             : "my_cool_program_name"
+    Number of comments : 4
+          -> comment 0 : "stat:sum:BLA:                      -1"
+          -> comment 1 : "stat:sum:some_stat_key:                      -1"
+          -> comment 2 : "Some comment."
+          -> comment 3 : "Another comment."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112      9.1166     -21.123       56.62      59.688           0           0           1      19.755      3.3589
+    1          22      6.2891     -44.445      10.794     -4.5206           0           0           1      36.478      5.1389
+    2        2112      1.4169      83.239      27.142      43.459           0           0           1      60.697     0.17284
+    3          22        4.01     -72.554      60.835     -68.664           0           0           1      12.979       1.097
+    4        2112      6.1268     -56.349      2.5865      67.822           0           0           1      29.603      6.3791
+    5        2112      7.7138     -1.2834      94.555     -41.497           0           0           1      52.674      7.7014
+    6        2112      8.0774      78.306     -43.337     -29.508           0           0           1      91.903     0.70686
+    7          22      6.6326      5.1991     -82.789     -61.557           0           0           1      89.023      3.4954
+    8          22      2.3836     -95.995     -8.4597     -87.381           0           0           1      97.063      9.0231
+    9        2112      7.6027     -46.667      7.9521     -24.959           0           0           1      51.254      6.6806
+
+----------------------------------------------
 Running mcpltool -r rftrunc.mcpl.gz
 ----------------------------------------------
 MCPL ERROR: File must be gunzipped before it can be checked and possibly repaired.

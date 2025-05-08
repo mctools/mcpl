@@ -36,6 +36,9 @@ def main():
     assert not f1.exists(),"must run in clean directory"
     copy(f2,f1)
 
+    f_statsum_crash = Path('f_statsum_crash.mcpl')
+    copy( dd('ref_statsum_crash.mcpl'), f_statsum_crash)
+
     #hard link:
     f1_hl=Path('rf16cp_hl.mcpl')
     os.link(f1,f1_hl)
@@ -136,6 +139,11 @@ def main():
     cmd('rfempty.mcpl.gz')
     cmd('-r','rfempty.mcpl.gz',fail=True)#can not repair gz, and not broken
     cmd('rfempty.mcpl.gz')
+
+    cmd(f_statsum_crash)
+    cmd('-r',f_statsum_crash)
+    cmd(f_statsum_crash)
+
 
     copy(dd('reffile_truncated.mcpl.gz'),'rftrunc.mcpl.gz')
     cmd('-r','rftrunc.mcpl.gz',fail=True)

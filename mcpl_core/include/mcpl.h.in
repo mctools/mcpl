@@ -265,8 +265,9 @@ extern "C" {
                                                  int keep_userflags );
 
 
-  /* Attempt to fix number of particles in the header of a file which was never */
-  /* properly closed:                                                           */
+  /* Attempt to fix number of particles in the header of a file which was     */
+  /* never properly closed (note this will make all "sum" statistics entries  */
+  /* invalid (values of -1):                                                  */
   MCPL_API void mcpl_repair(const char * file1);
 
   /* For easily creating a standard mcpl-tool cmdline application (assumes */
