@@ -24,8 +24,8 @@
 MCPLTEST_CTYPE_DICTIONARY
 {
   return
-    "void mcpltest_createstatsumfile("
-    "       const char *,const char *,double,const char *,unsigned);"
+    "void mcpltest_createstatsumfile( const char *, const char *, double,   "
+    "                                 const char *, const char*, unsigned );"
     "void mcpltest_dump( const char * );"
     ;
 }
@@ -33,14 +33,17 @@ MCPLTEST_CTYPE_DICTIONARY
 MCPLTEST_CTYPES void mcpltest_createstatsumfile( const char * filename,
                                                  const char * statsumname,
                                                  double statsumvalue,
-                                                 const char * customcomment,
+                                                 const char * customcomment1,
+                                                 const char * customcomment2,
                                                  unsigned nparticles )
 {
   mcpl_outfile_t f = mcpl_create_outfile( filename );
   if ( strcmp(statsumname,"<NONE>") != 0 )
     mcpl_hdr_add_stat_sum(f,statsumname,statsumvalue);
-  if ( strcmp(customcomment,"<NONE>") != 0 )
-    mcpl_hdr_add_comment(f,customcomment);
+  if ( strcmp(customcomment1,"<NONE>") != 0 )
+    mcpl_hdr_add_comment(f,customcomment1);
+  if ( strcmp(customcomment2,"<NONE>") != 0 )
+    mcpl_hdr_add_comment(f,customcomment2);
 
   if ( nparticles ) {
     mcpl_particle_t * particle = mcpl_get_empty_particle(f);
