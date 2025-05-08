@@ -587,7 +587,6 @@ class MCPLFile:
                     #it now, but it should not have been:
                     assert 'stat_sum' not in self._hdr
 
-        #FIXME: error or warn on any unsupported stat: entry
         #prepare dtype for reading 1 particle:
         fp = 'f4' if self.opt_singleprec else 'f8'
         fields = []
