@@ -33,6 +33,7 @@ def dump( filename ):
 def create( filename='f.mcpl', *,
             statsum = None,
             comment = None,
+            comment2 = None,
             nparticles = 0,
             do_dump = True ):
     print(flush=True,end='')
@@ -45,11 +46,14 @@ def create( filename='f.mcpl', *,
         sc_name,sc_val = '<NONE>',-99.0
     if comment is None:
         comment = '<NONE>'
+    if comment2 is None:
+        comment2 = '<NONE>'
     assert 0 <= nparticles <= 4294967295
     lib.mcpltest_createstatsumfile( filename,
                                     sc_name,
                                     sc_val,
                                     comment,
+                                    comment2,
                                     int(nparticles) )
     assert p.is_file()
     if do_dump:
