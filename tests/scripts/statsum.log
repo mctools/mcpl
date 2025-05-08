@@ -324,6 +324,37 @@ Got expected MCPL ERROR: Syntax error: could not properly decode comment startin
 Got expected MCPL ERROR: Syntax error: could not properly decode comment starting with "stat:sum:" (value field holds forbidden value (+INFINITY)). Issue with comment "stat:sum:bla: 1e999                  "
 Got expected MCPL ERROR: Refusing to create file with comments starting with "stat:" unless starting with "stat:sum:", as such syntax is reserved for future usage.
 Got expected MCPL ERROR: Syntax error: could not properly decode comment starting with "stat:sum:" (value field missing actual value). Issue with comment "stat:sum:bla:                        "
+Opened MCPL file f.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 0
+    Header storage     : 142 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 2
+          -> comment 0 : "stat:sum:bla:                     1.2"
+          -> comment 1 : "stat:sum:bla2:                     3.4"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+=== PyAPI view of f.mcpl stat:sum: ===
+    bla = 1.2
+    bla2 = 3.4
+======================================
+Got expected MCPL ERROR: Duplicate stat:sum: key. The key "bla" appears more than once in the file.
+Got expected MCPL ERROR: Duplicate stat:sum: key. The key "bla" appears more than once in the file.
 === PyAPI view of ref_statunsupported.mcpl.gz stat:sum: ===
 MCPL WARNING: Opened file with unknown "stat:..." syntax in comments. The present installation only has special support for "stat:sum:..." comments. It might be a sign that your installation of MCPL is too old.
     BLA = 5

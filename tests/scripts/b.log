@@ -42,6 +42,8 @@ Testing ref/reffile_bad4.mcpl
  -- assuming this is a broken file which can't be read without errors
 Testing ref/reffile_bad4.mcpl.gz
  -- assuming this is a broken file which can't be read without errors
+Testing ref/reffile_bad_duplicatestatsumkeys.mcpl
+ -- assuming this is a broken file which can't be read without errors
 Testing ref/reffile_crash.mcpl
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 Testing ref/reffile_crash.mcpl.gz
