@@ -1815,6 +1815,443 @@ Running mcpltool -m --inplace extracted_none.mcpl extracted_all.mcpl
 ===> Checking that difficult_unitvector.mcpl and extracted_none.mcpl have identical contents.
 ===> Checking that extracted_recombined.mcpl and extracted_none.mcpl have identical contents.
 ----------------------------------------------
+Running mcpltool --extract statsum_copy.mcpl.gz statsum_extract1.mcpl
+----------------------------------------------
+MCPL: Compressing file statsum_extract1.mcpl
+MCPL: Compressed file into statsum_extract1.mcpl.gz
+MCPL: Successfully extracted 100 / 100 particles from statsum_copy.mcpl.gz into statsum_extract1.mcpl.gz
+
+----------------------------------------------
+Running mcpltool statsum_extract1.mcpl.gz
+----------------------------------------------
+Opened MCPL file statsum_extract1.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 100
+    Header storage     : 263 bytes
+    Data storage       : 3600 bytes
+
+  Custom meta data
+    Source             : "my_cool_program_name"
+    Number of comments : 5
+          -> comment 0 : "stat:sum:BLA:                  5     "
+          -> comment 1 : "stat:sum:some_stat_key: 1.2345678912345678e-201"
+          -> comment 2 : "Some comment."
+          -> comment 3 : "Another comment."
+          -> comment 4 : "mcpltool: extracted particles from file with 100 particles"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112      9.1166     -21.123       56.62      59.688           0           0           1      19.755      3.3589
+    1          22      6.2891     -44.445      10.794     -4.5206           0           0           1      36.478      5.1389
+    2        2112      1.4169      83.239      27.142      43.459           0           0           1      60.697     0.17284
+    3          22        4.01     -72.554      60.835     -68.664           0           0           1      12.979       1.097
+    4        2112      6.1268     -56.349      2.5865      67.822           0           0           1      29.603      6.3791
+    5        2112      7.7138     -1.2834      94.555     -41.497           0           0           1      52.674      7.7014
+    6        2112      8.0774      78.306     -43.337     -29.508           0           0           1      91.903     0.70686
+    7          22      6.6326      5.1991     -82.789     -61.557           0           0           1      89.023      3.4954
+    8          22      2.3836     -95.995     -8.4597     -87.381           0           0           1      97.063      9.0231
+    9        2112      7.6027     -46.667      7.9521     -24.959           0           0           1      51.254      6.6806
+
+----------------------------------------------
+Running mcpltool --extract -l7 statsum_copy.mcpl.gz statsum_extract2.mcpl
+----------------------------------------------
+MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
+MCPL: Compressing file statsum_extract2.mcpl
+MCPL: Compressed file into statsum_extract2.mcpl.gz
+MCPL: Successfully extracted 7 / 100 particles from statsum_copy.mcpl.gz into statsum_extract2.mcpl.gz
+
+----------------------------------------------
+Running mcpltool statsum_extract2.mcpl.gz
+----------------------------------------------
+Opened MCPL file statsum_extract2.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 7
+    Header storage     : 263 bytes
+    Data storage       : 252 bytes
+
+  Custom meta data
+    Source             : "my_cool_program_name"
+    Number of comments : 5
+          -> comment 0 : "stat:sum:BLA:                      -1"
+          -> comment 1 : "stat:sum:some_stat_key:                      -1"
+          -> comment 2 : "Some comment."
+          -> comment 3 : "Another comment."
+          -> comment 4 : "mcpltool: extracted particles from file with 100 particles"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112      9.1166     -21.123       56.62      59.688           0           0           1      19.755      3.3589
+    1          22      6.2891     -44.445      10.794     -4.5206           0           0           1      36.478      5.1389
+    2        2112      1.4169      83.239      27.142      43.459           0           0           1      60.697     0.17284
+    3          22        4.01     -72.554      60.835     -68.664           0           0           1      12.979       1.097
+    4        2112      6.1268     -56.349      2.5865      67.822           0           0           1      29.603      6.3791
+    5        2112      7.7138     -1.2834      94.555     -41.497           0           0           1      52.674      7.7014
+    6        2112      8.0774      78.306     -43.337     -29.508           0           0           1      91.903     0.70686
+
+----------------------------------------------
+Running mcpltool --extract -s30 statsum_copy.mcpl.gz statsum_extract3.mcpl
+----------------------------------------------
+MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
+MCPL: Compressing file statsum_extract3.mcpl
+MCPL: Compressed file into statsum_extract3.mcpl.gz
+MCPL: Successfully extracted 70 / 100 particles from statsum_copy.mcpl.gz into statsum_extract3.mcpl.gz
+
+----------------------------------------------
+Running mcpltool statsum_extract3.mcpl.gz
+----------------------------------------------
+Opened MCPL file statsum_extract3.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 70
+    Header storage     : 263 bytes
+    Data storage       : 2520 bytes
+
+  Custom meta data
+    Source             : "my_cool_program_name"
+    Number of comments : 5
+          -> comment 0 : "stat:sum:BLA:                      -1"
+          -> comment 1 : "stat:sum:some_stat_key:                      -1"
+          -> comment 2 : "Some comment."
+          -> comment 3 : "Another comment."
+          -> comment 4 : "mcpltool: extracted particles from file with 100 particles"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0          22      7.0065     -50.391      25.896     -54.173           0           0           1      31.687      3.2945
+    1        2112      6.5117     -85.168      26.614     -55.269           0           0           1      51.069      9.7149
+    2          22      4.7154      9.2214      43.854     -77.344           0           0           1      59.254      9.4437
+    3          22    0.033311      -32.73      69.537     -13.097           0           0           1      34.494      5.9888
+    4          22      4.8199     -53.222      35.095     -3.4099           0           0           1      30.496      7.1238
+    5          22      6.9601      24.365     -91.827     -17.203           0           0           1      67.394        6.38
+    6        2112      7.3076     -63.076      21.821      25.432           0           0           1      32.837       7.407
+    7          22      2.5734      84.183      36.951      30.626           0           0           1      53.244     0.88556
+    8          22      1.1136      75.477      37.225     -81.252           0           0           1       36.16      5.7711
+    9        2112      2.8845      33.311     -42.244      55.153           0           0           1      32.964      1.9056
+
+----------------------------------------------
+Running mcpltool --extract -l4 -s20 statsum_copy.mcpl.gz statsum_extract4.mcpl
+----------------------------------------------
+MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
+MCPL: Compressing file statsum_extract4.mcpl
+MCPL: Compressed file into statsum_extract4.mcpl.gz
+MCPL: Successfully extracted 4 / 100 particles from statsum_copy.mcpl.gz into statsum_extract4.mcpl.gz
+
+----------------------------------------------
+Running mcpltool statsum_extract4.mcpl.gz
+----------------------------------------------
+Opened MCPL file statsum_extract4.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 4
+    Header storage     : 263 bytes
+    Data storage       : 144 bytes
+
+  Custom meta data
+    Source             : "my_cool_program_name"
+    Number of comments : 5
+          -> comment 0 : "stat:sum:BLA:                      -1"
+          -> comment 1 : "stat:sum:some_stat_key:                      -1"
+          -> comment 2 : "Some comment."
+          -> comment 3 : "Another comment."
+          -> comment 4 : "mcpltool: extracted particles from file with 100 particles"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0          22      1.7629      90.021     -89.494      4.3127           0           0           1      24.006        7.98
+    1          22      7.5976      31.313      93.481      27.892           0           0           1       9.348      1.3577
+    2          22      4.6147     -84.354     -86.019     -59.069           0           0           1      81.968      5.7375
+    3          22      2.0441     -89.612     -68.439      99.999           0           0           1      88.996      1.2634
+
+----------------------------------------------
+Running mcpltool --extract -l300 statsum_copy.mcpl.gz statsum_extract_all.mcpl
+----------------------------------------------
+MCPL: Compressing file statsum_extract_all.mcpl
+MCPL: Compressed file into statsum_extract_all.mcpl.gz
+MCPL: Successfully extracted 100 / 100 particles from statsum_copy.mcpl.gz into statsum_extract_all.mcpl.gz
+
+----------------------------------------------
+Running mcpltool statsum_extract_all.mcpl.gz
+----------------------------------------------
+Opened MCPL file statsum_extract_all.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 100
+    Header storage     : 263 bytes
+    Data storage       : 3600 bytes
+
+  Custom meta data
+    Source             : "my_cool_program_name"
+    Number of comments : 5
+          -> comment 0 : "stat:sum:BLA:                  5     "
+          -> comment 1 : "stat:sum:some_stat_key: 1.2345678912345678e-201"
+          -> comment 2 : "Some comment."
+          -> comment 3 : "Another comment."
+          -> comment 4 : "mcpltool: extracted particles from file with 100 particles"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112      9.1166     -21.123       56.62      59.688           0           0           1      19.755      3.3589
+    1          22      6.2891     -44.445      10.794     -4.5206           0           0           1      36.478      5.1389
+    2        2112      1.4169      83.239      27.142      43.459           0           0           1      60.697     0.17284
+    3          22        4.01     -72.554      60.835     -68.664           0           0           1      12.979       1.097
+    4        2112      6.1268     -56.349      2.5865      67.822           0           0           1      29.603      6.3791
+    5        2112      7.7138     -1.2834      94.555     -41.497           0           0           1      52.674      7.7014
+    6        2112      8.0774      78.306     -43.337     -29.508           0           0           1      91.903     0.70686
+    7          22      6.6326      5.1991     -82.789     -61.557           0           0           1      89.023      3.4954
+    8          22      2.3836     -95.995     -8.4597     -87.381           0           0           1      97.063      9.0231
+    9        2112      7.6027     -46.667      7.9521     -24.959           0           0           1      51.254      6.6806
+
+----------------------------------------------
+Running mcpltool --extract -l40 -s1 statsum_copy.mcpl.gz statsum_extract5.mcpl
+----------------------------------------------
+MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
+MCPL: Compressing file statsum_extract5.mcpl
+MCPL: Compressed file into statsum_extract5.mcpl.gz
+MCPL: Successfully extracted 40 / 100 particles from statsum_copy.mcpl.gz into statsum_extract5.mcpl.gz
+
+----------------------------------------------
+Running mcpltool statsum_extract5.mcpl.gz
+----------------------------------------------
+Opened MCPL file statsum_extract5.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 40
+    Header storage     : 263 bytes
+    Data storage       : 1440 bytes
+
+  Custom meta data
+    Source             : "my_cool_program_name"
+    Number of comments : 5
+          -> comment 0 : "stat:sum:BLA:                      -1"
+          -> comment 1 : "stat:sum:some_stat_key:                      -1"
+          -> comment 2 : "Some comment."
+          -> comment 3 : "Another comment."
+          -> comment 4 : "mcpltool: extracted particles from file with 100 particles"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0          22      6.2891     -44.445      10.794     -4.5206           0           0           1      36.478      5.1389
+    1        2112      1.4169      83.239      27.142      43.459           0           0           1      60.697     0.17284
+    2          22        4.01     -72.554      60.835     -68.664           0           0           1      12.979       1.097
+    3        2112      6.1268     -56.349      2.5865      67.822           0           0           1      29.603      6.3791
+    4        2112      7.7138     -1.2834      94.555     -41.497           0           0           1      52.674      7.7014
+    5        2112      8.0774      78.306     -43.337     -29.508           0           0           1      91.903     0.70686
+    6          22      6.6326      5.1991     -82.789     -61.557           0           0           1      89.023      3.4954
+    7          22      2.3836     -95.995     -8.4597     -87.381           0           0           1      97.063      9.0231
+    8        2112      7.6027     -46.667      7.9521     -24.959           0           0           1      51.254      6.6806
+    9          22      9.3082     -92.144     -12.472      86.367           0           0           1      72.095      2.8501
+
+----------------------------------------------
+Running mcpltool -e -l40 -s1 -p22 statsum_copy.mcpl.gz statsum_extract5photons.mcpl
+----------------------------------------------
+MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
+MCPL: Compressing file statsum_extract5photons.mcpl
+MCPL: Compressed file into statsum_extract5photons.mcpl.gz
+MCPL: Successfully extracted 21 / 100 particles from statsum_copy.mcpl.gz into statsum_extract5photons.mcpl.gz
+
+----------------------------------------------
+Running mcpltool statsum_extract5photons.mcpl.gz
+----------------------------------------------
+Opened MCPL file statsum_extract5photons.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 21
+    Header storage     : 263 bytes
+    Data storage       : 756 bytes
+
+  Custom meta data
+    Source             : "my_cool_program_name"
+    Number of comments : 5
+          -> comment 0 : "stat:sum:BLA:                      -1"
+          -> comment 1 : "stat:sum:some_stat_key:                      -1"
+          -> comment 2 : "Some comment."
+          -> comment 3 : "Another comment."
+          -> comment 4 : "mcpltool: extracted particles from file with 100 particles"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0          22      6.2891     -44.445      10.794     -4.5206           0           0           1      36.478      5.1389
+    1          22        4.01     -72.554      60.835     -68.664           0           0           1      12.979       1.097
+    2          22      6.6326      5.1991     -82.789     -61.557           0           0           1      89.023      3.4954
+    3          22      2.3836     -95.995     -8.4597     -87.381           0           0           1      97.063      9.0231
+    4          22      9.3082     -92.144     -12.472      86.367           0           0           1      72.095      2.8501
+    5          22      1.6606      27.996      -29.19      37.572           0           0           1       44.01       8.802
+    6          22      3.5043     -33.933     -54.206      78.674           0           0           1      68.667      9.5651
+    7          22      9.2398      31.461      71.735     -12.088           0           0           1      39.844      8.1495
+    8          22      9.5026      82.194     -3.5019     -56.835           0           0           1      92.013      1.4851
+    9          22      1.7629      90.021     -89.494      4.3127           0           0           1      24.006        7.98
+
+----------------------------------------------
+Running mcpltool --extract -p22 statsum_copy.mcpl.gz statsum_extractphotons_all.mcpl
+----------------------------------------------
+MCPL: Compressing file statsum_extractphotons_all.mcpl
+MCPL: Compressed file into statsum_extractphotons_all.mcpl.gz
+MCPL: Successfully extracted 50 / 100 particles from statsum_copy.mcpl.gz into statsum_extractphotons_all.mcpl.gz
+
+----------------------------------------------
+Running mcpltool statsum_extractphotons_all.mcpl.gz
+----------------------------------------------
+Opened MCPL file statsum_extractphotons_all.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 50
+    Header storage     : 263 bytes
+    Data storage       : 1800 bytes
+
+  Custom meta data
+    Source             : "my_cool_program_name"
+    Number of comments : 5
+          -> comment 0 : "stat:sum:BLA:                  5     "
+          -> comment 1 : "stat:sum:some_stat_key: 1.2345678912345678e-201"
+          -> comment 2 : "Some comment."
+          -> comment 3 : "Another comment."
+          -> comment 4 : "mcpltool: extracted particles from file with 100 particles"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0          22      6.2891     -44.445      10.794     -4.5206           0           0           1      36.478      5.1389
+    1          22        4.01     -72.554      60.835     -68.664           0           0           1      12.979       1.097
+    2          22      6.6326      5.1991     -82.789     -61.557           0           0           1      89.023      3.4954
+    3          22      2.3836     -95.995     -8.4597     -87.381           0           0           1      97.063      9.0231
+    4          22      9.3082     -92.144     -12.472      86.367           0           0           1      72.095      2.8501
+    5          22      1.6606      27.996      -29.19      37.572           0           0           1       44.01       8.802
+    6          22      3.5043     -33.933     -54.206      78.674           0           0           1      68.667      9.5651
+    7          22      9.2398      31.461      71.735     -12.088           0           0           1      39.844      8.1495
+    8          22      9.5026      82.194     -3.5019     -56.835           0           0           1      92.013      1.4851
+    9          22      1.7629      90.021     -89.494      4.3127           0           0           1      24.006        7.98
+
+----------------------------------------------
+Running mcpltool --extract -p22 -l400 statsum_copy.mcpl.gz statsum_extractphotons_all2.mcpl
+----------------------------------------------
+MCPL: Compressing file statsum_extractphotons_all2.mcpl
+MCPL: Compressed file into statsum_extractphotons_all2.mcpl.gz
+MCPL: Successfully extracted 50 / 100 particles from statsum_copy.mcpl.gz into statsum_extractphotons_all2.mcpl.gz
+
+----------------------------------------------
+Running mcpltool statsum_extractphotons_all2.mcpl.gz
+----------------------------------------------
+Opened MCPL file statsum_extractphotons_all2.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 50
+    Header storage     : 263 bytes
+    Data storage       : 1800 bytes
+
+  Custom meta data
+    Source             : "my_cool_program_name"
+    Number of comments : 5
+          -> comment 0 : "stat:sum:BLA:                  5     "
+          -> comment 1 : "stat:sum:some_stat_key: 1.2345678912345678e-201"
+          -> comment 2 : "Some comment."
+          -> comment 3 : "Another comment."
+          -> comment 4 : "mcpltool: extracted particles from file with 100 particles"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0          22      6.2891     -44.445      10.794     -4.5206           0           0           1      36.478      5.1389
+    1          22        4.01     -72.554      60.835     -68.664           0           0           1      12.979       1.097
+    2          22      6.6326      5.1991     -82.789     -61.557           0           0           1      89.023      3.4954
+    3          22      2.3836     -95.995     -8.4597     -87.381           0           0           1      97.063      9.0231
+    4          22      9.3082     -92.144     -12.472      86.367           0           0           1      72.095      2.8501
+    5          22      1.6606      27.996      -29.19      37.572           0           0           1       44.01       8.802
+    6          22      3.5043     -33.933     -54.206      78.674           0           0           1      68.667      9.5651
+    7          22      9.2398      31.461      71.735     -12.088           0           0           1      39.844      8.1495
+    8          22      9.5026      82.194     -3.5019     -56.835           0           0           1      92.013      1.4851
+    9          22      1.7629      90.021     -89.494      4.3127           0           0           1      24.006        7.98
+
+----------------------------------------------
 Running mcpltool '<TESTDATADIR>/ref/reffile_bad1.mcpl'
 ----------------------------------------------
 MCPL ERROR: File is not an MCPL file!

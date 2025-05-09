@@ -52,12 +52,23 @@ int main(int argc,char**argv) {
     if ( !particle )
       break;
     if ( particle->pdgcode == 2112 && particle->ekin < 0.1 ) {
-      mcpl_add_particle(fo,particle);
-      //Note that a guaranteed non-lossy alternative to mcpl_add_particle(fo,particle)
-      //would be mcpl_transfer_last_read_particle(fi,fo) which can work directly on
-      //the serialised on-disk particle data.
+      mcpl_transfer_last_read_particle(fi,fo);
+      //Note that if we had needed to modify the particle properties, we could
+      //have called mcpl_add_particle(fo,particle) instead of
+      //mcpl_transfer_last_read_particle(fi,fo). However, for pure filtering,
+      //mcpl_transfer_last_read_particle is better since it avoids a lossy
+      //unpacking and repacking of direction vectors.
     }
   }
+
+  //Note that any stat:sum:... statistics in the files will still be fine, since
+  //we only filtered the particles based on their properties. If we had instead
+  //split the file in the sense of having selected particles based on their
+  //position in the file, we should have invoked the
+  //mcpl_hdr_scale_state_sums(of, scale) with an appropriate choice of scale. If
+  //a proper scale is too complicated to deduce, one can always use scale=-1.0
+  //since this will technically mark all the statistics parameters as being
+  //unavailable (which is better than being silently misleading).
 
   //Close up files:
   mcpl_closeandgzip_outfile(fo);
