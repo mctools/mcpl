@@ -43,6 +43,7 @@ def main():
     copy( dd('ref_statsum.mcpl.gz'), 'statsum_copy_b.mcpl.gz')
     gunzip('statsum_copy_a.mcpl.gz')
     gunzip('statsum_copy_b.mcpl.gz')
+    copy( dd('ref_statsum.mcpl.gz'), 'statsum_copy.mcpl.gz')
 
     #hard link:
     f1_hl=Path('rf16cp_hl.mcpl')
@@ -235,6 +236,37 @@ def main():
     check_same('difficult_unitvector.mcpl','extracted_recombined.mcpl')
     check_same('difficult_unitvector.mcpl','extracted_none.mcpl')
     check_same('extracted_recombined.mcpl','extracted_none.mcpl')
+
+    cmd('--extract','statsum_copy.mcpl.gz','statsum_extract1.mcpl')
+    cmd('statsum_extract1.mcpl.gz')
+
+    cmd('--extract','-l7','statsum_copy.mcpl.gz','statsum_extract2.mcpl')
+    cmd('statsum_extract2.mcpl.gz')
+
+    cmd('--extract','-s30','statsum_copy.mcpl.gz','statsum_extract3.mcpl')
+    cmd('statsum_extract3.mcpl.gz')
+
+    cmd('--extract','-l4','-s20','statsum_copy.mcpl.gz','statsum_extract4.mcpl')
+    cmd('statsum_extract4.mcpl.gz')
+
+    cmd('--extract','-l300','statsum_copy.mcpl.gz','statsum_extract_all.mcpl')
+    cmd('statsum_extract_all.mcpl.gz')
+
+    cmd('--extract','-l40','-s1',
+        'statsum_copy.mcpl.gz','statsum_extract5.mcpl')
+    cmd('statsum_extract5.mcpl.gz')
+    cmd('-e','-l40','-s1','-p22',
+        'statsum_copy.mcpl.gz','statsum_extract5photons.mcpl')
+    cmd('statsum_extract5photons.mcpl.gz')
+
+    cmd('--extract','-p22',
+        'statsum_copy.mcpl.gz','statsum_extractphotons_all.mcpl')
+    cmd('statsum_extractphotons_all.mcpl.gz')
+
+    cmd('--extract','-p22','-l400',
+        'statsum_copy.mcpl.gz','statsum_extractphotons_all2.mcpl')
+    cmd('statsum_extractphotons_all2.mcpl.gz')
+
     #More bad files:
     cmd(dd('reffile_bad1.mcpl'),fail=True)
     cmd(dd('reffile_bad2.mcpl'),fail=True)

@@ -277,6 +277,7 @@ MCPL_LOCAL int mcpl_internal_fakeconstantversion( int enable )
 
 typedef struct MCPL_LOCAL {
   char key[MCPL_STATSUMKEY_MAXLENGTH+1];
+  double value;
   uint32_t writtenstrlen;
   uint64_t writtenpos;
 } mcpl_internal_statsuminfo_t;
@@ -958,6 +959,7 @@ MCPL_LOCAL void mcpl_write_header(mcpl_outfileinternal_t * f)
         mcpl_error("logic error: unexpected large comment strlen");
       statsuminfo->writtenstrlen = (uint32_t)lcomment;
       statsuminfo->writtenpos = MCPL_FTELL( f->file );
+      statsuminfo->value = sc.value;
       size_t nn = strlen(sc.key);
       if ( nn > MCPL_STATSUMBUF_MAXLENGTH )
         mcpl_error("stat:sum: key unexpected strlen");
@@ -1910,6 +1912,7 @@ void mcpl_repair(const char * filename)
       char new_comment[MCPL_STATSUMBUF_MAXLENGTH+1];
       mcpl_internal_encodestatsum( ssi[i].key, -1.0, new_comment );
       mcpl_internal_updatestatsum( fh, &ssi[i], new_comment );
+      ssi[i].value = -1.0;
     }
     free(ssi);
   }
@@ -3023,6 +3026,7 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
       char comment[MCPL_STATSUMBUF_MAXLENGTH+1];
       mcpl_internal_encodestatsum( sci->key, val, comment );
       mcpl_internal_updatestatsum( out_internal->file, sci, comment );
+      sci->value = val;
     }
 
     free(scinfo_indices);
@@ -3174,6 +3178,7 @@ void mcpl_merge_inplace(const char * file1, const char* file2)
       char new_comment[MCPL_STATSUMBUF_MAXLENGTH+1];
       mcpl_internal_encodestatsum( statsuminfo[i].key, -1.0, new_comment );
       mcpl_internal_updatestatsum( f1a, &statsuminfo[i], new_comment );
+      statsuminfo[i].value = -1.0;
     }
   }
   //Transfer particles (potentially a lot of work and chance of running out of
@@ -3189,6 +3194,7 @@ void mcpl_merge_inplace(const char * file1, const char* file2)
       char new_comment[MCPL_STATSUMBUF_MAXLENGTH+1];
       mcpl_internal_encodestatsum( statsuminfo[i].key, newval, new_comment );
       mcpl_internal_updatestatsum( f1a, &statsuminfo[i], new_comment );
+      statsuminfo[i].value = newval;
     }
   }
 
@@ -3636,6 +3642,30 @@ int mcpl_tool(int argc,char** argv) {
       pdgcode_select = (int32_t)pdgcode64;
     }
 
+    if ( fi_nparticles > 0
+         && ( opt_num_skip > 0
+              || ( opt_num_limit>0 && opt_num_limit < (int64_t)fi_nparticles ) ) ) {
+      int need_stat_scaling = 0;
+      unsigned ncomments = mcpl_hdr_ncomments(fi);
+      for ( unsigned ic = 0; ic < ncomments; ++ic ) {
+        const char * comment = mcpl_hdr_comment(fi,ic);
+        if ( !MCPL_COMMENT_IS_STATSUM(comment) )
+          continue;
+        mcpl_internal_statsum_t sc;
+        mcpl_internal_statsum_parse_or_emit_err( comment, &sc );
+        if ( sc.value != -1.0 ) {
+          need_stat_scaling = 1;
+          break;
+        }
+      }
+      if ( need_stat_scaling ) {
+        mcpl_print("MCPL WARNING: Marking stat:sum entries in output file as "
+                   "not available (-1) when filtering based on particle "
+                   "positions\n");
+        mcpl_hdr_scale_stat_sums( fo, -1.0 );
+      }
+    }
+
     if (opt_num_skip>0)
       mcpl_seek(fi,(uint64_t)opt_num_skip);
 
@@ -3651,7 +3681,7 @@ int mcpl_tool(int argc,char** argv) {
         break;
       if (pdgcode_select && pdgcode_select!= particle->pdgcode)
         continue;
-      mcpl_transfer_last_read_particle(fi, fo);//Doing mcpl_add_particle(fo,particle) is potentially (very rarely) lossy
+      mcpl_transfer_last_read_particle(fi, fo);
       ++added;
     }
 
@@ -4303,6 +4333,70 @@ void mcpl_hdr_add_stat_sum( mcpl_outfile_t of,
                "key earlier (the special value -1 can be used for this)");
 
   mcpl_internal_updatestatsum( f->file, sc_to_update, comment );
+  sc_to_update->value = value;
+}
+
+
+void mcpl_hdr_scale_stat_sums( mcpl_outfile_t of, double scale )
+{
+  if ( isnan(scale) )
+    mcpl_error("mcpl_hdr_scale_stat_sums called with NaN (not-a-number) scale");
+  if ( scale < 0.0 && scale != -1.0 )
+    mcpl_error("mcpl_hdr_scale_stat_sums called with negative scale");
+  if ( isinf(scale) )
+    mcpl_error("mcpl_hdr_scale_stat_sums called with infinite scale");
+  if ( scale == 0.0 )
+    mcpl_error("mcpl_hdr_scale_stat_sums called with zero scale");
+
+  MCPLIMP_OUTFILEDECODE;
+  int any_values_turned_to_inf = 0;
+  if (f->header_notwritten) {
+    //Header not written yet, simply update in-mem comments.
+    for ( uint32_t i = 0; i < f->ncomments; ++i ) {
+      if ( !MCPL_COMMENT_IS_STATSUM(f->comments[i]) )
+        continue;
+      mcpl_internal_statsum_t sc;
+      mcpl_internal_statsum_parse_or_emit_err( f->comments[i], &sc );
+      double new_value = ( ( scale == -1.0 || sc.value == -1.0 )
+                           ? -1.0 : ( sc.value * scale ) );
+      if ( isinf(new_value) ) {
+        any_values_turned_to_inf = 1;
+        new_value = -1.0;
+      }
+      if ( sc.value == new_value )
+        continue;//no update needed
+      char new_comment[MCPL_STATSUMBUF_MAXLENGTH+1];
+      mcpl_internal_encodestatsum( sc.key, new_value, new_comment );
+      size_t n = strlen(new_comment);
+      size_t nalloc = strlen(f->comments[i]);
+      if ( n != nalloc )
+        mcpl_error("preallocated space for stat:sum: update does not fit");
+      memcpy(f->comments[i],new_comment,nalloc);
+    }
+  } else {
+    //Header already written, must update on-disk.
+    for ( unsigned i = 0; i < f->nstatsuminfo; ++i ) {
+      mcpl_internal_statsuminfo_t * si = &f->statsuminfo[i];
+      double new_value = ( ( scale == -1.0 || si->value == -1.0 )
+                           ? -1.0 : ( si->value * scale ) );
+      if ( isinf(new_value) ) {
+        any_values_turned_to_inf = 1;
+        new_value = -1.0;
+      }
+      if ( si->value == new_value )
+        continue;//no update needed
+      char new_comment[MCPL_STATSUMBUF_MAXLENGTH+1];
+      mcpl_internal_encodestatsum( si->key, new_value, new_comment );
+      mcpl_internal_updatestatsum( f->file, si, new_comment );
+      si->value = new_value;
+    }
+  }
+  if ( any_values_turned_to_inf ) {
+    mcpl_print("MCPL WARNING: The call to mcpl_hdr_scale_stat_sums resulted in"
+               " one or more stat:sum: entries overflowing floating point"
+               " range and producing infinity. Reverting value to -1"
+               " to indicate that a precise result is not available.\n");
+  }
 }
 
 double mcpl_hdr_stat_sum( mcpl_file_t ff, const char * key )

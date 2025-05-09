@@ -280,7 +280,23 @@ extern "C" {
 
   /* Convenience function which transfers all settings, blobs and comments to */
   /* target. Intended to make it easy to filter files via custom C code.      */
+  /* Note that if splitting files instead of filtering them, then one should  */
+  /* make a call to mcpl_hdr_scale_stat_sums before closing the target file,  */
+  /* in order to avoid creating files with misleading statistics. The scale   */
+  /* should normally be the ratio of the weights used in the new versus       */
+  /* original file, but if nothing else one should use scale=-1 to make the   */
+  /* statistics not available.                                                */
   MCPL_API void mcpl_transfer_metadata(mcpl_file_t source, mcpl_outfile_t target);
+
+  /* Scale all stat:sum parameters with a given factor which must be a      */
+  /* finite number >0.0 or -1. The special value of -1 will mark all the    */
+  /* stat sums as unavailable (i.e. set them to -1). This should be used if */
+  /* splitting files, rather than filtering them. This function is normally */
+  /* used in conjunction with mcpl_transfer_metadata in file splitting      */
+  /* scenarios (as opposed to pure filtering based on individual particle   */
+  /* properties where it won't be needed):                                  */
+  MCPL_API void mcpl_hdr_scale_stat_sums( mcpl_outfile_t, double scale );
+
 
   /* Function which can be used when transferring particles from one MCPL file  */
   /* to another. A particle must have been already read from the source file    */
