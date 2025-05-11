@@ -18,8 +18,8 @@ Furthermore, since the format version is encoded at the beginning of all MCPL fi
 
 # Full format specifications
 
-The actual binary file formats `MCPL-2` and `MCPL-3` are described in great detail in {% include linkpaper.html linkname="section 2 of the MCPL paper" section=2 %}. As described in the paper, the two formats are in fact almost identical, with the only difference being which packing algorithm is used to pack particle direction vectors. `MCPL-3` uses the superior Adaptive Project Packing algorithm, while `MCPL-2` use Octahedral packing.
+The actual binary file formats `MCPL-2` and `MCPL-3` are described in great detail in {% include linkpaper.html linkname="section 2 of the MCPL paper" section=2 %}. As described in the paper, the two formats are in fact almost identical, with the only difference being which packing algorithm is used to pack particle direction vectors. `MCPL-3` uses the superior Adaptive Project Packing algorithm, while `MCPL-2` uses Octahedral packing.
 
 # Conventions
 
-In addition to the actual binary format itself, release 2.1.0 of the MCPL software distribution introduced the notion of a convention for encoding statistics in MCPL header *comment* fields. Crucially, the convention includes a definition of how these statistics should be aggregated when MCPL files are merged or otherwise edited. Refer to the dedicated page describing the [stat:sum convention](LOCAL:format_statsum/) for more details. Additionally, note than any MCPL comment starting with the 5 characters `stat:` is considered to be reserved for future usage.
+In addition to the actual binary format itself, release 2.1.0 of the MCPL software distribution introduced the notion of a convention for encoding statistics in MCPL header *comment* fields. Crucially, the convention includes a definition of how these statistics should be updated when MCPL files are merged or otherwise edited. Refer to the dedicated page describing the [stat:sum convention](LOCAL:format_statsum/) for more details. Additionally, note than any MCPL comment starting with the 5 characters `stat:` is considered to be reserved for future usage.
