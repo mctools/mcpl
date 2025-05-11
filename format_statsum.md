@@ -9,7 +9,7 @@ weight: 50
 
 **WARNING: This page concerns documentation for a future release of MCPL and is still being edited**
 
-The *stat:sum* convention for statistics in MCPL headers, allows the addition of custom statistics to the headers of MCPL files, with the values being combined through simple addition when files are merged. These values are encoded into textual comments of the form `stat:sum:<key>:<value>`, and the present page provides both a brief introduction to the subject, as well as more detailed description of the allowed syntax and guidelines for how to deal with them in various scenarios where MCPL files are filtered, merged, split, or otherwise edited.
+The *stat:sum* convention for statistics in MCPL headers, allows the addition of custom statistics to the headers of MCPL files, with the values being combined through simple addition when files are merged. These values are encoded into MCPL header comment field in the form `stat:sum:<key>:<value>`, and the present page provides both a brief introduction to the subject, as well as more detailed description of the allowed syntax, software support, and guidelines for how to deal with stat:sum values various scenarios where MCPL files are filtered, merged, split, or otherwise edited.
 
 # Introduction
 
@@ -58,31 +58,26 @@ It is highly recommended that anyone implementing custom code for merging, split
 
 The full details of the *stat:sum* convention will be described in this section.
 
-## Motivation and background
-
-The MCPL-2 and MCPL-3 formats allows for custom text comments in file headers. However, when merging files such comments have previously been required to be identical in the files being merged, or the merge would fail. For many (most?)  such comments, this makes perfect sense. However, for the particular use-case of wanting to record various parameters related to simulation "size", this is not ideal. Examples of simulation size could be something like *"number of initial particles used for the simulation"*, or even scaled quantities like *"number of seconds of beam-time simulated at nominal conditions"*. In this case, one would ideally like the quantities to be combined via simple addition when two files are merged (or somehow divided among files, if files are split or truncated).
-
 ## The syntax
 
 The syntax of the comments defining a statistics with both a key and a value is: `"stat:sum:<key>:<value>"` with the following additional constraints:
 
 * The entire string must be encoded with printable ASCII values only.
 
-* The user definable `<key>` must be from 1 to 64 characters long, begin with an ASCII letter (a-z or A-Z), and contain only ASCII letters, numbers (0-9) or underscores (_).
+* The user definable `<key>` must be from 1 to 64 characters long, begin with an ASCII letter (`a-z` or `A-Z`), and contain only ASCII letters, numbers (`0-9`) or underscores (`_`).
 
-* The `<value>` must always be exactly 24 characters long, and contain an ASCII representation of the value including only characters from the list `0123456789.+-eE`.  If less than 24 characters are needed for the value itself, the string can be padded with extra ASCII spaces (' ') at either end (and only at the ends).  If manually composing the strings in languages like C, C++, or Python, one can for instance encode the value using a print-format specifier like "%24.17g", which has the advantage of loss-less encoding of double-precision floating point values (assuming 64 bit IEEE-754 floating point encoding).
+* The `<value>` must always be exactly 24 characters long, and contain an ASCII representation of the value including only characters from the list `0123456789.+-eE`.  If less than 24 characters are needed for the value itself, the string can be padded with extra ASCII spaces (` `) at either end (and only at the ends).  If manually composing the strings in languages like C, C++, or Python, one can for instance encode the value using a print-format specifier like `%24.17g`, which has the advantage of loss-less encoding of double-precision floating point values (assuming 64 bit IEEE-754 floating point encoding).
 
-* The actual value represented in the `<value>` must not be negative, NaN (not-a-number) or infinity. The exception is that a value of -1 is allowed, with the special meaning of "not available". This can for instance be used to reserve space in a file with the intention of overwriting it with an actual value later. In case of an exceptional programme abort, where the file header had been written but the job ended before all particles could be written to the file, the header would in that case hold a value meaning "not available", rather than a misleading value. Any operations on statistics during file merges or splitting should yield -1 if any input value is -1 or if the result does not otherwise fit (i.e. if merges would lead to values of infinity)
+* The actual value represented in the `<value>` must not be negative, NaN (not-a-number) or infinity. The exception is that a value of -1 is allowed, with the special meaning of "Not Available". This can for instance be used to reserve space in a file with the intention of overwriting it with an actual value later. In case of an exceptional programme abort, where the file header had been written but the job ended before all particles could be written to the file, the header would in that case hold a value meaning "Not Available", rather than a misleading value. Any operations on statistics during file merges or splitting should yield -1 if any input value is -1 or if the result does not otherwise fit (i.e. if merges would lead to values of infinity)
 
 * In addition to `stat:sum:...` entries, all entries starting with the string `stat:` are reserved for future usage. Thus, it is for now recommended that software dealing with MCPL files will prevent people from creating comments starting with `stat:`, except if it is a `stat:sum:<key>:value` entry compliant with the syntax defined above.
 
 ## Software support
 
-The MCPL software release from https://github.com/mctools/mcpl supports the "stat:sum" convention starting with release 2.1.0. Earlier MCPL software releases will simply treat the special comments as any regular comments, which is likely OK as long as one is not merging or editing files, apart from imposing global filtering constraints on all particles in a file (see the section on filtering below). For consistency, it is therefore recommended that applications modify their software dependency list to require at least version 2.1.0 of the MCPL software release.
+The MCPL software release supports the *stat:sum* convention starting with release 2.1.0. Specifically, it provides APIs for interacting with `stat:sym:<key>:<value>` entries, with any built-on operations (e.g. file merging) automatically doing the correct thing when it is unambiguous what that would be, and overriding *stat:sum* values with -1 when not. MCPL software releases earlier than 2.1.0 will simply treat the special comments as any regular comments, which is likely OK as long as one is not merging or editing files. For consistency, it is recommended that applications modify their software dependency list to require at least version 2.1.0 of the MCPL software release.
 
-Applications or libraries interacting directly with MCPL files through their own code, rather than via the MCPL software release, are recommended to double-check the "guidelines for developers" section below to see if their software needs to be updated to support the "stat:sum" convention. In general
 
-Users of the C or Python API of the MCPL software release do not have to fiddle with encoding or decoding `stat:sym:<key>:<value>` comments, since the APIs provide new convenience interfaces for interacting with them.
+Applications or libraries interacting directly with MCPL files through their own code, rather than via the MCPL software release, are recommended to double-check the "guidelines for custom code" section below to see if their software needs to be updated to support the *stat:sum* convention.
 
 ### Python API
 
