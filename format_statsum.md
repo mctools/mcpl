@@ -50,18 +50,9 @@ Before the MCPL software release version 2.1.0, the two files would not have bee
     Number of blobs    : 0
 ```
 
-If desired, users or developers interacting with MCPL files through the MCPL software can interact with these `stat:sum:<key>:<value>` entries programmatically through the C or Python APIs. For instance, they can be extracted easily into a dictionary in the Python API (here values of `-1` will be translated to `None`):
+If desired, users or developers interacting with MCPL files through the MCPL software can interact with these `stat:sum:<key>:<value>` entries programmatically through the C or Python APIs, and likewise the `mcpltool --merge` and `mcpltool --extract` modes have been updated to handle *stat:sum* entries.
 
-```py
->>> import mcpl
->>> f = mcpl.MCPLFile('somefile.mcpl')
->>> print( f.stat_sum )
-{'my_custom_source_stat': 3.2345e6}
-```
-
-In addition to file merging, official MCPL software has been updated to deal conservately with files being *split* (as opposed to *filtered*). So for instance, selecting ranges of particles using `mcpltool --extract` with `-l` or -`s` flags will cause the value of statistics to be converted to -1 (meaning *Not Available*), since the generic MCPL code can not possibly know with certainty how to calculate the new values. On the other hand, extracting particles by type using the `-p` flag will instead cause the output to retain the original *stat:sum* value.
-
-It is expected that most user code dealing with MCPL files will not have to be updated to deal with these *stat:sum* parameters, but anyone using custom code to deal with raw MCPL data directly should check that any code which either splits or merges data is doing the right thing. Refer to the Guidelines for custom code at the end of this page for more information. In fact, anyone intending to create or edit MCPL data with or without using the APIs in the MCPL software distributions, are highly encouraged to familiarise themselves with the full details of the convention described in this page, especially if such data might contain *stat:sum* values.
+It is highly recommended that anyone implementing custom code for merging, splitting, or filtering MCPL files familiarise themselves with the full details of the convention described below.
 
 # Detailed information
 
@@ -70,22 +61,6 @@ The full details of the *stat:sum* convention will be described in this section.
 ## Motivation and background
 
 The MCPL-2 and MCPL-3 formats allows for custom text comments in file headers. However, when merging files such comments have previously been required to be identical in the files being merged, or the merge would fail. For many (most?)  such comments, this makes perfect sense. However, for the particular use-case of wanting to record various parameters related to simulation "size", this is not ideal. Examples of simulation size could be something like *"number of initial particles used for the simulation"*, or even scaled quantities like *"number of seconds of beam-time simulated at nominal conditions"*. In this case, one would ideally like the quantities to be combined via simple addition when two files are merged (or somehow divided among files, if files are split or truncated).
-
-## Example of encoding of new statistics parameters
-
-Imagine two MCPL files, `a.mcpl` and `b.mcpl`, both produced as outcome of two separate simulation jobs, perhaps by capturing particles at a certain surface in a particular neutron scattering beam-line. The only difference between the files might be the initial random number seed, and possibly the number of initial neutrons entering the start of the instrument in the given simulation job. Imagine that the header data of the two files is identical and thus compatible for a merge operation, except for the comments which use the *stat:sum* syntax to encode the number of initial neutrons used in each job (the files will obviously also differ in the actual particles stored in the files). In `a.mcpl` the comment in question might read:
-
-`"stat:sum:sim_source_count:                 1000000"`
-
-while in `b.mcpl` the corresponding comment might be:
-
-`"stat:sum:sim_source_count:                 2000000"`
-
-After merging the two files into a single file, `c.mcpl`, that file will have the corresponding comment field as:
-
-`"stat:sum:sim_source_count:                 3000000"`
-
-We shall explain the general syntax allowed for such comments below.
 
 ## The syntax
 
@@ -113,6 +88,16 @@ Users of the C or Python API of the MCPL software release do not have to fiddle 
 
 The `MCPLFile` objects in the Python API now have `.stat_sum` properties, which are dictionaries of `(key,value)` pairs. Note that values of -1.0 in the actual `stat:sum:<key>:<value>` comments in the data are translated into `None` in the Python interface.
 
+fixme If desired, users or developers interacting with MCPL files through the MCPL software can interact with these `stat:sum:<key>:<value>` entries programmatically through the C or Python APIs. For instance, they can be extracted easily into a dictionary in the Python API (here values of `-1` will be translated to `None`):
+
+```py
+>>> import mcpl
+>>> f = mcpl.MCPLFile('somefile.mcpl')
+>>> print( f.stat_sum )
+{'my_custom_source_stat': 3.2345e6}
+```
+
+
 ### C API
 
 The C API gains three new functions:
@@ -136,7 +121,7 @@ Finally, the function `mcpl_hdr_scale_stat_sums` is intended by usage for people
 
 As the new *stat:sum* values are encoded in MCPL comments, it is trivially true that `mcpltool`, `pymcpltool`, or any other custom tool showing such comments will already show the *stat:sum* values.
 
-Additionally, the `mcpltool --extract` mode has been updated to properly deal with stat:sum's. Specifically, it will leave them unaltered if only using the `-p` flag to extract particles of a particular type. However, if using the `-l` and `-s` flags to extract particles based on position in the file, the `mcpltool` code will set all *stat:sum* values in the resulting file to -1, since
+Additionally, the `mcpltool --extract` mode has been updated to properly deal with stat:sum's. Specifically, it will leave them unaltered if only using the `-p` flag to extract particles of a particular type. However, if using the `-l` and `-s` flags to extract particles based on position in the file, the `mcpltool` code will conservatively set all *stat:sum* values in the resulting file to -1 (meaning *Not Available*). This is done since the generic MCPL code can not possibly know with certainty how to calculate the new values.
 
 ## Guidelines for custom code
 
