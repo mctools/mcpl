@@ -74,16 +74,13 @@ The syntax of the comments defining a statistics with both a key and a value is:
 
 ## Software support
 
-The MCPL software release supports the *stat:sum* convention starting with release 2.1.0. Specifically, it provides APIs for interacting with `stat:sym:<key>:<value>` entries, with any built-on operations (e.g. file merging) automatically doing the correct thing when it is unambiguous what that would be, and overriding *stat:sum* values with -1 when not. MCPL software releases earlier than 2.1.0 will simply treat the special comments as any regular comments, which is likely OK as long as one is not merging or editing files. For consistency, it is recommended that applications modify their software dependency list to require at least version 2.1.0 of the MCPL software release.
+The MCPL software release supports the *stat:sum* convention starting with release 2.1.0.  Earlier releases will simply treat the *stat:sum* entries as any other comment in the MCPL header, which will often be OK, but might not be (e.g. when merging files). For consistency, it is recommended that applications modify their software dependency list to require at least version 2.1.0 of the MCPL software release.
 
-
-Applications or libraries interacting directly with MCPL files through their own code, rather than via the MCPL software release, are recommended to double-check the "guidelines for custom code" section below to see if their software needs to be updated to support the *stat:sum* convention.
+When using MCPL release 2.1.0 or later, built-in operations like file merging automatically update *stat:sum* values when it is unambiguous how they should be updated. In case of ambiguities (e.g. when splitting files), values are set to -1 to be conservative. Additionally, C and Python APIs allow interaction with *stat:sum* values through keys and values directly, rather than having to manually encode or decode `stat:sum:<key>:<value>` comments. In the following, the *stat:sum* support in the MCPL software APIs will be briefly discussed.
 
 ### Python API
 
-The `MCPLFile` objects in the Python API now have `.stat_sum` properties, which are dictionaries of `(key,value)` pairs. Note that values of -1.0 in the actual `stat:sum:<key>:<value>` comments in the data are translated into `None` in the Python interface.
-
-fixme If desired, users or developers interacting with MCPL files through the MCPL software can interact with these `stat:sum:<key>:<value>` entries programmatically through the C or Python APIs. For instance, they can be extracted easily into a dictionary in the Python API (here values of `-1` will be translated to `None`):
+The `MCPLFile` objects in the Python API now have `.stat_sum` properties, which are dictionaries of `(key,value)` pairs:
 
 ```py
 >>> import mcpl
@@ -92,6 +89,7 @@ fixme If desired, users or developers interacting with MCPL files through the MC
 {'my_custom_source_stat': 3.2345e6}
 ```
 
+Note that values of -1.0 in the actual `stat:sum:<key>:<value>` comments in the data, are translated into `None` in the Python interface.
 
 ### C API
 
@@ -104,13 +102,13 @@ void mcpl_hdr_add_stat_sum( mcpl_outfile_t,
 void mcpl_hdr_scale_stat_sums( mcpl_outfile_t, double scale );
 ```
 
-The `mcpl_hdr_stat_sum` function is used to extract `stat:sum:` values from an existing file, by a particular key (returning -2 in case the key is not present in the file)
+The `mcpl_hdr_stat_sum` function is used to extract `stat:sum:` values from an existing file, by a particular key (returning -2 in case the key is not present in the file).
 
-The `mcpl_hdr_add_stat_sum` function is used to add values into files. Of course, this could also be done with the `mcpl_hdr_add_comment` function, but this is not recommended. In particular the `mcpl_hdr_add_stat_sum` function can also be called *after* the first particle has been written to disk, as long as it was also called *before* the first particle was written, to reserve the space (for this initial reservation one can ideally use a value of -1).
+The `mcpl_hdr_add_stat_sum` function is used to add values into files. Of course, this could also be done with the `mcpl_hdr_add_comment` function, but this is not recommended. In particular because the `mcpl_hdr_add_stat_sum` function can also be called *after* the first particle has been written to disk, as long as it was also called *before* the first particle was written, to reserve the space (for this initial reservation one can ideally use a value of -1).
 
-If the value of the statistics is not known initially, it is possible to set value=-1 to simply reserve space in the header. In that case, one MUST invoke the function again to set the final value before the file is closed.  Keys must be at most 64 chars long and not contain colons (:).  In case custom code is used to truncate particle lists, this function should also be used to modify the statistics of such files.
+If the value of the statistics is not known initially (e.g. if Monte Carlo simulation is configured to keep running until a certain criteria has been met), it is possible to set the *stat:sum* value to -1 to simply reserve space in the MCPL file header. In that case, one should invoke the function again to set the final value before the file is closed.
 
-Finally, the function `mcpl_hdr_scale_stat_sums` is intended by usage for people who might be implementing custom editing, filtering or splitting of files via the C API (normally in conjunction with the `mcpl_transfer_metadata` function). If simply filtering based upon particle properties (i.e. picking only certain particle types or energies), this is typically not needed. But if somehow splitting a file or otherwise selecting particles based on their position in the file (e.g. if producing a file containing the first N particles of another file), the *stat:sum* values in the new file should probably be reduced somehow, and this can be done with the `mcpl_hdr_scale_stat_sums` function. If in doubt, invoking `mcpl_hdr_scale_stat_sums` with a value of -1 ensures that the output file will at least not contain any misleading numbers.
+Finally, the function `mcpl_hdr_scale_stat_sums` is intended for usage by people who might be implementing custom editing, filtering or splitting of files via the C API (normally in conjunction with the `mcpl_transfer_metadata` function). If simply filtering based upon particle properties (i.e. picking only certain particle types or energies), this is typically not needed. But if somehow splitting a file or otherwise selecting particles based on their position in the file (e.g. if producing a file containing the first N particles of another file), the *stat:sum* values in the new file should probably be reduced somehow, and this can be done with the `mcpl_hdr_scale_stat_sums` function. If in doubt, invoking `mcpl_hdr_scale_stat_sums` with a value of -1 ensures that the output file will at least not contain any misleading numbers.
 
 ### Command-line API
 
