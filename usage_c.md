@@ -169,9 +169,9 @@ int main(int argc,char**argv) {
 }
 ```
 
-note that if we would have selected particles based on their position in file (e.g. transferring just the first 100 particles), we should have added a call to `mcpl_hdr_scale_stat_sums( fo, -1.0 )`, in order to avoid misleading statistics in the output. Refer to [hooks](LOCAL:format_statsum/) for more information.
+Note that if we would have selected particles based on their position in file (e.g. transferring just the first 100 particles), we should have added a call to `mcpl_hdr_scale_stat_sums( fo, -1.0 )`, in order to avoid misleading statistics in the output. Refer to [this page](LOCAL:format_statsum/) for more information.
 
 
 ### Example project with C code and CMake configuration
 
-The `mcpl` repository contains two small but complete examples of how to make a CMake-based project using the MCPL C API. Please find the example in the [examples/downstream_cmake]({{"/tree/path_to_mcpl2/examples/downstream_cmake" | prepend: site.github.repository_url }}) folder.
+The `mcpl` repository contains two small but complete examples of how to make a CMake-based project using the MCPL C API. Please find the example in the [examples/downstream_cmake]({{"/tree/HEAD/examples/downstream_cmake" | prepend: site.github.repository_url }}) folder.

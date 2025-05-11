@@ -32,4 +32,4 @@ For consistency, it is recommended that your conda environment ONLY uses package
 
 ## Custom builds (expert only)
 
-Experts might wish to build MCPL packages manually. Please refer to the instructions [here](https://github.com/mctools/mcpl/blob/path_to_mcpl2/INSTALL.md) for more details.
+Experts might wish to build MCPL packages manually. Please refer to the instructions [here](https://github.com/mctools/mcpl/blob/HEAD/INSTALL.md) for more details.
