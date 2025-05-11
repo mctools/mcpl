@@ -9,15 +9,15 @@ weight: 50
 
 **WARNING: This page concerns documentation for a future release of MCPL and is still being edited**
 
-The `stat:sum` convention for statistics in MCPL headers, is a convention which allows the addition of custom statistics to the headers of MCPL files, with the values being aggregated appropriately when files are for instance merged. These are encoded into textual comments of the form `stat:sum:<key>:<value>`, and the present page provides both a brief introduction to the subject, as well as more detailed description of the allowed syntax and guidelines for how to deal with them in various scenarios where MCPL files are filtered, merged, split, or otherwise edited.
+The `stat:sum` convention for statistics in MCPL headers, is a convention which allows the addition of custom statistics to the headers of MCPL files, with the values being aggregated appropriately when files are for instance merged. These values are encoded into textual comments of the form `stat:sum:<key>:<value>`, and the present page provides both a brief introduction to the subject, as well as more detailed description of the allowed syntax and guidelines for how to deal with them in various scenarios where MCPL files are filtered, merged, split, or otherwise edited.
 
 # Introduction
 
 In short, the `stat:sum` convention brings an often-requested feature to MCPL: Statistics in the header which are automatically combined when files are merged!
 
-Currently, this concerns statistics which should be accumulated via simple addition when files are merged. Examples of such statistics could for instance be "number of seed particles in simulation run", "number of seconds of beam-time simulated", or "number of proton collisions modelled".
+Support so far are statistics values which should be accumulated via simple addition, or **sum**mation, when files are merged. Examples of such statistics could for instance be *"number of seed particles in simulation run"*, *"number of seconds of beam-time simulated"*, or *"number of proton collisions modelled"*.
 
-The new statistics will show up as human-readable comments where the value will usually be a non-negative number (in rare cases you might also see the special value "-1" which means "not available"). Here is how it might look when using the `mcpltool` to inspect such a file:
+The new statistics will show up as human-readable comments where the value will usually be a non-negative number (in rare cases you might also see the special value *-1* which means *Not Available*). Here is how it might look when using the `mcpltool` to inspect such a file:
 
 ```
   Custom meta data
@@ -28,7 +28,7 @@ The new statistics will show up as human-readable comments where the value will 
     Number of blobs    : 0
 ```
 
-Imagine a second (otherwise compatible) file with:
+Note that depending on your font, you might have to scroll to the right to see the actual value, as for technical reasons values are always padded with spaces to take up exactly 24 characters. Now imagine a second (otherwise compatible) file with:
 
 ```
   Custom meta data
@@ -39,7 +39,7 @@ Imagine a second (otherwise compatible) file with:
     Number of blobs    : 0
 ```
 
-In the past, the two files would not have been possible to merge with the usual tools (`mcpltool` or the API), but now they are not only mergeable, the values are actually summed up as they should. The resulting file thus ends up with all the particles from both files as well as the header:
+In the past, the two files would not have been possible to merge with the usual tools (`mcpltool --merge` or the C API), but now they are not only mergeable, the values are actually summed up as they should. The resulting file thus ends up with all the particles from both files as well as the header:
 
 ```
   Custom meta data
@@ -59,9 +59,9 @@ If desired, users or developers interacting with MCPL files through the MCPL sof
 {'my_custom_source_stat': 3.2345e6}
 ```
 
-In addition to file merging, official MCPL software has been updated to deal correctly with files being *split* (as opposed to *filtered*). So for instance, selecting ranges of particles using `mcpltool --extract` with `-l` or -`s` flags would cause the value of statistics to be reduced, whereas selecting particles by type using the `-p` flag would not.
+In addition to file merging, official MCPL software has been updated to deal conservately with files being *split* (as opposed to *filtered*). So for instance, selecting ranges of particles using `mcpltool --extract` with `-l` or -`s` flags would cause the value of statistics to be converted to -1 (meaning *Not Available*), whereas selecting particles by type using the `-p` flag would not.
 
-It is expected that most user code dealing with MCPL files will not have to be updated to deal with these new statistics entries, but anyone using custom code to deal with raw MCPL data directly, should check that any code which either splits or merges data is doing the right thing. Refer to the Guidelines for custom code at the end of this page for more information. Additionally, anyone intending to create or edit MCPL data without using the APIs in the MCPL software distributions, are highly encouraged to familiarise themselves with the full details of the convention described in this page.
+It is expected that most user code dealing with MCPL files will not have to be updated to deal with these new statistics entries, but anyone using custom code to deal with raw MCPL data directly, should check that any code which either splits or merges data is doing the right thing. Refer to the Guidelines for custom code at the end of this page for more information. In fact, anyone intending to create or edit MCPL data with or without using the APIs in the MCPL software distributions, are highly encouraged to familiarise themselves with the full details of the convention described in this page, especially if such data might contain `stat:sum` values.
 
 # Detailed information
 
