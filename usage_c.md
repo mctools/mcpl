@@ -148,19 +148,19 @@ int main(int argc,char**argv) {
                         "Applied custom filter to select"
                         " neutrons with ekin<0.1MeV" );
 
-  //Loop over particles from input, only triggering mcpl_add_particle
-  //calls for the chosen particles:
+  //Loop over particles from input, only adding the chosen particles to the
+  //output file:
 
   const mcpl_particle_t* particle;
   while ( ( particle = mcpl_read(fi) ) ) {
     if ( particle->pdgcode == 2112 && particle->ekin < 0.1 ) {
-      mcpl_add_particle(fo,particle);
-      //Note that a guaranteed non-lossy alternative to
-      //mcpl_add_particle(fo,particle) would be
-      //mcpl_transfer_last_read_particle(fi,fo) which can
-      //work directly on the serialised on-disk particle data.
+      mcpl_transfer_last_read_particle(fi,fo);
+      //Note that if we had needed to modify the particle properties, we could
+      //have called mcpl_add_particle(fo,particle) instead of
+      //mcpl_transfer_last_read_particle(fi,fo). However, for pure filtering,
+      //mcpl_transfer_last_read_particle is better since it avoids a lossy
+      //unpacking and repacking of direction vectors.
     }
-
   }
 
   //Close up files:
@@ -168,6 +168,9 @@ int main(int argc,char**argv) {
   mcpl_close_file(fi);
 }
 ```
+
+note that if we would have selected particles based on their position in file (e.g. transferring just the first 100 particles), we should have added a call to `mcpl_hdr_scale_stat_sums( fo, -1.0 )`, in order to avoid misleading statistics in the output. Refer to [hooks](LOCAL:format_statsum/) for more information.
+
 
 ### Example project with C code and CMake configuration
 
