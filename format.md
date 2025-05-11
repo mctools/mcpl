@@ -4,14 +4,16 @@ underconstruction: true
 weight: 10
 ---
 
+**WARNING: This page concerns documentation for a future release of MCPL and is still being edited**
+
 While there are often new releases of the MCPL software distribution, the actual binary MCPL *format* itself is very stable and rarely receives updates.
 
-Furthermore, since the format version is incoded at the beginning of all MCPL files, it is always possible for the latest MCPL software to read files in older formats (except the format `MCPL-1` which was a test format never released to the wider public). This is obviously an important design feature, intended to ensure that older MCPL files can always be read with the latest MCPL software releases.
+Furthermore, since the format version is encoded at the beginning of all MCPL files, it is always possible for the latest MCPL software to read files in older formats (except the format `MCPL-1` which was a test format never released to the wider public). This is obviously an important design feature, intended to ensure that older MCPL files can always be read with the latest MCPL software releases.
 
 # List of MCPL formats
 
 * **MCPL-1**: An early prototype format. This format was never used beyond internal developments and is undocumented and unsupported.
-* **MCPL-2**: The first publically released format, used briefly around 2015-2016.
+* **MCPL-2**: The first publicly released format, used briefly around 2015-2016.
 * **MCPL-3**: The default format produced since the MCPL software release 1.0.0 in 2016.
 
 # Full format specifications

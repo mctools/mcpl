@@ -7,13 +7,15 @@ weight: 50
 - two magic lines for toc
 {:toc}
 
-The `stat:sum` convention for statistics in MCPL headers, is a convention which allows the addition of custom statistics to the headers of MCPL files, with the values being aggregrated appropriately when files are for instance merged. These are encoded into textual comments of the form `stat:sum:<key>:<value>`, and the present page provides both a brief introduction to the subject, as well as more detailed description of the allowed syntax and guidelines for how to deal with them in various scenarioes where MCPL files are filtered, merged, split, or otherwise edited.
+**WARNING: This page concerns documentation for a future release of MCPL and is still being edited**
+
+The `stat:sum` convention for statistics in MCPL headers, is a convention which allows the addition of custom statistics to the headers of MCPL files, with the values being aggregated appropriately when files are for instance merged. These are encoded into textual comments of the form `stat:sum:<key>:<value>`, and the present page provides both a brief introduction to the subject, as well as more detailed description of the allowed syntax and guidelines for how to deal with them in various scenarios where MCPL files are filtered, merged, split, or otherwise edited.
 
 # Introduction
 
 In short, the `stat:sum` convention brings an often-requested feature to MCPL: Statistics in the header which are automatically combined when files are merged!
 
-Currently, this concerns statistics which should be accumulated via simple addition when files are merged. Examples of such statistics could for instance be "number of seed particles in simulation run", "number of seconds of beamtime simulated", or "number of proton collisions modelled".
+Currently, this concerns statistics which should be accumulated via simple addition when files are merged. Examples of such statistics could for instance be "number of seed particles in simulation run", "number of seconds of beam-time simulated", or "number of proton collisions modelled".
 
 The new statistics will show up as human-readable comments where the value will usually be a non-negative number (in rare cases you might also see the special value "-1" which means "not available"). Here is how it might look when using the `mcpltool` to inspect such a file:
 
@@ -59,7 +61,7 @@ If desired, users or developers interacting with MCPL files through the MCPL sof
 
 In addition to file merging, official MCPL software has been updated to deal correctly with files being *split* (as opposed to *filtered*). So for instance, selecting ranges of particles using `mcpltool --extract` with `-l` or -`s` flags would cause the value of statistics to be reduced, whereas selecting particles by type using the `-p` flag would not.
 
-It is expected that most user code dealing with MCPL files will not have to be updated to deal with these new statistics entries, but anyone using custom code to deal with raw MCPL data directly, should check that any code which either splits or merges data is doing the right thing. Refer to the Guidelines for custom code at the end of this page for more information. Additionally, anyone intending to create or edit MCPL data without using the APIs in the MCPL software distributions, are highly encouraged to familiarize themselves with the full details of the convention described in this page.
+It is expected that most user code dealing with MCPL files will not have to be updated to deal with these new statistics entries, but anyone using custom code to deal with raw MCPL data directly, should check that any code which either splits or merges data is doing the right thing. Refer to the Guidelines for custom code at the end of this page for more information. Additionally, anyone intending to create or edit MCPL data without using the APIs in the MCPL software distributions, are highly encouraged to familiarise themselves with the full details of the convention described in this page.
 
 # Detailed information
 
@@ -67,11 +69,11 @@ The full details of the `stat:sum` convention will be described in this section.
 
 ## Motivation and background
 
-The MCPL-2 and MCPL-3 formats allows for custom text comments in file headers. However, when merging files such comments have previously been required to be identical in the files being merged, or the merge would fail. For many (most?)  such comments, this makes perfect sense. However, for the particular use-case of wanting to record various parameters related to simulation "size", this is not ideal. Examples of simulation size could be something like "number of initial particles used for the simulation", or even scaled quantities like "number of seconds of beamtime simulated at nominal conditions". In this case, one would ideally like the quantities to be combined via simple addition when two files are merged (or somehow divided among files, if files are split or truncated).
+The MCPL-2 and MCPL-3 formats allows for custom text comments in file headers. However, when merging files such comments have previously been required to be identical in the files being merged, or the merge would fail. For many (most?)  such comments, this makes perfect sense. However, for the particular use-case of wanting to record various parameters related to simulation "size", this is not ideal. Examples of simulation size could be something like "number of initial particles used for the simulation", or even scaled quantities like "number of seconds of beam-time simulated at nominal conditions". In this case, one would ideally like the quantities to be combined via simple addition when two files are merged (or somehow divided among files, if files are split or truncated).
 
 ## Example of encoding of new statistics parameters
 
-Imagine two MCPL files, `a.mcpl` and `b.mcpl`, both produced as outcome of two separate simulation jobs, perhaps by capturing particles at a certain surface in a particular neutron scattering beamline. The only difference between the files might be the initial random number seed, and possibly the number of initial neutrons entering the start of the instrument in the given simulation job. Imagine that the header data of the two files is identical and thus compatible for a merge operation, except for the comments which use the new syntax to encode the number of initial neutrons used in each job (the files will obviously also differ in the actual particles stored in the files). In `a.mcpl` the comment in question might read:
+Imagine two MCPL files, `a.mcpl` and `b.mcpl`, both produced as outcome of two separate simulation jobs, perhaps by capturing particles at a certain surface in a particular neutron scattering beam-line. The only difference between the files might be the initial random number seed, and possibly the number of initial neutrons entering the start of the instrument in the given simulation job. Imagine that the header data of the two files is identical and thus compatible for a merge operation, except for the comments which use the new syntax to encode the number of initial neutrons used in each job (the files will obviously also differ in the actual particles stored in the files). In `a.mcpl` the comment in question might read:
 
 `"stat:sum:sim_source_count:                 1000000"`
 
@@ -93,11 +95,11 @@ The syntax of the comments defining a statistics with both a key and a value is:
 
 * The user definable `<key>` must be from 1 to 64 characters long, begin with an ASCII letter (a-z or A-Z), and contain only ASCII letters, numbers (0-9) or underscores (_).
 
-* The `<value>` must always be exactly 24 characters long, and contain an ascii representation of the value including only characters from the list `0123456789.+-eE`.  If less than 24 characters are needed for the value itself, the string can be padded with extra ASCII spaces (' ') at either end (and only at the ends).  If manually composing the strings in languages like C, C++, or Python, one can for instance encode the value using a print-format specifier like "%24.17g", which has the advantage of loss-less encoding of double-precision floating point values (assuming 64 bit IEEE-754 floating point encoding).
+* The `<value>` must always be exactly 24 characters long, and contain an ASCII representation of the value including only characters from the list `0123456789.+-eE`.  If less than 24 characters are needed for the value itself, the string can be padded with extra ASCII spaces (' ') at either end (and only at the ends).  If manually composing the strings in languages like C, C++, or Python, one can for instance encode the value using a print-format specifier like "%24.17g", which has the advantage of loss-less encoding of double-precision floating point values (assuming 64 bit IEEE-754 floating point encoding).
 
 * The actual value represented in the `<value>` must not be negative, NaN (not-a-number) or infinity. The exception is that a value of -1 is allowed, with the special meaning of "not available". This can for instance be used to reserve space in a file with the intention of overwriting it with an actual value later. In case of an exceptional programme abort, where the file header had been written but the job ended before all particles could be written to the file, the header would in that case hold a value meaning "not available", rather than a misleading value. Any operations on statistics during file merges or splitting should yield -1 if any input value is -1 or if the result does not otherwise fit (i.e. if merges would lead to values of infinity)
 
-* In addition to `stat:sum:...` entries, all entries starting with the string `stat:` are reserved for future usage. Thus, it is for now recommended that software dealing with MCPL files will prevent people from creating comments starting with `stat:`, except if it is a `stat:sum:<key>:value` entry compliant with the syntax defind above.
+* In addition to `stat:sum:...` entries, all entries starting with the string `stat:` are reserved for future usage. Thus, it is for now recommended that software dealing with MCPL files will prevent people from creating comments starting with `stat:`, except if it is a `stat:sum:<key>:value` entry compliant with the syntax defined above.
 
 ## Software support
 
