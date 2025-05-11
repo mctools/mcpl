@@ -69,7 +69,7 @@ The full details of the `stat:sum` convention will be described in this section.
 
 ## Motivation and background
 
-The MCPL-2 and MCPL-3 formats allows for custom text comments in file headers. However, when merging files such comments have previously been required to be identical in the files being merged, or the merge would fail. For many (most?)  such comments, this makes perfect sense. However, for the particular use-case of wanting to record various parameters related to simulation "size", this is not ideal. Examples of simulation size could be something like "number of initial particles used for the simulation", or even scaled quantities like "number of seconds of beam-time simulated at nominal conditions". In this case, one would ideally like the quantities to be combined via simple addition when two files are merged (or somehow divided among files, if files are split or truncated).
+The MCPL-2 and MCPL-3 formats allows for custom text comments in file headers. However, when merging files such comments have previously been required to be identical in the files being merged, or the merge would fail. For many (most?)  such comments, this makes perfect sense. However, for the particular use-case of wanting to record various parameters related to simulation "size", this is not ideal. Examples of simulation size could be something like *"number of initial particles used for the simulation"*, or even scaled quantities like *"number of seconds of beam-time simulated at nominal conditions"*. In this case, one would ideally like the quantities to be combined via simple addition when two files are merged (or somehow divided among files, if files are split or truncated).
 
 ## Example of encoding of new statistics parameters
 
