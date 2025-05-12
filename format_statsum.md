@@ -11,15 +11,15 @@ weight: 50
 
 The *stat:sum* convention for statistics in MCPL headers, allows the addition of custom statistics to the headers of MCPL files.
 
-These values are encoded into MCPL header comment field in the form `stat:sum:<key>:<value>`, and the values are combined through simple addition when two or more MCPL files are merged. The present page provides both a brief introduction to these *stat:sum* entries, and after an introduction includes detailed descriptions of the syntax, software support, and guidelines for how to deal with stat:sum values in various scenarios where MCPL files are filtered, merged, split, or otherwise edited.
+These values are encoded into MCPL header comment fields in the form `stat:sum:<key>:<value>`, and the values are combined through simple addition when two or more MCPL files are merged. The present page provides both a brief introduction to these *stat:sum* entries, and after an introduction includes detailed descriptions of the syntax, software support, and guidelines for how to deal with *stat:sum* values in various scenarios where MCPL files are filtered, merged, split, or otherwise edited.
 
 # Introduction
 
 In short, the *stat:sum* convention brings an often-requested feature to MCPL: Statistics in the header which are automatically combined when files are merged!
 
-More specifically, *stat:sum* values are to be combined via simple addition when files are merged. Examples of such statistics could for instance be *"number of seed particles in simulation run"*, *"number of seconds of beam-time simulated"*, or *"number of proton collisions modelled"*. Note that this is not the same as the number of actual particles in the MCPL file, which could be either larger or smaller than the chosen statistics. But in general the number of particles in the MCPL file is expected to scale roughly linearly with the values of the *stat:sum* entries -- at least in the limit of large statistics.
+More specifically, *stat:sum* values are to be combined via simple addition when files are merged. Examples of such statistics could for instance be *"number of seed particles in simulation run"*, *"number of seconds of beam-time simulated"*, or *"number of proton collisions modelled"*. Note that this is not the same as the number of actual particles in the MCPL file, which could be either larger or smaller than any particular *stat:sum* parameter value. But in general the number of particles in the MCPL file is expected to scale roughly linearly with the values of the *stat:sum* entries -- at least in the limit of large statistics.
 
-When inspecting MCPL files, the *stat:sum* entries will show up as human-readable comments where the encoded value will usually be a non-negative finite floating point number (in some cases you might also see the special value *-1* which means *Not Available*). Here is how it might look when using the `mcpltool` to inspect such a file:
+When inspecting MCPL files, the *stat:sum* entries will show up as human-readable comments where the encoded value will usually be a human-readable string representation of a non-negative and finite floating point number. In some cases you might also see the special value *-1* which means *Not Available*. Here is how it might look when using the `mcpltool` to inspect such a file:
 
 ```
   Custom meta data
@@ -30,7 +30,7 @@ When inspecting MCPL files, the *stat:sum* entries will show up as human-readabl
     Number of blobs    : 0
 ```
 
-Note that depending on your font, you might have to scroll to the right to see the actual value, as for technical reasons values are always padded with spaces to take up exactly 24 characters. Now imagine a second (otherwise compatible) file with:
+Note that depending on your font, you might have to scroll to the right to see the actual value on this website, as for technical reasons values are always padded with spaces to take up exactly 24 characters. Now imagine a second (otherwise compatible) file with:
 
 ```
   Custom meta data
@@ -66,9 +66,9 @@ The syntax of the comments defining a statistics with both a key and a value is:
 
 * The `<value>` must always be exactly 24 characters long, and contain an ASCII representation of the value including only characters from the list `0123456789.+-eE`.  If less than 24 characters are needed for the value itself, the string can be padded with extra ASCII spaces (` `) at either end (and only at the ends).  If manually composing the strings in languages like C, C++, or Python, one can for instance encode the value using a print-format specifier like `%24.17g`, which has the advantage of loss-less encoding of double-precision floating point values (assuming 64 bit IEEE-754 floating point encoding).
 
-* The actual value represented in the `<value>` must not be negative, NaN (not-a-number) or infinity. The exception is that a value of -1 is allowed, with the special meaning of "Not Available". This can for instance be used to reserve space in a file with the intention of overwriting it with an actual value later. In case of an exceptional programme abort, where the file header had been written but the job ended before all particles could be written to the file, the header would in that case hold a value meaning "Not Available", rather than a misleading value. Any operations on statistics during file merges or splitting should yield -1 if any input value is -1 or if the result does not otherwise fit (i.e. if merges would lead to values of infinity)
+* The actual value represented in the `<value>` string must not be negative, NaN (not-a-number) or infinity. The exception is that a value of -1 is allowed, with the special meaning of "Not Available". This can for instance be used to reserve space in a file with the intention of overwriting it with an actual value later. In case of an exceptional programme abort, where the file header had been written but the job ended before all particles could be written to the file, the header would in that case hold a value meaning "Not Available", rather than a misleading value. Any operations on statistics during file merges or splitting should yield -1 if any input value is -1 or if the result does not otherwise fit (i.e. if merges would lead to values of infinity)
 
-* In addition to `stat:sum:...` entries, all entries starting with the string `stat:` are reserved for future usage. Thus, it is for now recommended that software dealing with MCPL files will prevent people from creating comments starting with `stat:`, except if it is a `stat:sum:<key>:value` entry compliant with the syntax defined above.
+* In addition to `stat:sum:...` entries in the list of comments, all entries starting with the string `stat:` are reserved for future usage. Thus, it is for now recommended that software dealing with MCPL files will prevent people from creating comments starting with `stat:`, except if it is a `stat:sum:<key>:value` entry compliant with the syntax defined above.
 
 # Software support
 
@@ -99,19 +99,17 @@ void mcpl_hdr_add_stat_sum( mcpl_outfile_t, const char * key, double value );
 void mcpl_hdr_scale_stat_sums( mcpl_outfile_t, double scale );
 ```
 
-The `mcpl_hdr_stat_sum` function is used to extract `stat:sum:` values from an existing file, by a particular key (returning -2 in case the key is not present in the file).
+The `mcpl_hdr_stat_sum` function is used to extract `stat:sum:` values from an existing file, by a particular key, returning -2 in case the key is not present in the file.
 
-The `mcpl_hdr_add_stat_sum` function is used to add values into files. Of course, this could also be done with the `mcpl_hdr_add_comment` function, but this is not recommended. In particular because the `mcpl_hdr_add_stat_sum` function can also be called *after* the first particle has been written to disk, as long as it was also called *before* the first particle was written, to reserve the space (for this initial reservation one can ideally use a value of -1).
+The `mcpl_hdr_add_stat_sum` function is used to add values into files. Of course, this could also be done through careful usage of the `mcpl_hdr_add_comment` function, but this is not recommended. In particular because the `mcpl_hdr_add_stat_sum` function can also be called *after* the first particle has been written to disk, as long as a *stat:sum* entry with the key in question was also added *before* the first particle was written. For this initial reservation of space in the on-disk header one can ideally use a value of -1. This is of instance useful if the size of a given Monte Carlo simulation is not initially known -- perhaps because of a dynamic criteria for ending the job like "keep running until I have registered a million entries in my detector tally".
 
-SomIf the value of the statistics is not known initially (e.g. if the size of a Monte Carlo simulation is not initially known), it is possible to set the *stat:sum* value to -1 to simply reserve space in the MCPL file header. In that case, one should invoke the function again to set the final value before the file is closed.
-
-Finally, the function `mcpl_hdr_scale_stat_sums` is intended for usage by people who might be implementing custom editing, filtering or splitting of files via the C API (normally in conjunction with the `mcpl_transfer_metadata` function). If simply filtering based upon particle properties (e.g. picking only certain particle types or energies), this is typically not needed. But if somehow splitting a file or otherwise selecting particles based on their position in the file (e.g. if producing a file containing the first N particles of another file), the *stat:sum* values in the new file should probably be reduced somehow, and this can be done with the `mcpl_hdr_scale_stat_sums` function. If in doubt, invoking `mcpl_hdr_scale_stat_sums` with a value of -1 ensures that the output file will at least not contain any misleading numbers.
+Finally, the function `mcpl_hdr_scale_stat_sums` is intended for usage by people who might be implementing custom editing, filtering or splitting of files via the C API (normally in conjunction with the `mcpl_transfer_metadata` function). If simply filtering based upon particle properties (e.g. picking only certain particle types or energies), this is typically not needed. But if somehow splitting a file or otherwise selecting particles based on their position in the file (e.g. if producing a file containing the first N particles of another file), the *stat:sum* values in the new file should probably be reduced somehow, and this can be done with the `mcpl_hdr_scale_stat_sums` function. If in doubt, invoking `mcpl_hdr_scale_stat_sums` with a value of -1 ensures that the output file will get a value of -1 for any *stat:sum* entries, thus avoiding misleading values.
 
 ## Command-line API
 
 As the new *stat:sum* values are encoded in MCPL comments, it is trivially true that `mcpltool`, `pymcpltool`, or any other custom tool showing such comments will show the *stat:sum* values as well.
 
-Additionally, the `mcpltool --extract` mode has been updated to properly deal with stat:sum's. Specifically, it will leave them unaltered if only using the `-p` flag to extract particles of a particular type. However, if using the `-l` and `-s` flags to extract particles based on position in the file, the `mcpltool` code will conservatively set all *stat:sum* values in the resulting file to -1 (meaning *Not Available*). This is done since the generic MCPL code can not possibly know with certainty how to calculate the new values.
+Additionally, the `mcpltool --extract` mode has been updated to properly deal with *stat:sum* entries. Specifically, it will leave them unaltered if only using the `-p` flag to extract particles of a particular type. However, if using the `-l` and `-s` flags to extract particles based on position in the file, the `mcpltool` code will conservatively set all *stat:sum* values in the resulting file to -1 (meaning *Not Available*). This is done since the generic MCPL code can not possibly know with certainty how to calculate the new values.
 
 # Guidelines for custom code
 
