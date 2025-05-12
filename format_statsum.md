@@ -113,15 +113,15 @@ As the new *stat:sum* values are encoded in MCPL comments, it is trivially true 
 
 The `mcpltool --extract` mode has been updated to properly deal with *stat:sum* entries. Specifically, it will leave them unaltered if only using the `-p` flag to extract particles of a particular type. However, if using the `-l` and `-s` flags to extract particles based on position in the file, the `mcpltool` code will conservatively set all *stat:sum* values in the resulting file to -1 (meaning *Not Available*). This is done since the generic MCPL code can not possibly know with certainty how to calculate the new values.
 
-Finally, other modes like the `mcpltool --merge` and `mcpltool --repair` have also been updated to handle *stat:sum* entries appropriately.
+Finally, other modes, like `mcpltool --merge` and `mcpltool --repair`, have also been updated to handle *stat:sum* entries appropriately.
 
 
 # Guidelines for custom code
 
-Depending on the scenario, custom code modifying with MCPL files may or may not have to be updated in order to properly deal with the new *stat:sum* entries:
+Depending on the scenario, custom code modifying MCPL files may or may not have to be updated in order to properly deal with the new *stat:sum* entries:
 
 * Custom code *filtering* files based only on individual particle properties will most likely not require any changes.
 
-* Custom code *splitting* files, or extracting particles based on position in files, or manually editing particle weights, will most likely require an application-specific calculation of the scaling factor required to preserve the correct meaning of *stat:sum* entries. The `mcpl_hdr_scale_stat_sums` function can be used to apply such a scale. If nothing else, such code should at least invoke `mcpl_hdr_scale_stat_sums` with a scale of -1, to effectively mark all the *stat:sum* numbers in the file as unavailable.
+* Custom code *splitting* files, extracting particles based on position in files, or manually editing particle weights, will most likely require an application-specific calculation of the scaling factor required to preserve the correct meaning of *stat:sum* entries. The `mcpl_hdr_scale_stat_sums` function can be used to apply such a scale. If nothing else, such code should at least invoke `mcpl_hdr_scale_stat_sums` with a scale of -1, to effectively mark all the *stat:sum* numbers in the file as unavailable.
 
 * The MCPL developers are not aware of anyone actually merging MCPL data without using tools from the MCPL software release, but for completeness we mention that custom code *merging* files will have to carefully add up any *stat:sum* values with the same keys. If a key has a value of -1 (or is absent) in either of the input files, it should get a value of -1 in the new file. It should also get a value of -1 in the hypothetical scenario where addition of the values from the two files would end up with a value overflowing the range of 64 bit floating point numbers (i.e. always store -1 instead of infinity).
