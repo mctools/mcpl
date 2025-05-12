@@ -1,4 +1,15 @@
 v2.0.1 (work in progress):
+      * This releases brings an often-requested feature to MCPL: Statistics in
+        the header which are automatically combined when files are merged! The
+        support does not require an update of the on-disk MCPL format, but is
+        handled as a convention for encoding the parameters as key-value pairs
+        in comment fields in the MCPL headers, using a syntax like
+        "stat:sum:<key>:<value>". The various APIs (C/Python/cmdline) have been
+        updated to provide interfaces for interacting with these data items, and
+        all supported operations (merge/repair/extract/...) has been updated to
+        handle such entries appropriately. For a more complete introduction of
+        the new feature, please refer to the documentation at the
+        https://mctools.github.io/mcpl/format_statsum/ page.
       * Add new mcpl_set_print_handler function in the C API which can be used
         to handle printouts from the MCPL library in a different manner than
         simply putting them onto stdout via a call to printf. One use-case for
