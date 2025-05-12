@@ -24,7 +24,7 @@
 
 from MCPLTestUtils.loadlib import getlib
 import pathlib
-lib = getlib('statcumul')
+lib = getlib('statsum')
 
 def dump( filename ):
     lib.mcpltest_dump( filename )
