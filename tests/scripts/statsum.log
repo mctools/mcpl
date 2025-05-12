@@ -1,4 +1,4 @@
-Library "TestMod_statcumul" (5 functions):
+Library "TestMod_statsum" (5 functions):
   void mcpltest_createstatsumfile(const char *, const char *, double, const char *, uint)
   void mcpltest_dump(const char *)
   void mcpltestdetail_exit1()
