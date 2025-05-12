@@ -148,18 +148,18 @@ int main(int argc,char**argv) {
                         "Applied custom filter to select"
                         " neutrons with ekin<0.1MeV" );
 
-  //Loop over particles from input, only adding the chosen particles to the
-  //output file:
+  //Loop over particles from input, only adding the chosen particles
+  //to the output file:
 
   const mcpl_particle_t* particle;
   while ( ( particle = mcpl_read(fi) ) ) {
     if ( particle->pdgcode == 2112 && particle->ekin < 0.1 ) {
       mcpl_transfer_last_read_particle(fi,fo);
-      //Note that if we had needed to modify the particle properties, we could
-      //have called mcpl_add_particle(fo,particle) instead of
-      //mcpl_transfer_last_read_particle(fi,fo). However, for pure filtering,
-      //mcpl_transfer_last_read_particle is better since it avoids a lossy
-      //unpacking and repacking of direction vectors.
+      //Note that if we had needed to modify the particle properties,
+      //we could have called mcpl_add_particle(fo,particle) instead of
+      //mcpl_transfer_last_read_particle(fi,fo). However, for pure
+      //filtering, mcpl_transfer_last_read_particle is better since it
+      //avoids a lossy unpacking and repacking of direction vectors.
     }
   }
 
