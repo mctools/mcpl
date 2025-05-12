@@ -9,15 +9,17 @@ weight: 50
 
 **WARNING: This page concerns documentation for a future release of MCPL and is still being edited**
 
-The *stat:sum* convention for statistics in MCPL headers, allows the addition of custom statistics to the headers of MCPL files, with the values being combined through simple addition when files are merged. These values are encoded into MCPL header comment field in the form `stat:sum:<key>:<value>`, and the present page provides both a brief introduction to the subject, as well as more detailed description of the allowed syntax, software support, and guidelines for how to deal with stat:sum values various scenarios where MCPL files are filtered, merged, split, or otherwise edited.
+The *stat:sum* convention for statistics in MCPL headers, allows the addition of custom statistics to the headers of MCPL files.
+
+These values are encoded into MCPL header comment field in the form `stat:sum:<key>:<value>`, and the values are combined through simple addition when two or more MCPL files are merged. The present page provides both a brief introduction to these *stat:sum* entries, and after an introduction includes detailed descriptions of the syntax, software support, and guidelines for how to deal with stat:sum values in various scenarios where MCPL files are filtered, merged, split, or otherwise edited.
 
 # Introduction
 
 In short, the *stat:sum* convention brings an often-requested feature to MCPL: Statistics in the header which are automatically combined when files are merged!
 
-More specifically, *stat:sum* values are to be combined via simple addition when files are merged. Examples of such statistics could for instance be *"number of seed particles in simulation run"*, *"number of seconds of beam-time simulated"*, or *"number of proton collisions modelled"*.
+More specifically, *stat:sum* values are to be combined via simple addition when files are merged. Examples of such statistics could for instance be *"number of seed particles in simulation run"*, *"number of seconds of beam-time simulated"*, or *"number of proton collisions modelled"*. Note that this is not the same as the number of actual particles in the MCPL file, which could be either larger or smaller than the chosen statistics. But in general the number of particles in the MCPL file is expected to scale roughly linearly with the values of the *stat:sum* entries -- at least in the limit of large statistics.
 
-When inspecting MCPL files, the statistic parameters will show up as human-readable comments where the encoded value will usually be a non-negative finite floating point number (in some cases you might also see the special value *-1* which means *Not Available*). Here is how it might look when using the `mcpltool` to inspect such a file:
+When inspecting MCPL files, the *stat:sum* entries will show up as human-readable comments where the encoded value will usually be a non-negative finite floating point number (in some cases you might also see the special value *-1* which means *Not Available*). Here is how it might look when using the `mcpltool` to inspect such a file:
 
 ```
   Custom meta data
