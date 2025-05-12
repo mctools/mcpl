@@ -42,10 +42,10 @@ int main(int argc,char**argv) {
   mcpl_file_t fi = mcpl_open_file(infilename);
   mcpl_outfile_t fo = mcpl_create_outfile(outfilename);
   mcpl_transfer_metadata(fi, fo);
-  mcpl_hdr_add_comment(fo,"Applied custom filter to select neutrons with ekin<0.1MeV");
+  mcpl_hdr_add_comment( fo, "Applied filter for neutrons with ekin<0.1MeV");
 
-  //Loop over particles from input, only adding the chosen particles to the output file:
-
+  //Loop over particles from input, only adding the chosen particles to the
+  //output file:
   const mcpl_particle_t* particle;
   while ( 1 ) {
     particle = mcpl_read(fi);

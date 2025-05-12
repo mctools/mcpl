@@ -109,12 +109,13 @@ int main(int argc,char**argv) {
     mcpl_add_particle(f,particle);
   }
 
-  //At the end, remember to properly close the output file (and cleanup mem if desired):
+  //At the end, remember to properly close the output file (and cleanup memory):
   mcpl_closeandgzip_outfile(f);
 
   //Note: By calling mcpl_closeandgzip_outfile rather than mcpl_close_outfile,
   //the output file will end up being gzipped, resulting in a smaller file. Such
-  //files can also be read directly by MCPL.
+  //files can also be read directly by MCPL. It will also gain the extension
+  //".mcpl.gz" rather than ".mcpl".
 
   return 0;
 }

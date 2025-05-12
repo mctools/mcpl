@@ -149,7 +149,7 @@ Opened MCPL file dummyfiltered.mcpl.gz:
   Basic info
     Format             : MCPL-3
     No. of particles   : 1
-    Header storage     : 170 bytes
+    Header storage     : 157 bytes
     Data storage       : 36 bytes
 
   Custom meta data
@@ -157,7 +157,7 @@ Opened MCPL file dummyfiltered.mcpl.gz:
     Number of comments : 3
           -> comment 0 : "Some comment."
           -> comment 1 : "Another comment."
-          -> comment 2 : "Applied custom filter to select neutrons with ekin<0.1MeV"
+          -> comment 2 : "Applied filter for neutrons with ekin<0.1MeV"
     Number of blobs    : 0
 
   Particle data format
@@ -175,6 +175,6 @@ do_readmcpl( "dummyfiltered.mcpl.gz" )
 Opened MCPL file produced with my_cool_program_name
 file had comment: 'Some comment.'
 file had comment: 'Another comment.'
-file had comment: 'Applied custom filter to select neutrons with ekin<0.1MeV'
+file had comment: 'Applied filter for neutrons with ekin<0.1MeV'
 File contains 1 particles
   found particle with pdgcode 2112 and time-stamp 29.6 ms with weight 5.89411

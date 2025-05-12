@@ -39,13 +39,15 @@ int main(int argc,char**argv) {
   //Open the file:
   mcpl_file_t f = mcpl_open_file(filename);
 
-  //For fun, access and print a bit of the info found in the header (see mcpl.h for more):
+  //For fun, access and print a bit of the info found in the header (see mcpl.h
+  //for more):
 
   printf("Opened MCPL file produced with %s\n",mcpl_hdr_srcname(f));
   unsigned i;
   for (i = 0; i < mcpl_hdr_ncomments(f); ++i)
-    printf("file had comment: '%s'\n",mcpl_hdr_comment(f,i));
-  printf("File contains %llu particles\n",(unsigned long long)mcpl_hdr_nparticles(f));
+    printf( "file had comment: '%s'\n", mcpl_hdr_comment(f,i) );
+  printf( "File contains %llu particles\n",
+          (unsigned long long)mcpl_hdr_nparticles(f) );
 
   //Now, loop over particles and print some info:
 
@@ -55,10 +57,10 @@ int main(int argc,char**argv) {
     if ( !p )
       break;
 
-    //print some info (see the mcpl_particle_t struct in mcpl.h for more fields):
-    printf("  found particle with pdgcode %i and time-stamp %g ms with weight %g\n",
-           p->pdgcode, p->time, p->weight);
-
+    //print some info (see the mcpl_particle_t struct in mcpl.h for all fields):
+    printf( "  found particle with "
+            "pdgcode %i and time-stamp %g ms with weight %g\n",
+            p->pdgcode, p->time, p->weight );
 
   }
 
