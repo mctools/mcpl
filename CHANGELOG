@@ -9,7 +9,8 @@ v2.0.1 (work in progress):
         all supported operations (merge/repair/extract/...) has been updated to
         handle such entries appropriately. For a more complete introduction of
         the new feature, please refer to the documentation at the
-        https://mctools.github.io/mcpl/format_statsum/ page.
+        https://mctools.github.io/mcpl/format_statsum/ page. This fixes github
+        issues #6 and #82.
       * The ssw2mcpl command now uses the new stat:sum feature to encode the
         absolute value of the ssw np1 field into a "stat:sum:ssw_np1:<value>"
         entry.
@@ -22,6 +23,9 @@ v2.0.1 (work in progress):
       * Add support for compiled C code in python tests, allowing C code in
         tests/modules/lib_xxx/*.c to be accessed in Python test scripts in
         tests/scripts.
+      * Trying to build on unsupported 32bit platforms now fails with a clear
+        CMake message, rather than with a static assert later (github issue
+        #88).
       * ...
 
 v2.0.0 2024-04-24

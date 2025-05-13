@@ -70,6 +70,10 @@ endif()
 # Set module path
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake/modules")
 
+if( "x${CMAKE_SIZEOF_VOID_P}" STREQUAL "x4" )
+  message( FATAL_ERROR "MCPL does not support 32 bit platforms.")
+endif()
+
 #Define options:
 include(mcpl_options)
 
