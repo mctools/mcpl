@@ -77,6 +77,7 @@ extern "C" {
   const char* ssw_srcname(ssw_file_t);//Usually "mcnp" or "mcnpx"
   const char* ssw_srcversion(ssw_file_t);
   const char* ssw_title(ssw_file_t);//Problem title from input deck
+  int32_t ssw_abs_np1(ssw_file_t);//absolute value of np1 field in file.
   int ssw_is_mcnp6(ssw_file_t);
   int ssw_is_mcnp5(ssw_file_t);
   int ssw_is_mcnpx(ssw_file_t);

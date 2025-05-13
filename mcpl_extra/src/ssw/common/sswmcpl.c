@@ -79,6 +79,7 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
   ssw_file_t f = ssw_open_file(sswfile);
   mcpl_outfile_t mcplfh = mcpl_create_outfile(mcplfile);
   mcpl_hdr_set_srcname(mcplfh,ssw_mcnpflavour(f));
+  const int32_t np1 = ssw_abs_np1( f );
 
   size_t lstrbuf = 1024;
   lstrbuf += strlen(ssw_srcname(f));
@@ -114,6 +115,8 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
   if (opt_dp) {
     mcpl_enable_doubleprec(mcplfh);
   }
+
+  mcpl_hdr_add_stat_sum(mcplfh,"ssw_np1",-1.0);
 
   if (inputdeckfile) {
     char* cfgfile_buf;
@@ -172,6 +175,9 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
     ssw_error("memory allocation failure");
   actual_filename[0]='\0';
   ssw_strcat(actual_filename,tmp,laf+1);
+
+  if ( np1 > 0 )
+    mcpl_hdr_add_stat_sum(mcplfh,"ssw_np1",(double)np1);
 
   int did_gzip = 0;
   if (opt_gzip)

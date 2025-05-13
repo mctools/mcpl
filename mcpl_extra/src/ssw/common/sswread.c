@@ -599,6 +599,11 @@ const char* ssw_title(ssw_file_t ff) {
   return f->aids;
 }
 
+int32_t ssw_abs_np1(ssw_file_t ff) {
+  SSW_FILEDECODE;
+  return abs(f->np1);
+}
+
 int ssw_is_mcnp6(ssw_file_t ff) {
   SSW_FILEDECODE;
   return f->mcnp_type == SSW_MCNP6;
