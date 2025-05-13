@@ -10,6 +10,9 @@ v2.0.1 (work in progress):
         handle such entries appropriately. For a more complete introduction of
         the new feature, please refer to the documentation at the
         https://mctools.github.io/mcpl/format_statsum/ page.
+      * The ssw2mcpl command now uses the new stat:sum feature to encode the
+        absolute value of the ssw np1 field into a "stat:sum:ssw_np1:<value>"
+        entry.
       * Add new mcpl_set_print_handler function in the C API which can be used
         to handle printouts from the MCPL library in a different manner than
         simply putting them onto stdout via a call to printf. One use-case for
