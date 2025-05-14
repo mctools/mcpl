@@ -141,6 +141,8 @@ def main():
     create(    comment='stat:sum:bla: .1234567801234567891234')
     create_bad(comment='stat:sum:bla:\t.1234567801234567891234')
     create(    comment='stat:sum:bla:1.123456780123456789123 ')
+    create(    comment='stat:sum:bla:               1.123e102')
+    create_bad(comment='stat:sum:bla:               1.123e1.2')
     create_bad(comment='stat:sum:bla:1.123456780123456789123\t')
     create_bad(comment='stat:sum:bla: 1e999                  ')
     create_bad(comment='stat:whatever')
