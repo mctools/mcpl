@@ -1,12 +1,12 @@
-v2.0.1 (work in progress):
-      * This releases brings an often-requested feature to MCPL: Statistics in
+v2.1.0 2024-05-17
+      * This release brings an often-requested feature to MCPL: Statistics in
         the header which are automatically combined when files are merged! The
         support does not require an update of the on-disk MCPL format, but is
         handled as a convention for encoding the parameters as key-value pairs
         in comment fields in the MCPL headers, using a syntax like
         "stat:sum:<key>:<value>". The various APIs (C/Python/cmdline) have been
         updated to provide interfaces for interacting with these data items, and
-        all supported operations (merge/repair/extract/...) has been updated to
+        all supported operations (merge/repair/extract/...) have been updated to
         handle such entries appropriately. For a more complete introduction of
         the new feature, please refer to the documentation at the
         https://mctools.github.io/mcpl/format_statsum/ page. This fixes github
@@ -19,14 +19,13 @@ v2.0.1 (work in progress):
         simply putting them onto stdout via a call to printf. One use-case for
         this would be for Python code using the MCPL C library (perhaps via the
         ctypes module), which can now use the new feature to redirect all
-        printouts from the C library into the Python stdout streams.
+        printouts from the MCPL C library into the Python stdout streams.
       * Add support for compiled C code in python tests, allowing C code in
         tests/modules/lib_xxx/*.c to be accessed in Python test scripts in
         tests/scripts.
       * Trying to build on unsupported 32bit platforms now fails with a clear
         CMake message, rather than with a static assert later (github issue
         #88).
-      * ...
 
 v2.0.0 2024-04-24
       * After more than 200 commits affecting almost 300 files, this milestone
