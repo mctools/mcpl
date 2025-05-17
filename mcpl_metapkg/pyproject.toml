@@ -25,8 +25,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mcpl"
-version = "2.1.0"
-dependencies = [ 'mcpl-core==2.1.0', 'mcpl-python==2.1.0' ]
+version = "2.1.1"
+dependencies = [ 'mcpl-core==2.1.1', 'mcpl-python==2.1.1' ]
 requires-python = ">=3.8"
 readme = "README.md"
 license = {text = "Apache-2.0"}
