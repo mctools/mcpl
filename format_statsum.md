@@ -1,13 +1,11 @@
 ---
 title: The stat:sum convention
-underconstruction: true
+underconstruction: false
 weight: 50
 ---
 
 - two magic lines for toc
 {:toc}
-
-**WARNING: This page concerns documentation for a future release of MCPL and is still being edited**
 
 The *stat:sum* convention for statistics in MCPL headers, allows the addition of custom statistics to the headers of MCPL files.
 

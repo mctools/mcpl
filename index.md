@@ -25,6 +25,12 @@ both quick recipes and updated information where needed. You can [install](LOCAL
 and try out the MCPL code right away, or use the
 menu above to navigate to more information.
 
+* May 2025:
+  [v2.1.0](https://github.com/mctools/mcpl/releases/tag/v2.1.0) released,
+  bringing an often-requested feature to MCPL: Statistics in the header which
+  are automatically combined when files are merged! Please refer to the
+  [documentation of this new feature](LOCAL:format_statsum) for more
+  information.
 * April 2025:
   The milestone release MCPL [v2.0.0](https://github.com/mctools/mcpl/releases/tag/v2.0.0) is out! Most notably this release brings support for Windows, and `pip install mcpl` now provides fully-fledged MCPL installations. The release includes many other changes to both license, packaging and how the project is developed, so be sure to consult the [release announcement](https://github.com/mctools/mcpl/releases/tag/v2.0.0) for all details.
 * November 2022-June 2023:

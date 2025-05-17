@@ -1,10 +1,8 @@
 ---
 title: The MCPL format
-underconstruction: true
+underconstruction: false
 weight: 10
 ---
-
-**WARNING: This page concerns documentation for a future release of MCPL and is still being edited**
 
 While there are often new releases of the MCPL software distribution, the actual binary MCPL *format* itself is very stable and rarely receives updates.
 
