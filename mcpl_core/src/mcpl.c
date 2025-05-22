@@ -4476,9 +4476,18 @@ mcpl_outfile_t mcpl_create_outfile_mpi( const char * filename,
 {
   if ( nproc > 65535 )
     mcpl_error("mcpl_create_outfile_mpi: nproc too large");
+  if ( nproc == 0 )
+    mcpl_error("mcpl_create_outfile_mpi: nproc must be larger than 0");
   if ( iproc >= nproc )
     mcpl_error("mcpl_create_outfile_mpi: iproc must be less than nproc");
-  mcu8str fn = mcpl_internal_mpiname( filename, iproc, 'm' );
+  mcu8str fn;
+
+  if ( nproc > 1 ) {
+    fn = mcpl_internal_mpiname( filename, iproc, 'm' );
+  } else {
+    //Write directly to target destination:
+    fn = mcpl_internal_mpiname( filename, iproc, 'M' );
+  }
   mcpl_outfile_t outfile = mcpl_create_outfile( fn.c_str );
   mcu8str_dealloc( &fn );
   return outfile;
@@ -4489,6 +4498,12 @@ void mcpl_merge_outfiles_mpi( const char * filename,
 {
   if ( nproc > 65535 )
     mcpl_error("mcpl_merge_outfiles_mpi: nproc too large");
+  if ( nproc == 0 )
+    mcpl_error("mcpl_create_outfile_mpi: nproc must be larger than 0");
+
+  if ( nproc == 1 )
+    return;//nothing to do, we wrote directly to the target.
+
   mcu8str targetfn = mcpl_internal_mpiname( filename, 0, 'M' );
   char ** fns = (char **)mcpl_internal_malloc( sizeof(char*) * nproc);
   for ( unsigned iproc = 0; iproc < nproc; ++iproc ) {
