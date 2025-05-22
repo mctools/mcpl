@@ -418,8 +418,9 @@ extern "C" {
   /* The intermediate files will be named like filename, except with the       */
   /* extension ".worker%i.mcpl[.gz]", and it is the responsibility of the      */
   /* calling code to ensure that no such files might already be                */
-  /* existing. During normal operations, the intermediate files will be        */
-  /* removed again by the call to mcpl_merge_outfiles_mpi.                     */
+  /* existing, and to close them with mcpl_closeandgzip_outfile. During normal */
+  /* operations, the intermediate files will be removed again by the call to   */
+  /* mcpl_merge_outfiles_mpi. Using nproc=1 is allowed as a special case.      */
 
   MCPL_API mcpl_outfile_t mcpl_create_outfile_mpi( const char * filename,
                                                    unsigned iproc,
