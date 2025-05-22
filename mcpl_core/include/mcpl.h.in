@@ -409,6 +409,26 @@ extern "C" {
   MCPL_API int mcpl_wrap_wmain( int argc, wchar_t** argv, int(*)(int,char**) );
 #endif
 
+  /* Utilities for MPI output where each worker creates its own file, followed */
+  /* by a final merging into one file. The filename should be the final        */
+  /* desired output name (optionally ending in .mcpl or .mcpl.gz), nproc the   */
+  /* total number of files, and iproc the index from 0 to nproc-1 of the       */
+  /* worker process opening the file.                                          */
+  /*                                                                           */
+  /* The intermediate files will be named like filename, except with the       */
+  /* extension ".worker%i.mcpl[.gz]", and it is the responsibility of the      */
+  /* calling code to ensure that no such files might already be                */
+  /* existing. During normal operations, the intermediate files will be        */
+  /* removed again by the call to mcpl_merge_outfiles_mpi.                     */
+
+  MCPL_API mcpl_outfile_t mcpl_create_outfile_mpi( const char * filename,
+                                                   unsigned iproc,
+                                                   unsigned nproc );
+  MCPL_API void mcpl_merge_outfiles_mpi( const char * filename,
+                                         unsigned nproc );
+
+
+
 #ifdef __cplusplus
 }
 #endif
