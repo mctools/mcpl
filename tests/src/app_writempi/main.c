@@ -44,12 +44,12 @@ int main(int argc,char**argv) {
   //Pretend MPI (but actually run in one process:
 
 #define MCPLTEST_NPROC 4
-  const unsigned nproc = MCPLTEST_NPROC;
+  const unsigned long nproc = MCPLTEST_NPROC;
 
   //mpi: init files:
   //init all mpi procs:
   mcpl_outfile_t outhandles[MCPLTEST_NPROC];
-  for ( unsigned iproc = 0; iproc < nproc; ++iproc ) {
+  for ( unsigned long iproc = 0; iproc < nproc; ++iproc ) {
 
     //It makes no difference if the filename argument is "foobar", "foobar.mcpl"
     //or "foobar.mcpl.gz". Unit test this:
@@ -71,7 +71,7 @@ int main(int argc,char**argv) {
   }
 
   //mpi: add particles:
-  for ( unsigned iproc = 0; iproc < nproc; ++iproc ) {
+  for ( unsigned long iproc = 0; iproc < nproc; ++iproc ) {
     mcpl_outfile_t f = outhandles[iproc];
     mcpl_particle_t * particle = mcpl_get_empty_particle(f);
     for (int i = 0; i < 2; ++i) {
@@ -89,7 +89,7 @@ int main(int argc,char**argv) {
   }
 
   //mpi: close files
-  for ( unsigned iproc = 0; iproc < nproc; ++iproc ) {
+  for ( unsigned long iproc = 0; iproc < nproc; ++iproc ) {
     mcpl_outfile_t f = outhandles[iproc];
     mcpl_hdr_add_stat_sum(f,"foostat", 10.0 + iproc );
     mcpl_closeandgzip_outfile(f);

@@ -4428,7 +4428,7 @@ MCPL_LOCAL void mcpl_internal_strip_ending( mcu8str* ss,
 }
 
 MCPL_LOCAL mcu8str mcpl_internal_namehelper( const char * filename,
-                                             unsigned iproc,
+                                             unsigned long iproc,
                                              char mode )
 {
   //mode: "m" : /abs/path/base.mpiworker<iproc>.mcpl
@@ -4455,7 +4455,7 @@ MCPL_LOCAL mcu8str mcpl_internal_namehelper( const char * filename,
     //append ".mpiworker<iproc>"
     mode = ( mode == 'm' ? 'M' : 'G' );
     char ebuf[128];
-    snprintf(ebuf,sizeof(ebuf),".mpiworker%u",iproc);
+    snprintf(ebuf,sizeof(ebuf),".mpiworker%lu",iproc);
     mcu8str_append_cstr( &fn, ebuf );
   }
 
@@ -4471,10 +4471,10 @@ MCPL_LOCAL mcu8str mcpl_internal_namehelper( const char * filename,
 }
 
 mcpl_outfile_t mcpl_create_outfile_mpi( const char * filename,
-                                        unsigned iproc,
-                                        unsigned nproc )
+                                        unsigned long iproc,
+                                        unsigned long nproc )
 {
-  if ( nproc > 65535 )
+  if ( nproc > 100000000 )
     mcpl_error("mcpl_create_outfile_mpi: nproc too large");
   if ( nproc == 0 )
     mcpl_error("mcpl_create_outfile_mpi: nproc must be larger than 0");
@@ -4494,7 +4494,7 @@ mcpl_outfile_t mcpl_create_outfile_mpi( const char * filename,
 }
 
 void mcpl_merge_outfiles_mpi( const char * filename,
-                              unsigned nproc )
+                              unsigned long nproc )
 {
   if ( nproc > 65535 )
     mcpl_error("mcpl_merge_outfiles_mpi: nproc too large");
@@ -4506,7 +4506,7 @@ void mcpl_merge_outfiles_mpi( const char * filename,
 
   mcu8str targetfn = mcpl_internal_namehelper( filename, 0, 'M' );
   char ** fns = (char **)mcpl_internal_malloc( sizeof(char*) * nproc);
-  for ( unsigned iproc = 0; iproc < nproc; ++iproc ) {
+  for ( unsigned long iproc = 0; iproc < nproc; ++iproc ) {
     mcu8str fn_i = mcpl_internal_namehelper( filename, iproc, 'g' );
     fns[iproc] = fn_i.c_str;
   }
@@ -4515,7 +4515,7 @@ void mcpl_merge_outfiles_mpi( const char * filename,
   if ( !mcpl_closeandgzip_outfile(outfh) )
     mcpl_error("mcpl_merge_outfiles_mpi: problems gzipping final output");
   //Remove worker files:
-  for ( unsigned iproc = 0; iproc < nproc; ++iproc ) {
+  for ( unsigned long iproc = 0; iproc < nproc; ++iproc ) {
     char * bn = mcpl_basename(fns[iproc]);
     size_t n = 128 + strlen(bn);
     char * buf = mcpl_internal_malloc(n);
@@ -4527,7 +4527,7 @@ void mcpl_merge_outfiles_mpi( const char * filename,
   }
   //Cleanup memory:
   mcu8str_dealloc( &targetfn );
-  for ( unsigned iproc = 0; iproc < nproc; ++iproc )
+  for ( unsigned long iproc = 0; iproc < nproc; ++iproc )
     free( fns[iproc] );
   free(fns);
 }

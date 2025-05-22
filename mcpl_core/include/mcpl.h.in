@@ -422,11 +422,11 @@ extern "C" {
   /* operations, the intermediate files will be removed again by the call to   */
   /* mcpl_merge_outfiles_mpi. Using nproc=1 is allowed as a special case.      */
   MCPL_API mcpl_outfile_t mcpl_create_outfile_mpi( const char * filename,
-                                                   unsigned iproc,
-                                                   unsigned nproc );
+                                                   unsigned long iproc,
+                                                   unsigned long nproc );
 
   MCPL_API void mcpl_merge_outfiles_mpi( const char * filename,
-                                         unsigned nproc );
+                                         unsigned long nproc );
 
   /* Utility for estimating the output name of a given filename, and can       */
   /* accept either relative or absolute filenames with or without .mcpl or     */
