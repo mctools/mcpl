@@ -421,13 +421,26 @@ extern "C" {
   /* existing, and to close them with mcpl_closeandgzip_outfile. During normal */
   /* operations, the intermediate files will be removed again by the call to   */
   /* mcpl_merge_outfiles_mpi. Using nproc=1 is allowed as a special case.      */
-
   MCPL_API mcpl_outfile_t mcpl_create_outfile_mpi( const char * filename,
                                                    unsigned iproc,
                                                    unsigned nproc );
+
   MCPL_API void mcpl_merge_outfiles_mpi( const char * filename,
                                          unsigned nproc );
 
+  /* Utility for estimating the output name of a given filename, and can       */
+  /* accept either relative or absolute filenames with or without .mcpl or     */
+  /* .mcpl.gz suffixes. The mode parameter controls the string returned:       */
+  /*                                                                           */
+  /*   mode "M" : /abs/path/base.mcpl                                          */
+  /*   mode "G" : /abs/path/base.mcpl.gz                                       */
+  /*   mode "B" : /abs/path/base                                               */
+  /*   mode "m" : base.mcpl                                                    */
+  /*   mode "g" : base.mcpl.gz                                                 */
+  /*   mode "b" : base                                                         */
+  /*                                                                           */
+  /*   The returned string must deallocated with a call to free(..).           */
+  MCPL_API char * mcpl_name_helper( const char * filename, char mode );
 
 
 #ifdef __cplusplus

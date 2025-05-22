@@ -4427,15 +4427,15 @@ MCPL_LOCAL void mcpl_internal_strip_ending( mcu8str* ss,
   ss->size = (unsigned)k;
 }
 
-MCPL_LOCAL mcu8str mcpl_internal_mpiname( const char * filename,
-                                          unsigned iproc,
-                                          char mode )
+MCPL_LOCAL mcu8str mcpl_internal_namehelper( const char * filename,
+                                             unsigned iproc,
+                                             char mode )
 {
   //mode: "m" : /abs/path/base.mpiworker<iproc>.mcpl
   //mode: "g" : /abs/path/base.mpiworker<iproc>.mcpl.gz
   //mode: "M" : /abs/path/base.mcpl
   //mode: "G" : /abs/path/base.mcpl.gz
-  //mode: "b" : /abs/path/base
+  //mode: "B" : /abs/path/base
 
   //Place filename in fn and chop off any .mcpl or .mcpl.gz:
   char buf[4096];
@@ -4463,8 +4463,8 @@ MCPL_LOCAL mcu8str mcpl_internal_mpiname( const char * filename,
     mcu8str_append_cstr( &fn, ".mcpl" );
   } else if ( mode == 'G' ) {
     mcu8str_append_cstr( &fn, ".mcpl.gz" );
-  } else if ( mode != 'b' ) {
-    mcpl_error("mcpl_internal_mpiname: bad mode");
+  } else if ( mode != 'B' ) {
+    mcpl_error("mcpl_internal_namehelper: bad mode");
   }
   mcu8str_ensure_dynamic_buffer( &fn );
   return fn;
@@ -4483,10 +4483,10 @@ mcpl_outfile_t mcpl_create_outfile_mpi( const char * filename,
   mcu8str fn;
 
   if ( nproc > 1 ) {
-    fn = mcpl_internal_mpiname( filename, iproc, 'm' );
+    fn = mcpl_internal_namehelper( filename, iproc, 'm' );
   } else {
     //Write directly to target destination:
-    fn = mcpl_internal_mpiname( filename, iproc, 'M' );
+    fn = mcpl_internal_namehelper( filename, iproc, 'M' );
   }
   mcpl_outfile_t outfile = mcpl_create_outfile( fn.c_str );
   mcu8str_dealloc( &fn );
@@ -4504,10 +4504,10 @@ void mcpl_merge_outfiles_mpi( const char * filename,
   if ( nproc == 1 )
     return;//nothing to do, we wrote directly to the target.
 
-  mcu8str targetfn = mcpl_internal_mpiname( filename, 0, 'M' );
+  mcu8str targetfn = mcpl_internal_namehelper( filename, 0, 'M' );
   char ** fns = (char **)mcpl_internal_malloc( sizeof(char*) * nproc);
   for ( unsigned iproc = 0; iproc < nproc; ++iproc ) {
-    mcu8str fn_i = mcpl_internal_mpiname( filename, iproc, 'g' );
+    mcu8str fn_i = mcpl_internal_namehelper( filename, iproc, 'g' );
     fns[iproc] = fn_i.c_str;
   }
   mcpl_outfile_t outfh = mcpl_merge_files( targetfn.c_str, nproc,
@@ -4530,4 +4530,31 @@ void mcpl_merge_outfiles_mpi( const char * filename,
   for ( unsigned iproc = 0; iproc < nproc; ++iproc )
     free( fns[iproc] );
   free(fns);
+}
+
+char * mcpl_name_helper( const char * filename, char mode )
+{
+  //mode: "M" : /abs/path/base.mcpl
+  //mode: "G" : /abs/path/base.mcpl.gz
+  //mode: "B" : /abs/path/base
+  //mode: "m" : base.mcpl
+  //mode: "g" : base.mcpl.gz
+  //mode: "b" : base
+
+  char mode_upper = ( ( mode >= 'a' && mode <= 'z' )
+                      ? 'A' + (mode - 'a') : mode );
+
+  if ( mode_upper != 'M' && mode_upper != 'G' && mode_upper != 'B' )
+    mcpl_error("mcpl_name_helper: invalid mode");
+
+  mcu8str res = mcpl_internal_namehelper( filename, 0, mode_upper );
+
+  if ( mode != mode_upper ) {
+    mcu8str tmp = mctools_basename( &res );
+    mcu8str_swap( &res, &tmp );
+    mcu8str_dealloc( &tmp );
+  }
+
+  mcu8str_ensure_dynamic_buffer( &res );
+  return res.c_str;
 }
