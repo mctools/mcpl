@@ -20,8 +20,22 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "mcpl.h"
+#include <stdlib.h>
 #include <stdio.h>
 #include <memory.h>
+#include <string.h>
+
+void mcpltest_name_helper( const char * fn, char mode, const char * expected)
+{
+  static int i = 0;
+  i += 1;
+  char * res = mcpl_name_helper( fn, mode );
+  if ( strcmp( res, expected ) != 0 ) {
+    printf("mcpltest_name_helper test failure (test %i)\n",i);
+    exit(1);
+  }
+  free(res);
+}
 
 int main(int argc,char**argv) {
   (void)argc;
@@ -87,5 +101,18 @@ int main(int argc,char**argv) {
   //Dump:
   mcpl_dump("foobar.mcpl.gz", 0, 0, 0);
 
+  mcpltest_name_helper( "bla", 'm', "bla.mcpl" );
+  mcpltest_name_helper( "bla", 'g', "bla.mcpl.gz" );
+  mcpltest_name_helper( "bla", 'b', "bla" );
+  mcpltest_name_helper( "bla.mcpl", 'm', "bla.mcpl" );
+  mcpltest_name_helper( "bla.mcpl", 'g', "bla.mcpl.gz" );
+  mcpltest_name_helper( "bla.mcpl", 'b', "bla" );
+  mcpltest_name_helper( "bla.mcpl.gz", 'm', "bla.mcpl" );
+  mcpltest_name_helper( "bla.mcpl.gz", 'g', "bla.mcpl.gz" );
+  mcpltest_name_helper( "bla.mcpl.gz", 'b', "bla" );
+
+  char * absfn = mcpl_name_helper( "foobar", 'G' );
+  mcpl_dump(absfn, 0, 0, 0);
+  free(absfn);
   return 0;
 }
