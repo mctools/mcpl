@@ -1,4 +1,4 @@
-v2.1.1 (work in progress)
+v2.2.0 2024-05-22
       * Add mcpl_create_outfile_mpi and mcpl_merge_outfiles_mpi utility C
         functions, to handle some of the tedium needed for applications creating
         multiple MCPL files from a number of MPI processes before finally
@@ -6,7 +6,6 @@ v2.1.1 (work in progress)
       * Add mcpl_name_helper utility C function for easily parsing user input
         strings into absolute or relative path names to a corresponding MCPL
         file, with or without a .mcpl or .mcpl.gz suffix.
-      * ...
 
 v2.1.0 2024-05-17
       * This release brings an often-requested feature to MCPL: Statistics in
