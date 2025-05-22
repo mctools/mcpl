@@ -49,7 +49,7 @@ agreement No 676548 (the BrightnESS project)
 
 __license__ = "Apache 2.0, http://www.apache.org/licenses/LICENSE-2.0"
 __copyright__ = 'Copyright 2015-2025'
-__version__ = '2.2.0'
+__version__ = '2.2.1'
 __status__ = 'Production'
 __author__ = 'Thomas Kittelmann'
 __maintainer__ = 'Thomas Kittelmann'
