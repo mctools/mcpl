@@ -1,4 +1,6 @@
 v2.2.1 (work in progress)
+      * Minor fixes to ensure consistent error checking in
+        mcpl_merge_outfiles_mpi also for nproc=1 or nproc>65535.
       * ...
 
 v2.2.0 2024-05-22

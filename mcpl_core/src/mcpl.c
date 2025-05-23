@@ -4496,13 +4496,30 @@ mcpl_outfile_t mcpl_create_outfile_mpi( const char * filename,
 void mcpl_merge_outfiles_mpi( const char * filename,
                               unsigned long nproc )
 {
-  if ( nproc > 65535 )
+  if ( nproc > 100000000 )
     mcpl_error("mcpl_merge_outfiles_mpi: nproc too large");
   if ( nproc == 0 )
-    mcpl_error("mcpl_create_outfile_mpi: nproc must be larger than 0");
+    mcpl_error("mcpl_merge_outfiles_mpi: nproc must be larger than 0");
 
-  if ( nproc == 1 )
-    return;//nothing to do, we wrote directly to the target.
+  if ( nproc == 1 ) {
+    //nothing to do, we wrote directly to the target. But for consistency with
+    //the nproc>1 case, we do verify that the expected output file exist.
+    mcu8str fngz = mcpl_internal_namehelper( filename, 0, 'G' );
+    int ok = mctools_is_file( &fngz);
+    if ( !ok ) {
+      char ebuf[4096];
+      mcu8str errmsg = mcu8str_create_from_staticbuffer( ebuf, sizeof(ebuf) );
+      mcu8str_reserve( &errmsg, fngz.size + 128 );//leak only if overflows ebuf
+      snprintf( errmsg.c_str, errmsg.buflen,
+                "mcpl_merge_outfiles_mpi: expected output"
+                " file \"%s\" from iproc=0 not found.",
+                fngz.c_str );
+      mcu8str_dealloc( &fngz );
+      mcpl_error(errmsg.c_str);
+    }
+    mcu8str_dealloc( &fngz );
+    return;
+  }
 
   mcu8str targetfn = mcpl_internal_namehelper( filename, 0, 'M' );
   char ** fns = (char **)mcpl_internal_malloc( sizeof(char*) * nproc);
