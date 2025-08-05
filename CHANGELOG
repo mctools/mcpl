@@ -1,8 +1,7 @@
-v2.2.1 (work in progress)
+v2.2.2 2024-05-22
       * Minor fixes to ensure consistent error checking in
         mcpl_merge_outfiles_mpi also for nproc=1 or nproc>65535.
       * Fix MSCV compilation warning related to memchr usage.
-      * ...
 
 v2.2.0 2024-05-22
       * Add mcpl_create_outfile_mpi and mcpl_merge_outfiles_mpi utility C
