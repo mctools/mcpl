@@ -31,7 +31,7 @@ jobs:
     strategy:
       matrix:
         #TODO: Add windows-11-arm once it matures a bit and more pypi wheels are ready
-        os: [windows-2019, windows-2022]
+        os: [windows-2022, windows-2025]
 
     steps:
     - name: Checkout
