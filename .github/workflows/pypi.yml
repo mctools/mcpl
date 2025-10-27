@@ -140,21 +140,21 @@ jobs:
         run: pipx run build --sdist ./mcpl_metapkg
 
       - name: register mcpl-core sdist
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
         with:
           name: sdist-mcpl-core
           path: ./mcpl_core/dist/mcpl_core${{ env.SDIST_SUFFIX }}
           if-no-files-found: error
 
       - name: register mcpl-python sdist
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
         with:
           name: sdist-mcpl-python
           path: ./mcpl_python/dist/mcpl_python${{ env.SDIST_SUFFIX }}
           if-no-files-found: error
 
       - name: register mcpl-metapkg sdist
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
         with:
           name: sdist-mcpl-metapkg
           path: ./mcpl_metapkg/dist/mcpl${{ env.SDIST_SUFFIX }}
@@ -172,7 +172,7 @@ jobs:
         run: pipx run build --sdist ./mcpl_extra
 
       - name: register mcpl-extra sdist
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
         with:
           name: sdist-mcpl-extra
           path: ./mcpl_extra/dist/mcpl_extra${{ env.SDIST_SUFFIX }}
@@ -219,14 +219,14 @@ jobs:
           pipx run build --wheel ./mcpl-${{ needs.preparations.outputs.mcplversion }} --outdir=../dist-mcpl-metapkg
 
       - name: register mcpl-python pure wheel
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
         with:
           name: wheel-mcpl-python
           path: ./dist-mcpl-python/mcpl_python-${{ needs.preparations.outputs.mcplversion }}-py3-none-any.whl
           if-no-files-found: error
 
       - name: register mcpl-metapkg pure wheel
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
         with:
           name: wheel-mcpl-metapkg
           path: ./dist-mcpl-metapkg/mcpl-${{ needs.preparations.outputs.mcplversion }}-py3-none-any.whl
@@ -294,7 +294,7 @@ jobs:
         if: runner.os == 'Windows'
         run: dir wheelhouse
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
         with:
           name: mcpl-core-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: ./wheelhouse/mcpl_core-*.whl
@@ -391,7 +391,7 @@ jobs:
         if: runner.os == 'Windows'
         run: dir wheelhouse
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
         with:
           name: mcpl-extra-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: ./wheelhouse/mcpl_extra-*.whl
@@ -539,13 +539,13 @@ jobs:
       - name: Package artifacts
         run: tar cvzf final.tar.gz ./dist_final
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
         with:
           name: final
           path: ./dist_final
           if-no-files-found: error
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
         with:
           name: final-tarball
           path: final.tar.gz
