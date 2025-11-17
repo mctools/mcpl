@@ -269,7 +269,7 @@ jobs:
       # compilation.
 
       - name: cibuildwheel
-        uses: pypa/cibuildwheel@9c00cb4f6b517705a3794b22395aedc36257242c
+        uses: pypa/cibuildwheel@63fd63b352a9a8bdcc24791c9dbee952ee9a8abc
         env:
           CIBW_ARCHS_WINDOWS: "auto64 ARM64"
         with:
@@ -277,7 +277,7 @@ jobs:
           output-dir: wheelhouse
 
       - name: cibuildwheel manylinux2014
-        uses: pypa/cibuildwheel@9c00cb4f6b517705a3794b22395aedc36257242c
+        uses: pypa/cibuildwheel@63fd63b352a9a8bdcc24791c9dbee952ee9a8abc
         if: runner.os == 'Linux'
         env:
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
@@ -364,7 +364,7 @@ jobs:
         run: echo 'CIBW_REPAIR_WHEEL_COMMAND_MACOS=delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel} --exclude libmcpl --ignore-missing-dependencies' >> $GITHUB_ENV
 
       - name: cibuildwheel
-        uses: pypa/cibuildwheel@9c00cb4f6b517705a3794b22395aedc36257242c
+        uses: pypa/cibuildwheel@63fd63b352a9a8bdcc24791c9dbee952ee9a8abc
         env:
           CIBW_ARCHS_WINDOWS: "auto64 ARM64"
 
@@ -373,7 +373,7 @@ jobs:
           output-dir: wheelhouse
 
       - name: cibuildwheel manylinux2014
-        uses: pypa/cibuildwheel@9c00cb4f6b517705a3794b22395aedc36257242c
+        uses: pypa/cibuildwheel@63fd63b352a9a8bdcc24791c9dbee952ee9a8abc
         if: runner.os == 'Linux'
         env:
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
