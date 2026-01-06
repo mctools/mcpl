@@ -1,4 +1,6 @@
 v2.2.5 (work-in-progress)
+      * Increase test timeout threshold by a factor of two, to avoid timeouts in
+        github Windows CI tests.
       * ...
 
 v2.2.4 2025-10-20

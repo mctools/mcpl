@@ -562,6 +562,6 @@ function( mctools_testutils_internal_addtest name cmd_file reflog )
 
   #Set a timeout to prevent hanging jobs and test times getting out of hand
   #(exact values can be revisited). We allow longer jobs in Debug mode:
-  set_property( TEST "${name}" PROPERTY TIMEOUT "$<IF:$<CONFIG:Debug>,480,240>" )
+  set_property( TEST "${name}" PROPERTY TIMEOUT "$<IF:$<CONFIG:Debug>,960,480>" )
   #TODO: Support tests/costs.txt for adding cost properties to tests?
 endfunction()
