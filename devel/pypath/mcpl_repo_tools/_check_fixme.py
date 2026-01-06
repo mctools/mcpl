@@ -20,6 +20,8 @@
 ################################################################################
 
 def is_well_known_binary( frel ):
+    if frel.split('/')[-1] in ('dump_dmp',):
+        return True
     if frel.endswith('.gz') or frel.endswith('.mcpl') or frel.endswith('.w'):
         return True
     if frel in ['devel/misc/test_encodings.log']:
