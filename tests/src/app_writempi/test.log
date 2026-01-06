@@ -6,12 +6,12 @@ MCPL: Compressing file foobar.mpiworker2.mcpl
 MCPL: Compressed file into foobar.mpiworker2.mcpl.gz
 MCPL: Compressing file foobar.mpiworker3.mcpl
 MCPL: Compressed file into foobar.mpiworker3.mcpl.gz
-MCPL: Compressing file foobar.mcpl
-MCPL: Compressed file into foobar.mcpl.gz
 MCPL: Removing file foobar.mpiworker0.mcpl.gz
 MCPL: Removing file foobar.mpiworker1.mcpl.gz
 MCPL: Removing file foobar.mpiworker2.mcpl.gz
 MCPL: Removing file foobar.mpiworker3.mcpl.gz
+MCPL: Compressing file foobar.mcpl
+MCPL: Compressed file into foobar.mcpl.gz
 Opened MCPL file foobar.mcpl.gz:
 
   Basic info

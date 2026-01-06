@@ -4527,10 +4527,9 @@ void mcpl_merge_outfiles_mpi( const char * filename,
     mcu8str fn_i = mcpl_internal_namehelper( filename, iproc, 'g' );
     fns[iproc] = fn_i.c_str;
   }
+  //Merge worker files:
   mcpl_outfile_t outfh = mcpl_merge_files( targetfn.c_str, nproc,
                                            (const char**)fns);
-  if ( !mcpl_closeandgzip_outfile(outfh) )
-    mcpl_error("mcpl_merge_outfiles_mpi: problems gzipping final output");
   //Remove worker files:
   for ( unsigned long iproc = 0; iproc < nproc; ++iproc ) {
     char * bn = mcpl_basename(fns[iproc]);
@@ -4542,6 +4541,9 @@ void mcpl_merge_outfiles_mpi( const char * filename,
     free(bn);
     free(buf);
   }
+  //Compress merged file, removes uncompressed file too
+  if ( !mcpl_closeandgzip_outfile(outfh) )
+    mcpl_error("mcpl_merge_outfiles_mpi: problems gzipping final output");
   //Cleanup memory:
   mcu8str_dealloc( &targetfn );
   for ( unsigned long iproc = 0; iproc < nproc; ++iproc )
