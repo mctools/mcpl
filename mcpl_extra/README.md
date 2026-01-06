@@ -32,7 +32,7 @@ https://mctools.github.io/mcpl/hooks_phits pages.
 Scientific reference
 --------------------
 
-Copyright 2015-2025 MCPL developers.
+Copyright 2015-2026 MCPL developers.
 
 This software was mainly developed at the European Spallation Source ERIC (ESS)
 and the Technical University of Denmark (DTU). This work was supported in part

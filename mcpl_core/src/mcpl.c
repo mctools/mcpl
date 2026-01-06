@@ -3,7 +3,7 @@
 //                                                                            //
 //  This file is part of MCPL (see https://mctools.github.io/mcpl/)           //
 //                                                                            //
-//  Copyright 2015-2025 MCPL developers.                                      //
+//  Copyright 2015-2026 MCPL developers.                                      //
 //                                                                            //
 //  Licensed under the Apache License, Version 2.0 (the "License");           //
 //  you may not use this file except in compliance with the License.          //
@@ -39,7 +39,7 @@
 //                                                                            //
 //  Find more information and updates at https://mctools.github.io/mcpl/      //
 //                                                                            //
-//  Written by Thomas Kittelmann, 2015-2025.                                  //
+//  Written by Thomas Kittelmann, 2015-2026.                                  //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
