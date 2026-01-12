@@ -191,13 +191,13 @@ jobs:
 
     steps:
       - name: download mcpl-python sdist
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:
           name: sdist-mcpl-python
           path: ./sdist-python
 
       - name: download mcpl-metapkg sdist
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:
           name: sdist-mcpl-metapkg
           path: ./sdist-metapkg
@@ -249,7 +249,7 @@ jobs:
 
     steps:
       - name: download mcpl-core sdist
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:
           name: sdist-mcpl-core
           path: ./sdist
@@ -329,13 +329,13 @@ jobs:
       # to ensure we do not get an error or inadvertently bundle libmcpl.so.
 
       - name: download mcpl-extra sdist
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:
           name: sdist-mcpl-extra
           path: ./sdist
 
       - name: download mcpl-core sdist
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:
           name: sdist-mcpl-core
           path: ./sdist_core
@@ -404,50 +404,50 @@ jobs:
     steps:
       # sdists:
       - name: download mcpl-core sdist
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:
           name: sdist-mcpl-core
           path: ./dist_core
 
       - name: download mcpl-extra sdist
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:
           name: sdist-mcpl-extra
           path: ./dist_extra
 
       - name: download mcpl-python sdist
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:
           name: sdist-mcpl-python
           path: ./dist_python
 
       - name: download mcpl-metapkg sdist
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:
           name: sdist-mcpl-metapkg
           path: ./dist_metapkg
 
       # pure wheels:
       - name: download mcpl-python pure wheel
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:
           name: wheel-mcpl-python
           path: ./dist_python
 
       - name: download mcpl-metapkg pure wheel
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:
           name: wheel-mcpl-metapkg
           path: ./dist_metapkg
 
       # binary wheels (merge-multiple: true since produced in several jobs):
-      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:
           pattern: "mcpl-core-wheels-*"
           merge-multiple: true
           path: ./dist_core
 
-      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:
           pattern: "mcpl-extra-wheels-*"
           merge-multiple: true
@@ -561,7 +561,7 @@ jobs:
     steps:
 
       - name: download artifacts
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:
           name: final
           path: ./dist_final
@@ -641,7 +641,7 @@ jobs:
     steps:
 
       - name: download artifacts
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:
           name: final
           path: ./dist_final
