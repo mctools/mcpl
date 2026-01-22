@@ -51,7 +51,7 @@ endif()
 
 #Setup project:
 
-project( MCPLExtra VERSION 2.2.6
+project( MCPLExtra VERSION 2.2.7
   LANGUAGES C
   DESCRIPTION "Monte Carlo Particle Lists"
   HOMEPAGE_URL "https://github.com/mctools/mcpl"
