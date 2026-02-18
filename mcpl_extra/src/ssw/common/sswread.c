@@ -404,10 +404,17 @@ ssw_file_t ssw_open_and_procrec0( const char * filename )
   char * bn = mcpl_basename(filename);
   fprintf(ssw_stdout(),"ssw_open_file: Opened file \"%s\":\n",bn);
   free(bn);
+  int kods_unusual_flavour = 0;
   const char * expected_kods = (f->mcnp_type == SSW_MCNPX?"mcnpx":"mcnp");
   if (strcmp(f->kods,expected_kods)!=0) {
-    fprintf(ssw_stdout(),"ssw_open_file WARNING: Unusual MCNP flavour detected (\"%s\").\n",f->kods);
+    kods_unusual_flavour = 1;
+    if ( f->mcnp_type == SSW_MCNP6 ) {
+      if ( strcmp(f->kods,"mcnp6")==0 || strcmp(f->kods,"mcnp6.mp")==0 )
+        kods_unusual_flavour = 0;
+    }
   }
+  if (kods_unusual_flavour)
+    fprintf(ssw_stdout(),"ssw_open_file WARNING: Unusual MCNP flavour detected (\"%s\").\n",f->kods);
 
   if (f->mcnp_type==SSW_MCNP6) {
     if ( strcmp(f->vers,"6")!=0 && strcmp(f->vers,"6.mpi")!=0 ) {
