@@ -1,3 +1,6 @@
+v2.2.9  (work in progress)
+      * ...
+
 v2.2.8  2026-02-18
       * MCNP tools ssw2mcpl and mcpl2ssw no longer emits "Unusual MCNP flavour
         detected" warnings when working with MCNP 6.3 files (GitHub issue #127).
