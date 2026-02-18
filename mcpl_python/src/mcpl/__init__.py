@@ -60,7 +60,7 @@ __all__ = [ 'MCPLFile',
             'is_valid_stat_sum_key'
            ]
 
-__version__ = '2.2.7'
+__version__ = '2.2.8'
 
 from .mcpl import ( MCPLFile,
                     MCPLParticle,
