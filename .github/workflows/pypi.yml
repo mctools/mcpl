@@ -17,7 +17,7 @@ jobs:
           fetch-tags: true
 
       - name: Setup python
-        uses: actions/setup-python@4f41a90a1f38628c7ccc608d05fbafe701bc20ae
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: '3.12'
 
@@ -82,7 +82,7 @@ jobs:
           path: src
 
       - name: Setup python
-        uses: actions/setup-python@4f41a90a1f38628c7ccc608d05fbafe701bc20ae
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: '3.12'
 
@@ -567,7 +567,7 @@ jobs:
           path: ./dist_final
 
       - name: Setup python
-        uses: actions/setup-python@4f41a90a1f38628c7ccc608d05fbafe701bc20ae
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: '3.12'
 
