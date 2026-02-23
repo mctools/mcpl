@@ -54,7 +54,7 @@ jobs:
       run: sudo apt install intel-oneapi-runtime-libs
 
     - name: Setup python
-      uses: actions/setup-python@v6.1.0
+      uses: actions/setup-python@v6.2.0
       with:
         python-version: '3.10'
 
