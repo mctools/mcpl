@@ -81,7 +81,7 @@ if ( NOT TARGET MCPL::MCPL )
       OUTPUT_VARIABLE "MCPL_DIR" OUTPUT_STRIP_TRAILING_WHITESPACE
     )
   endif()
-  find_package( MCPL 2.0.0 REQUIRED )
+  find_package( MCPL 2.2.9 REQUIRED )
 endif()
 
 if ( DEFINED SKBUILD_PROJECT_NAME )
