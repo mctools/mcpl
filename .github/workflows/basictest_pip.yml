@@ -63,11 +63,12 @@ jobs:
     #Enable cl.exe usage:
     - name: Setup VS in shell
       if: runner.os == 'Windows' && matrix.os != 'windows-11-arm'
-      uses: ilammy/msvc-dev-cmd@v1
+      uses: egor-tensin/vs-shell@54e4148eac794e4580591c2e0b7750f14b7891fc
+
 
     - name: Setup VS in shell
       if: runner.os == 'Windows' && matrix.os == 'windows-11-arm'
-      uses: ilammy/msvc-dev-cmd@v1
+      uses: egor-tensin/vs-shell@54e4148eac794e4580591c2e0b7750f14b7891fc
       with:
         arch: arm64
 
