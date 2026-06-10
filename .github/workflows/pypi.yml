@@ -575,7 +575,6 @@ jobs:
         shell: python
         run: |
           import pathlib
-          import pathlib
           import os.path
           from zipfile import ZipFile
           wheel_dir = pathlib.Path('.').joinpath('dist_final')
