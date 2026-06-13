@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.3
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           path: src
       - name: Enable parallel cmake
@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.3
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           path: src
 
@@ -34,7 +34,8 @@ jobs:
         run: python ./src/devel/bin/mcpldevtool nprocs --enable-github-parallel
 
       - name: FreeBSD
-        uses: cross-platform-actions/action@v1.2.0
+        uses: cross-platform-actions/action@be3d7e9ff5c8770b9c51b1a8c8c5446e1cad7cf9
+
         with:
           environment_variables: CMAKE_BUILD_PARALLEL_LEVEL CTEST_PARALLEL_LEVEL
           operating_system: freebsd
@@ -65,7 +66,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.3
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           path: src
 
@@ -73,7 +74,7 @@ jobs:
         run: python ./src/devel/bin/mcpldevtool nprocs --enable-github-parallel
 
       - name: FreeBSD
-        uses: cross-platform-actions/action@v1.2.0
+        uses: cross-platform-actions/action@be3d7e9ff5c8770b9c51b1a8c8c5446e1cad7cf9
         with:
           environment_variables: CMAKE_BUILD_PARALLEL_LEVEL CTEST_PARALLEL_LEVEL
           operating_system: freebsd
