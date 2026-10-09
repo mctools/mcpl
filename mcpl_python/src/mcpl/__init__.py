@@ -46,31 +46,34 @@ European Union's Horizon 2020 research and innovation programme under grant
 agreement No 676548 (the BrightnESS project)
 """
 
-__all__ = [ 'MCPLFile',
+__all__ = [
+            'MCPLError',
+            'MCPLFile',
             'MCPLParticle',
             'MCPLParticleBlock',
-            'MCPLError',
-            'dump_file',
-            'convert2ascii',
             'app_pymcpltool',
             'collect_stats',
+            'convert2ascii',
+            'dump_file',
             'dump_stats',
-            'plot_stats',
             'encode_stat_sum',
-            'is_valid_stat_sum_key'
+            'is_valid_stat_sum_key',
+            'plot_stats'
            ]
 
 __version__ = '2.2.9'
 
-from .mcpl import ( MCPLFile,
-                    MCPLParticle,
-                    MCPLParticleBlock,
-                    MCPLError,
-                    dump_file,
-                    convert2ascii,
-                    app_pymcpltool,
-                    collect_stats,
-                    dump_stats,
-                    plot_stats,
-                    encode_stat_sum,
-                    is_valid_stat_sum_key )
+from .mcpl import (
+            MCPLError,
+            MCPLFile,
+            MCPLParticle,
+            MCPLParticleBlock,
+            app_pymcpltool,
+            collect_stats,
+            convert2ascii,
+            dump_file,
+            dump_stats,
+            encode_stat_sum,
+            is_valid_stat_sum_key,
+            plot_stats,
+)
