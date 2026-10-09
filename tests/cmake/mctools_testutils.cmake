@@ -410,7 +410,7 @@ function( mctools_testutils_internal_getpyexec resvar )
   #Must figure out which one to use:
   if ( MCTOOLS_TESTUTILS_PYTHON_EXECUTABLE )
     if ( "x${MCTOOLS_TESTUTILS_PYTHON_EXECUTABLE}" STREQUAL "xauto" )
-      find_package(Python3 3.8 REQUIRED COMPONENTS Interpreter)
+      find_package(Python3 3.9 REQUIRED COMPONENTS Interpreter)
       set_property(
         GLOBAL PROPERTY
         mctools_testutils_internal_pyexec "${Python3_EXECUTABLE}"

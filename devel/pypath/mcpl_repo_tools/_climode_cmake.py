@@ -84,7 +84,7 @@ def main( parser ):
     _ = []
     for e in args.cmake_args:
         for s in e:
-            _.append(s[1:] if s.startswith('@') else s)  # noqa: FURB188
+            _.append(s.removeprefix('@'))
     if args.strict != 'NOTOUCH' :
         _.append( f'-DMCPL_BUILD_STRICT={args.strict}' )
     args.cmake_args = _
