@@ -43,10 +43,10 @@ def _get_mcpl_shlibdir_unix():
     return pathlib.Path(rv.stdout.decode().strip()).absolute().resolve()
 
 def _run(toolname):
-    import subprocess
     import pathlib
-    import sys
     import platform
+    import subprocess
+    import sys
     a = sys.argv[:]
     a[0] = pathlib.Path(__file__).parent.joinpath('data','bin',toolname)
     sysname = platform.system()
@@ -58,11 +58,11 @@ def _run(toolname):
         n = 'DYLD_LIBRARY_PATH' if sysname == 'Darwin' else 'LD_LIBRARY_PATH'
         v = env.get(n)
         if v:
-            env[n] = '%s:%s'%(d,v)
+            env[n] = f'{d}:{v}'
         else:
             env[n] = str(d)
     else:
         #On windows MCPL.dll should already be in PATH:
         env = None
-    rv = subprocess.run( a, env = env )
+    rv = subprocess.run( a, env = env, check = False )
     raise SystemExit(rv.returncode)
