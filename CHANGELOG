@@ -31,6 +31,9 @@ v2.2.9  (work in progress)
         gzipped, and an output name ending with .mcpl.gz resulted in a file
         named .mcpl.gz.mcpl.gz. Both now also refuse to overwrite an existing
         file when the .mcpl extension is left out of the output name.
+      * Fix typo in error message of mcpl_hdr_add_stat_sum.
+      * mcpl_hdr_add_comment now refuses to add a stat:sum: comment with the
+        same key as an existing one, since such files can not be read.
       * Drop support for Python 3.8.
       * mcpltool --repair (and mcpl_repair) now also repairs files truncated
         right after the header, and removes any partially written particle at

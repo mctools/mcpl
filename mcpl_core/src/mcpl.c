@@ -635,6 +635,19 @@ void mcpl_hdr_add_comment(mcpl_outfile_t of,const char *comment)
     //syntax by decoding it, to trigger any issues:
     mcpl_internal_statsum_t sc;
     mcpl_internal_statsum_parse_or_emit_err( comment, &sc );
+    //Files with duplicate keys can not be read:
+    for ( uint32_t i = 0; i < f->ncomments; ++i ) {
+      if ( !MCPL_COMMENT_IS_STATSUM(f->comments[i]) )
+        continue;
+      mcpl_internal_statsum_t sc_other;
+      mcpl_internal_statsum_parse_or_emit_err( f->comments[i], &sc_other );
+      if ( strcmp( sc.key, sc_other.key ) == 0 ) {
+        char buf[MCPL_STATSUMKEY_MAXLENGTH+256];
+        snprintf(buf,sizeof(buf),"Duplicate stat:sum: key. The key \"%s\""
+                 " appears more than once.",sc.key);
+        mcpl_error(buf);
+      }
+    }
   } else {
     if ( strncmp( comment, "stat:", 5 ) == 0 )
       mcpl_error("Refusing to create file with comments starting with"
@@ -4432,7 +4445,7 @@ void mcpl_hdr_add_stat_sum( mcpl_outfile_t of,
     }
   }
   if (!sc_to_update)
-    mcpl_error("mcpl_hdr_add_stat:sum: called after first particle was added "
+    mcpl_error("mcpl_hdr_add_stat_sum called after first particle was added "
                "to file, but without first registering a value for the same "
                "key earlier (the special value -1 can be used for this)");
 
