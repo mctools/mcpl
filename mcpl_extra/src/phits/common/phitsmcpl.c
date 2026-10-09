@@ -52,6 +52,17 @@ int phits2mcpl(const char * phitsfile, const char * mcplfile)
   return phits2mcpl2(phitsfile, mcplfile, 0, 1, 0, 0);
 }
 
+static int phitsmcpl_buf_contains( const char * buf, uint64_t n,
+                                   const char * needle )
+{
+  //Like strstr, but for buffers which are not null-terminated.
+  size_t k = strlen(needle);
+  for ( uint64_t i = 0; i + k <= n; ++i )
+    if ( memcmp( buf + i, needle, k ) == 0 )
+      return 1;
+  return 0;
+}
+
 int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
                  int opt_dp, int opt_gzip,
                  const char * inputdeckfile,
@@ -71,7 +82,7 @@ int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
     //We won't do much for sanity checks since we want to avoid the risk of
     //false positives, but at least the word "dump" should occur in both input
     //deck and dump summary files:
-    if (!strstr((const char*)cfgfile_buf, "dump")) {
+    if (!phitsmcpl_buf_contains(cfgfile_buf, cfgfile_lbuf, "dump")) {
       printf("Error: specified configuration file %s looks invalid as it"
              " does not contain the word \"dump\".\n",inputdeckfile);
       free(cfgfile_buf);
@@ -89,7 +100,7 @@ int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
                               &summaryfile_buf );
 
     //Same check as for the input deck above:
-    if (!strstr(summaryfile_buf, "dump")) {
+    if (!phitsmcpl_buf_contains(summaryfile_buf, summaryfile_lbuf, "dump")) {
       printf("Error: specified dump summary file %s looks invalid"
              " as it does not contain the word \"dump\".\n",dumpsummaryfile);
       free(cfgfile_buf);

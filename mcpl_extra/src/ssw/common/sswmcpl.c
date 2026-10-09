@@ -72,6 +72,17 @@ void ssw_strcat( char * dest, const char * src, size_t destbuflen )
   memcpy( dest + nd, src, ns+1 );
 }
 
+static int sswmcpl_buf_contains( const char * buf, uint64_t n,
+                                 const char * needle )
+{
+  //Like strstr, but for buffers which are not null-terminated.
+  size_t k = strlen(needle);
+  for ( uint64_t i = 0; i + k <= n; ++i )
+    if ( memcmp( buf + i, needle, k ) == 0 )
+      return 1;
+  return 0;
+}
+
 int ssw2mcpl2(const char * sswfile, const char * mcplfile,
               int opt_dp, int opt_surf, int opt_gzip,
               const char * inputdeckfile)
@@ -87,7 +98,7 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
                               1,//must be text
                               &cfgfile_lbuf,
                               &cfgfile_buf );
-    if (!strstr((const char*)cfgfile_buf, ssw_title(f))) {
+    if (!sswmcpl_buf_contains(cfgfile_buf, cfgfile_lbuf, ssw_title(f))) {
       printf("Error: specified configuration file %s does not contain title"
              " found in ssw file: \"%s\".\n",inputdeckfile,ssw_title(f));
       free(cfgfile_buf);
