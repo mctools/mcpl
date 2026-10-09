@@ -28,7 +28,9 @@ def main():
     if not ruff:
         raise SystemExit('ERROR: ruff command not available')
     files = list(all_files_iter('py'))
-    rv = subprocess.run(['ruff','check']+ files, check = False )
+    #Must match requires-python in our pyproject.toml files:
+    rv = subprocess.run(['ruff','check','--target-version','py39']+ files,
+                        check = False )
     if rv.returncode!=0:
         raise SystemExit(1)
 
