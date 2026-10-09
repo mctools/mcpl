@@ -19,16 +19,19 @@
 ##                                                                            ##
 ################################################################################
 
-from MCPLTestUtils.dirs import test_data_dir as test_data_dir_ref
-from MCPLTestUtils.dirs import mcpltool_cmd as mcpltool_cmd_ref
-
-from MCPLExtraTestUtils.dirs import ( extra_test_data_dir,
-                                      core_test_data_dir,
-                                      mcpl2ssw_cmd,
-                                      ssw2mcpl_cmd,
-                                      mcpltool_cmd )
 import subprocess
 import sys
+
+from MCPLExtraTestUtils.dirs import (
+    core_test_data_dir,
+    extra_test_data_dir,
+    mcpl2ssw_cmd,
+    mcpltool_cmd,
+    ssw2mcpl_cmd,
+)
+from MCPLTestUtils.dirs import mcpltool_cmd as mcpltool_cmd_ref
+from MCPLTestUtils.dirs import test_data_dir as test_data_dir_ref
+
 
 def main():
 

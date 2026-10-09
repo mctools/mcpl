@@ -19,12 +19,16 @@
 ##                                                                            ##
 ################################################################################
 
-from MCPLExtraTestUtils.dirs import ( core_test_data_dir,
-                                      mcpl2phits_cmd,
-                                      phits2mcpl_cmd,
-                                      mcpltool_cmd )
 import pathlib
 import sys
+
+from MCPLExtraTestUtils.dirs import (
+    core_test_data_dir,
+    mcpl2phits_cmd,
+    mcpltool_cmd,
+    phits2mcpl_cmd,
+)
+
 
 def main():
     f = core_test_data_dir.joinpath('ref','reffile_1.mcpl')
@@ -39,7 +43,8 @@ def main():
     rv = subprocess.run( [ mcpl2phits_cmd,
                            f'f{oslash}{oslash}/hell{oslash}.mcpl',
                            f'f{oslash}{oslash}/hell{oslash}.dmp' ],
-                         capture_output = True )
+                         capture_output = True,
+                         check = False )
     sys.stdout.buffer.write(rv.stdout)
     if rv.stderr:
         sys.stdout.buffer.write(rv.stderr)
@@ -53,10 +58,9 @@ def main():
     fake_dumpsummary_file_contents = (
         b"Bla bla dump summary blabla\nf%s%s bar."%(oslash_b,oslash_b)
     )
-    print( "Size of fake_cfg_file: %i bytes"
-           % len(fake_cfg_file_contents) )
-    print( "Size of fake_dumpsummary_file: %i bytes"
-           % len(fake_dumpsummary_file_contents) )
+    print( f"Size of fake_cfg_file: {len(fake_cfg_file_contents)} bytes" )
+    print( "Size of fake_dumpsummary_file:"
+           f" {len(fake_dumpsummary_file_contents)} bytes" )
     pathlib.Path('fake_cfg_file').write_bytes(fake_cfg_file_contents)
     pathlib.Path('fake_dumpsummary_file').write_bytes(fake_dumpsummary_file_contents)
 
@@ -67,7 +71,8 @@ def main():
                            '-c','fake_cfg_file',
                            '-s','fake_dumpsummary_file',
                           ],
-                         capture_output = True )
+                         capture_output = True,
+                         check = False )
     sys.stdout.buffer.write(rv.stdout)
     if rv.stderr:
         sys.stdout.buffer.write(rv.stderr)
@@ -78,7 +83,8 @@ def main():
     assert pathlib.Path(f'f{oslash}{oslash}/hell{oslash}2.mcpl.gz').is_file()
     rv = subprocess.run( [ mcpltool_cmd,
                            f'f{oslash}{oslash}/hell{oslash}2.mcpl.gz' ],
-                         capture_output = True )
+                         capture_output = True,
+                         check = False )
     sys.stdout.buffer.write(rv.stdout)
     if rv.stderr:
         sys.stdout.buffer.write(rv.stderr)

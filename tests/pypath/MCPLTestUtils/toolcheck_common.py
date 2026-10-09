@@ -19,14 +19,16 @@
 ##                                                                            ##
 ################################################################################
 
-from .dirs import ( test_data_dir, mcpltool_cmd )
-from .common import flush
-from pathlib import Path
 import gzip
-import subprocess
-import sys
 import hashlib
 import shlex
+import subprocess
+import sys
+from pathlib import Path
+
+from .common import flush
+from .dirs import mcpltool_cmd, test_data_dir
+
 
 def gunzip( f ):
     f = Path(f)
@@ -52,19 +54,20 @@ def cmd(*args, print_md5sum_of_output = False,fail=False):
     print(f"Running mcpltool {args_print}")
     print("----------------------------------------------")
     flush()
-    fullcmd = [mcpltool_cmd]+list(str(e) for e in args)
+    fullcmd = [mcpltool_cmd]+[str(e) for e in args]
     #print(repr(fullcmd))
     #print("----------------------------------------------")
     #flush()
-    rv = subprocess.run( fullcmd + ['--fakeversion'], capture_output = True )
+    rv = subprocess.run( fullcmd + ['--fakeversion'], capture_output = True,
+                         check = False )
     flush()
     assert not rv.stderr, "process had stderr"
     flush()
     if print_md5sum_of_output:
-        print('>>>%s<<<'%rv.stdout
+        print('>>>{}<<<'.format(rv.stdout
               .replace(b'\r',b'<CR>')
               .replace(b'\n',b'<LF>')
-              .decode('ascii','backslashreplace'))
+              .decode('ascii','backslashreplace')))
         print( hashlib.md5(rv.stdout).hexdigest() )
     else:
         sys.stdout.buffer.write(rv.stdout)

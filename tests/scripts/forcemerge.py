@@ -23,9 +23,10 @@
 
 import itertools
 import pathlib
+
 import mcpldev as mcpl
-from MCPLTestUtils.dirs import ( test_data_dir,
-                                 mcpltool_cmd )
+from MCPLTestUtils.dirs import mcpltool_cmd, test_data_dir
+
 
 def fix_print_str(s):
     if isinstance(s,bytes):
@@ -40,18 +41,18 @@ def fix_print_str(s):
 
 def run_mcpltool(*args, expect_failure):
     cmdargs =[str(e) for e in args]
-    print( '\n\n\n\n\nRUNNING: mcpltool %s'%fix_print_str(' '.join(cmdargs)),
+    print( '\n\n\n\n\nRUNNING: mcpltool {}'.format(fix_print_str(' '.join(cmdargs))),
            flush=True )
     print( 'Expect failure: %s'%('yes' if expect_failure else 'no'),
            flush=True )
 
     import subprocess
     rv = subprocess.run( [mcpltool_cmd] + cmdargs + ['--fakeversion'],
-                         capture_output=True )
+                         capture_output=True, check=False )
     assert not rv.stderr
     print(fix_print_str(rv.stdout
                         .replace(b'\r\n',b'\n')
-                        .replace(('MCPL v%s'%mcpl.__version__).encode('ascii'),
+                        .replace((f'MCPL v{mcpl.__version__}').encode('ascii'),
                                  b'MCPL v<current>' )
                         .decode()))
     print("Ended in failure: %s"%('yes' if rv.returncode!=0 else 'no'))
@@ -124,7 +125,7 @@ def do_test(folder):
         if pathlib.Path('tmp.mcpl').is_file():
             pathlib.Path('tmp.mcpl').unlink()
         mcpltool_args = ['--forcemerge','tmp.mcpl']
-        mcpltool_args += list(find_file(f) for f in filelist)
+        mcpltool_args += [find_file(f) for f in filelist]
         if keepuf:
             mcpltool_args.append('--keepuserflags')
 

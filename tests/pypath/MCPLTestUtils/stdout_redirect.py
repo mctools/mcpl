@@ -20,12 +20,14 @@
 ################################################################################
 
 import sys
+
 from .common import flush
 
-class RedirectStdout():
+
+class RedirectStdout:
     def __init__(self,filename):
         flush()
-        self._f = open(filename, 'w')
+        self._f = open(filename, 'w')  # noqa: SIM115
         self._true_stdout = sys.stdout
         sys.stdout = self._f
         flush()
