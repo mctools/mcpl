@@ -41,7 +41,7 @@ jobs:
           operating_system: freebsd
           #Increase "memory" from 6G to 10G for bigfile ctests:
           #memory: 10G
-          version: '14.2'
+          version: '15.1'
           run: |
             df -h
             #Due to limited VM disk space, do not run tests in parallel (the
@@ -49,7 +49,7 @@ jobs:
             export CTEST_PARALLEL_LEVEL=1
             echo "CMAKE_BUILD_PARALLEL_LEVEL=${CMAKE_BUILD_PARALLEL_LEVEL}"
             echo "CTEST_PARALLEL_LEVEL=${CTEST_PARALLEL_LEVEL}"
-            sudo pkg install -y cmake python3 py311-numpy py311-matplotlib py311-pyyaml ruff
+            sudo pkg install -y cmake python3 py312-numpy py312-matplotlib py312-pyyaml ruff
             df -h
             sudo pkg autoremove -y
             df -h
@@ -78,11 +78,11 @@ jobs:
         with:
           environment_variables: CMAKE_BUILD_PARALLEL_LEVEL CTEST_PARALLEL_LEVEL
           operating_system: freebsd
-          version: '14.2'
+          version: '15.1'
           run: |
             echo "CMAKE_BUILD_PARALLEL_LEVEL=${CMAKE_BUILD_PARALLEL_LEVEL}"
             echo "CTEST_PARALLEL_LEVEL=${CTEST_PARALLEL_LEVEL}"
-            sudo pkg install -y cmake python3 py311-pip py311-numpy py311-matplotlib py311-pyyaml py311-setuptools py311-wheel py311-scikit-build-core ruff
+            sudo pkg install -y cmake python3 py312-pip py312-numpy py312-matplotlib py312-pyyaml py312-setuptools py312-wheel py312-scikit-build-core ruff
             #Make sure pip --user bin dir is in PATH:
             PATH="/home/runner/.local/bin:${PATH}"
             export PATH
