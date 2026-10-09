@@ -19,11 +19,13 @@
 ##                                                                            ##
 ################################################################################
 
-from MCPLTestUtils.dirs import test_data_dir
-from MCPLTestUtils.toolcheck_common import ( gunzip, cmd, check_same, copy )
-from pathlib import Path
-import os
 import gzip
+import os
+from pathlib import Path
+
+from MCPLTestUtils.dirs import test_data_dir
+from MCPLTestUtils.toolcheck_common import check_same, cmd, copy, gunzip
+
 
 def main():
     def dd(fn):
@@ -114,8 +116,8 @@ def main():
     #lots of warnings (errors since MCPL 2.0.0):
     cmd('-m','dupmerge.mcpl',
         f1.name,
-        './%s'%f1.name,
-        '../%s/%s'%(f1.absolute().parent.name,f1.name),
+        f'./{f1.name}',
+        f'../{f1.absolute().parent.name}/{f1.name}',
         f1_sl,
         f1_hl,
         f2_sl,

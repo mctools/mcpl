@@ -36,12 +36,13 @@
 #coverage html -d somedir/
 #
 
-import os
-import sys
-import shutil
 import contextlib
-from MCPLTestUtils.dirs import test_data_dir
+import os
+import shutil
+import sys
+
 from MCPLTestUtils.common import flush
+from MCPLTestUtils.dirs import test_data_dir
 
 os.environ['PYMCPLTOOL_FAKE_PYVERSION']='1'
 
@@ -53,21 +54,21 @@ def format_numpy_1darray_asfloat(a,edgeitems=3,threshold=1000):
     if not hasattr(a,'shape') or len(a.shape)!=1:
         return str(a)
     if len(a)>threshold:
-        return '[ %s ... %s ]'%(_fmtitems(a[0:edgeitems]),_fmtitems(a[-edgeitems:]))
+        return f'[ {_fmtitems(a[0:edgeitems])} ... {_fmtitems(a[-edgeitems:])} ]'
     else:
-        return '[ %s ]'%(_fmtitems(a))
+        return f'[ {_fmtitems(a)} ]'
 npfmt = format_numpy_1darray_asfloat
 
 os.mkdir('./fakepypath')
 with open('./fakepypath/numpy.py','tw') as f:
-    f.write(u'raise ImportError("fake error")\n')#u'' prefix intended, to appease io.open in py2
+    f.write('raise ImportError("fake error")\n')
     f.close()
 oldsyspath=sys.path
 sys.path=[os.path.abspath('./fakepypath')]+sys.path
 try:
     import mcpldev as mcpl
 except ImportError as e:
-    print("Caught expected error: %s"%str(e))
+    print(f"Caught expected error: {e!s}")
     mcpl = None
 shutil.rmtree('./fakepypath')
 sys.path = oldsyspath
@@ -94,12 +95,10 @@ def testtool(args,testnone=False):
                             else None)
     except mcpl.MCPLError as e:
         flush()
-        print("===> mcpltool ended with MCPLError exception: %s"%str(e))
-        pass
+        print(f"===> mcpltool ended with MCPLError exception: {e!s}")
     except SystemExit as e:
         flush()
-        print("===> mcpltool ended with exit code %s"%str(e))
-        pass
+        print(f"===> mcpltool ended with exit code {e!s}")
     flush()
 
 testtool([])
@@ -171,8 +170,8 @@ def loadbad(fn):
     try:
         mcpl.MCPLFile(fn)
     except mcpl.MCPLError as e:
-        print('MCPL ERROR: %s'%str(e))
-    except IOError as e:
+        print(f'MCPL ERROR: {e!s}')
+    except OSError as e:
         print(e)
 loadbad('notfound.mcpl')
 loadbad('bla.txt')
@@ -190,27 +189,29 @@ for fn in (file1,file2,file3):
             assert (p.position==np_asarray((p.x,p.y,p.z))).all()
             assert (p.direction==np_asarray((p.ux,p.uy,p.uz))).all()
             assert (p.polarisation==np_asarray((p.polx,p.poly,p.polz))).all()
-            print('position: (%g, %g, %g), %s, %s, (%g, %g, %g)'%(p.x,p.y,p.z,npfmt(p.position),
+            print('position: ({:g}, {:g}, {:g}), {}, {}, ({:g}, {:g}, {:g})'.format(p.x,p.y,p.z,npfmt(p.position),
                    str(type(p.position)).replace('class','type'),p.position[0],p.position[1],p.position[2]))
-            print('polarisation: (%g, %g, %g), %s, %s, (%g, %g, %g)'%(p.polx,p.poly,p.polz,npfmt(p.polarisation),
+            print('polarisation: ({:g}, {:g}, {:g}), {}, {}, ({:g}, {:g}, {:g})'.format(p.polx,p.poly,p.polz,npfmt(p.polarisation),
                    str(type(p.polarisation)).replace('class','type'),p.polarisation[0],p.polarisation[1],p.polarisation[2]))
-            print('direction: (%g, %g, %g), %s, %s, (%g, %g, %g)'%(p.ux,p.uy,p.uz,npfmt(p.direction),
+            print('direction: ({:g}, {:g}, {:g}), {}, {}, ({:g}, {:g}, {:g})'.format(p.ux,p.uy,p.uz,npfmt(p.direction),
                    str(type(p.direction)).replace('class','type'),p.direction[0],p.direction[1],p.direction[2]))
 
 with mcpl.MCPLFile(file1,blocklength=3) as f:
     print(f.sourcename)
     print(f.blocklength)
     for i,c in enumerate(f.comments):
-        print("comment #%i: %s"%(i,c))
+        print(f"comment #{i}: {c}")
     assert set(f.blobs.keys()) == set(f.blob_storage_order)
-    print(','.join('%s[%i]'%(k,len(f.blobs[k])) for k in f.blob_storage_order))
+    print(','.join(f'{k}[{len(f.blobs[k])}]' for k in f.blob_storage_order))
 
-    print('indices in file: %s'%(','.join(str(p.file_index) for p in f.particles)))
+    print('indices in file: {}'.format(','.join(str(p.file_index) for p in f.particles)))
     for ib,pb in enumerate(f.particle_blocks):
         pb.uy if ib%2 else pb.uz
         assert pb[len(pb)] is None
-        print('indices in block starting at %i a: %s'%(pb.file_offset,','.join(   str(pb[i].file_index) for i in range(len(pb)))))
-        print('indices in block starting at %i b: %s'%(pb.file_offset,','.join(   str(p.file_index) for p in pb.particles)))
+        print(f'indices in block starting at {pb.file_offset} a:',
+              ','.join( str(pb[i].file_index) for i in range(len(pb)) ))
+        print(f'indices in block starting at {pb.file_offset} b:',
+              ','.join( str(p.file_index) for p in pb.particles ))
     f.rewind()
     p=f.read()
     assert p.file_index==0
@@ -243,22 +244,21 @@ def tostr(a):
     elif isinstance(a,bytes):
         return a.decode('ascii')#got bytes in py3
     elif str==bytes and isinstance(a,unicode): #noqa F821 ("unicode" not in py3)
-        return a.encode('ascii')#got unicode in py2 # noqa f821
+        return a.encode('ascii')#got unicode in py2
     else:
         return str(a)#neither str/bytes/unicode
 
 def test_stats(*args,**kwargs):
     def fmtkw(k,v):
-        return '%s=%s'%(tostr(k),[tostr(e) for e in v] if isinstance(v,list) else tostr(v))
-    print('======================> Test stats(%s)'%(
-          ','.join([tostr(a) for a in ['MCPLFILE' if isinstance(args[0],mcpl.MCPLFile) else os.path.basename(args[0])]
+        return f'{tostr(k)}={[tostr(e) for e in v] if isinstance(v,list) else tostr(v)}'
+    print('======================> Test stats({})'.format(','.join([tostr(a) for a in ['MCPLFILE' if isinstance(args[0],mcpl.MCPLFile) else os.path.basename(args[0])]
                     +list(args[1:])]+[fmtkw(k,v) for k,v in sorted(kwargs.items())])))
     try:
         stats=mcpl.collect_stats(*args,**kwargs)
         if stats!={}:
             mcpl.dump_stats(stats)
     except mcpl.MCPLError as e:
-        print('MCPL ERROR: %s'%e)
+        print(f'MCPL ERROR: {e}')
         return {}
     return {}
 

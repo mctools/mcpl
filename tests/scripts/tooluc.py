@@ -19,9 +19,11 @@
 ##                                                                            ##
 ################################################################################
 
-from MCPLTestUtils.dirs import ( test_data_dir, mcpltool_cmd )
 import pathlib
 import sys
+
+from MCPLTestUtils.dirs import mcpltool_cmd, test_data_dir
+
 
 def main():
     f = test_data_dir.joinpath('ref','reffile_1.mcpl')
@@ -33,7 +35,7 @@ def main():
 
     import subprocess
     rv = subprocess.run( [ mcpltool_cmd, f'f{oslash}{oslash}/hell{oslash}.mcpl' ],
-                         capture_output = True )
+                         capture_output = True, check = False )
     sys.stdout.buffer.write(rv.stdout)
     if rv.stderr:
         sys.stdout.buffer.write(rv.stderr)

@@ -21,10 +21,12 @@
 
 # NEEDS: numpy
 
-from MCPLTestUtils.dirs import test_data_dir
 import gzip
-import pathlib
 import os
+import pathlib
+
+from MCPLTestUtils.dirs import test_data_dir
+
 
 def run_pymcpltool(*args):
     from mcpldev.mcpl import app_pymcpltool

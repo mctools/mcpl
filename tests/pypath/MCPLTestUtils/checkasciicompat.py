@@ -21,6 +21,7 @@
 
 import pathlib
 
+
 def _autodetect_nploadtxtargs(fn):
     #MCPL-ASCII
     #ASCII-FORMAT: v1
@@ -29,42 +30,43 @@ def _autodetect_nploadtxtargs(fn):
     import numpy
     mcplhdr_end = None
     mcpl_nparticles = None
-    for i,line in enumerate(pathlib.Path(fn).open('rt')):
-        line = line.strip()
-        if i==0:
-            if line!='#MCPL-ASCII':
-                return None
-            continue
-        if line.startswith('#NPARTICLES:'):
-            mcpl_nparticles = int( line[len('#NPARTICLES:'):].strip() )
-            continue
-        if line.startswith('#ASCII-FORMAT:'):
-            if line[len('#ASCII-FORMAT:'):].strip()!='v1':
-                raise RuntimeError('Only supports MCPL-ASCII "v1" format')
-            continue
+    with pathlib.Path(fn).open('rt') as fh:
+        for i,line in enumerate(fh):
+            line = line.strip()
+            if i==0:
+                if line!='#MCPL-ASCII':
+                    return None
+                continue
+            if line.startswith('#NPARTICLES:'):
+                mcpl_nparticles = int( line[len('#NPARTICLES:'):].strip() )
+                continue
+            if line.startswith('#ASCII-FORMAT:'):
+                if line[len('#ASCII-FORMAT:'):].strip()!='v1':
+                    raise RuntimeError('Only supports MCPL-ASCII "v1" format')
+                continue
 
-        if line == '#END-HEADER':
-            mcplhdr_end = i
-            continue
-        if mcplhdr_end is not None:
-            if line.startswith('index'):
-                _int = numpy.dtype('int64')
-                _uint = numpy.dtype('uint64')
-                _fp = numpy.dtype('float64')
-                return {
-                    'genfromtxt_args' : {
-                        'skip_header':i+1,
-                        'dtype' : [numpy.dtype(e) for e in
-                                   (_uint,_int,_fp,_fp,_fp,_fp,_fp,_fp,_fp,
-                                    _fp,_fp,_fp,_fp,_fp,_uint)],
-                        'converters' : {14 : lambda s : int(s,16) }
-                    },
-                    'nparticles' : mcpl_nparticles
-                }
-            else:
+            if line == '#END-HEADER':
+                mcplhdr_end = i
+                continue
+            if mcplhdr_end is not None:
+                if line.startswith('index'):
+                    _int = numpy.dtype('int64')
+                    _uint = numpy.dtype('uint64')
+                    _fp = numpy.dtype('float64')
+                    return {
+                        'genfromtxt_args' : {
+                            'skip_header':i+1,
+                            'dtype' : [numpy.dtype(e) for e in
+                                       (_uint,_int,_fp,_fp,_fp,_fp,_fp,_fp,_fp,
+                                        _fp,_fp,_fp,_fp,_fp,_uint)],
+                            'converters' : {14 : lambda s : int(s,16) }
+                        },
+                        'nparticles' : mcpl_nparticles
+                    }
+                else:
+                    break
+            if i==10000:
                 break
-        if i==10000:
-            break
     raise RuntimeError(f'Unexpected format of MCPL-ASCII file: {fn}')
 
 

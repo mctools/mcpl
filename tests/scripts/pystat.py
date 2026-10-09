@@ -22,8 +22,9 @@
 # NEEDS: numpy
 
 def files_for_testing():
-    from MCPLTestUtils.dirs import test_data_dir as tdir
     import itertools
+
+    from MCPLTestUtils.dirs import test_data_dir as tdir
     for p in itertools.chain( tdir.joinpath('ref').glob('*.mcpl*'),
                               tdir.joinpath('reffmt2').glob('*.mcpl*') ):
         if 'bad' in p.name or 'truncated' in p.name or 'crash' in p.name:

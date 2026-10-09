@@ -21,15 +21,17 @@
 
 # NEEDS: numpy
 
-import sys
 import pathlib
+import subprocess
+import sys
+
 from mcpldev import MCPLError
 from mcpldev import dump_file as pymcpltool_dump_file
-from MCPLTestUtils.dirs import test_data_dir, mcpltool_cmd
 from MCPLTestUtils.checkasciicompat import check_compat
-import subprocess
-from MCPLTestUtils.stdout_redirect import RedirectStdout
 from MCPLTestUtils.common import flush
+from MCPLTestUtils.dirs import mcpltool_cmd, test_data_dir
+from MCPLTestUtils.stdout_redirect import RedirectStdout
+
 
 def run_pymcpltool(*args):
     from mcpldev.mcpl import app_pymcpltool
@@ -55,13 +57,13 @@ files = {}
 for subdir in ('ref','reffmt2'):
     for pat in ('*.mcpl','*.mcpl.gz'):
         for f in sorted(test_data_dir.joinpath(subdir).glob(pat)):
-            key = '%s/%s'%(subdir,f.name)
+            key = f'{subdir}/{f.name}'
             files[key] = f
 
 errors = False
 for file_key in sorted(files.keys()):
     file_path = files[file_key]
-    print("Testing %s"%file_key)
+    print(f"Testing {file_key}")
     expect_crash = False
     truncated_file = 'reffile_truncated' in file_key
     if ('crash' in file_key and file_key.endswith('.gz')) or 'reffile_bad' in file_key or truncated_file:
@@ -77,7 +79,7 @@ for file_key in sorted(files.keys()):
                 pymcpltool_dump_file(file_path,limit=0)
             ec=0
         except MCPLError as mpe:
-            print('MCPL ERROR: %s'%str(mpe))
+            print(f'MCPL ERROR: {mpe!s}')
             ec=1
     if (ec!=0) != expect_crash:
         errors = True

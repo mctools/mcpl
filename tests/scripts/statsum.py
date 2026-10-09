@@ -22,9 +22,11 @@
 #NB: Written carefully with __name__ protection we can call functions with
 #pythons multiprocessing
 
-from MCPLTestUtils.loadlib import getlib
-from MCPLTestUtils.dirs import test_data_dir
 import pathlib
+
+from MCPLTestUtils.dirs import test_data_dir
+from MCPLTestUtils.loadlib import getlib
+
 lib = getlib('statsum')
 
 def dump( filename ):
@@ -71,7 +73,7 @@ def decodestatsum(s):
     assert key.isidentifier()
     assert len(value)==24
     if not all(e in '0123456789.-+eE' for e in value.strip(' ')):
-        raise RuntimeError('Issues with statsum valstr: "%s"'%value)
+        raise RuntimeError(f'Issues with statsum valstr: "{value}"')
     val = float(value.strip(' '))
     return key, val
 
@@ -90,7 +92,7 @@ def print_pystatsum( filename ):
         for k,v in d.items():
             expected_comments.append(mcplpy.encode_stat_sum( k, v ))
             if v is not None:
-                v = '%.15g'%v
+                v = f'{v:.15g}'
             print(f'    {k} = {v}',flush=True)
     print('='*len(s),flush=True)
 
@@ -100,7 +102,7 @@ def print_pystatsum( filename ):
     for e in expected_comments:
         keyval = decodestatsum( e )
         if keyval not in actual_statsums:
-            raise SystemExit('Problems with python encoding to "%s"'%e)
+            raise SystemExit(f'Problems with python encoding to "{e}"')
 
 
 def main():

@@ -19,8 +19,9 @@
 ##                                                                            ##
 ################################################################################
 
-import sys
 import contextlib as _contextlib
+import sys
+
 
 def flush():
     sys.stderr.flush()

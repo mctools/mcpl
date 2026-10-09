@@ -60,7 +60,7 @@ class Lib:
         self.__fcts = set()
         if not hasattr(self.__lib,'mcpltest_ctypes_dictionary'):
             print("Warning: No mcpltest_ctypes_dictionary symbol"
-                  " in testmod %s"%self.__name)
+                  f" in testmod {self.__name}")
         else:
             dictfct = _ctypes_create_fct( self.__lib,
                                           'mcpltest_ctypes_dictionary',
@@ -92,7 +92,7 @@ class Lib:
         #Make sure mcpl printouts go via Python stdout stream:
         exit1_fct = self.mcpltestdetail_exit1
         def error_handler(msg):
-            print('%s: %s'%(prefix,msg),flush=True)
+            print(f'{prefix}: {msg}',flush=True)
             exit1_fct()
         self.mcpltestdetail_set_error_handler(error_handler)
 
@@ -138,7 +138,7 @@ class Lib:
                                   *argtypes,
                                   libobj = self )
         fct.__name__ = fctname
-        assert not hasattr(self,fctname),f'Fct {repr(fctname)} already added!'
+        assert not hasattr(self,fctname),f'Fct {fctname!r} already added!'
         self.__fcts.add( (fctname,restype,argtypes) )
         setattr(self,fctname,fct)
 
@@ -149,9 +149,7 @@ class Lib:
 
     def dump(self,prefix=''):
         """Print available functions in this library"""
-        print('%sLibrary "%s" (%i functions):'%(prefix,
-                                                self.__name,
-                                                len(self.__fcts)))
+        print(f'{prefix}Library "{self.__name}" ({len(self.__fcts)} functions):')
         if not self.__fcts:
             print(f"{prefix}  <no functions defined>")
         for fctname,restype,argtypes in sorted(self.__fcts):
@@ -181,7 +179,7 @@ def _ctype_2_str( ct ):
     for k,v in _map_str2ctype.items():
         if ct is v:
             return k
-    raise ValueError("ctype not in map: %s"%ct)
+    raise ValueError(f"ctype not in map: {ct}")
 
 def _decode_signature_str( signature, include_fct_name ):
     signature=signature.strip()
@@ -189,7 +187,7 @@ def _decode_signature_str( signature, include_fct_name ):
     assert signature.count(')')==1
     assert signature.index(')')+1==len(signature)
     r,args = signature[:-1].split('(',2)
-    args = list( a for a in args.split(',') ) if args.strip() else []
+    args = list(args.split(',')) if args.strip() else []
 
     if include_fct_name:
         r = r.split()
@@ -210,11 +208,10 @@ def _load_lib_with_ctypes( path ):
     assert path.is_file()
 
     import platform
-    if platform.system()=='Windows':
+    if platform.system()=='Windows' and _keepalive_mcpllib[0] is None:
         #NOTE: Avoid DLL load errors by preloading MCPL lib.
-        if _keepalive_mcpllib[0] is None:
-            from .dirs import mcpllib
-            _keepalive_mcpllib[0] = ctypes.CDLL(str(mcpllib))
+        from .dirs import mcpllib
+        _keepalive_mcpllib[0] = ctypes.CDLL(str(mcpllib))
 
     try:
         lib = ctypes.CDLL(path)
@@ -281,7 +278,7 @@ def _ctypes_create_fct( lib, fctname, restype, *argtypes, libobj = None ):
                 if a is None:
                     al.append( ctypes.cast( None, VOIDFCT_CSTR_ARG ) )
                 else:
-                    def afct( arg_cstr ):
+                    def afct( arg_cstr, a = a ):
                         pystr = _cstr2str(arg_cstr)#todo: allow binary (non-utf8)?
                         a(pystr)
                     afct2 = VOIDFCT_CSTR_ARG(afct)
@@ -300,8 +297,8 @@ def _normalise_testmod_name(name):
     return name if name.startswith('TestMod_') else f'TestMod_{name}'
 
 def _find_testmod(name):
-    import pathlib
     import os
+    import pathlib
     tln = _normalise_testmod_name(name)
     #Normal cmake:
     locdir = pathlib.Path(os.environ.get('MCTOOLS_TESTMODULES_LOCDIR'))
