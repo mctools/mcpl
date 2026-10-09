@@ -34,13 +34,8 @@ def cli_wrapper_phits2mcpl():
     _run('phits2mcpl')
 
 def _get_mcpl_shlibdir_unix():
-    import subprocess
-    rv = subprocess.run( ['mcpl-config','--show','shlibdir'],
-                         check = True, capture_output = True )
-    if rv.returncode or rv.stderr:
-        raise RuntimeError('Problems invoking mcpl-config for shlibdir')
-    import pathlib
-    return pathlib.Path(rv.stdout.decode().strip()).absolute().resolve()
+    import _mcpl_core.info
+    return _mcpl_core.info.libpath().parent
 
 def _run(toolname):
     import pathlib
