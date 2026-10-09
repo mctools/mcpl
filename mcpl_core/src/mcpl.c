@@ -3685,6 +3685,14 @@ int mcpl_tool(int argc,char** argv) {
     if (nfilenames!=2)
       return free(filenames),mcpl_tool_usage(argv,"Must specify both input and output files with --extract.");
 
+    int32_t pdgcode_select = 0;
+    if (pdgcode_str) {
+      int64_t pdgcode64;
+      if (!mcpl_str2int(pdgcode_str, 0, &pdgcode64) || -pdgcode64>2147483648 || pdgcode64>2147483647 || !pdgcode64)
+        return free(filenames),mcpl_tool_usage(argv,"Must specify non-zero 32bit integer as argument to -p.");
+      pdgcode_select = (int32_t)pdgcode64;
+    }
+
     char * outfn;
     int attempt_gzip;
     const char * outfn_err = mcpl_internal_tool_outfn( filenames[1], &outfn,
@@ -3704,14 +3712,6 @@ int mcpl_tool(int argc,char** argv) {
       snprintf(comment, sizeof(comment), "mcpltool: extracted particles from"
                " file with %" PRIu64 " particles",fi_nparticles);
       mcpl_hdr_add_comment(fo,comment);
-    }
-
-    int32_t pdgcode_select = 0;
-    if (pdgcode_str) {
-      int64_t pdgcode64;
-      if (!mcpl_str2int(pdgcode_str, 0, &pdgcode64) || -pdgcode64>2147483648 || pdgcode64>2147483647 || !pdgcode64)
-        return free(filenames),mcpl_tool_usage(argv,"Must specify non-zero 32bit integer as argument to -p.");
-      pdgcode_select = (int32_t)pdgcode64;
     }
 
     if ( fi_nparticles > 0
