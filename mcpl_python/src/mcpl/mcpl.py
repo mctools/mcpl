@@ -54,24 +54,27 @@ __status__ = 'Production'
 __author__ = 'Thomas Kittelmann'
 __maintainer__ = 'Thomas Kittelmann'
 __email__ = 'thomas.kittelmann@ess.eu'
-__all__ = ['MCPLFile',
-           'MCPLParticle',
-           'MCPLParticleBlock',
-           'MCPLError',
-           'dump_file',
-           'convert2ascii',
-           'app_pymcpltool',
-           'collect_stats',
-           'dump_stats',
-           'plot_stats',
-           'main',
-           'encode_stat_sum',
-           'is_valid_stat_sum_key']
+__all__ = [
+    'MCPLError',
+    'MCPLFile',
+    'MCPLParticle',
+    'MCPLParticleBlock',
+    'app_pymcpltool',
+    'collect_stats',
+    'convert2ascii',
+    'dump_file',
+    'dump_stats',
+    'encode_stat_sum',
+    'is_valid_stat_sum_key',
+    'main',
+    'plot_stats',
+]
 
 #Python version checks and workarounds:
 
-import sys
 import os
+import sys
+
 
 def _checkpyversion():
     pyversion = sys.version_info[0:3]
@@ -128,7 +131,7 @@ else:
         _numpyok = False
 
 if not _numpyok:
-    print("MCPL WARNING: Unsupported numpy version (%s) detected"%(str(np.__version__)))
+    print(f"MCPL WARNING: Unsupported numpy version ({np.__version__!s}) detected")
 
 np_dtype = np.dtype
 try:
@@ -154,12 +157,12 @@ else:
         arrays = [np.asanyarray(arr) for arr in arrays]
         if not arrays:
             raise ValueError('need at least one array to stack')
-        shapes = set(arr.shape for arr in arrays)
+        shapes = {arr.shape for arr in arrays}
         if len(shapes) != 1:
             raise ValueError('all input arrays must have the same shape')
         result_ndim = arrays[0].ndim + 1
         if not -result_ndim <= axis < result_ndim:
-            msg = 'axis {0} out of bounds [-{1}, {1})'.format(axis, result_ndim)
+            msg = f'axis {axis} out of bounds [-{result_ndim}, {result_ndim})'
             raise IndexError(msg)
         if axis < 0:
             axis += result_ndim
@@ -178,7 +181,6 @@ else:
 
 class MCPLError(Exception):
     """Common exception class for all exceptions raised by module"""
-    pass
 
 class MCPLParticle:
     """Object representing a single particle"""
@@ -269,7 +271,7 @@ class MCPLParticleBlock:
         #empty block (set offset to max int to ensure d<0 in contains_ipos and get_by_global:
         self._offset = 9223372036854775807
         #non-constant columns (never the same in all blocks):
-        self._data = tuple()
+        self._data = ()
         #potentially constant columns (first entry says whether non-constant, second is cache):
         self._polx = [opt_polarisation,None]
         self._poly = [opt_polarisation,None]
@@ -300,7 +302,7 @@ class MCPLParticleBlock:
 
         if data is None:
             self._offset = 9223372036854775807
-            self._data = tuple()
+            self._data = ()
         else:
             self._data = data
             self._offset = file_offset
@@ -556,7 +558,7 @@ class MCPLFile:
                     self._np = np_rec
                     self._hdr['nparticles'] = np_rec
                     print ("MCPL WARNING: Input file appears to not have been closed"
-                           +" properly. Recovered %i particles."%np_rec)
+                           +f" properly. Recovered {np_rec} particles.")
 
                     comments = ( self._hdr.get('comments_raw')
                                  or self._hdr['comments'] )[:]
@@ -621,7 +623,7 @@ class MCPLFile:
         return self._blocklength
 
     def _open_file(self,filename):
-        assert isinstance(filename,bytes) or isinstance(filename,str)
+        assert isinstance(filename,(bytes,str))
 
         self._fileclose()
         self._fileclose = lambda : None
@@ -631,8 +633,8 @@ class MCPLFile:
         #which is why the slightly odd order of some checks below.
 
         try:
-            fh = open(filename,'rb')
-        except (IOError,OSError) as e:
+            fh = open(filename,'rb')  # noqa: SIM115
+        except OSError as e:
             if e.errno == 2:
                 fh = None#file not found
             else:
@@ -656,7 +658,7 @@ class MCPLFile:
                     #magically being able to open .mcpl files that are mistakenly named
                     #as .mcpl.gz
                     is_gz = False
-            except (IOError, OSError, EOFError):
+            except (OSError, EOFError):
                 pass
             fh.seek(0)
 
@@ -688,7 +690,7 @@ class MCPLFile:
                 try:
                     x = fh.read( n )
                 except read_errors:
-                    x = tuple()
+                    x = ()
                 if len(x)==n:
                     return np.frombuffer(x,dtype=dtype, count=count)
                 else:
@@ -887,7 +889,7 @@ class MCPLFile:
         d = h.get('stat_sum')
         if d is not None:
             return d
-        from types import MappingProxyType # read-only view of dict
+        from types import MappingProxyType  # read-only view of dict
         d = MappingProxyType(
             _parse_statsum( h.get('comments_raw',None) or h.get('comments') )
         )
@@ -984,7 +986,7 @@ class MCPLFile:
             h['sourcename'] = sourcename.decode('utf-8','replace')
             h['comments'] = [c.decode('utf-8','replace') for c in comments]
             h['blobkeys'] = [bk.decode('utf-8','replace') for bk in blobkeys]
-            h['blobs'] = dict((k.decode('utf-8','replace'),v) for k,v in blobs.items())
+            h['blobs'] = {k.decode('utf-8','replace'): v for k,v in blobs.items()}
         else:
             #raw bytes all the way
             h['sourcename'] = sourcename
@@ -995,7 +997,7 @@ class MCPLFile:
         if saw_any_statsum:
             #Trigger loading of stat:sum:'s already, to emit errors in case of
             #detected issues.
-            self.stat_sum
+            _ = self.stat_sum
         if saw_any_unsupportedstat:
             print("MCPL WARNING: Opened file with unknown \"stat:...\" "
                   "syntax in comments. The present installation only has"
@@ -1012,41 +1014,41 @@ class MCPLFile:
             _output_bytearray_raw(s)
             print(postfix)
         print("\n  Basic info")
-        print("    Format             : MCPL-%i"%h['version'])
-        print("    No. of particles   : %i"%h['nparticles'])
-        print("    Header storage     : %i bytes"%h['headersize'])
-        print("    Data storage       : %i bytes"%(h['nparticles']*h['particlesize']))
+        print(f"    Format             : MCPL-{h['version']}")
+        print(f"    No. of particles   : {h['nparticles']}")
+        print(f"    Header storage     : {h['headersize']} bytes")
+        print(f"    Data storage       : {h['nparticles']*h['particlesize']} bytes")
         print("\n  Custom meta data")
         print_datastring('    Source             : "',
                          h.get('sourcename_raw',None) or h.get('sourcename'),
                          '"')
         comments = h.get('comments_raw',None) or h.get('comments')
-        print("    Number of comments : %i"%len(comments))
+        print(f"    Number of comments : {len(comments)}")
         for i,c in enumerate(comments):
-            print_datastring('          -> comment %i : "'%i,c,'"')
+            print_datastring(f'          -> comment {i} : "',c,'"')
         blobs = h.get('blobs_raw',None) or h.get('blobs')
         blobkeys = h.get('blobkeys_raw',None) or h.get('blobkeys')
-        print("    Number of blobs    : %i"%len(h['blobs']))
+        print(f"    Number of blobs    : {len(h['blobs'])}")
         for bk in blobkeys:
-            print_datastring('          -> %i bytes of data with key "'%len(blobs[bk]),bk,'"')
+            print_datastring(f'          -> {len(blobs[bk])} bytes of data with key "',bk,'"')
         print("\n  Particle data format")
         print("    User flags         : %s"%("yes" if h['opt_userflags'] else "no"))
         print("    Polarisation info  : %s"%("yes" if h['opt_polarisation'] else "no"))
         s = "    Fixed part. type   : "
         if h['opt_universalpdgcode']:
-            s += "yes (pdgcode %i)"%h['opt_universalpdgcode']
+            s += f"yes (pdgcode {h['opt_universalpdgcode']})"
         else:
             s += "no"
         print(s)
         s = "    Fixed part. weight : "
         if h['opt_universalweight']:
-            s += "yes (weight %g)"%h['opt_universalweight']
+            s += "yes (weight {:g})".format(h['opt_universalweight'])
         else:
             s += "no"
         print(s)
         print("    FP precision       : %s"%("single" if h['opt_singleprec'] else "double"))
-        print("    Endianness         : %s"%({'L':'little','B':'big'}[h['endianness']]))
-        print("    Storage            : %i bytes/particle"%h['particlesize'])
+        print("    Endianness         : {}".format({'L':'little','B':'big'}[h['endianness']]))
+        print(f"    Storage            : {h['particlesize']} bytes/particle")
         print()
 
     def dump_particles(self,limit=10,skip=0):
@@ -1080,18 +1082,18 @@ class MCPLFile:
             s = fmt1%( p.file_index,p.pdgcode,p.ekin,p.x,p.y,p.z,
                        p.ux,p.uy,p.uz,p.time )
             if not opt_uw:
-                s += " %11.5g"%p.weight
+                s += f" {p.weight:11.5g}"
             if opt_pol:
                 s+=fmt2%( p.polx, p.poly, p.polz )
             if opt_uf:
-                s+=" 0x%08x"%p.userflags
+                s+=f" 0x{p.userflags:08x}"
             print(s)
 
 def dump_file(filename,header=True,particles=True,limit=10,skip=0,**kwargs):
     """Python equivalent of mcpl_dump(..) function from mcpl.h, which can be used to
     dump both header and particle contents of a file to stdout."""
     f = MCPLFile(filename,**kwargs)
-    print("Opened MCPL file %s:"%os.path.basename(filename))
+    print(f"Opened MCPL file {os.path.basename(filename)}:")
     if header:
         f.dump_hdr()
     if particles:
@@ -1110,7 +1112,7 @@ def convert2ascii(mcplfile,outfile):
 
     fout = outfile
     fin = mcplfile
-    fout.write("#MCPL-ASCII\n#ASCII-FORMAT: v1\n#NPARTICLES: %i\n#END-HEADER\n"%fin.nparticles)
+    fout.write(f"#MCPL-ASCII\n#ASCII-FORMAT: v1\n#NPARTICLES: {fin.nparticles}\n#END-HEADER\n")
     fout.write("index     pdgcode               ekin[MeV]                   x[cm]          "
                +"         y[cm]                   z[cm]                      ux                  "
                +"    uy                      uz                time[ms]                  weight  "
@@ -1121,7 +1123,7 @@ def convert2ascii(mcplfile,outfile):
 
 def _pymcpltool_usage(progname,errmsg=None):
     if errmsg:
-        print("ERROR: %s\n"%errmsg)
+        print(f"ERROR: {errmsg}\n")
         print("Run with -h or --help for usage information")
         sys.exit(1)
     helpmsg = """
@@ -1198,26 +1200,26 @@ def app_pymcpltool(argv=None):
     def bad(errmsg):
         _pymcpltool_usage(progname,errmsg)
     for a in args:
-        if a.startswith(str('--')):
-            if a==str('--justhead'):
+        if a.startswith('--'):
+            if a=='--justhead':
                 opt_justhead=True
-            elif a==str('--nohead'):
+            elif a=='--nohead':
                 opt_nohead=True
-            elif a==str('--version'):
+            elif a=='--version':
                 opt_version=True
-            elif a==str('--stats'):
+            elif a=='--stats':
                 opt_stats=True
-            elif a==str('--pdf'):
+            elif a=='--pdf':
                 opt_pdf=True
-            elif a==str('--gui'):
+            elif a=='--gui':
                 opt_gui=True
-            elif a==str('--text'):
+            elif a=='--text':
                 opt_text=True
-            elif a==str('--help'):
+            elif a=='--help':
                 _pymcpltool_usage(progname)
             else:
-                bad(str("Unrecognised option : %s")%a)
-        elif a.startswith(str('-')):
+                bad(f"Unrecognised option : {a}")
+        elif a.startswith('-'):
             a=a[1:]
             while a:
                 f,a=a[0],a[1:]
@@ -1253,7 +1255,7 @@ def app_pymcpltool(argv=None):
                 elif f=='h':
                     _pymcpltool_usage(progname)
                 else:
-                    bad("Unrecognised option : -%s"%f)
+                    bad(f"Unrecognised option : -{f}")
         else:
             filelist += [a]
     number_dumpopts = sum(1 for e in (opt_justhead,opt_nohead,opt_limit is not None,opt_skip is not None,opt_blobkey) if e)
@@ -1272,7 +1274,7 @@ def app_pymcpltool(argv=None):
     if opt_version:
         if filelist:
             bad("Unrecognised arguments for --version.")
-        print("MCPL version %s"%_determine_version())
+        print(f"MCPL version {_determine_version()}")
         sys.exit(0)
 
     if opt_text:
@@ -1283,8 +1285,8 @@ def app_pymcpltool(argv=None):
         if (os.path.exists(filelist[1])):
             bad("Requested output file already exists.")
         try:
-            fout = open(filelist[1],'w')
-        except (IOError, OSError):
+            fout = open(filelist[1],'w')  # noqa: SIM115
+        except OSError:
             fout = None
         if not fout:
             raise MCPLError('Could not open output file.')
@@ -1376,12 +1378,12 @@ def _pdg_database(pdgcode):
         pdgcode //= 10
         if pdgcode==10 and ZZZ>0 and AAA>0:
             if L==0 and III==0 and ZZZ < len(_db_elem)+1:
-                return '%s%i'%(_db_elem[ZZZ-1],AAA)
-            s = 'ion(Z=%i,A=%i'%(ZZZ,AAA)
+                return f'{_db_elem[ZZZ-1]}{AAA}'
+            s = f'ion(Z={ZZZ},A={AAA}'
             if L:
-                s += ',L=%i'%L
+                s += f',L={L}'
             if III:
-                s += ',I=%i'%III
+                s += f',I={III}'
             s += ')'
             return s
     return None
@@ -1446,16 +1448,16 @@ class _StatCollector:
 
     def dump(self):
         for k in self.__dumporder:
-            print("%s : %s"%(k.ljust(8),'%g'%self.__statcalc[k]() if self.__sumw>0.0 or k=='integral' else 'n/a'))
+            print("{} : {}".format(k.ljust(8),f'{self.__statcalc[k]():g}' if self.__sumw>0.0 or k=='integral' else 'n/a'))
 
     def summarise(self):
-        return ', '.join("%s=%s"%(k,'%g'%self.__statcalc[k]() if self.__sumw>0.0 or k=='integral' else 'n/a') for k in self.__dumporder)
+        return ', '.join("{}={}".format(k,f'{self.__statcalc[k]():g}' if self.__sumw>0.0 or k=='integral' else 'n/a') for k in self.__dumporder)
 
     def __getitem__(self,a):
         return self.__statcalc[a]()
 
     def as_dict(self):
-        return dict((k,self.__statcalc[k]()) for k in self.__statcalc.keys())
+        return {k: self.__statcalc[k]() for k in self.__statcalc}
 
 _possible_std_stats = ['ekin','x','y','z','ux','uy','uz','time','weight','polx','poly','polz']
 _possible_freq_stats = ['pdgcode','userflags']
@@ -1485,7 +1487,7 @@ def collect_stats(mcplfile,stats='all',bin_data=True):
 
     unknown = stats.difference(possible_std_stats.union(possible_freq_stats))
     if unknown:
-        raise MCPLError('Unknown stat names requested: "%s"'%('","'.join(unknown)))
+        raise MCPLError('Unknown stat names requested: "{}"'.format('","'.join(unknown)))
 
     #Some stats might be constant for all particles in the file:
     constant_stats_available = set()
@@ -1496,12 +1498,12 @@ def collect_stats(mcplfile,stats='all',bin_data=True):
     if mcplfile.opt_universalweight:
         constant_stats_available.add('weight')
     if not mcplfile.opt_polarisation:
-        constant_stats_available |= set(['polx','poly','polz'])
+        constant_stats_available |= {'polx','poly','polz'}
     cnst_stats = constant_stats_available.intersection(stats)
     stats = stats.difference(cnst_stats)
 
-    std_stats = sorted(list(stats.difference(constant_stats_available).intersection(possible_std_stats)))
-    freq_stats = sorted(list(stats.difference(constant_stats_available).intersection(possible_freq_stats)))
+    std_stats = sorted(stats.difference(constant_stats_available).intersection(possible_std_stats))
+    freq_stats = sorted(stats.difference(constant_stats_available).intersection(possible_freq_stats))
 
     if not std_stats and not freq_stats and not cnst_stats:
         raise MCPLError('No stats requested')
@@ -1536,7 +1538,7 @@ def collect_stats(mcplfile,stats='all',bin_data=True):
             ranges[s] = (ranges[s][0]-1.0,ranges[s][1]+1.0)
 
     hists={}
-    freq_uc=dict((s,(np.asarray([],dtype=int),np.asarray([],dtype=float))) for s in freq_stats)
+    freq_uc={s: (np.asarray([],dtype=int),np.asarray([],dtype=float)) for s in freq_stats}
     if (std_stats and bin_data) or freq_stats:
         #pass through and collect data:
         if weight_sum is None:
@@ -1548,7 +1550,7 @@ def collect_stats(mcplfile,stats='all',bin_data=True):
                 uc_block = _unique_count(getattr(pb,s),vals_weight)
                 freq_uc[s] = _merge_unique_count(freq_uc[s],uc_block)
                 if len(freq_uc[s][0])>10000:
-                    print("MCPL WARNING: Too many unique values in %s field. Disabling %s statistics"%(s,s))
+                    print(f"MCPL WARNING: Too many unique values in {s} field. Disabling {s} statistics")
                     disable+=[s]
             for s in disable:
                 del freq_uc[s]
@@ -1610,7 +1612,7 @@ def collect_stats(mcplfile,stats='all',bin_data=True):
                     h[nbins//2] = weight_sum
                     hists[spol] = [ h, bins ]
 
-    for s in list(k for k in freq_uc.keys()):
+    for s in list(freq_uc):
         #sort by frequency:
         u,c=freq_uc[s]
         sortidx=np.argsort(u,kind='mergesort')#the indices that would sort u
@@ -1622,7 +1624,7 @@ def collect_stats(mcplfile,stats='all',bin_data=True):
     for s,uc in freq_uc.items():
         results[s] = { 'unique_values': uc[0], 'unique_values_counts' : uc[1], 'weighted' : True, 'type':'freq' }
 
-    units=dict(ekin='MeV',x='cm',y='cm',z='cm',time='ms')
+    units={'ekin': 'MeV','x': 'cm','y': 'cm','z': 'cm','time': 'ms'}
 
     for s,sc in collected_stats.items():
         d=sc.as_dict()
@@ -1640,7 +1642,7 @@ def collect_stats(mcplfile,stats='all',bin_data=True):
     return results
 
 _freq_alt_descr =  {'pdgcode': _pdg_database,
-                    'userflags':lambda x : '0x%08x'%x}
+                    'userflags':lambda x : f'0x{x:08x}'}
 
 def dump_stats(stats):
     """Format and print provided statistics object to stdout. The stats object is
@@ -1649,8 +1651,8 @@ def dump_stats(stats):
     if not isinstance(stats,dict):
         stats = collect_stats(stats,bin_data=False)
     print('------------------------------------------------------------------------------')
-    print('nparticles   : %i'%stats['file']['nparticles'])
-    print('sum(weights) : %g'%stats['file']['integral'])
+    print(f"nparticles   : {stats['file']['nparticles']}")
+    print('sum(weights) : {:g}'.format(stats['file']['integral']))
     if set(stats).intersection(_possible_std_stats):
         print('------------------------------------------------------------------------------')
         print('             :            mean             rms             min             max')
@@ -1661,8 +1663,8 @@ def dump_stats(stats):
             continue
         s=stats[statname]
         assert s['type']=='hist'
-        su = '%s %s'%(statname.ljust(6),('[%s]'%s['unit']).rjust(5)) if s['unit'] else statname
-        print('%s : %15g %15.5g %15g %15g'%(su.ljust(12),s['mean'],s['rms'],s['min'],s['max']))
+        su = '{} {}'.format(statname.ljust(6),('[{}]'.format(s['unit'])).rjust(5)) if s['unit'] else statname
+        print('{} : {:15g} {:15.5g} {:15g} {:15g}'.format(su.ljust(12),s['mean'],s['rms'],s['min'],s['max']))
     for statname in _possible_freq_stats:
         if statname not in stats:
             continue
@@ -1674,9 +1676,9 @@ def dump_stats(stats):
         uv,uvc=s['unique_values'],s['unique_values_counts'].copy()
         percents=uvc*(100.0/uvc.sum())
         showmax=50
-        print ('%s : '%(statname.ljust(12)),end='')
+        print (f'{statname.ljust(12)} : ',end='')
         for i,(u,p,c) in enumerate(zip(uv,percents,uvc)):
-            txt='%i'%u
+            txt=f'{u}'
             if i+1==showmax:
                 txt='other'
                 alttxt=''
@@ -1684,8 +1686,8 @@ def dump_stats(stats):
                 c=uvc[i:].sum()
             else:
                 alttxt=fct_alt_descr(u)
-            print('%s %s %12g (%5.2f%%)'%(txt.rjust(26 if i else 11),
-                                       ('(%s)'%alttxt if alttxt else '').ljust(12),
+            print('{} {} {:12g} ({:5.2f}%)'.format(txt.rjust(26 if i else 11),
+                                       (f'({alttxt})' if alttxt else '').ljust(12),
                                        c,p))
             if i+1==showmax:
                 break
@@ -1704,7 +1706,7 @@ def plot_stats(stats,pdf=False,set_backend=None):
                         +' containing the desired filename of the PDF file to be created')
 
     if pdf and os.path.exists(pdf):
-        raise MCPLError('PDF file %s already exists'%(pdf))
+        raise MCPLError(f'PDF file {pdf} already exists')
 
     try:
         import matplotlib
@@ -1755,9 +1757,9 @@ def plot_stats(stats,pdf=False,set_backend=None):
         freq=stats[s]
         u,c=freq['unique_values'],freq['unique_values_counts']
         fct_alt_descr = _freq_alt_descr.get(s,lambda x: None)
-        def fmt_fct_raw(x):
+        def fmt_fct_raw(x, fct_alt_descr=fct_alt_descr):
             alttxt = fct_alt_descr(x)
-            return '%s\n(%s)'%(str(x),alttxt) if alttxt is not None else str(x)
+            return f'{x!s}\n({alttxt})' if alttxt is not None else str(x)
         #fmt_fct_raw = freq_formats_fcts[s]
         def fmt_fct( i, x ):
             return fmt_fct_raw(x)
@@ -1768,7 +1770,7 @@ def plot_stats(stats,pdf=False,set_backend=None):
             def fmt_fct( i, x ):
                 return 'other' if i==showmax-1 else fmt_fct_raw(x)
         percents = c.astype(float)*100.0/sum(c)
-        labels = ['%s\n%.2f%%'%(fmt_fct(i,e),percents[i]) for i,e in enumerate(u)]
+        labels = [f'{fmt_fct(i,e)}\n{percents[i]:.2f}%' for i,e in enumerate(u)]
         barcenters=list(range(len(c)))
         plt.bar(barcenters, c, width=0.7,align='center',linewidth=0)
         ax=plt.gca()
@@ -1792,8 +1794,8 @@ def plot_stats(stats,pdf=False,set_backend=None):
         hist,bins = h['hist'],h['hist_bins']
         plt.bar(0.5*(bins[:-1] + bins[1:]), hist, align='center', width=(bins[1] - bins[0]),linewidth=0)
         plt.grid()
-        plt.title('%s%s (%s)'%(s,
-                               ' [%s]'%h['unit'] if h['unit'] is not None else '',
+        plt.title('{}{} ({})'.format(s,
+                               ' [{}]'.format(h['unit']) if h['unit'] is not None else '',
                                'weighted' if h['weighted'] else 'unweighted'))
         plt.xlabel(h['summary'],fontsize='small')
         plt.xlim(bins[0],bins[-1])
@@ -1807,9 +1809,8 @@ def plot_stats(stats,pdf=False,set_backend=None):
     if pdf:
         if hasattr(pdf,'infodict'):
             d = pdf.infodict()
-            d['Title'] = ( 'Plots made with mcpl.py version %s'
-                           % _determine_version() )
-            d['Author'] = 'mcpl.py v%s' % _determine_version()
+            d['Title'] = ( f'Plots made with mcpl.py version {_determine_version()}' )
+            d['Author'] = f'mcpl.py v{_determine_version()}'
             d['Subject'] = 'mcpl plots'
             d['Keywords'] = 'mcpl'
         pdf.close()
@@ -1837,9 +1838,9 @@ def encode_stat_sum( key, value ):
          or not ( value==-1.0 or value>=0.0) ):
         raise MCPLError('stat:sum: values must be non-nan, '
                         'non-inf and either -1.0 or >=0.0')
-    v = '%24.15g'%value
+    v = f'{value:24.15g}'
     if float(v)!=value:
-        v = '%24.17g'%value
+        v = f'{value:24.17g}'
     return f'stat:sum:{key}:{v}'
 
 def is_valid_stat_sum_key( key ):
@@ -1912,7 +1913,7 @@ def main():
     try:
         app_pymcpltool()
     except MCPLError as e:
-        print('MCPL ERROR: %s'%str(e))
+        print(f'MCPL ERROR: {e!s}')
         sys.exit(1)
 
 if __name__=='__main__':
