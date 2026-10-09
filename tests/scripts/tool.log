@@ -1572,6 +1572,22 @@ MCPL: Compressed file into extracted_5.mcpl.gz
 MCPL: Successfully extracted 5 / 195 particles from miscphysnogz.mcpl into extracted_5.mcpl.gz
 
 ----------------------------------------------
+Running mcpltool -e -p0 miscphysnogz.mcpl badpdg.mcpl
+----------------------------------------------
+ERROR: Must specify non-zero 32bit integer as argument to -p.
+
+Run with -h or --help for usage information
+
+===> Command failed!
+----------------------------------------------
+Running mcpltool -e -pabc miscphysnogz.mcpl badpdg.mcpl
+----------------------------------------------
+ERROR: Must specify non-zero 32bit integer as argument to -p.
+
+Run with -h or --help for usage information
+
+===> Command failed!
+----------------------------------------------
 Running mcpltool -l0 extracted_1.mcpl.gz
 ----------------------------------------------
 Opened MCPL file extracted_1.mcpl.gz:

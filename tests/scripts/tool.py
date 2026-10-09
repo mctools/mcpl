@@ -181,6 +181,10 @@ def main():
     cmd('-ep-1000020040',fmiscnogz,'extracted_3.mcpl.gz')
     cmd('-e','-p1000922350',fmisc,'extracted_4.mcpl.gz')
     cmd('-e','-p111','-l999999','-s150',fmiscnogz,'extracted_5.mcpl.gz')
+    #invalid -p arguments must not leave output files behind:
+    cmd('-e','-p0',fmiscnogz,'badpdg.mcpl',fail=True)
+    cmd('-e','-pabc',fmiscnogz,'badpdg.mcpl',fail=True)
+    assert not Path('badpdg.mcpl').exists()
     cmd('-l0','extracted_1.mcpl.gz')
     cmd('-l0','extracted_2.mcpl.gz')
     cmd('-l0','extracted_3.mcpl.gz')
