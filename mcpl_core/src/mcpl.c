@@ -3334,6 +3334,7 @@ MCPL_LOCAL int mcpl_tool_usage( char** argv, const char * errmsg ) {
   mcpl_print("  -m, --merge FILEOUT FILE1 FILE2 ... FILEN\n");
   mcpl_print("                    Creates new FILEOUT with combined particle contents from\n");
   mcpl_print("                    specified list of N existing and compatible files.\n");
+  mcpl_print("                    FILEOUT will be gzipped if its name ends with .mcpl.gz.\n");
   mcpl_print("  -m, --merge --inplace FILE1 FILE2 ... FILEN\n");
   mcpl_print("                    Appends the particle contents in FILE2 ... FILEN into\n");
   mcpl_print("                    FILE1. Note that this action modifies FILE1!\n");
@@ -3345,6 +3346,7 @@ MCPL_LOCAL int mcpl_tool_usage( char** argv, const char * errmsg ) {
   mcpl_print("Extract options:\n");
   mcpl_print("  -e, --extract FILE1 FILE2\n");
   mcpl_print("                    Extracts particles from FILE1 into a new FILE2.\n");
+  mcpl_print("                    FILE2 will be gzipped if its name ends with .mcpl.gz.\n");
   mcpl_print("  -lN, -sN        : Select range of particles in FILE1 (as above).\n");
   mcpl_print("  -pPDGCODE       : Select particles of type given by PDGCODE.\n");
   mcpl_print("\n");
@@ -3412,6 +3414,42 @@ int mcpl_wrap_wmain( int argc, wchar_t** wargv, int(*appfct)(int,char**)  )
   return ec;
 }
 #endif
+
+MCPL_LOCAL const char * mcpl_internal_tool_outfn( char * fn, char ** outfn,
+                                                  int * attempt_gzip )
+{
+  //Output file name for --merge and --extract. Disallow .gz endings unless it
+  //is .mcpl.gz, in which case we attempt to gzip automatically. Returns an
+  //error message in case of problems. If *outfn != fn, it must be freed.
+  *outfn = fn;
+  *attempt_gzip = 0;
+  if (mcpl_file_certainly_exists(fn))
+    return "Requested output file already exists.";
+  size_t lfn = strlen(fn);
+  if( lfn > 8 && !strcmp(fn + (lfn - 8), ".mcpl.gz")) {
+    *attempt_gzip = 1;
+    *outfn = mcpl_internal_malloc(lfn-2);//lfn+1-3
+    memcpy(*outfn,fn,lfn-3);
+    (*outfn)[lfn-3] = '\0';
+    if (mcpl_file_certainly_exists(*outfn)) {
+      free(*outfn);
+      *outfn = fn;
+      return "Requested output file already exists (without .gz extension).";
+    }
+  } else if( lfn > 3 && !strcmp(fn + (lfn - 3), ".gz")) {
+    return "Requested output file should not have .gz extension (unless it is .mcpl.gz).";
+  } else if( !( lfn > 5 && !strcmp(fn + (lfn - 5), ".mcpl") ) ) {
+    //mcpl_create_outfile will append .mcpl:
+    char * fnmcpl = mcpl_internal_malloc(lfn+6);
+    memcpy(fnmcpl,fn,lfn);
+    memcpy(fnmcpl+lfn,".mcpl",6);
+    int exists = mcpl_file_certainly_exists(fnmcpl);
+    free(fnmcpl);
+    if (exists)
+      return "Requested output file already exists (with .mcpl extension).";
+  }
+  return NULL;
+}
 
 int mcpl_tool(int argc,char** argv) {
 
@@ -3613,23 +3651,12 @@ int mcpl_tool(int argc,char** argv) {
       for (i = ifirstinfile+1; i < nfilenames; ++i)
         mcpl_merge_inplace(filenames[ifirstinfile],filenames[i]);
     } else {
-      if (mcpl_file_certainly_exists(filenames[0]))
-        return free(filenames),mcpl_tool_usage(argv,"Requested output file already exists.");
-
-      //Disallow .gz endings unless it is .mcpl.gz, in which case we attempt to gzip automatically.
-      char * outfn = filenames[0];
-      size_t lfn = strlen(outfn);
-      int attempt_gzip = 0;
-      if( lfn > 8 && !strcmp(outfn + (lfn - 8), ".mcpl.gz")) {
-        attempt_gzip = 1;
-        outfn = mcpl_internal_malloc(lfn-2);//lfn+1-3
-        memcpy(outfn,filenames[0],lfn-3);
-        outfn[lfn-3] = '\0';
-        if (mcpl_file_certainly_exists(outfn))
-          return free(filenames),mcpl_tool_usage(argv,"Requested output file already exists (without .gz extension).");
-      } else if( lfn > 3 && !strcmp(outfn + (lfn - 3), ".gz")) {
-        return free(filenames),mcpl_tool_usage(argv,"Requested output file should not have .gz extension (unless it is .mcpl.gz).");
-      }
+      char * outfn;
+      int attempt_gzip;
+      const char * outfn_err = mcpl_internal_tool_outfn( filenames[0], &outfn,
+                                                         &attempt_gzip );
+      if (outfn_err)
+        return free(filenames),mcpl_tool_usage(argv,outfn_err);
 
       mcpl_outfile_t mf = ( opt_forcemerge ?
                             mcpl_forcemerge_files( outfn, nfilenames-1, (const char**)filenames + 1, opt_keepuserflags) :
@@ -3658,11 +3685,17 @@ int mcpl_tool(int argc,char** argv) {
     if (nfilenames!=2)
       return free(filenames),mcpl_tool_usage(argv,"Must specify both input and output files with --extract.");
 
-    if (mcpl_file_certainly_exists(filenames[1]))
-      return free(filenames),mcpl_tool_usage(argv,"Requested output file already exists.");
+    char * outfn;
+    int attempt_gzip;
+    const char * outfn_err = mcpl_internal_tool_outfn( filenames[1], &outfn,
+                                                       &attempt_gzip );
+    if (outfn_err)
+      return free(filenames),mcpl_tool_usage(argv,outfn_err);
 
     mcpl_file_t fi = mcpl_open_file(filenames[0]);
-    mcpl_outfile_t fo = mcpl_create_outfile(filenames[1]);
+    mcpl_outfile_t fo = mcpl_create_outfile(outfn);
+    if (outfn != filenames[1])
+      free(outfn);
     mcpl_transfer_metadata(fi, fo);
     uint64_t fi_nparticles = mcpl_hdr_nparticles(fi);
 
@@ -3727,13 +3760,13 @@ int mcpl_tool(int argc,char** argv) {
     const char * outfile_fn = mcpl_outfile_filename(fo);
     size_t nn = strlen(outfile_fn);
     char *fo_filename = mcpl_internal_malloc(nn+4);
-    //fo_filename[0] = '\0';
     memcpy(fo_filename,outfile_fn,nn+1);
-    //memcpy(fo_filename+nn,".gz",4);
-    //  strncat(fo_filename,mcpl_outfile_filename(fo),nn);
-    if (mcpl_closeandgzip_outfile(fo))
-      memcpy(fo_filename+nn,".gz",4);
-    //strncat(fo_filename,".gz",3);
+    if (attempt_gzip) {
+      if (mcpl_closeandgzip_outfile(fo))
+        memcpy(fo_filename+nn,".gz",4);
+    } else {
+      mcpl_close_outfile(fo);
+    }
     mcpl_close_file(fi);
 
     char buf[256];

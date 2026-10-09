@@ -174,12 +174,13 @@ def main():
     cmd('fake.mcpl',fail=True)
     cmd('fake.mcpl.gz',fail=True)
     cmd('fake2.mcpl.gz',fail=True)
-    cmd('-e',fmisc,'extracted_1')
-    cmd('--extract','-p2112',fmisc,'extracted_1')
-    cmd('--extract','-p-11',fmisc,'extracted_2')
-    cmd('-ep-1000020040',fmiscnogz,'extracted_3')
-    cmd('-e','-p1000922350',fmisc,'extracted_4')
-    cmd('-e','-p111','-l999999','-s150',fmiscnogz,'extracted_5')
+    cmd('-e',fmisc,'extracted_0')
+    cmd('-e',fmisc,'extracted_0',fail=True)#already exists (as .mcpl)
+    cmd('--extract','-p2112',fmisc,'extracted_1.mcpl.gz')
+    cmd('--extract','-p-11',fmisc,'extracted_2.mcpl.gz')
+    cmd('-ep-1000020040',fmiscnogz,'extracted_3.mcpl.gz')
+    cmd('-e','-p1000922350',fmisc,'extracted_4.mcpl.gz')
+    cmd('-e','-p111','-l999999','-s150',fmiscnogz,'extracted_5.mcpl.gz')
     cmd('-l0','extracted_1.mcpl.gz')
     cmd('-l0','extracted_2.mcpl.gz')
     cmd('-l0','extracted_3.mcpl.gz')
@@ -205,9 +206,6 @@ def main():
     cmd('--extract','-p2112',fmiscnogz,'extracted_1_new.mcpl')
     cmd('--extract','-p-11',fmiscnogz,'extracted_2_new.mcpl')
     cmd('-e','-p1000922350',fmiscnogz,'extracted_4_new.mcpl')
-    gunzip('extracted_1_new.mcpl.gz')
-    gunzip('extracted_2_new.mcpl.gz')
-    gunzip('extracted_4_new.mcpl.gz')
     cmd('--merge','merged_1to5_new_filec.mcpl','extracted_1_new.mcpl','extracted_2_new.mcpl','extracted_3.mcpl','extracted_4_new.mcpl','extracted_5.mcpl')
     #merge to gzipped output by specifying .mcpl.gz:
     #  -> but fail since .mcpl file exists:
@@ -238,8 +236,6 @@ def main():
     cmd('-e','difficult_unitvector.mcpl','extracted_all','-l0','--preventcomment')
     cmd('-e','difficult_unitvector.mcpl','extracted_none','-s999999999','--preventcomment')
 
-    gunzip('extracted_all.mcpl.gz')
-    gunzip('extracted_none.mcpl.gz')
     cmd('-m','extracted_recombined','extracted_none.mcpl','extracted_all.mcpl')
     cmd('-m','--inplace','extracted_none.mcpl','extracted_all.mcpl')
     check_same('difficult_unitvector.mcpl','extracted_recombined.mcpl')
@@ -247,34 +243,34 @@ def main():
     check_same('extracted_recombined.mcpl','extracted_none.mcpl')
 
     cmd('--extract','statsum_copy.mcpl.gz','statsum_extract1.mcpl')
-    cmd('statsum_extract1.mcpl.gz')
+    cmd('statsum_extract1.mcpl')
 
     cmd('--extract','-l7','statsum_copy.mcpl.gz','statsum_extract2.mcpl')
-    cmd('statsum_extract2.mcpl.gz')
+    cmd('statsum_extract2.mcpl')
 
     cmd('--extract','-s30','statsum_copy.mcpl.gz','statsum_extract3.mcpl')
-    cmd('statsum_extract3.mcpl.gz')
+    cmd('statsum_extract3.mcpl')
 
     cmd('--extract','-l4','-s20','statsum_copy.mcpl.gz','statsum_extract4.mcpl')
-    cmd('statsum_extract4.mcpl.gz')
+    cmd('statsum_extract4.mcpl')
 
     cmd('--extract','-l300','statsum_copy.mcpl.gz','statsum_extract_all.mcpl')
-    cmd('statsum_extract_all.mcpl.gz')
+    cmd('statsum_extract_all.mcpl')
 
     cmd('--extract','-l40','-s1',
         'statsum_copy.mcpl.gz','statsum_extract5.mcpl')
-    cmd('statsum_extract5.mcpl.gz')
+    cmd('statsum_extract5.mcpl')
     cmd('-e','-l40','-s1','-p22',
         'statsum_copy.mcpl.gz','statsum_extract5photons.mcpl')
-    cmd('statsum_extract5photons.mcpl.gz')
+    cmd('statsum_extract5photons.mcpl')
 
     cmd('--extract','-p22',
         'statsum_copy.mcpl.gz','statsum_extractphotons_all.mcpl')
-    cmd('statsum_extractphotons_all.mcpl.gz')
+    cmd('statsum_extractphotons_all.mcpl')
 
     cmd('--extract','-p22','-l400',
         'statsum_copy.mcpl.gz','statsum_extractphotons_all2.mcpl')
-    cmd('statsum_extractphotons_all2.mcpl.gz')
+    cmd('statsum_extractphotons_all2.mcpl')
 
     #More bad files:
     cmd(dd('reffile_bad1.mcpl'),fail=True)

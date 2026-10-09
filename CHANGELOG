@@ -1,6 +1,11 @@
 v2.2.9  (work in progress)
       * pymcpltool --stats (and dump_stats in the Python API) now also shows
         any stat:sum entries of the file (GitHub issue #94).
+      * mcpltool --extract now only gzips the output file if its name ends with
+        .mcpl.gz, like --merge does (GitHub issue #21). Previously it always
+        gzipped, and an output name ending with .mcpl.gz resulted in a file
+        named .mcpl.gz.mcpl.gz. Both now also refuse to overwrite an existing
+        file when the .mcpl extension is left out of the output name.
       * Drop support for Python 3.8.
       * mcpltool --repair (and mcpl_repair) now also repairs files truncated
         right after the header, and removes any partially written particle at

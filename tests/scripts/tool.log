@@ -30,6 +30,7 @@ Merge options:
   -m, --merge FILEOUT FILE1 FILE2 ... FILEN
                     Creates new FILEOUT with combined particle contents from
                     specified list of N existing and compatible files.
+                    FILEOUT will be gzipped if its name ends with .mcpl.gz.
   -m, --merge --inplace FILE1 FILE2 ... FILEN
                     Appends the particle contents in FILE2 ... FILEN into
                     FILE1. Note that this action modifies FILE1!
@@ -41,6 +42,7 @@ Merge options:
 Extract options:
   -e, --extract FILE1 FILE2
                     Extracts particles from FILE1 into a new FILE2.
+                    FILE2 will be gzipped if its name ends with .mcpl.gz.
   -lN, -sN        : Select range of particles in FILE1 (as above).
   -pPDGCODE       : Select particles of type given by PDGCODE.
 
@@ -86,6 +88,7 @@ Merge options:
   -m, --merge FILEOUT FILE1 FILE2 ... FILEN
                     Creates new FILEOUT with combined particle contents from
                     specified list of N existing and compatible files.
+                    FILEOUT will be gzipped if its name ends with .mcpl.gz.
   -m, --merge --inplace FILE1 FILE2 ... FILEN
                     Appends the particle contents in FILE2 ... FILEN into
                     FILE1. Note that this action modifies FILE1!
@@ -97,6 +100,7 @@ Merge options:
 Extract options:
   -e, --extract FILE1 FILE2
                     Extracts particles from FILE1 into a new FILE2.
+                    FILE2 will be gzipped if its name ends with .mcpl.gz.
   -lN, -sN        : Select range of particles in FILE1 (as above).
   -pPDGCODE       : Select particles of type given by PDGCODE.
 
@@ -142,6 +146,7 @@ Merge options:
   -m, --merge FILEOUT FILE1 FILE2 ... FILEN
                     Creates new FILEOUT with combined particle contents from
                     specified list of N existing and compatible files.
+                    FILEOUT will be gzipped if its name ends with .mcpl.gz.
   -m, --merge --inplace FILE1 FILE2 ... FILEN
                     Appends the particle contents in FILE2 ... FILEN into
                     FILE1. Note that this action modifies FILE1!
@@ -153,6 +158,7 @@ Merge options:
 Extract options:
   -e, --extract FILE1 FILE2
                     Extracts particles from FILE1 into a new FILE2.
+                    FILE2 will be gzipped if its name ends with .mcpl.gz.
   -lN, -sN        : Select range of particles in FILE1 (as above).
   -pPDGCODE       : Select particles of type given by PDGCODE.
 
@@ -340,6 +346,7 @@ Merge options:
   -m, --merge FILEOUT FILE1 FILE2 ... FILEN
                     Creates new FILEOUT with combined particle contents from
                     specified list of N existing and compatible files.
+                    FILEOUT will be gzipped if its name ends with .mcpl.gz.
   -m, --merge --inplace FILE1 FILE2 ... FILEN
                     Appends the particle contents in FILE2 ... FILEN into
                     FILE1. Note that this action modifies FILE1!
@@ -351,6 +358,7 @@ Merge options:
 Extract options:
   -e, --extract FILE1 FILE2
                     Extracts particles from FILE1 into a new FILE2.
+                    FILE2 will be gzipped if its name ends with .mcpl.gz.
   -lN, -sN        : Select range of particles in FILE1 (as above).
   -pPDGCODE       : Select particles of type given by PDGCODE.
 
@@ -1516,42 +1524,48 @@ MCPL ERROR: File is not an MCPL file!
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool -e miscphys.mcpl.gz extracted_1
+Running mcpltool -e miscphys.mcpl.gz extracted_0
 ----------------------------------------------
-MCPL: Compressing file extracted_1.mcpl
-MCPL: Compressed file into extracted_1.mcpl.gz
-MCPL: Successfully extracted 195 / 195 particles from miscphys.mcpl.gz into extracted_1.mcpl.gz
+MCPL: Successfully extracted 195 / 195 particles from miscphys.mcpl.gz into extracted_0.mcpl
 
 ----------------------------------------------
-Running mcpltool --extract -p2112 miscphys.mcpl.gz extracted_1
+Running mcpltool -e miscphys.mcpl.gz extracted_0
+----------------------------------------------
+ERROR: Requested output file already exists (with .mcpl extension).
+
+Run with -h or --help for usage information
+
+===> Command failed!
+----------------------------------------------
+Running mcpltool --extract -p2112 miscphys.mcpl.gz extracted_1.mcpl.gz
 ----------------------------------------------
 MCPL: Compressing file extracted_1.mcpl
 MCPL: Compressed file into extracted_1.mcpl.gz
 MCPL: Successfully extracted 15 / 195 particles from miscphys.mcpl.gz into extracted_1.mcpl.gz
 
 ----------------------------------------------
-Running mcpltool --extract -p-11 miscphys.mcpl.gz extracted_2
+Running mcpltool --extract -p-11 miscphys.mcpl.gz extracted_2.mcpl.gz
 ----------------------------------------------
 MCPL: Compressing file extracted_2.mcpl
 MCPL: Compressed file into extracted_2.mcpl.gz
 MCPL: Successfully extracted 10 / 195 particles from miscphys.mcpl.gz into extracted_2.mcpl.gz
 
 ----------------------------------------------
-Running mcpltool -ep-1000020040 miscphysnogz.mcpl extracted_3
+Running mcpltool -ep-1000020040 miscphysnogz.mcpl extracted_3.mcpl.gz
 ----------------------------------------------
 MCPL: Compressing file extracted_3.mcpl
 MCPL: Compressed file into extracted_3.mcpl.gz
 MCPL: Successfully extracted 5 / 195 particles from miscphysnogz.mcpl into extracted_3.mcpl.gz
 
 ----------------------------------------------
-Running mcpltool -e -p1000922350 miscphys.mcpl.gz extracted_4
+Running mcpltool -e -p1000922350 miscphys.mcpl.gz extracted_4.mcpl.gz
 ----------------------------------------------
 MCPL: Compressing file extracted_4.mcpl
 MCPL: Compressed file into extracted_4.mcpl.gz
 MCPL: Successfully extracted 5 / 195 particles from miscphys.mcpl.gz into extracted_4.mcpl.gz
 
 ----------------------------------------------
-Running mcpltool -e -p111 -l999999 -s150 miscphysnogz.mcpl extracted_5
+Running mcpltool -e -p111 -l999999 -s150 miscphysnogz.mcpl extracted_5.mcpl.gz
 ----------------------------------------------
 MCPL: Compressing file extracted_5.mcpl
 MCPL: Compressed file into extracted_5.mcpl.gz
@@ -1808,23 +1822,17 @@ Running mcpltool --merge --inplace extracted_1.mcpl extracted_3.mcpl.gz extracte
 ----------------------------------------------
 Running mcpltool --extract -p2112 miscphysnogz.mcpl extracted_1_new.mcpl
 ----------------------------------------------
-MCPL: Compressing file extracted_1_new.mcpl
-MCPL: Compressed file into extracted_1_new.mcpl.gz
-MCPL: Successfully extracted 15 / 195 particles from miscphysnogz.mcpl into extracted_1_new.mcpl.gz
+MCPL: Successfully extracted 15 / 195 particles from miscphysnogz.mcpl into extracted_1_new.mcpl
 
 ----------------------------------------------
 Running mcpltool --extract -p-11 miscphysnogz.mcpl extracted_2_new.mcpl
 ----------------------------------------------
-MCPL: Compressing file extracted_2_new.mcpl
-MCPL: Compressed file into extracted_2_new.mcpl.gz
-MCPL: Successfully extracted 10 / 195 particles from miscphysnogz.mcpl into extracted_2_new.mcpl.gz
+MCPL: Successfully extracted 10 / 195 particles from miscphysnogz.mcpl into extracted_2_new.mcpl
 
 ----------------------------------------------
 Running mcpltool -e -p1000922350 miscphysnogz.mcpl extracted_4_new.mcpl
 ----------------------------------------------
-MCPL: Compressing file extracted_4_new.mcpl
-MCPL: Compressed file into extracted_4_new.mcpl.gz
-MCPL: Successfully extracted 5 / 195 particles from miscphysnogz.mcpl into extracted_4_new.mcpl.gz
+MCPL: Successfully extracted 5 / 195 particles from miscphysnogz.mcpl into extracted_4_new.mcpl
 
 ----------------------------------------------
 Running mcpltool --merge merged_1to5_new_filec.mcpl extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
@@ -1940,16 +1948,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 ----------------------------------------------
 Running mcpltool -e difficult_unitvector.mcpl extracted_all -l0 --preventcomment
 ----------------------------------------------
-MCPL: Compressing file extracted_all.mcpl
-MCPL: Compressed file into extracted_all.mcpl.gz
-MCPL: Successfully extracted 10 / 10 particles from difficult_unitvector.mcpl into extracted_all.mcpl.gz
+MCPL: Successfully extracted 10 / 10 particles from difficult_unitvector.mcpl into extracted_all.mcpl
 
 ----------------------------------------------
 Running mcpltool -e difficult_unitvector.mcpl extracted_none -s999999999 --preventcomment
 ----------------------------------------------
-MCPL: Compressing file extracted_none.mcpl
-MCPL: Compressed file into extracted_none.mcpl.gz
-MCPL: Successfully extracted 0 / 10 particles from difficult_unitvector.mcpl into extracted_none.mcpl.gz
+MCPL: Successfully extracted 0 / 10 particles from difficult_unitvector.mcpl into extracted_none.mcpl
 
 ----------------------------------------------
 Running mcpltool -m extracted_recombined extracted_none.mcpl extracted_all.mcpl
@@ -1965,14 +1969,12 @@ Running mcpltool -m --inplace extracted_none.mcpl extracted_all.mcpl
 ----------------------------------------------
 Running mcpltool --extract statsum_copy.mcpl.gz statsum_extract1.mcpl
 ----------------------------------------------
-MCPL: Compressing file statsum_extract1.mcpl
-MCPL: Compressed file into statsum_extract1.mcpl.gz
-MCPL: Successfully extracted 100 / 100 particles from statsum_copy.mcpl.gz into statsum_extract1.mcpl.gz
+MCPL: Successfully extracted 100 / 100 particles from statsum_copy.mcpl.gz into statsum_extract1.mcpl
 
 ----------------------------------------------
-Running mcpltool statsum_extract1.mcpl.gz
+Running mcpltool statsum_extract1.mcpl
 ----------------------------------------------
-Opened MCPL file statsum_extract1.mcpl.gz:
+Opened MCPL file statsum_extract1.mcpl:
 
   Basic info
     Format             : MCPL-3
@@ -2015,14 +2017,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 Running mcpltool --extract -l7 statsum_copy.mcpl.gz statsum_extract2.mcpl
 ----------------------------------------------
 MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
-MCPL: Compressing file statsum_extract2.mcpl
-MCPL: Compressed file into statsum_extract2.mcpl.gz
-MCPL: Successfully extracted 7 / 100 particles from statsum_copy.mcpl.gz into statsum_extract2.mcpl.gz
+MCPL: Successfully extracted 7 / 100 particles from statsum_copy.mcpl.gz into statsum_extract2.mcpl
 
 ----------------------------------------------
-Running mcpltool statsum_extract2.mcpl.gz
+Running mcpltool statsum_extract2.mcpl
 ----------------------------------------------
-Opened MCPL file statsum_extract2.mcpl.gz:
+Opened MCPL file statsum_extract2.mcpl:
 
   Basic info
     Format             : MCPL-3
@@ -2062,14 +2062,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 Running mcpltool --extract -s30 statsum_copy.mcpl.gz statsum_extract3.mcpl
 ----------------------------------------------
 MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
-MCPL: Compressing file statsum_extract3.mcpl
-MCPL: Compressed file into statsum_extract3.mcpl.gz
-MCPL: Successfully extracted 70 / 100 particles from statsum_copy.mcpl.gz into statsum_extract3.mcpl.gz
+MCPL: Successfully extracted 70 / 100 particles from statsum_copy.mcpl.gz into statsum_extract3.mcpl
 
 ----------------------------------------------
-Running mcpltool statsum_extract3.mcpl.gz
+Running mcpltool statsum_extract3.mcpl
 ----------------------------------------------
-Opened MCPL file statsum_extract3.mcpl.gz:
+Opened MCPL file statsum_extract3.mcpl:
 
   Basic info
     Format             : MCPL-3
@@ -2112,14 +2110,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 Running mcpltool --extract -l4 -s20 statsum_copy.mcpl.gz statsum_extract4.mcpl
 ----------------------------------------------
 MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
-MCPL: Compressing file statsum_extract4.mcpl
-MCPL: Compressed file into statsum_extract4.mcpl.gz
-MCPL: Successfully extracted 4 / 100 particles from statsum_copy.mcpl.gz into statsum_extract4.mcpl.gz
+MCPL: Successfully extracted 4 / 100 particles from statsum_copy.mcpl.gz into statsum_extract4.mcpl
 
 ----------------------------------------------
-Running mcpltool statsum_extract4.mcpl.gz
+Running mcpltool statsum_extract4.mcpl
 ----------------------------------------------
-Opened MCPL file statsum_extract4.mcpl.gz:
+Opened MCPL file statsum_extract4.mcpl:
 
   Basic info
     Format             : MCPL-3
@@ -2155,14 +2151,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 ----------------------------------------------
 Running mcpltool --extract -l300 statsum_copy.mcpl.gz statsum_extract_all.mcpl
 ----------------------------------------------
-MCPL: Compressing file statsum_extract_all.mcpl
-MCPL: Compressed file into statsum_extract_all.mcpl.gz
-MCPL: Successfully extracted 100 / 100 particles from statsum_copy.mcpl.gz into statsum_extract_all.mcpl.gz
+MCPL: Successfully extracted 100 / 100 particles from statsum_copy.mcpl.gz into statsum_extract_all.mcpl
 
 ----------------------------------------------
-Running mcpltool statsum_extract_all.mcpl.gz
+Running mcpltool statsum_extract_all.mcpl
 ----------------------------------------------
-Opened MCPL file statsum_extract_all.mcpl.gz:
+Opened MCPL file statsum_extract_all.mcpl:
 
   Basic info
     Format             : MCPL-3
@@ -2205,14 +2199,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 Running mcpltool --extract -l40 -s1 statsum_copy.mcpl.gz statsum_extract5.mcpl
 ----------------------------------------------
 MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
-MCPL: Compressing file statsum_extract5.mcpl
-MCPL: Compressed file into statsum_extract5.mcpl.gz
-MCPL: Successfully extracted 40 / 100 particles from statsum_copy.mcpl.gz into statsum_extract5.mcpl.gz
+MCPL: Successfully extracted 40 / 100 particles from statsum_copy.mcpl.gz into statsum_extract5.mcpl
 
 ----------------------------------------------
-Running mcpltool statsum_extract5.mcpl.gz
+Running mcpltool statsum_extract5.mcpl
 ----------------------------------------------
-Opened MCPL file statsum_extract5.mcpl.gz:
+Opened MCPL file statsum_extract5.mcpl:
 
   Basic info
     Format             : MCPL-3
@@ -2255,14 +2247,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 Running mcpltool -e -l40 -s1 -p22 statsum_copy.mcpl.gz statsum_extract5photons.mcpl
 ----------------------------------------------
 MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
-MCPL: Compressing file statsum_extract5photons.mcpl
-MCPL: Compressed file into statsum_extract5photons.mcpl.gz
-MCPL: Successfully extracted 21 / 100 particles from statsum_copy.mcpl.gz into statsum_extract5photons.mcpl.gz
+MCPL: Successfully extracted 21 / 100 particles from statsum_copy.mcpl.gz into statsum_extract5photons.mcpl
 
 ----------------------------------------------
-Running mcpltool statsum_extract5photons.mcpl.gz
+Running mcpltool statsum_extract5photons.mcpl
 ----------------------------------------------
-Opened MCPL file statsum_extract5photons.mcpl.gz:
+Opened MCPL file statsum_extract5photons.mcpl:
 
   Basic info
     Format             : MCPL-3
@@ -2304,14 +2294,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 ----------------------------------------------
 Running mcpltool --extract -p22 statsum_copy.mcpl.gz statsum_extractphotons_all.mcpl
 ----------------------------------------------
-MCPL: Compressing file statsum_extractphotons_all.mcpl
-MCPL: Compressed file into statsum_extractphotons_all.mcpl.gz
-MCPL: Successfully extracted 50 / 100 particles from statsum_copy.mcpl.gz into statsum_extractphotons_all.mcpl.gz
+MCPL: Successfully extracted 50 / 100 particles from statsum_copy.mcpl.gz into statsum_extractphotons_all.mcpl
 
 ----------------------------------------------
-Running mcpltool statsum_extractphotons_all.mcpl.gz
+Running mcpltool statsum_extractphotons_all.mcpl
 ----------------------------------------------
-Opened MCPL file statsum_extractphotons_all.mcpl.gz:
+Opened MCPL file statsum_extractphotons_all.mcpl:
 
   Basic info
     Format             : MCPL-3
@@ -2353,14 +2341,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 ----------------------------------------------
 Running mcpltool --extract -p22 -l400 statsum_copy.mcpl.gz statsum_extractphotons_all2.mcpl
 ----------------------------------------------
-MCPL: Compressing file statsum_extractphotons_all2.mcpl
-MCPL: Compressed file into statsum_extractphotons_all2.mcpl.gz
-MCPL: Successfully extracted 50 / 100 particles from statsum_copy.mcpl.gz into statsum_extractphotons_all2.mcpl.gz
+MCPL: Successfully extracted 50 / 100 particles from statsum_copy.mcpl.gz into statsum_extractphotons_all2.mcpl
 
 ----------------------------------------------
-Running mcpltool statsum_extractphotons_all2.mcpl.gz
+Running mcpltool statsum_extractphotons_all2.mcpl
 ----------------------------------------------
-Opened MCPL file statsum_extractphotons_all2.mcpl.gz:
+Opened MCPL file statsum_extractphotons_all2.mcpl:
 
   Basic info
     Format             : MCPL-3
