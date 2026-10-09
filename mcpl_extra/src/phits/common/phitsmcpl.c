@@ -58,20 +58,10 @@ int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
                  const char * dumpsummaryfile )
 {
   phits_file_t f = phits_open_file(phitsdumpfile);
-  mcpl_outfile_t mcplfh = mcpl_create_outfile(mcplfile);
 
-  mcpl_hdr_set_srcname(mcplfh,"PHITS");
-  mcpl_hdr_add_comment(mcplfh,"Converted from PHITS with phits2mcpl");
-
-  if (opt_dp)
-    mcpl_enable_doubleprec(mcplfh);
-
-  if (phits_has_polarisation(f))
-    mcpl_enable_polarisation(mcplfh);
-
+  char* cfgfile_buf = 0;
+  uint64_t cfgfile_lbuf = 0;
   if (inputdeckfile) {
-    char* cfgfile_buf;
-    uint64_t cfgfile_lbuf;
     mcpl_read_file_to_buffer( inputdeckfile,
                               104857600,//100mb max
                               1,//text
@@ -84,17 +74,14 @@ int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
     if (!strstr((const char*)cfgfile_buf, "dump")) {
       printf("Error: specified configuration file %s looks invalid as it"
              " does not contain the word \"dump\".\n",inputdeckfile);
+      free(cfgfile_buf);
+      phits_close_file(f);
       return 0;
     }
-    mcpl_hdr_add_data( mcplfh,
-                       "phits_input_deck",
-                       (uint32_t)cfgfile_lbuf,
-                       (const char *)cfgfile_buf );
-    free(cfgfile_buf);
   }
+  char* summaryfile_buf = 0;
+  uint64_t summaryfile_lbuf = 0;
   if (dumpsummaryfile) {
-    char* summaryfile_buf;
-    uint64_t summaryfile_lbuf;
     mcpl_read_file_to_buffer( dumpsummaryfile,
                               104857600,//100mb max
                               1,//text
@@ -105,8 +92,32 @@ int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
     if (!strstr(summaryfile_buf, "dump")) {
       printf("Error: specified dump summary file %s looks invalid"
              " as it does not contain the word \"dump\".\n",dumpsummaryfile);
+      free(cfgfile_buf);
+      free(summaryfile_buf);
+      phits_close_file(f);
       return 0;
     }
+  }
+
+  mcpl_outfile_t mcplfh = mcpl_create_outfile(mcplfile);
+
+  mcpl_hdr_set_srcname(mcplfh,"PHITS");
+  mcpl_hdr_add_comment(mcplfh,"Converted from PHITS with phits2mcpl");
+
+  if (opt_dp)
+    mcpl_enable_doubleprec(mcplfh);
+
+  if (phits_has_polarisation(f))
+    mcpl_enable_polarisation(mcplfh);
+
+  if (cfgfile_buf) {
+    mcpl_hdr_add_data( mcplfh,
+                       "phits_input_deck",
+                       (uint32_t)cfgfile_lbuf,
+                       (const char *)cfgfile_buf );
+    free(cfgfile_buf);
+  }
+  if (summaryfile_buf) {
     mcpl_hdr_add_data( mcplfh,
                        "phits_dump_summary_file",
                        (uint32_t)summaryfile_lbuf,

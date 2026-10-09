@@ -77,6 +77,25 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
               const char * inputdeckfile)
 {
   ssw_file_t f = ssw_open_file(sswfile);
+
+  char* cfgfile_buf = 0;
+  uint64_t cfgfile_lbuf = 0;
+  if (inputdeckfile) {
+    mcpl_read_file_to_buffer( inputdeckfile,
+                              104857600,//100mb is beyond enough and within than
+                                        //32bit integer reach.
+                              1,//must be text
+                              &cfgfile_lbuf,
+                              &cfgfile_buf );
+    if (!strstr((const char*)cfgfile_buf, ssw_title(f))) {
+      printf("Error: specified configuration file %s does not contain title"
+             " found in ssw file: \"%s\".\n",inputdeckfile,ssw_title(f));
+      free(cfgfile_buf);
+      ssw_close_file(f);
+      return 0;
+    }
+  }
+
   mcpl_outfile_t mcplfh = mcpl_create_outfile(mcplfile);
   mcpl_hdr_set_srcname(mcplfh,ssw_mcnpflavour(f));
   const int32_t np1 = ssw_abs_np1( f );
@@ -118,22 +137,7 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
 
   mcpl_hdr_add_stat_sum(mcplfh,"ssw_np1",-1.0);
 
-  if (inputdeckfile) {
-    char* cfgfile_buf;
-    uint64_t cfgfile_lbuf;
-    mcpl_read_file_to_buffer( inputdeckfile,
-                              104857600,//100mb is beyond enough and within than
-                                        //32bit integer reach.
-                              1,//must be text
-                              &cfgfile_lbuf,
-                              &cfgfile_buf );
-    /* if (!sswmcpl_file2buf(inputdeckfile, &cfgfile_buf, &cfgfile_lbuf, 104857600, 1)) */
-    /*   return 0; */
-    if (!strstr((const char*)cfgfile_buf, ssw_title(f))) {
-      printf("Error: specified configuration file %s does not contain title"
-             " found in ssw file: \"%s\".\n",inputdeckfile,ssw_title(f));
-      return 0;
-    }
+  if (cfgfile_buf) {
     mcpl_hdr_add_data(mcplfh, "mcnp_input_deck",
                       (uint32_t)cfgfile_lbuf,
                       cfgfile_buf);
