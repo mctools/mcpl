@@ -911,8 +911,8 @@ void ssw_dump( const char * filename, const char * outfile )
              p->weight, p->isurf );
   }
   ssw_close_file(f);
-  fclose(outfh);
   ssw_set_stdout(NULL);
+  fclose(outfh);
 
 }
 #endif
