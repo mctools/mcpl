@@ -3,6 +3,8 @@ v2.2.9  (work in progress)
       * mcpltool --repair (and mcpl_repair) now also repairs files truncated
         right after the header, and removes any partially written particle at
         the end of the file.
+      * Opening a file which was not closed properly now also gives a warning
+        if it only contains part of the first particle.
       * ...
 
 v2.2.8  2026-02-18

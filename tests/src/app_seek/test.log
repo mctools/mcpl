@@ -291,6 +291,7 @@ MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 p
 ::mcpl_read
   got particle(z=0.03)
   position is now: 4
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 0 particles.
 **** Opened file reffile_crash_0p4.mcpl with 0 particles
   position is now: 0
 ::mcpl_read
@@ -804,6 +805,7 @@ MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 p
 ::mcpl_read
   got particle(z=0.03)
   position is now: 4
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 0 particles.
 **** Opened file reffile_crash_0p4.mcpl with 0 particles
   position is now: 0
 ::mcpl_read

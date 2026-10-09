@@ -1048,6 +1048,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 ----------------------------------------------
 Running mcpltool rfcrash_0p4.mcpl
 ----------------------------------------------
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 0 particles.
 Opened MCPL file rfcrash_0p4.mcpl:
 
   Basic info

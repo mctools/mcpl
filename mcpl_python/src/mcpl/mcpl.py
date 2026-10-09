@@ -553,8 +553,9 @@ class MCPLFile:
                                     +" and data recovery is disabled for gzipped files.")
             else:
                 #not compressed - can use file size to recover file
-                np_rec = (int(os.stat(filename).st_size)-self.headersize) // self.particlesize
-                if np_rec:
+                ndata = int(os.stat(filename).st_size)-self.headersize
+                np_rec = ndata // self.particlesize
+                if np_rec or ndata % self.particlesize:
                     self._np = np_rec
                     self._hdr['nparticles'] = np_rec
                     print ("MCPL WARNING: Input file appears to not have been closed"
