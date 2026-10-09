@@ -20,15 +20,15 @@
 ################################################################################
 
 def load():
-    from .srciter import all_files_iter
     from .dirs import testroot
+    from .srciter import all_files_iter
     py = set( all_files_iter( '*.py', root = testroot.joinpath('scripts') ) )
     scripts = {}
     for f in py:
         bn = f.stem
         log = f.parent.joinpath(f'{f.stem}.log')
-        scripts[bn] = dict( pyfile = f,
-                            logfile = log if log.exists() else None )
+        scripts[bn] = { 'pyfile': f,
+                        'logfile': log if log.exists() else None }
 
     pypath = testroot.joinpath('pypath')
     pymods = set( all_files_iter( '*.py', root = pypath ) )
@@ -53,6 +53,6 @@ def load():
             subdir = f.parent.name
         datafiles.add( ( subdir, f ) )
 
-    return dict( scripts = scripts,
-                 testmods = testmods,
-                 datafiles = datafiles )
+    return { 'scripts': scripts,
+             'testmods': testmods,
+             'datafiles': datafiles }

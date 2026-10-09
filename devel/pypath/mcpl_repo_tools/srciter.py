@@ -19,8 +19,9 @@
 ##                                                                            ##
 ################################################################################
 
-import pathlib
 import fnmatch
+import pathlib
+
 
 def _path_to_str( path ):
     s = str(path).replace('\\','/')#map win seps to unix
@@ -33,10 +34,9 @@ def all_files_iter( *patterns, root = None ):
     patternset = PatternSet( *expand_patterns( patterns ))
     gitignore = get_main_gitignore()
     from .dirs import reporoot
-    for f in _all_files_iter_impl( root or reporoot,
-                                   patternset,
-                                   gitignore ):
-        yield f
+    yield from _all_files_iter_impl( root or reporoot,
+                                     patternset,
+                                     gitignore )
 
 def _all_files_iter_impl( currentdir, patternset, gitignore ):
     for p in currentdir.iterdir():
@@ -51,8 +51,7 @@ def _all_files_iter_impl( currentdir, patternset, gitignore ):
             #files:
             if p.name=='.git':
                 continue#always ignore
-            for f in _all_files_iter_impl( p, patternset, gitignore ):
-                yield f
+            yield from _all_files_iter_impl( p, patternset, gitignore )
         else:
             if not patternset.accepts( p ):
                 continue
@@ -102,9 +101,7 @@ class SinglePattern:
 
     def __str__(self):
         return ( 'SinglePattern('
-                 '%s, isneg=%s, onfilestart=%s)'%( repr(self.__pattern),
-                                                   self._is_negated,
-                                                   self._match_on_file_start) )
+                 f'{self.__pattern!r}, isneg={self._is_negated}, onfilestart={self._match_on_file_start})' )
 
     def is_negated( self):
         return self._is_negated
@@ -152,7 +149,7 @@ def expand_patterns( patterns ):
         special_patterns = special_patterns_db.get(p_special_key)
         if special_patterns:
             if p_special_negated:
-                match_patterns += ['!%s'%e for e in special_patterns ]
+                match_patterns += [f'!{e}' for e in special_patterns ]
             else:
                 match_patterns += special_patterns
         else:

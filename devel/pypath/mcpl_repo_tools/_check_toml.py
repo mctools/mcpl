@@ -21,12 +21,12 @@
 
 from .dirs import reporoot
 
-toml_files =  dict( core = 'mcpl_core/pyproject.toml',
-                    coreempty = 'mcpl_core/empty_pypkg/pyproject.toml',
-                    py = 'mcpl_python/pyproject.toml',
-                    meta = 'mcpl_metapkg/pyproject.toml',
-                    extra = 'mcpl_extra/pyproject.toml',
-                   )
+toml_files =  { 'core': 'mcpl_core/pyproject.toml',
+                'coreempty': 'mcpl_core/empty_pypkg/pyproject.toml',
+                'py': 'mcpl_python/pyproject.toml',
+                'meta': 'mcpl_metapkg/pyproject.toml',
+                'extra': 'mcpl_extra/pyproject.toml',
+               }
 
 _data_cache = {}
 def load_data( key ):
@@ -52,9 +52,9 @@ def _actual_load_data(subpath):
     return d
 
 def describe( data ):
-    return '<root>/%s'%data['__srcloc__']
+    return '<root>/{}'.format(data['__srcloc__'])
 
-def cmp_common_entries( keypath, dict1, dict2, allow_diff = [] ):
+def cmp_common_entries( keypath, dict1, dict2, allow_diff = () ):
     d1, d2 = dict1, dict2
     for k in keypath.split('.'):
         d1, d2 = d1[k], d2[k]
@@ -66,9 +66,9 @@ def cmp_common_entries( keypath, dict1, dict2, allow_diff = [] ):
             print()
             print(f'Inconsistency found in key "{keypath}.{k}:"')
             print()
-            print(f'   {describe(dict1)} has value: {repr(d1[k])}')
+            print(f'   {describe(dict1)} has value: {d1[k]!r}')
             print()
-            print(f'   {describe(dict2)} has value: {repr(d2[k])}')
+            print(f'   {describe(dict2)} has value: {d2[k]!r}')
             print()
             ok = False
     if not ok:
@@ -86,8 +86,8 @@ def check_metadata():
     data_extra = load_data( 'extra' )
 
     #Check that there are no unexpected sections:
-    toplvlkeys_notool = set(['build-system','project','__srcloc__'])
-    toplvlkeys = toplvlkeys_notool.union( set(['tool']) )
+    toplvlkeys_notool = {'build-system','project','__srcloc__'}
+    toplvlkeys = toplvlkeys_notool.union( {'tool'} )
     #assert toplvlkeys == set( data_monolith.keys() )
     assert toplvlkeys == set( data_core.keys() )
     assert toplvlkeys == set( data_extra.keys() )
@@ -115,21 +115,21 @@ def check_metadata():
     assert 'dependencies' in projkeys_extra
 
     assert ( set(data_meta['project']['dependencies'])
-             == set([f'mcpl-core=={version}',
-                     f'mcpl-python=={version}']) )
+             == {f'mcpl-core=={version}',
+                 f'mcpl-python=={version}'} )
     assert ( set(data_extra['project']['dependencies'])
-             == set([f'mcpl-core=={version}']) )
+             == {f'mcpl-core=={version}'} )
     #assert ( projkeys_monolith - projkeys_core ) == set(['dependencies'])
     #assert ( projkeys_core - projkeys_monolith ) == set([])
-    assert ( projkeys_core - projkeys_meta ) == set(['scripts'])
-    assert ( projkeys_meta - projkeys_core ) == set(['dependencies'])
-    assert ( projkeys_extra - projkeys_meta ) == set(['scripts'])
-    assert ( projkeys_meta - projkeys_extra ) == set([])
+    assert ( projkeys_core - projkeys_meta ) == {'scripts'}
+    assert ( projkeys_meta - projkeys_core ) == {'dependencies'}
+    assert ( projkeys_extra - projkeys_meta ) == {'scripts'}
+    assert ( projkeys_meta - projkeys_extra ) == set()
     #assert ( projkeys_py - projkeys_monolith ) == set(['dynamic'])
     #assert ( projkeys_monolith - projkeys_py ) == set(['version'])
-    assert ( projkeys_core - projkeys_meta ) == set(['scripts'])
-    assert ( projkeys_coreempty - projkeys_core ) == set([])
-    assert ( projkeys_core - projkeys_coreempty ) == set(['scripts'])
+    assert ( projkeys_core - projkeys_meta ) == {'scripts'}
+    assert ( projkeys_coreempty - projkeys_core ) == set()
+    assert ( projkeys_core - projkeys_coreempty ) == {'scripts'}
 
     cmp_common_entries( 'project', data_coreempty, data_core )
     cmp_common_entries( 'build-system', data_coreempty, data_py )
@@ -159,8 +159,8 @@ def check_metadata():
                         allow_diff = [] )
 
     #Check 'tool' section
-    assert set( data_core['tool'].keys() ) == set(['scikit-build',
-                                                   'cibuildwheel'])
+    assert set( data_core['tool'].keys() ) == {'scikit-build',
+                                               'cibuildwheel'}
     #assert set( data_monolith['tool'].keys() ) == set(['scikit-build'])
     #cmp_common_entries( 'tool.scikit-build', data_monolith, data_core,
     #                    allow_diff = ['sdist','wheel'] )
@@ -237,11 +237,11 @@ def _check_project_scripts_impl( data, *, extra ):
     return False
 
 def check_all_toml_parsing():
-    from .srciter import all_files_iter
     from .dirs import reporoot
+    from .srciter import all_files_iter
     from .toml import parse_toml
     for f in all_files_iter('toml'):
-        print("  Trying to simply load %s"%f.relative_to(reporoot))
+        print(f"  Trying to simply load {f.relative_to(reporoot)}")
         parse_toml(f)
     print('  -> all parsed ok')
 
@@ -255,11 +255,11 @@ def check_buildsys():
         if backend == 'scikit_build_core.build':
             if not d.get('tool',{}).get('scikit-build'):
                 raise SystemExit(f'Missing tool.scikit-build section: {fname}')
-            requires = set(["scikit-build-core>=0.11.0"])
+            requires = {"scikit-build-core>=0.11.0"}
             if k == 'extra':
                 requires.add(f'mcpl-core=={version}')
         elif backend == 'setuptools.build_meta':
-            requires = set(["setuptools>=75.3.2"])
+            requires = {"setuptools>=75.3.2"}
         else:
             raise SystemExit(f'Unexpected backend in {fname}')
         r = set(b.get('requires',[]))
