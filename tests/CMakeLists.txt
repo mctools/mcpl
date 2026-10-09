@@ -53,9 +53,13 @@ file( MAKE_DIRECTORY "${mcpltest_pypath}" )
 file( CREATE_LINK
   "${MCPLRoot_SOURCE_DIR}/mcpl_python/src/mcpl"
   "${mcpltest_pypath}/mcpldev"
-  COPY_ON_ERROR
+  RESULT mcpltest_linkresult
   SYMBOLIC
 )
+if ( NOT mcpltest_linkresult EQUAL 0 )
+  file( COPY "${MCPLRoot_SOURCE_DIR}/mcpl_python/src/mcpl/"
+        DESTINATION "${mcpltest_pypath}/mcpldev" )
+endif()
 
 set( mcpltest_pyenvmod "" )
 list(
