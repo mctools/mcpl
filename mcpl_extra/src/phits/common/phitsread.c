@@ -408,8 +408,8 @@ void phits_dump( const char * filename, const char * outfile )
   }
 
   phits_close_file(f);
-  fclose(outfh);
   phits_set_stdout(NULL);
+  fclose(outfh);
 
 }
 #endif
