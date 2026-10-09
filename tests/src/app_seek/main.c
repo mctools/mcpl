@@ -110,6 +110,8 @@ void mcpltests_testseek( const char * folder )
   testskip(mcpltests_find_data(folder,"reffile_skip123.mcpl"));
   testskip(mcpltests_find_data(folder,"reffile_skip123.mcpl.gz"));
   testskip(mcpltests_find_data(folder,"reffile_crash.mcpl"));
+  testskip(mcpltests_find_data(folder,"reffile_crash_0p4.mcpl"));
+  testskip(mcpltests_find_data(folder,"reffile_crash_8p7.mcpl"));
   testskip(mcpltests_find_data(folder,"reffile_empty.mcpl"));
 }
 
