@@ -1,5 +1,8 @@
 v2.2.9  (work in progress)
       * Drop support for Python 3.8.
+      * mcpltool --repair (and mcpl_repair) now also repairs files truncated
+        right after the header, and removes any partially written particle at
+        the end of the file.
       * ...
 
 v2.2.8  2026-02-18

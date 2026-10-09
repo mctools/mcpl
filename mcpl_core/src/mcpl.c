@@ -1734,9 +1734,12 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
       //attempt silently:
       if (f->file && !MCPL_FSEEK_END( f->file )) {
         int64_t endpos = MCPL_FTELL(f->file);
-        if (endpos > (int64_t)f->first_particle_pos && (uint64_t)endpos != f->first_particle_pos) {
-          uint64_t np = ( endpos - f->first_particle_pos ) / f->particle_size;
-          if ( f->nparticles != np ) {
+        if (endpos >= (int64_t)f->first_particle_pos) {
+          uint64_t ndata = endpos - f->first_particle_pos;
+          uint64_t np = ndata / f->particle_size;
+          int has_partial_particle = ( ndata % f->particle_size ) != 0;
+          if ( f->nparticles != np
+               || ( caller_is_mcpl_repair && has_partial_particle ) ) {
             if ( f->nparticles > 0 && np > f->nparticles ) {
               //should really not happen unless file was corrupted or file was
               //first closed properly and then something was appended to it.
@@ -1839,12 +1842,34 @@ MCPL_LOCAL void mcpl_internal_updatestatsum( FILE * f,
 
 }
 
+#ifdef _WIN32
+// for _setmode, O_BINARY, _chsize_s and _fileno
+#  include <fcntl.h>
+#  include <io.h>
+#else
+// for write(..), unlink(), ftruncate and fileno
+#  include "unistd.h"
+#endif
+
+MCPL_LOCAL int mcpl_internal_truncate_file( FILE * fh, uint64_t size )
+{
+  if ( fflush(fh) )
+    return 0;
+#ifdef _WIN32
+  return _chsize_s( _fileno(fh), (__int64)size ) == 0;
+#else
+  return ftruncate( fileno(fh), (off_t)size ) == 0;
+#endif
+}
+
 void mcpl_repair(const char * filename)
 {
   int repair_status = 1;
   mcpl_file_t f = mcpl_actual_open_file(filename,&repair_status);
   uint64_t nparticles = mcpl_hdr_nparticles(f);
   mcpl_fileinternal_t * fi = (mcpl_fileinternal_t *)f.internal;
+  uint64_t repaired_filesize = ( fi->first_particle_pos
+                                 + nparticles * fi->particle_size );
 
   //Collect information about any stat:sum: entries that we must modify during
   //the repair (i.e. we must mark then as unavailable by setting them to -1).
@@ -1915,6 +1940,12 @@ void mcpl_repair(const char * filename)
       ssi[i].value = -1.0;
     }
     free(ssi);
+  }
+
+  //Remove any partially written particle at the end:
+  if ( !mcpl_internal_truncate_file( fh, repaired_filesize ) ) {
+    fclose(fh);
+    mcpl_error("Unable to remove incomplete particle data at end of file.");
   }
 
   mcpl_update_nparticles(fh, nparticles);
@@ -3881,15 +3912,6 @@ int mcpl_gzip_file(const char * filename)
   free(buf);
   return ec;
 }
-
-#ifdef _WIN32
-// for _setmode and O_BINARY
-#  include <fcntl.h>
-#  include <io.h>
-#else
-// for write(..) and unlink()
-#  include "unistd.h"
-#endif
 
 void mcpl_internal_dump_to_stdout( const char * data,
                                    unsigned long ldata )
