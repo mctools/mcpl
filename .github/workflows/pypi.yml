@@ -347,12 +347,17 @@ jobs:
           import os
           d = pathlib.Path('sdist_core').absolute()
           assert d.is_dir()
+          cibw_env = ''
           if '${{ runner.os }}' == 'Linux':
               d = f'/host{d}' # Host filesystem in containers is mounted at /host
           elif '${{ runner.os }}' == 'Windows':
               d = str(d).replace('\\','/') # Avoid problematic backslashes
+              # Separate pip caches, so ARM64 (cross-compiled) builds do not
+              # reuse mcpl-core wheels built for AMD64:
+              c = str(pathlib.Path('pipcache').absolute()).replace('\\','/')
+              cibw_env = f' PIP_CACHE_DIR={c}/$PYTHON_ARCH'
           with pathlib.Path(os.environ['GITHUB_ENV']).open('at') as fh:
-              fh.write(f'CIBW_ENVIRONMENT=PIP_FIND_LINKS={d}\n')
+              fh.write(f'CIBW_ENVIRONMENT=PIP_FIND_LINKS={d}{cibw_env}\n')
 
       - name: Prevent libmcpl.so in mcpl-extra wheel (Linux)
         if: runner.os == 'Linux'
