@@ -49,8 +49,8 @@ def _mcpl_config_cli_wrapper():
         print(cmakedir())
         return
     #Usual case, redirect to binary mcpl-config:
-    import subprocess
     import pathlib
+    import subprocess
     f = pathlib.Path(__file__).parent.joinpath('data','bin','mcpl-config')
     a[0] = f
     if _has_shlib_in_scripts_dir:
@@ -59,17 +59,17 @@ def _mcpl_config_cli_wrapper():
         lp = libpath().parent
         a.append('+')
         a.append(str(lp))
-    rv = subprocess.run( a )
+    rv = subprocess.run( a, check = False )
     raise SystemExit(rv.returncode)
 
 def _mcpl_tool_cli_wrapper():
-    import subprocess
     import pathlib
+    import subprocess
     import sys
     f = pathlib.Path(__file__).parent.joinpath('data','bin','mcpltool')
     a = sys.argv[:]
     a[0] = f
-    rv = subprocess.run( a )
+    rv = subprocess.run( a, check = False )
     raise SystemExit(rv.returncode)
 
 def version():
