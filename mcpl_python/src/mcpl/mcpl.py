@@ -1620,7 +1620,8 @@ def collect_stats(mcplfile,stats='all',bin_data=True):
         sortidx=np.argsort(c,kind='mergesort')[::-1]#the indices that would sort c, viewed in reverse order
         freq_uc[s] = u[sortidx],c[sortidx]
 
-    results = { 'file':{'type':'fileinfo','integral':weight_sum,'nparticles':mcplfile.nparticles} }
+    results = { 'file':{'type':'fileinfo','integral':weight_sum,'nparticles':mcplfile.nparticles,
+                        'stat_sum':dict(mcplfile.stat_sum)} }
     for s,uc in freq_uc.items():
         results[s] = { 'unique_values': uc[0], 'unique_values_counts' : uc[1], 'weighted' : True, 'type':'freq' }
 
@@ -1653,6 +1654,8 @@ def dump_stats(stats):
     print('------------------------------------------------------------------------------')
     print(f"nparticles   : {stats['file']['nparticles']}")
     print('sum(weights) : {:g}'.format(stats['file']['integral']))
+    for key, val in stats['file'].get('stat_sum',{}).items():
+        print(f"stat:sum:{key} : {'n/a' if val is None else f'{val:.15g}'}")
     if set(stats).intersection(_possible_std_stats):
         print('------------------------------------------------------------------------------')
         print('             :            mean             rms             min             max')

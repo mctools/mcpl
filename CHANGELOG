@@ -1,4 +1,6 @@
 v2.2.9  (work in progress)
+      * pymcpltool --stats (and dump_stats in the Python API) now also shows
+        any stat:sum entries of the file (GitHub issue #94).
       * Drop support for Python 3.8.
       * ...
 
