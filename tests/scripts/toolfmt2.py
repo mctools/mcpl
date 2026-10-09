@@ -132,6 +132,13 @@ def main():
     cmd('-r','rfempty.mcpl.gz',fail=True)#can not repair gz, and not broken
     cmd('rfempty.mcpl.gz')
 
+    for fn in ('reffile_crash_0p4.mcpl','reffile_crash_8p7.mcpl'):
+        fpartial = copy(dd(fn),f'rf{fn[8:]}')
+        cmd(fpartial)
+        cmd('-r',fpartial)
+        cmd(fpartial)
+        cmd('-r',fpartial,fail=True)#already repaired
+
     cmd('fake.mcpl',fail=True)
     cmd('fake.mcpl.gz',fail=True)
     cmd('fake2.mcpl.gz',fail=True)

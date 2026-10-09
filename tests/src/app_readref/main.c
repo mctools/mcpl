@@ -53,6 +53,8 @@ void mcpltests_test_datafolder( const char* folder )
     mcpl_dump(mcpltests_find_data(folder,filename),0,0,0);
   }
   mcpl_dump(mcpltests_find_data(folder,"reffile_crash.mcpl"),0,0,0);
+  mcpl_dump(mcpltests_find_data(folder,"reffile_crash_0p4.mcpl"),0,0,0);
+  mcpl_dump(mcpltests_find_data(folder,"reffile_crash_8p7.mcpl"),0,0,0);
   mcpl_dump(mcpltests_find_data(folder,"reffile_empty.mcpl"),0,0,0);
 
   mcpltests_simple_copy_file( mcpltests_find_data(folder,"reffile_7.mcpl"),
