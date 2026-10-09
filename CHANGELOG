@@ -3,6 +3,8 @@ v2.2.9  (work in progress)
         given an invalid -p argument.
       * ssw2mcpl and phits2mcpl no longer leave an unfinished output file behind
         when the files given with -c or -s are found to be invalid.
+      * ssw2mcpl and phits2mcpl no longer read past the end of the contents of
+        the files given with -c or -s when checking them.
       * Fix mcpl_transfer_last_read_particle for transfers from files with
         double precision to files with single precision, which wrote wrong
         kinetic energies and directions. The transfers done by mcpltool were not
