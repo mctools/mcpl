@@ -23,13 +23,11 @@
 
 from ._check_fixme import is_well_known_binary
 
-ignore_list = set([
-#    'tests/data/bad.txt',
-])
+ignore_list = set()
 
-ignore_list_nonascii = set([
+ignore_list_nonascii = {
     'devel/misc/test_encodings.x',
-])
+}
 
 def get_frel(f):
     from .dirs import reporoot
@@ -43,9 +41,7 @@ def is_external_datafile(f):
              or f.parent.parent.name=='data'
              or f.parent.name=='data' ):
         return False
-    if not is_external_file(f):
-        return False
-    return True
+    return is_external_file(f)
 
 def main():
 

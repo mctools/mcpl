@@ -20,14 +20,15 @@
 ################################################################################
 
 def main():
-    from .srciter import all_files_iter
-    import subprocess
     import shutil
+    import subprocess
+
+    from .srciter import all_files_iter
     ruff = shutil.which('ruff')
     if not ruff:
         raise SystemExit('ERROR: ruff command not available')
     files = list(all_files_iter('py'))
-    rv = subprocess.run(['ruff','check']+ files )
+    rv = subprocess.run(['ruff','check']+ files, check = False )
     if rv.returncode!=0:
         raise SystemExit(1)
 

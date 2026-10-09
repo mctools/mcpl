@@ -19,13 +19,14 @@
 ##                                                                            ##
 ################################################################################
 
-from . import dirs
-import subprocess
 import os
+import platform
 import shlex
 import shutil
-import platform
+import subprocess
 from pathlib import Path as plPath
+
+from . import dirs
 
 cmakerunner_modes = ('ctest','install','buildonly')
 
@@ -92,7 +93,8 @@ class CMakeRunner:
         rv = subprocess.run( cmd,
                              cwd=cwd,
                              env=env,
-                             capture_output=capture_output )
+                             capture_output=capture_output,
+                             check=False )
         if rv.returncode!=0:
             raise RuntimeError(f'Command failed: {cmdstr}')
         if capture_output:
@@ -140,7 +142,7 @@ class CMakeRunner:
             args += ['-G','Ninja']
         self._msg(f'using build dir {self.blddir}')
         if self.mode == 'install':
-            args.append('-DCMAKE_INSTALL_PREFIX=%s'%self.instdir)
+            args.append(f'-DCMAKE_INSTALL_PREFIX={self.instdir}')
             self._msg(f'using install dir {self.blddir}')
         elif self.mode == 'buildonly':
             pass
@@ -151,7 +153,7 @@ class CMakeRunner:
 
         if self.generator=='single':
             assert len(self.build_types)==1
-            args.append('-DCMAKE_BUILD_TYPE=%s'%self._bt2cmakebt(self.build_types[0]))
+            args.append(f'-DCMAKE_BUILD_TYPE={self._bt2cmakebt(self.build_types[0])}')
 
         args += self.cmake_flags
         self._invoke( self.cmake_cmd, args )

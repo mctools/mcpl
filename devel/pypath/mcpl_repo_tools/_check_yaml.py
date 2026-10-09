@@ -21,11 +21,12 @@
 
 def main():
     import yaml
-    from .srciter import all_files_iter
+
     from .dirs import reporoot
+    from .srciter import all_files_iter
 
     for f in all_files_iter('yaml'):
-        print("  Trying to load %s"%f.relative_to(reporoot))
+        print(f"  Trying to load {f.relative_to(reporoot)}")
         with f.open() as fh:
             yaml.safe_load(fh)
 

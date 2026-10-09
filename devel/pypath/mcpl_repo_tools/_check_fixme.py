@@ -22,15 +22,15 @@
 def is_well_known_binary( frel ):
     if frel.split('/')[-1] in ('dump_dmp',):
         return True
-    if frel.endswith('.gz') or frel.endswith('.mcpl') or frel.endswith('.w'):
+    if frel.endswith(('.gz', '.mcpl', '.w')):
         return True
     if frel in ['devel/misc/test_encodings.log']:
         return True
 
 def main():
     search_str = 'f' + 'i' + 'x' + 'm' + 'e'
-    from .srciter import all_files_iter
     from .dirs import reporoot
+    from .srciter import all_files_iter
     hits = []
     #Ignore well-known false positives:
     whitelist = {
@@ -69,7 +69,7 @@ def main():
         hitlist.sort()
         wn = max( len(str(n)) for n,f in hitlist )
         for n,f in hitlist:
-            print( '     %s %s'%( str(n).rjust(wn), f ) )
+            print( f'     {str(n).rjust(wn)} {f}' )
         return ntot
 
     print(f"Whitelisted {search_str}'s:")

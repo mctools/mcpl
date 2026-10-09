@@ -46,10 +46,10 @@ def graph_to_dot( graph, fix_size = False ):
         fix_size = False
         if n.get('width') is not None:
             fix_size = True
-            ns += 'width=%s '%n.get('width')
+            ns += 'width={} '.format(n.get('width'))
         if n.get('height') is not None:
             fix_size = True
-            ns += 'height=%s '%n.get('height')
+            ns += 'height={} '.format(n.get('height'))
         if fix_size:
             ns += 'fixedsize=true '
         ns += '];\n'
@@ -68,9 +68,10 @@ def graph_to_dot( graph, fix_size = False ):
 
 def render_dot_file( dot_str, fmt='png' ):
 
+    import pathlib
     import shutil
     import subprocess
-    import pathlib
+
     from .util import work_in_tmpdir
 
     cmd_dot = shutil.which('dot')
@@ -91,9 +92,10 @@ def render_dot_file( dot_str, fmt='png' ):
         return pathlib.Path(f3).read_bytes()
 
 def display_image_data( data, fmt ):
-    import matplotlib.pyplot as plt
-    import matplotlib.image as mpimg
     from io import BytesIO
+
+    import matplotlib.image as mpimg
+    import matplotlib.pyplot as plt
     fh = BytesIO(data)
     img = mpimg.imread(fh,fmt)
     plt.imshow(img)
@@ -104,8 +106,8 @@ def display_image_data( data, fmt ):
 class Graph:
 
     def __init__(self):
-        self.__nodes = dict()
-        self.__connections = dict()
+        self.__nodes = {}
+        self.__connections = {}
         self.__hidden_nodes = set()
 
     def node_is_hidden( self, node ):
@@ -172,8 +174,9 @@ def main( parser ):
 
     args = parser.parse_args()
 
-    from .core_components import load_components
     import math
+
+    from .core_components import load_components
     graph = Graph()
     n2c = load_components()
     if args.stat == 'sloc':
@@ -231,7 +234,6 @@ def main( parser ):
     fmt = 'png'
     data = render_dot_file( graph.get_as_dot_content(), fmt )
     display_image_data( data, fmt )
-    return
 #
 #    try:
 #        import networkx as nx
