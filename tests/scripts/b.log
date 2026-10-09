@@ -49,6 +49,7 @@ MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 p
 Testing ref/reffile_crash.mcpl.gz
  -- assuming this is a broken file which can't be read without errors
 Testing ref/reffile_crash_0p4.mcpl
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 0 particles.
 Testing ref/reffile_crash_8p7.mcpl
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 8 particles.
 Testing ref/reffile_empty.mcpl
@@ -87,6 +88,7 @@ MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 p
 Testing reffmt2/reffile_crash.mcpl.gz
  -- assuming this is a broken file which can't be read without errors
 Testing reffmt2/reffile_crash_0p4.mcpl
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 0 particles.
 Testing reffmt2/reffile_crash_8p7.mcpl
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 8 particles.
 Testing reffmt2/reffile_empty.mcpl

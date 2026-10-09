@@ -1738,8 +1738,7 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
           uint64_t ndata = endpos - f->first_particle_pos;
           uint64_t np = ndata / f->particle_size;
           int has_partial_particle = ( ndata % f->particle_size ) != 0;
-          if ( f->nparticles != np
-               || ( caller_is_mcpl_repair && has_partial_particle ) ) {
+          if ( f->nparticles != np || has_partial_particle ) {
             if ( f->nparticles > 0 && np > f->nparticles ) {
               //should really not happen unless file was corrupted or file was
               //first closed properly and then something was appended to it.
