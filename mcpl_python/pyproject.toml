@@ -29,7 +29,7 @@ version = {attr = "mcpl.__version__"}
 [project]
 name = "mcpl-python"
 dynamic = [ 'version' ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [ 'numpy>=1.22' ]
 readme = "README.md"
 license = {text = "Apache-2.0"}
