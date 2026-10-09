@@ -23,8 +23,9 @@
 #  Simple example with comments, showing how one can use the mcpl Python API to
 #  access MCPL files.
 
-import mcpl
 import sys
+
+import mcpl
 
 #Get name of input file to open from command line:
 inputfile = sys.argv[1]
@@ -39,10 +40,10 @@ f = mcpl.MCPLFile(inputfile)
 f.dump_hdr()
 
 #Or access relevant parts:
-print( 'Number of particles in file: %i' % f.nparticles )
-print( 'Numbers are in single-precision: %s' % f.opt_singleprec )
+print( f'Number of particles in file: {f.nparticles}' )
+print( f'Numbers are in single-precision: {f.opt_singleprec}' )
 for c in f.comments:
-    print( "Some comment: %s" % c )
+    print( f"Some comment: {c}" )
 
 #Loop over all particles and print their positions and energies:
 for p in f.particles:
