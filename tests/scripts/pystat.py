@@ -60,5 +60,11 @@ def main():
                     s=mcpl.collect_stats(f)
                     mcpl.dump_stats(s)
 
+    #stat:sum entries marked as not available (since file was not closed):
+    from MCPLTestUtils.dirs import test_data_dir
+    print('\n'*3+'='*100+'\n'*3)
+    print('Testing ref/ref_statsum_crash.mcpl')
+    mcpl.dump_stats(mcpl.collect_stats(test_data_dir.joinpath('ref','ref_statsum_crash.mcpl'),bin_data=False))
+
 if __name__ == '__main__':
     main()
