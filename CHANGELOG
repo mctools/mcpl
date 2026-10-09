@@ -1,4 +1,8 @@
 v2.2.9  (work in progress)
+      * Fix mcpl_transfer_last_read_particle for transfers from files with
+        double precision to files with single precision, which wrote wrong
+        kinetic energies and directions. The transfers done by mcpltool were not
+        affected.
       * pymcpltool --stats (and dump_stats in the Python API) now also shows
         any stat:sum entries of the file (GitHub issue #94).
       * Drop support for Python 3.8.

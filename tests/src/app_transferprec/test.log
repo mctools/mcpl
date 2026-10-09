@@ -1,0 +1,64 @@
+Transfer from single precision to single precision:
+  ekin=2.5 dir=(0,0.6,0.8) x=1 t=0 pol-x=0 : same as source
+  ekin=5 dir=(-0.48,0.6,-0.64) x=2 t=0.125 pol-x=0 : same as source
+  ekin=7.5 dir=(1,0,0) x=3 t=0.25 pol-x=0 : same as source
+Transfer from single precision to single precision with polarisation:
+  ekin=2.5 dir=(0,0.6,0.8) x=1 t=0 pol-x=0 : same as source
+  ekin=5 dir=(-0.48,0.6,-0.64) x=2 t=0.125 pol-x=0 : same as source
+  ekin=7.5 dir=(1,0,0) x=3 t=0.25 pol-x=0 : same as source
+Transfer from single precision to double precision:
+  ekin=2.5 dir=(0,0.6,0.8) x=1 t=0 pol-x=0 : same as source
+  ekin=5 dir=(-0.48,0.6,-0.64) x=2 t=0.125 pol-x=0 : same as source
+  ekin=7.5 dir=(1,0,0) x=3 t=0.25 pol-x=0 : same as source
+Transfer from single precision to double precision with polarisation:
+  ekin=2.5 dir=(0,0.6,0.8) x=1 t=0 pol-x=0 : same as source
+  ekin=5 dir=(-0.48,0.6,-0.64) x=2 t=0.125 pol-x=0 : same as source
+  ekin=7.5 dir=(1,0,0) x=3 t=0.25 pol-x=0 : same as source
+Transfer from single precision with polarisation to single precision:
+  ekin=2.5 dir=(0,0.6,0.8) x=1 t=0 pol-x=0 : same as source
+  ekin=5 dir=(-0.48,0.6,-0.64) x=2 t=0.125 pol-x=0 : same as source
+  ekin=7.5 dir=(1,0,0) x=3 t=0.25 pol-x=0 : same as source
+Transfer from single precision with polarisation to single precision with polarisation:
+  ekin=2.5 dir=(0,0.6,0.8) x=1 t=0 pol-x=0 : same as source
+  ekin=5 dir=(-0.48,0.6,-0.64) x=2 t=0.125 pol-x=0.25 : same as source
+  ekin=7.5 dir=(1,0,0) x=3 t=0.25 pol-x=0.5 : same as source
+Transfer from single precision with polarisation to double precision:
+  ekin=2.5 dir=(0,0.6,0.8) x=1 t=0 pol-x=0 : same as source
+  ekin=5 dir=(-0.48,0.6,-0.64) x=2 t=0.125 pol-x=0 : same as source
+  ekin=7.5 dir=(1,0,0) x=3 t=0.25 pol-x=0 : same as source
+Transfer from single precision with polarisation to double precision with polarisation:
+  ekin=2.5 dir=(0,0.6,0.8) x=1 t=0 pol-x=0 : same as source
+  ekin=5 dir=(-0.48,0.6,-0.64) x=2 t=0.125 pol-x=0.25 : same as source
+  ekin=7.5 dir=(1,0,0) x=3 t=0.25 pol-x=0.5 : same as source
+Transfer from double precision to single precision:
+  ekin=2.5 dir=(0,0.6,0.8) x=1 t=0 pol-x=0 : same as source
+  ekin=5 dir=(-0.48,0.6,-0.64) x=2 t=0.125 pol-x=0 : same as source
+  ekin=7.5 dir=(1,0,0) x=3 t=0.25 pol-x=0 : same as source
+Transfer from double precision to single precision with polarisation:
+  ekin=2.5 dir=(0,0.6,0.8) x=1 t=0 pol-x=0 : same as source
+  ekin=5 dir=(-0.48,0.6,-0.64) x=2 t=0.125 pol-x=0 : same as source
+  ekin=7.5 dir=(1,0,0) x=3 t=0.25 pol-x=0 : same as source
+Transfer from double precision to double precision:
+  ekin=2.5 dir=(0,0.6,0.8) x=1 t=0 pol-x=0 : same as source
+  ekin=5 dir=(-0.48,0.6,-0.64) x=2 t=0.125 pol-x=0 : same as source
+  ekin=7.5 dir=(1,0,0) x=3 t=0.25 pol-x=0 : same as source
+Transfer from double precision to double precision with polarisation:
+  ekin=2.5 dir=(0,0.6,0.8) x=1 t=0 pol-x=0 : same as source
+  ekin=5 dir=(-0.48,0.6,-0.64) x=2 t=0.125 pol-x=0 : same as source
+  ekin=7.5 dir=(1,0,0) x=3 t=0.25 pol-x=0 : same as source
+Transfer from double precision with polarisation to single precision:
+  ekin=2.5 dir=(0,0.6,0.8) x=1 t=0 pol-x=0 : same as source
+  ekin=5 dir=(-0.48,0.6,-0.64) x=2 t=0.125 pol-x=0 : same as source
+  ekin=7.5 dir=(1,0,0) x=3 t=0.25 pol-x=0 : same as source
+Transfer from double precision with polarisation to single precision with polarisation:
+  ekin=2.5 dir=(0,0.6,0.8) x=1 t=0 pol-x=0 : same as source
+  ekin=5 dir=(-0.48,0.6,-0.64) x=2 t=0.125 pol-x=0.25 : same as source
+  ekin=7.5 dir=(1,0,0) x=3 t=0.25 pol-x=0.5 : same as source
+Transfer from double precision with polarisation to double precision:
+  ekin=2.5 dir=(0,0.6,0.8) x=1 t=0 pol-x=0 : same as source
+  ekin=5 dir=(-0.48,0.6,-0.64) x=2 t=0.125 pol-x=0 : same as source
+  ekin=7.5 dir=(1,0,0) x=3 t=0.25 pol-x=0 : same as source
+Transfer from double precision with polarisation to double precision with polarisation:
+  ekin=2.5 dir=(0,0.6,0.8) x=1 t=0 pol-x=0 : same as source
+  ekin=5 dir=(-0.48,0.6,-0.64) x=2 t=0.125 pol-x=0.25 : same as source
+  ekin=7.5 dir=(1,0,0) x=3 t=0.25 pol-x=0.5 : same as source

@@ -2357,8 +2357,9 @@ void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
   //If possible, override the 3 FP representing packed ekin+dir from the packing
   //in the source, thus avoiding potentially lossy unpacking+packing:
   size_t fpsize_target = ft->opt_singleprec ? sizeof(float) : sizeof(double);
+  size_t fpsize_src = fs->opt_singleprec ? sizeof(float) : sizeof(double);
   size_t idx_packekindir_target = (ft->opt_polarisation ? 6 : 3) * fpsize_target;
-  size_t idx_packekindir_src = (fs->opt_polarisation ? 6 : 3) * fpsize_target;
+  size_t idx_packekindir_src = (fs->opt_polarisation ? 6 : 3) * fpsize_src;
   if (fs->opt_singleprec == ft->opt_singleprec) {
     memcpy( &(ft->particle_buffer[idx_packekindir_target]),
             &(fs->particle_buffer[idx_packekindir_src]),
@@ -2366,10 +2367,9 @@ void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
   } else if ( ft->opt_singleprec && !fs->opt_singleprec ) {
     //For the case of double precision -> single precision, we can simply
     //perform a narrowing conversion:
-    double * packekindir_src = (double*)&(fs->particle_buffer[idx_packekindir_src]);
-    float * packekindir_target = (float*)&(ft->particle_buffer[idx_packekindir_target]);
     for (unsigned i = 0; i < 3; ++i) {
-      packekindir_target[i] = (float)packekindir_src[i];
+      double v = mcpl_internal_rd_double( &(fs->particle_buffer[idx_packekindir_src + i * sizeof(double)]) );
+      mcpl_internal_wr_float( &(ft->particle_buffer[idx_packekindir_target + i * sizeof(float)]), (float)v );
     }
   }
 
