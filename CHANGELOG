@@ -13,6 +13,11 @@ v2.2.9  (work in progress)
         them.
       * New pymcpltool option --traceback, which shows the Python traceback of
         errors, for debugging.
+      * MCPLParticle and MCPLParticleBlock in the Python API get a wavelength
+        attribute, the (de Broglie) wavelength in Aa of neutrons and gammas
+        (NaN for other particles), calculated with relativistic kinematics for
+        neutrons. The new module mcpl.constants contains the physical
+        constants used (CODATA 2022).
       * mcpltool --extract no longer leaves a broken output file behind when
         given an invalid -p argument.
       * ssw2mcpl and phits2mcpl no longer leave an unfinished output file behind
