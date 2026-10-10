@@ -62,6 +62,13 @@ v2.2.9  (work in progress)
         swap(a,b), and rotations. ParticleValue gives the values of an
         expression. See also the new examples pyexample_filtermcpl and
         pyexample_editmcpl.
+      * MCPLFile and MCPLOutFile accept select and edit arguments (expressions
+        or ParticleFilter/ParticleEdit objects), which select and edit the
+        particles read from (or written to) the files, e.g.
+        MCPLFile("in.mcpl",select="pdgcode == neutron",edit="z += 1m"). Edited
+        particles are still transferred exactly by MCPLOutFile.add_particles,
+        except for the edited fields. dump_file, MCPLFile.dump_particles and
+        collect_stats also accept a select argument.
       * mcpltool --extract no longer leaves a broken output file behind when
         given an invalid -p argument.
       * ssw2mcpl and phits2mcpl no longer leave an unfinished output file behind

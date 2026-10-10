@@ -26,8 +26,15 @@ __all__ = ['MCPLOutFile', 'gzip_file']
 
 import os
 
-from ._blocks import MCPLParticle, MCPLParticleBlock
+from ._blocks import (
+    MCPLParticle,
+    MCPLParticleBlock,
+    _ArrayBlock,
+    _block_fields,
+    _EditedParticleBlock,
+)
 from ._common import MCPLError, _native_endianness
+from ._expressions import _as_edit, _as_filter
 from ._messages import _error, _info, _warning
 from ._numpy import np, np_dtype
 from ._physics import ekin_from_wavelength
@@ -90,7 +97,7 @@ class MCPLOutFile:
                   blobs = None, stat_sum = None, opt_userflags = False,
                   opt_polarisation = False, opt_singleprec = True,
                   opt_universalpdgcode = 0, opt_universalweight = 0.0,
-                  blocklength = 10000 ):
+                  blocklength = 10000, select = None, edit = None ):
         """Create new file (overwriting any existing file). Like in the C API,
         ".mcpl" is appended to the filename if it does not already end with
         it. The keyword arguments correspond to calling the methods
@@ -101,8 +108,19 @@ class MCPLOutFile:
         enable_universal_weight. The blocklength parameter controls how many
         particles added with add_particle(..) are buffered before being
         written.
+
+        If select (an expression or a ParticleFilter) is given, only the
+        selected particles are written, and if edit (an expression or a
+        ParticleEdit) is given, it is applied to all particles before they are
+        written. For instance, MCPLOutFile("out.mcpl",select="pdgcode ==
+        neutron",edit="z += 1m").
+        Note that stat:sum entries are not modified, so they should for
+        instance be scaled with hdr_scale_stat_sums(-1) when particle weights
+        are edited (see the guidelines for stat:sum entries).
         """
         self._fh = None
+        self._flt = _as_filter(select)
+        self._edt = _as_edit(edit)
         if hasattr(filename,'__fspath__'):
             filename = os.fspath(filename)
         if isinstance(filename,bytes):
@@ -638,10 +656,37 @@ class MCPLOutFile:
             else:
                 raise MCPLError('Unsupported type of particles object (should'
                                 ' be MCPLParticleBlock or MCPLParticle)')
-            self._transfer(b,sel,fields)
+            if self._flt is None and self._edt is None:
+                self._transfer(b,sel,fields)
+                return
+            b = b[sel]
+            if fields:
+                ocols, _ = self._collect_fields(fields)
+                self._resolve_wavelength(ocols, ocols.get('pdgcode', b.pdgcode))
+                b = _EditedParticleBlock(b,ocols)
+            if self._flt is not None:
+                b = b[self._flt(b)]
+            if self._edt is not None and len(b):
+                b = _EditedParticleBlock(b,self._edt(b))
+            self._transfer(b,slice(None))
             return
         cols, n = self._collect_fields(fields)
         self._resolve_wavelength(cols, cols.get('pdgcode'))
+        if self._flt is not None or self._edt is not None:
+            defaults = { 'pdgcode' : self._opt_universalpdgcode,
+                         'weight' : self._opt_universalweight }
+            blk = _ArrayBlock(cols,n,defaults)
+            if self._flt is not None:
+                keep = np.flatnonzero(self._flt(blk))
+                if not len(keep):
+                    return
+                n = len(keep)
+                blk = _ArrayBlock({ f : getattr(blk,f)[keep] for f in _block_fields },
+                                  n,defaults)
+            cols = { f : getattr(blk,f) for f in _block_fields if f in cols }
+            if self._edt is not None:
+                cols.update(self._edt(blk))
+                self._resolve_wavelength(cols, cols.get('pdgcode'))
         if self._hdr_notwritten:
             self._write_header()
         arr = self._pack(n,cols)
@@ -654,6 +699,11 @@ class MCPLOutFile:
         MCPLParticle read with MCPLFile. Particles are internally buffered and
         written in blocks for efficiency."""
         self._check_open()
+        if ( self._flt is not None or self._edt is not None ) and particle is None:
+            vecs = ('position','direction','polarisation')
+            self.add_particles(**{ k : ( [v] if k in vecs else np.atleast_1d(v) )
+                                   for k,v in fields.items() })
+            return
         if particle is not None:
             if fields:
                 raise MCPLError('Do not specify particle fields together with'
@@ -721,6 +771,12 @@ class MCPLOutFile:
         cols['ekin'] = ekin_from_wavelength( cols.pop('wavelength'), pdgcode )
 
     def _transfer(self, block, sel, overrides = None):
+        edits = getattr(block,'_edits',None)
+        if edits:
+            #Edited block: transfer packed data, with edited fields as overrides
+            ov = { k : v[sel] for k,v in edits.items() }
+            ov.update(overrides or {})
+            overrides = ov
         data = block._data[sel]
         n = len(data)
         if not n:

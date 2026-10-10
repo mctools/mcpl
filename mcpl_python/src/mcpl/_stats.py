@@ -26,11 +26,32 @@ __all__ = ['collect_stats', 'dump_stats', 'plot_stats']
 import os
 
 from ._common import MCPLError, _determine_version
+from ._expressions import _as_filter
 from ._messages import _warning
 from ._numpy import _np_add_at, np, np_dtype, np_unique
 from ._physics import _pdg_database
 from ._reader import MCPLFile
 
+
+class _SelectedFile:
+    """Read-only view of the particles in an MCPLFile selected by an
+    expression (or ParticleFilter), for collect_stats. Also used for files
+    opened with select or edit (in which case select can be None)."""
+    def __init__(self,mcplfile,select):
+        self._f = mcplfile
+        self._flt = _as_filter(select)
+        sels = [ e.expression for e in (getattr(mcplfile,'select',None),self._flt)
+                 if e is not None ]
+        self.selection = ' && '.join( f'({e})' if len(sels) > 1 else e for e in sels )
+        if getattr(mcplfile,'edit',None) is not None:
+            self.edit = mcplfile.edit.expression
+        self.nparticles = sum( len(b) for b in self.particle_blocks )
+    def __getattr__(self,name):
+        return getattr(self._f,name)
+    @property
+    def particle_blocks(self):
+        for b in self._f.particle_blocks:
+            yield b[self._flt(b)] if self._flt is not None else b
 
 def _unique_count(a,weights=None):
     """returns (unique,count) where unique is an array of sorted unique values in a, and count is the corresponding frequency counts"""
@@ -106,10 +127,11 @@ class _StatCollector:
 _possible_std_stats = ['ekin','x','y','z','ux','uy','uz','time','weight','polx','poly','polz']
 _possible_freq_stats = ['pdgcode','userflags']
 
-def collect_stats(mcplfile,stats='all',bin_data=True):
-    """Efficiently collect statistics from an entire file (or part of file, if limit
-    or skip parameters are set). Returns dictionary with stat names as key and
-    the collected statistics as values."""
+def collect_stats(mcplfile,stats='all',bin_data=True,select=None):
+    """Efficiently collect statistics from an entire file. Returns dictionary
+    with stat names as key and the collected statistics as values. If select
+    is given (an expression or a ParticleFilter), only the selected particles
+    are included."""
 
     #Normal stats (will be used weighted, except for stats about the weight field itself):
     possible_std_stats = set(_possible_std_stats)
@@ -123,10 +145,15 @@ def collect_stats(mcplfile,stats='all',bin_data=True):
     if not isinstance(stats,set):
         stats = set(stats)
 
-    if not isinstance(mcplfile,MCPLFile):
+    if not isinstance(mcplfile,(MCPLFile,_SelectedFile)):
         mcplfile = MCPLFile(mcplfile)
+    if select is not None or ( isinstance(mcplfile,MCPLFile) and (
+            mcplfile.select is not None or mcplfile.edit is not None ) ):
+        mcplfile = _SelectedFile(mcplfile,select)
     if mcplfile.nparticles==0:
-        _warning("Can not calculate stats on an empty file")
+        _warning("Can not calculate stats on an empty file"
+                 if select is None else
+                 "Can not calculate stats when no particles are selected")
         return {}
 
     unknown = stats.difference(possible_std_stats.union(possible_freq_stats))
@@ -266,6 +293,11 @@ def collect_stats(mcplfile,stats='all',bin_data=True):
 
     results = { 'file':{'type':'fileinfo','integral':weight_sum,'nparticles':mcplfile.nparticles,
                         'stat_sum':dict(mcplfile.stat_sum)} }
+    if isinstance(mcplfile,_SelectedFile):
+        if mcplfile.selection:
+            results['file']['selection'] = mcplfile.selection
+        if getattr(mcplfile,'edit',None):
+            results['file']['edit'] = mcplfile.edit
     for s,uc in freq_uc.items():
         results[s] = { 'unique_values': uc[0], 'unique_values_counts' : uc[1], 'weighted' : True, 'type':'freq' }
 
@@ -296,6 +328,10 @@ def dump_stats(stats):
     if not isinstance(stats,dict):
         stats = collect_stats(stats,bin_data=False)
     print('------------------------------------------------------------------------------')
+    if 'selection' in stats['file']:
+        print(f"selection    : {stats['file']['selection']}")
+    if 'edit' in stats['file']:
+        print(f"edit         : {stats['file']['edit']}")
     print(f"nparticles   : {stats['file']['nparticles']}")
     print('sum(weights) : {:g}'.format(stats['file']['integral']))
     for key, val in stats['file'].get('stat_sum',{}).items():
