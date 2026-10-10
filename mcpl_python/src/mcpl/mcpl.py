@@ -21,33 +21,61 @@
 
 """The mcpl.mcpl module of earlier releases, kept for backwards compatibility.
 
-All the names are also available directly in the mcpl package (after "import
-mcpl"), which is the recommended way to use them.
+All the names are available directly in the mcpl package (after "import mcpl"),
+which is how they should be used. Using them from mcpl.mcpl gives a
+DeprecationWarning (except for main, which is the entry point of pymcpltool
+in some installations).
 """
 
 __all__ = [
-    'MCPLError',
-    'MCPLFile',
-    'MCPLParticle',
-    'MCPLParticleBlock',
-    'app_pymcpltool',
-    'collect_stats',
-    'convert2ascii',
-    'dump_file',
-    'dump_stats',
-    'encode_stat_sum',
-    'is_valid_stat_sum_key',
+    'MCPLError',  # noqa: F822
+    'MCPLFile',  # noqa: F822
+    'MCPLParticle',  # noqa: F822
+    'MCPLParticleBlock',  # noqa: F822
+    'app_pymcpltool',  # noqa: F822
+    'collect_stats',  # noqa: F822
+    'convert2ascii',  # noqa: F822
+    'dump_file',  # noqa: F822
+    'dump_stats',  # noqa: F822
+    'encode_stat_sum',  # noqa: F822
+    'is_valid_stat_sum_key',  # noqa: F822
     'main',
-    'plot_stats',
+    'plot_stats',  # noqa: F822
 ]
 
-from ._blocks import MCPLParticle, MCPLParticleBlock
-from ._cli import app_pymcpltool, main
-from ._common import MCPLError, __version__  # noqa: F401
-from ._fileops import convert2ascii, dump_file
-from ._reader import MCPLFile
-from ._stats import collect_stats, dump_stats, plot_stats
-from ._statsum import encode_stat_sum, is_valid_stat_sum_key
+from . import _blocks, _cli, _common, _fileops, _reader, _stats, _statsum
+from ._cli import main
+
+_moved = {
+    '__version__': _common,
+    'MCPLError': _common,
+    'MCPLFile': _reader,
+    'MCPLParticle': _blocks,
+    'MCPLParticleBlock': _blocks,
+    'app_pymcpltool': _cli,
+    'collect_stats': _stats,
+    'convert2ascii': _fileops,
+    'dump_file': _fileops,
+    'dump_stats': _stats,
+    'encode_stat_sum': _statsum,
+    'is_valid_stat_sum_key': _statsum,
+    'plot_stats': _stats,
+}
+
+def __getattr__(name):
+    mod = _moved.get(name)
+    if mod is None:
+        raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
+    import warnings
+    warnings.warn(f'mcpl.mcpl.{name} is deprecated, use mcpl.{name} (after'
+                  ' "import mcpl") instead', DeprecationWarning, stacklevel=2)
+    obj = getattr(mod, name)
+    #Only warn on the first use:
+    globals()[name] = obj
+    return obj
+
+def __dir__():
+    return sorted(set(__all__) | {'__version__'})
 
 if __name__ == '__main__':
     main()

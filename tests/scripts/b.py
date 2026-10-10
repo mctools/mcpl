@@ -34,7 +34,7 @@ from MCPLTestUtils.stdout_redirect import RedirectStdout
 
 
 def run_pymcpltool(*args):
-    from mcpldev.mcpl import app_pymcpltool
+    from mcpldev import app_pymcpltool
     try:
         app_pymcpltool(['pymcpltool']+[str(e) for e in args])
     except SystemExit as e:
