@@ -47,7 +47,8 @@ The default behaviour is to display the contents of the FILE in human readable
 format (see Dump Options below for how to modify what is displayed).
 
 This is the python version of the tool, which in addition to the features of
-the compiled mcpltool can show statistics.
+the compiled mcpltool can show statistics, and select or edit particles based
+on expressions.
 
 This installation supports direct reading of gzipped files (.mcpl.gz).
 
@@ -69,6 +70,10 @@ Dump options:
                     can specify -l0 to disable this limit.
   -sN             : Skip past the first N particles in the file (default 0).
   -bKEY           : Dump binary blob stored under KEY to standard output.
+  -pPDGCODE       : Only show particles of the type given by PDGCODE (or name,
+                    see Extract options below).
+  --select EXPR   : Only show particles for which the expression EXPR is true
+                    (-l and -s then apply to the selected particles).
 
 Merge options:
   -m, --merge FILEOUT FILE1 FILE2 ... FILEN
@@ -94,6 +99,31 @@ Extract options:
                     antielectron), muon, antimuon, gamma (or photon).
   --no-comment    : Do not add comments to the header of FILE2 about how the
                     particles were extracted.
+  --select EXPR   : Select particles for which the expression EXPR is true,
+                    e.g. --select "pdgcode == neutron && ekin < 25meV".
+  --edit EXPR     : Modify particles with the assignments in EXPR, e.g.
+                    --edit "z += 1cm, weight *= 0.5, wavelength = 1.8Aa".
+                    Editing weights marks stat:sum entries as not available
+                    (-1), as does selecting particles with -l or -s.
+  --keep-statsum  : Keep stat:sum entries when --edit modifies weights (if
+                    the edit is known to be compatible with them).
+
+Expressions:
+  Expressions can use the particle fields x, y, z, ux, uy, uz, polx, poly,
+  polz, ekin, time, weight, pdgcode, userflags, and wavelength (which is only
+  defined for neutrons and gammas, which must be selected before using it,
+  e.g. "pdgcode == neutron && wavelength > 1.8Aa"). Operators are as in C (+ -
+  * / % == != < <= > >= && || !), with ^ or ** for powers, and functions like
+  sqrt, abs, sin, cos, atan2, hypot, min, max and clamp are available, as are
+  the particle names listed for -p above as pdgcode values. Values with units
+  must have units (meV, eV, keV, MeV, GeV, TeV, ns, us, ms, s, Aa, nm, um, mm,
+  cm, m, km), e.g. "ekin < 25meV", "wavelength > 0.18nm" or "x^2 + y^2 <
+  4cm^2", except for a plain 0 (e.g. "x > 0"), and deg can be used for angles,
+  e.g. "acos(uz) < 10deg". Bit masks can be used for userflags, e.g.
+  "userflags & 0x10". In --edit, statements are separated by commas and
+  executed in order. Besides assignments to fields (e.g. "z += 1cm"), they can
+  be assignments to variables (e.g. "tmp = x, x = y, y = tmp"), swap(a,b), and
+  rotate_x(angle), rotate_y(angle) or rotate_z(angle).
 
 Stat options:
   --stats FILE    : Print statistics summary of particle state data from FILE.
@@ -102,6 +132,10 @@ Stat options:
                     data from FILE.
   --stats --gui FILE
                   : Like --pdf, but opens interactive histogram views directly.
+  -pPDGCODE       : Only include particles of the type given by PDGCODE (or
+                    name, see Extract options above) in the statistics.
+  --select EXPR   : Only include particles for which the expression EXPR is
+                    true in the statistics.
 
 Other options:
   -r, --repair FILE
@@ -130,7 +164,8 @@ The default behaviour is to display the contents of the FILE in human readable
 format (see Dump Options below for how to modify what is displayed).
 
 This is the python version of the tool, which in addition to the features of
-the compiled mcpltool can show statistics.
+the compiled mcpltool can show statistics, and select or edit particles based
+on expressions.
 
 This installation supports direct reading of gzipped files (.mcpl.gz).
 
@@ -152,6 +187,10 @@ Dump options:
                     can specify -l0 to disable this limit.
   -sN             : Skip past the first N particles in the file (default 0).
   -bKEY           : Dump binary blob stored under KEY to standard output.
+  -pPDGCODE       : Only show particles of the type given by PDGCODE (or name,
+                    see Extract options below).
+  --select EXPR   : Only show particles for which the expression EXPR is true
+                    (-l and -s then apply to the selected particles).
 
 Merge options:
   -m, --merge FILEOUT FILE1 FILE2 ... FILEN
@@ -177,6 +216,31 @@ Extract options:
                     antielectron), muon, antimuon, gamma (or photon).
   --no-comment    : Do not add comments to the header of FILE2 about how the
                     particles were extracted.
+  --select EXPR   : Select particles for which the expression EXPR is true,
+                    e.g. --select "pdgcode == neutron && ekin < 25meV".
+  --edit EXPR     : Modify particles with the assignments in EXPR, e.g.
+                    --edit "z += 1cm, weight *= 0.5, wavelength = 1.8Aa".
+                    Editing weights marks stat:sum entries as not available
+                    (-1), as does selecting particles with -l or -s.
+  --keep-statsum  : Keep stat:sum entries when --edit modifies weights (if
+                    the edit is known to be compatible with them).
+
+Expressions:
+  Expressions can use the particle fields x, y, z, ux, uy, uz, polx, poly,
+  polz, ekin, time, weight, pdgcode, userflags, and wavelength (which is only
+  defined for neutrons and gammas, which must be selected before using it,
+  e.g. "pdgcode == neutron && wavelength > 1.8Aa"). Operators are as in C (+ -
+  * / % == != < <= > >= && || !), with ^ or ** for powers, and functions like
+  sqrt, abs, sin, cos, atan2, hypot, min, max and clamp are available, as are
+  the particle names listed for -p above as pdgcode values. Values with units
+  must have units (meV, eV, keV, MeV, GeV, TeV, ns, us, ms, s, Aa, nm, um, mm,
+  cm, m, km), e.g. "ekin < 25meV", "wavelength > 0.18nm" or "x^2 + y^2 <
+  4cm^2", except for a plain 0 (e.g. "x > 0"), and deg can be used for angles,
+  e.g. "acos(uz) < 10deg". Bit masks can be used for userflags, e.g.
+  "userflags & 0x10". In --edit, statements are separated by commas and
+  executed in order. Besides assignments to fields (e.g. "z += 1cm"), they can
+  be assignments to variables (e.g. "tmp = x, x = y, y = tmp"), swap(a,b), and
+  rotate_x(angle), rotate_y(angle) or rotate_z(angle).
 
 Stat options:
   --stats FILE    : Print statistics summary of particle state data from FILE.
@@ -185,6 +249,10 @@ Stat options:
                     data from FILE.
   --stats --gui FILE
                   : Like --pdf, but opens interactive histogram views directly.
+  -pPDGCODE       : Only include particles of the type given by PDGCODE (or
+                    name, see Extract options above) in the statistics.
+  --select EXPR   : Only include particles for which the expression EXPR is
+                    true in the statistics.
 
 Other options:
   -r, --repair FILE

@@ -52,6 +52,8 @@ with mcpl.MCPLFile(infilename) as fi, mcpl.MCPLOutFile(outfilename) as fo:
     #    flt = mcpl.ParticleFilter('pdgcode == neutron && ekin < 0.1MeV')
     #    for block in fi.particle_blocks:
     #        fo.add_particles( block[ flt(block) ] )
+    #
+    #This is also what the command "pymcpltool --extract --select EXPR" does.
 
 #Note that any stat:sum:... statistics in the files will still be fine, since
 #we only filtered the particles based on their properties. If we had instead

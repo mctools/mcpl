@@ -23,7 +23,8 @@
 # NEEDS: numpy
 
 # Check that pymcpltool gives the same results and printouts as mcpltool for
-# the operations they share.
+# the operations they share, and test the --select, --edit and --keep-statsum
+# options of pymcpltool, and -p outside --extract.
 
 import gzip
 import pathlib
@@ -31,6 +32,8 @@ import shutil
 import subprocess
 import sys
 
+import mcpldev as mcpl
+import numpy as np
 from MCPLTestUtils.dirs import mcpltool_cmd, test_data_dir
 from MCPLTestUtils.loadlib import getlib
 
@@ -167,9 +170,141 @@ def test_compare_with_mcpltool():
         ok &= compare(*args)
     return ok
 
+def py_extract(infile, outfile, select = None, edit = None):
+    """Do the same as pymcpltool --extract --select --edit with the API"""
+    flt = mcpl.ParticleFilter(select) if select else None
+    edt = mcpl.ParticleEdit(edit) if edit else None
+    with mcpl.MCPLFile(infile) as fi, mcpl.MCPLOutFile(outfile) as fo:
+        fo.transfer_metadata(fi)
+        fo.hdr_add_comment('mcpltool: extracted particles')
+        if select:
+            fo.hdr_add_comment(f'pymcpltool: selected particles with: {select}')
+        if edit:
+            fo.hdr_add_comment(f'pymcpltool: edited particles with: {edit}')
+            if 'weight' in edt.modified_fields:
+                fo.hdr_scale_stat_sums(-1.0)
+        for b in fi.particle_blocks:
+            if flt:
+                b = b[flt(b)]
+            fo.add_particles(b, **(edt(b) if edt else {}))
+
+def test_select_edit():
+    ok = True
+    cases = [ ('pdgcode == neutron', None),
+              ('ekin > 5keV && ekin <= 20keV && x <= 2cm + abs(y)', None),
+              ('!(pdgcode == gamma) || uz > 0.7', None),
+              ('(userflags & 1) == 1 && z < 1.5mm', None),
+              (None, 'x = -y, y = x, z += 1cm'),
+              (None, 'tmp = x, x = y, y = tmp, swap(ux,uy), rotate_x(30deg)'),
+              (None, 'weight *= 0.5, time = time + 1us'),
+              ('pdgcode == 2112', 'wavelength = 1.8Aa'),
+              ('pdgcode == gamma', 'wavelength = wavelength*2'),
+              ('pdgcode != 11', 'ux = -ux, uz = -uz, pdgcode = 2112'),
+              ('x > 10m', None) ]
+    for select, edit in cases:
+        fresh('py')
+        args = ['--extract','a1.mcpl','out.mcpl']
+        if select:
+            args += ['--select', select]
+        if edit:
+            args += [f'--edit={edit}']
+        rc, out, err = run([sys.executable, '-m', 'mcpldev', *args], 'py')
+        py_extract('py/a1.mcpl', 'py/ref.mcpl', select, edit)
+        same = ( rc == 0 and not err
+                 and pathlib.Path('py/out.mcpl').read_bytes() == pathlib.Path('py/ref.mcpl').read_bytes() )
+        with mcpl.MCPLFile('py/out.mcpl') as f:
+            n = f.nparticles
+        print(f'pymcpltool {" ".join(args)}: {out.strip()}')
+        print(f'   same as with the Python API: {same}')
+        ok &= same
+    #Check some of the results directly:
+    with mcpl.MCPLFile('inputs/a1.mcpl') as f:
+        b = f.read_block()
+    fresh('py')
+    run([sys.executable, '-m', 'mcpldev', '--extract', 'a1.mcpl', 'out.mcpl',
+         '--select', 'pdgcode == neutron', '--edit', 'rotate_z(90deg), wavelength = 1.8Aa'], 'py')
+    with mcpl.MCPLFile('py/out.mcpl') as f:
+        e = f.read_block()
+    n = b[b.pdgcode==2112]
+    checks = [ np.allclose(e.x, -n.y), np.allclose(e.y, n.x), np.allclose(e.z, n.z),
+               np.allclose(e.wavelength, 1.8, rtol=1e-6), np.all(e.pdgcode==2112) ]
+    print(f'Results of selection and edit as expected: {all(checks)}')
+    ok &= all(checks)
+    #Errors:
+    for args in ( ['--extract','a1.mcpl','out.mcpl','--select','ekin=1MeV'],
+                  ['--extract','a1.mcpl','out.mcpl','--select','foo>1'],
+                  ['--extract','a1.mcpl','out.mcpl','--select','x>1'],
+                  ['--extract','a1.mcpl','out.mcpl','--edit','x==1cm'],
+                  ['--extract','a1.mcpl','out.mcpl','--edit','x=2*ux'],
+                  ['--extract','a1.mcpl','out.mcpl','--select'],
+                  ['--extract','a1.mcpl','out.mcpl','--select','x>1cm','--select','y>1cm'],
+                  ['--extract','a1.mcpl','out.mcpl','--edit','wavelength=1.8Aa'],
+                  ['--select','x>1cm','-j','a1.mcpl'],
+                  ['--select','x>1cm','-ba','a1.mcpl'],
+                  ['--select','x>1meV','a1.mcpl'],
+                  ['--stats','--select','x>1km','a1.mcpl'],
+                  ['--stats','-pantimuon','a1.mcpl'],
+                  ['-pfoo','a1.mcpl'],
+                  ['-pgamma','-j','a1.mcpl'],
+                  ['--repair','--select','x>1cm','a1.mcpl'],
+                  ['--repair','-pgamma','a1.mcpl'],
+                  ['-p22','--merge','out.mcpl','a1.mcpl','a2.mcpl'],
+                  ['--keep-statsum','a1.mcpl'],
+                  ['--stats','--keep-statsum','a1.mcpl'] ):
+        fresh('py')
+        rc, out, err = run([sys.executable, '-m', 'mcpldev', *args], 'py')
+        print(f'pymcpltool {" ".join(args)}: exit code {rc}')
+        for line in out.splitlines():
+            print(f'   | {line}')
+        ok &= ( rc != 0 and not err and not pathlib.Path('py/out.mcpl').exists() )
+    return ok
+
+def test_p_option():
+    #Outside --extract, -pNAME (pymcpltool only) is the same as a selection:
+    ok = True
+    for pargs, sargs in ( (['-pgamma','-l3'], ['--select','pdgcode == gamma','-l3']),
+                          (['-p11','-n'], ['--select','pdgcode == 11','-n']),
+                          (['-pneutron','--select','x > 1cm'],
+                           ['--select','pdgcode == neutron && (x > 1cm)']),
+                          (['--stats','-pelectron'], ['--stats','--select','pdgcode == electron']) ):
+        fresh('py')
+        rp = run([sys.executable, '-m', 'mcpldev', *pargs, 'a1.mcpl'], 'py')
+        rs = run([sys.executable, '-m', 'mcpldev', *sargs, 'a1.mcpl'], 'py')
+        same = rp == rs and rp[0] == 0
+        print(f'pymcpltool {" ".join(pargs)}: same as {" ".join(sargs)}: {same}')
+        ok &= same
+    return ok
+
+def test_statsum():
+    #stat:sum entries are kept when selecting particles by their properties or
+    #editing other fields than weights, and marked as not available (-1) when
+    #selecting based on positions in the file or editing weights:
+    ok = True
+    for args, expected in ( (['--select','pdgcode == neutron'], 1000.0),
+                            (['--edit','z += 1cm, rotate_z(10deg)'], 1000.0),
+                            (['-pgamma','--edit','wavelength = 1Aa'], 1000.0),
+                            (['--edit','weight *= 2'], None),
+                            (['--edit','tmp = weight, weight = 2*tmp'], None),
+                            (['--edit','weight *= 2','--keep-statsum'], 1000.0),
+                            (['--select','x > 0','--edit','weight = 1','--keep-statsum'], 1000.0),
+                            (['-l5','--edit','weight *= 2','--keep-statsum'], None),
+                            (['-l5'], None),
+                            (['-s1','--select','x > 0'], None) ):
+        fresh('py')
+        rc, out, err = run([sys.executable, '-m', 'mcpldev', '--extract', 'a1.mcpl',
+                            'out.mcpl', *args], 'py')
+        with mcpl.MCPLFile('py/out.mcpl') as f:
+            v = f.stat_sum['nsim']
+        print(f'pymcpltool --extract {" ".join(args)}: stat:sum:nsim = {v}')
+        for line in out.splitlines():
+            print(f'   | {line}')
+        ok &= ( rc == 0 and not err and v == expected )
+    return ok
+
 def main():
     make_inputs()
-    results = [ test_compare_with_mcpltool() ]
+    results = [ test_compare_with_mcpltool(), test_select_edit(), test_p_option(),
+                test_statsum() ]
     print(f'Compared {ncases} command lines with mcpltool')
     assert all(results), 'Problems found'
 

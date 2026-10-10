@@ -29,6 +29,7 @@ import re
 import sys
 
 from ._common import MCPLError, _determine_version, _output_bytearray_raw
+from ._expressions import ParticleEdit, ParticleFilter
 from ._fileops import (
     can_merge,
     convert2ascii,
@@ -41,7 +42,7 @@ from ._fileops import (
 from ._messages import _ForcePrinting, _info, _warning
 from ._physics import _particle_names
 from ._reader import MCPLFile
-from ._stats import dump_stats, plot_stats
+from ._stats import _SelectedFile, dump_stats, plot_stats
 from ._writer import MCPLOutFile
 
 
@@ -57,7 +58,8 @@ The default behaviour is to display the contents of the FILE in human readable
 format (see Dump Options below for how to modify what is displayed).
 
 This is the python version of the tool, which in addition to the features of
-the compiled mcpltool can show statistics.
+the compiled mcpltool can show statistics, and select or edit particles based
+on expressions.
 
 This installation supports direct reading of gzipped files (.mcpl.gz).
 
@@ -79,6 +81,10 @@ Dump options:
                     can specify -l0 to disable this limit.
   -sN             : Skip past the first N particles in the file (default 0).
   -bKEY           : Dump binary blob stored under KEY to standard output.
+  -pPDGCODE       : Only show particles of the type given by PDGCODE (or name,
+                    see Extract options below).
+  --select EXPR   : Only show particles for which the expression EXPR is true
+                    (-l and -s then apply to the selected particles).
 
 Merge options:
   -m, --merge FILEOUT FILE1 FILE2 ... FILEN
@@ -104,6 +110,31 @@ Extract options:
                     antielectron), muon, antimuon, gamma (or photon).
   --no-comment    : Do not add comments to the header of FILE2 about how the
                     particles were extracted.
+  --select EXPR   : Select particles for which the expression EXPR is true,
+                    e.g. --select "pdgcode == neutron && ekin < 25meV".
+  --edit EXPR     : Modify particles with the assignments in EXPR, e.g.
+                    --edit "z += 1cm, weight *= 0.5, wavelength = 1.8Aa".
+                    Editing weights marks stat:sum entries as not available
+                    (-1), as does selecting particles with -l or -s.
+  --keep-statsum  : Keep stat:sum entries when --edit modifies weights (if
+                    the edit is known to be compatible with them).
+
+Expressions:
+  Expressions can use the particle fields x, y, z, ux, uy, uz, polx, poly,
+  polz, ekin, time, weight, pdgcode, userflags, and wavelength (which is only
+  defined for neutrons and gammas, which must be selected before using it,
+  e.g. "pdgcode == neutron && wavelength > 1.8Aa"). Operators are as in C (+ -
+  * / % == != < <= > >= && || !), with ^ or ** for powers, and functions like
+  sqrt, abs, sin, cos, atan2, hypot, min, max and clamp are available, as are
+  the particle names listed for -p above as pdgcode values. Values with units
+  must have units (meV, eV, keV, MeV, GeV, TeV, ns, us, ms, s, Aa, nm, um, mm,
+  cm, m, km), e.g. "ekin < 25meV", "wavelength > 0.18nm" or "x^2 + y^2 <
+  4cm^2", except for a plain 0 (e.g. "x > 0"), and deg can be used for angles,
+  e.g. "acos(uz) < 10deg". Bit masks can be used for userflags, e.g.
+  "userflags & 0x10". In --edit, statements are separated by commas and
+  executed in order. Besides assignments to fields (e.g. "z += 1cm"), they can
+  be assignments to variables (e.g. "tmp = x, x = y, y = tmp"), swap(a,b), and
+  rotate_x(angle), rotate_y(angle) or rotate_z(angle).
 
 Stat options:
   --stats FILE    : Print statistics summary of particle state data from FILE.
@@ -112,6 +143,10 @@ Stat options:
                     data from FILE.
   --stats --gui FILE
                   : Like --pdf, but opens interactive histogram views directly.
+  -pPDGCODE       : Only include particles of the type given by PDGCODE (or
+                    name, see Extract options above) in the statistics.
+  --select EXPR   : Only include particles for which the expression EXPR is
+                    true in the statistics.
 
 Other options:
   -r, --repair FILE
@@ -164,12 +199,27 @@ def _app_pymcpltool(argv):
     opt_extract = False
     opt_preventcomment = False
     opt_repair = False
+    opt_keepstatsum = False
     pdgcode_str = None
+    #Options with values (--name VALUE or --name=VALUE):
+    vopts = {}
+    vopt_names = ('--select','--edit')
     filelist = []
     def bad(errmsg):
         _pymcpltool_usage(progname,errmsg)
-    for a in args:
-        if a.startswith('--'):
+    args = list(args)
+    while args:
+        a = args.pop(0)
+        if a.startswith('--') and a.split('=')[0] in vopt_names:
+            name, eq, value = a.partition('=')
+            if not eq:
+                if not args:
+                    bad(f"Missing argument for {name}")
+                value = args.pop(0)
+            if name in vopts:
+                bad(f"{name} specified more than once")
+            vopts[name] = value
+        elif a.startswith('--'):
             if a=='--merge':
                 opt_merge=True
             elif a=='--forcemerge':
@@ -182,6 +232,8 @@ def _app_pymcpltool(argv):
                 opt_extract=True
             elif a in ('--no-comment','--preventcomment'):
                 opt_preventcomment=True
+            elif a=='--keep-statsum':
+                opt_keepstatsum=True
             elif a=='--repair':
                 opt_repair=True
             elif a=='--justhead':
@@ -255,8 +307,12 @@ def _app_pymcpltool(argv):
                     bad(f"Unrecognised option : -{f}")
         else:
             filelist += [a]
-    if not opt_extract and pdgcode_str is not None:
-        bad("-p can only be used with --extract.")
+    opt_select = vopts.get('--select')
+    opt_edit = vopts.get('--edit')
+    if not opt_extract and opt_edit is not None:
+        bad("--edit can only be used with --extract.")
+    if not opt_extract and opt_keepstatsum:
+        bad("--keep-statsum can only be used with --extract.")
     if not opt_extract and opt_preventcomment:
         bad("--no-comment can only be used with --extract.")
     if opt_inplace and not opt_merge:
@@ -281,6 +337,21 @@ def _app_pymcpltool(argv):
         bad("Do not specify --gui without --stats")
     if opt_gui and opt_pdf:
         bad("Do not specify both --pdf and --gui")
+    for optname,optval in (('-p',pdgcode_str),('--select',opt_select)):
+        if optval is not None and ( opt_version or opt_text or any_mergeopts
+                                    or opt_repair or opt_justhead or opt_blobkey ):
+            bad(f"{optname} can only be used with --extract, --stats,"
+                " or when showing particles.")
+    if pdgcode_str is not None and not opt_extract:
+        #Turn -p into a selection:
+        pdgcode = _tool_pdgcode(pdgcode_str,bad)
+        sel = f'pdgcode == {pdgcode_str if pdgcode_str in _particle_names else pdgcode}'
+        opt_select = sel if opt_select is None else f'{sel} && ({opt_select})'
+    if opt_select is not None and not opt_extract:
+        try:
+            opt_select = ParticleFilter(opt_select)
+        except MCPLError as e:
+            bad(str(e))
 
     if opt_version:
         if filelist:
@@ -293,8 +364,8 @@ def _app_pymcpltool(argv):
         sys.exit(0)
 
     if opt_extract:
-        _pymcpltool_extract(filelist,opt_limit,opt_skip,pdgcode_str,
-                            opt_preventcomment,bad)
+        _pymcpltool_extract(filelist,opt_limit,opt_skip,pdgcode_str,opt_select,
+                            opt_edit,opt_preventcomment,opt_keepstatsum,bad)
         sys.exit(0)
 
     if opt_text:
@@ -330,6 +401,10 @@ def _app_pymcpltool(argv):
         f=MCPLFile(filelist[0])
         if f.nparticles==0:
             bad("Can not calculate statistics for an empty file")
+        if opt_select is not None:
+            f = _SelectedFile(f,opt_select)
+            if f.nparticles==0:
+                bad("Can not calculate statistics when no particles are selected")
         if opt_pdf or opt_gui:
             plot_stats(f,
                        pdf=('mcpl.pdf' if opt_pdf else False),
@@ -363,7 +438,7 @@ def _app_pymcpltool(argv):
     if opt_justhead and opt_nohead:
         bad("Do not supply both --justhead and --nohead.")
     dump_file(filelist[0],header=not opt_nohead,particles=not opt_justhead,
-              limit=opt_limit,skip=opt_skip)
+              limit=opt_limit,skip=opt_skip,select=opt_select)
     sys.exit(0)
 
 def _tool_pdgcode(pdgcode_str,bad):
@@ -426,7 +501,8 @@ def _pymcpltool_merge(filelist, opt_forcemerge, opt_inplace, opt_keepuserflags, 
         out = merge_files(outfn,filelist[1:])
     _pymcpltool_close(out,attempt_gzip)
 
-def _pymcpltool_extract(filelist, limit, skip, pdgcode_str, preventcomment, bad):
+def _pymcpltool_extract(filelist, limit, skip, pdgcode_str, select, edit,
+                        preventcomment, keepstatsum, bad):
     if len(filelist) > 2:
         bad("Too many arguments.")
     if len(filelist) != 2:
@@ -434,6 +510,11 @@ def _pymcpltool_extract(filelist, limit, skip, pdgcode_str, preventcomment, bad)
     err, outfn, attempt_gzip = _tool_outfn(filelist[1])
     if err:
         bad(err)
+    try:
+        flt = ParticleFilter(select) if select is not None else None
+        edt = ParticleEdit(edit) if edit is not None else None
+    except MCPLError as e:
+        bad(str(e))
     pdgcode = 0
     if pdgcode_str is not None:
         pdgcode = _tool_pdgcode(pdgcode_str,bad)
@@ -451,14 +532,25 @@ def _pymcpltool_extract(filelist, limit, skip, pdgcode_str, preventcomment, bad)
                      + ( [ f'-p{pdgcode}' ] if pdgcode else [] ) )
             fo.hdr_add_comment('mcpltool: extracted particles'
                                + ( ' with ' + ' '.join(opts) if opts else '' ))
+        if select is not None:
+            fo.hdr_add_comment(f'pymcpltool: selected particles with: {select}')
+        if edit is not None:
+            fo.hdr_add_comment(f'pymcpltool: edited particles with: {edit}')
         #As in mcpltool, stat:sum entries are marked as not available when
-        #selecting particles based on their positions in the file (see the
+        #selecting particles based on their positions in the file, and also
+        #when editing their weights unless --keep-statsum was used (see the
         #guidelines for stat:sum entries):
         has_statsum = any( v is not None for v in fi.stat_sum.values() )
         if has_statsum and n_in > 0 and ( skip > 0 or 0 < limit < n_in ):
             _warning("Marking stat:sum entries in output file as "
                      "not available (-1) when filtering based on particle "
                      "positions")
+            fo.hdr_scale_stat_sums(-1.0)
+        elif ( has_statsum and not keepstatsum and edt is not None
+               and 'weight' in edt.modified_fields ):
+            _warning("Marking stat:sum entries in output file as "
+                     "not available (-1) when editing particle weights"
+                     " (use --keep-statsum to keep them)")
             fo.hdr_scale_stat_sums(-1.0)
         iend = skip + limit if limit > 0 else n_in
         try:
@@ -471,7 +563,12 @@ def _pymcpltool_extract(filelist, limit, skip, pdgcode_str, preventcomment, bad)
                 b = b[max(0,skip-off):min(len(b),iend-off)]
                 if pdgcode:
                     b = b[b.pdgcode == pdgcode]
-                fo.add_particles(b)
+                if flt is not None:
+                    b = b[flt(b)]
+                if edt is not None:
+                    fo.add_particles(b,**edt(b))
+                else:
+                    fo.add_particles(b)
         except MCPLError:
             fo.close()
             pathlib.Path(fo.filename).unlink()

@@ -206,4 +206,135 @@ mcpltool -j b_dp.mcpl: exit code 0
    |     Endianness         : little
    |     Storage            : 72 bytes/particle
    | 
+pymcpltool --extract a1.mcpl out.mcpl --select pdgcode == neutron: MCPL: Successfully extracted 10 / 30 particles from a1.mcpl into out.mcpl
+   same as with the Python API: True
+pymcpltool --extract a1.mcpl out.mcpl --select ekin > 5keV && ekin <= 20keV && x <= 2cm + abs(y): MCPL: Successfully extracted 15 / 30 particles from a1.mcpl into out.mcpl
+   same as with the Python API: True
+pymcpltool --extract a1.mcpl out.mcpl --select !(pdgcode == gamma) || uz > 0.7: MCPL: Successfully extracted 25 / 30 particles from a1.mcpl into out.mcpl
+   same as with the Python API: True
+pymcpltool --extract a1.mcpl out.mcpl --select (userflags & 1) == 1 && z < 1.5mm: MCPL: Successfully extracted 0 / 30 particles from a1.mcpl into out.mcpl
+   same as with the Python API: True
+pymcpltool --extract a1.mcpl out.mcpl --edit=x = -y, y = x, z += 1cm: MCPL: Successfully extracted 30 / 30 particles from a1.mcpl into out.mcpl
+   same as with the Python API: True
+pymcpltool --extract a1.mcpl out.mcpl --edit=tmp = x, x = y, y = tmp, swap(ux,uy), rotate_x(30deg): MCPL: Successfully extracted 30 / 30 particles from a1.mcpl into out.mcpl
+   same as with the Python API: True
+pymcpltool --extract a1.mcpl out.mcpl --edit=weight *= 0.5, time = time + 1us: MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when editing particle weights (use --keep-statsum to keep them)
+MCPL: Successfully extracted 30 / 30 particles from a1.mcpl into out.mcpl
+   same as with the Python API: True
+pymcpltool --extract a1.mcpl out.mcpl --select pdgcode == 2112 --edit=wavelength = 1.8Aa: MCPL: Successfully extracted 10 / 30 particles from a1.mcpl into out.mcpl
+   same as with the Python API: True
+pymcpltool --extract a1.mcpl out.mcpl --select pdgcode == gamma --edit=wavelength = wavelength*2: MCPL: Successfully extracted 10 / 30 particles from a1.mcpl into out.mcpl
+   same as with the Python API: True
+pymcpltool --extract a1.mcpl out.mcpl --select pdgcode != 11 --edit=ux = -ux, uz = -uz, pdgcode = 2112: MCPL: Successfully extracted 20 / 30 particles from a1.mcpl into out.mcpl
+   same as with the Python API: True
+pymcpltool --extract a1.mcpl out.mcpl --select x > 10m: MCPL: Successfully extracted 0 / 30 particles from a1.mcpl into out.mcpl
+   same as with the Python API: True
+Results of selection and edit as expected: True
+pymcpltool --extract a1.mcpl out.mcpl --select ekin=1MeV: exit code 1
+   | ERROR: Syntax error in expression "ekin=1MeV" (use == for comparisons)
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --extract a1.mcpl out.mcpl --select foo>1: exit code 1
+   | ERROR: Unknown name "foo" in expression "foo>1" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength)
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --extract a1.mcpl out.mcpl --select x>1: exit code 1
+   | ERROR: Incompatible units in comparison: length and value without units (add units, e.g. 2cm) in expression "x>1"
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --extract a1.mcpl out.mcpl --edit x==1cm: exit code 1
+   | ERROR: Expected assignments like "x = 2*y" (or swap(..) or rotate_x/y/z(..)) in "x==1cm"
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --extract a1.mcpl out.mcpl --edit x=2*ux: exit code 1
+   | ERROR: Can not assign value without units to x, which is a length (add units, e.g. 2cm), in expression "x=2*ux"
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --extract a1.mcpl out.mcpl --select: exit code 1
+   | ERROR: Missing argument for --select
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --extract a1.mcpl out.mcpl --select x>1cm --select y>1cm: exit code 1
+   | ERROR: --select specified more than once
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --extract a1.mcpl out.mcpl --edit wavelength=1.8Aa: exit code 1
+   | MCPL ERROR: wavelength can only be assigned to neutrons (pdgcode 2112) and gammas (pdgcode 22) in expression "wavelength=1.8Aa"
+pymcpltool --select x>1cm -j a1.mcpl: exit code 1
+   | ERROR: --select can only be used with --extract, --stats, or when showing particles.
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --select x>1cm -ba a1.mcpl: exit code 1
+   | ERROR: --select can only be used with --extract, --stats, or when showing particles.
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --select x>1meV a1.mcpl: exit code 1
+   | ERROR: Incompatible units in comparison: length and energy in expression "x>1meV"
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --stats --select x>1km a1.mcpl: exit code 1
+   | ERROR: Can not calculate statistics when no particles are selected
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --stats -pantimuon a1.mcpl: exit code 1
+   | ERROR: Can not calculate statistics when no particles are selected
+   | 
+   | Run with -h or --help for usage information
+pymcpltool -pfoo a1.mcpl: exit code 1
+   | ERROR: Must specify non-zero 32bit integer or particle name as argument to -p.
+   | 
+   | Run with -h or --help for usage information
+pymcpltool -pgamma -j a1.mcpl: exit code 1
+   | ERROR: -p can only be used with --extract, --stats, or when showing particles.
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --repair --select x>1cm a1.mcpl: exit code 1
+   | ERROR: --select can only be used with --extract, --stats, or when showing particles.
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --repair -pgamma a1.mcpl: exit code 1
+   | ERROR: -p can only be used with --extract, --stats, or when showing particles.
+   | 
+   | Run with -h or --help for usage information
+pymcpltool -p22 --merge out.mcpl a1.mcpl a2.mcpl: exit code 1
+   | ERROR: -p can only be used with --extract, --stats, or when showing particles.
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --keep-statsum a1.mcpl: exit code 1
+   | ERROR: --keep-statsum can only be used with --extract.
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --stats --keep-statsum a1.mcpl: exit code 1
+   | ERROR: --keep-statsum can only be used with --extract.
+   | 
+   | Run with -h or --help for usage information
+pymcpltool -pgamma -l3: same as --select pdgcode == gamma -l3: True
+pymcpltool -p11 -n: same as --select pdgcode == 11 -n: True
+pymcpltool -pneutron --select x > 1cm: same as --select pdgcode == neutron && (x > 1cm): True
+pymcpltool --stats -pelectron: same as --stats --select pdgcode == electron: True
+pymcpltool --extract --select pdgcode == neutron: stat:sum:nsim = 1000.0
+   | MCPL: Successfully extracted 10 / 30 particles from a1.mcpl into out.mcpl
+pymcpltool --extract --edit z += 1cm, rotate_z(10deg): stat:sum:nsim = 1000.0
+   | MCPL: Successfully extracted 30 / 30 particles from a1.mcpl into out.mcpl
+pymcpltool --extract -pgamma --edit wavelength = 1Aa: stat:sum:nsim = 1000.0
+   | MCPL: Successfully extracted 10 / 30 particles from a1.mcpl into out.mcpl
+pymcpltool --extract --edit weight *= 2: stat:sum:nsim = None
+   | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when editing particle weights (use --keep-statsum to keep them)
+   | MCPL: Successfully extracted 30 / 30 particles from a1.mcpl into out.mcpl
+pymcpltool --extract --edit tmp = weight, weight = 2*tmp: stat:sum:nsim = None
+   | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when editing particle weights (use --keep-statsum to keep them)
+   | MCPL: Successfully extracted 30 / 30 particles from a1.mcpl into out.mcpl
+pymcpltool --extract --edit weight *= 2 --keep-statsum: stat:sum:nsim = 1000.0
+   | MCPL: Successfully extracted 30 / 30 particles from a1.mcpl into out.mcpl
+pymcpltool --extract --select x > 0 --edit weight = 1 --keep-statsum: stat:sum:nsim = 1000.0
+   | MCPL: Successfully extracted 29 / 30 particles from a1.mcpl into out.mcpl
+pymcpltool --extract -l5 --edit weight *= 2 --keep-statsum: stat:sum:nsim = None
+   | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
+   | MCPL: Successfully extracted 5 / 30 particles from a1.mcpl into out.mcpl
+pymcpltool --extract -l5: stat:sum:nsim = None
+   | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
+   | MCPL: Successfully extracted 5 / 30 particles from a1.mcpl into out.mcpl
+pymcpltool --extract -s1 --select x > 0: stat:sum:nsim = None
+   | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
+   | MCPL: Successfully extracted 29 / 30 particles from a1.mcpl into out.mcpl
 Compared 53 command lines with mcpltool
