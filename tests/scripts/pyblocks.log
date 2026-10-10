@@ -1,0 +1,16 @@
+second block: 300 particles at offset 300
+  block[10:20]: 10 particles, offset 310, pdgcodes [2112]
+  block[::2]: 150 particles, offset 9223372036854775807, pdgcodes [11, 22, 2112, 2212]
+  block[[5,3,5]]: 3 particles, offset 9223372036854775807, pdgcodes [2112]
+  block[pdgcode==22]: 16 particles, offset 9223372036854775807, pdgcodes [22]
+  block[0:0]: 0 particles, offset 300, pdgcodes []
+  nested selection: 2 particles, ekin=[0.03427 0.08529]
+  single particle of selection: ekin=0.634722
+file_indices of selection: [417 418], of particles: [417, 418]
+transferred 726 neutrons, packed data identical: True
+edit of x, y, weight: unchanged packed fields: ['z', 'uve1', 'uve2', 'uve3', 't', 'pdg']
+edit of direction and wavelength: 726 particles, as expected: True
+add_particles(block,['wavelength']): MCPLError: wavelength can only be specified for neutrons (pdgcode 2112) and gammas (pdgcode 22)
+add_particles(block,['ekin', 'wavelength']): MCPLError: Do not specify both ekin and wavelength
+add_particles(block,['x']): MCPLError: Inconsistent lengths of particle field arrays
+add_particles(block,['foo']): TypeError: Unknown particle field(s): foo
