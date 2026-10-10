@@ -1115,8 +1115,10 @@ MCPL_LOCAL void mcpl_unitvect_unpack_oct(const double* in, double* out) {
     out[0] = in[0];
     out[1] = in[1];
   }
-  //project from octahedron to unit sphere:
-  double n = 1.0 / sqrt(out[0]*out[0]+out[1]*out[1]+out[2]*out[2]);
+  //project from octahedron to unit sphere (using fma to avoid
+  //platform-dependent results from compilers contracting the expression):
+  double n = 1.0 / sqrt( fma( out[2], out[2],
+                              fma( out[1], out[1], out[0] * out[0] ) ) );
   out[0] *= n; out[1] *= n; out[2] *= n;
 }
 
