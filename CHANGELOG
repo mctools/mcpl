@@ -69,6 +69,14 @@ v2.2.9  (work in progress)
         particles are still transferred exactly by MCPLOutFile.add_particles,
         except for the edited fields. dump_file, MCPLFile.dump_particles and
         collect_stats also accept a select argument.
+      * pymcpltool --extract can now also select and edit particles with
+        expressions, with the new --select and --edit options, e.g. pymcpltool
+        --extract --select "pdgcode == neutron" --edit "wavelength = 1.8Aa" ...
+        The --select and -p options can also be used with --stats, and when
+        showing particles. Like with -l and -s, stat:sum entries are marked as
+        not available (-1) when --edit modifies weights, unless the new
+        --keep-statsum option is used. The header comments describe the
+        selection and edits, unless --no-comment is used.
       * mcpltool --extract no longer leaves a broken output file behind when
         given an invalid -p argument.
       * ssw2mcpl and phits2mcpl no longer leave an unfinished output file behind
