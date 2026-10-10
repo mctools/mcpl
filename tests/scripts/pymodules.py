@@ -68,7 +68,7 @@ public_submodules = ['constants', 'plotting']
 
 allowed_external_imports = {
     'numpy' : ['_numpy'],
-    'matplotlib' : ['_plotbackend_mpl', '_stats'],
+    'matplotlib' : ['_plotbackend_mpl'],
     'plotly' : ['_plotbackend_plotly'],
 }
 
