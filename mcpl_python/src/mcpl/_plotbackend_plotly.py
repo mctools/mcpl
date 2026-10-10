@@ -58,7 +58,8 @@ class Backend(PlotBackend):
                       for i,f in enumerate(figures) ]
             import pathlib
             pathlib.Path(filename).write_text('<html><head><meta charset="utf-8"/></head><body>\n'
-                                              + '\n'.join(parts) + '\n</body></html>\n')
+                                              + '\n'.join(parts) + '\n</body></html>\n',
+                                              encoding='utf-8')
             return [ filename ]
         fns = numbered_filenames(filename,len(figures))
         for f, fn in zip(figures,fns):

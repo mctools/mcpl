@@ -82,5 +82,5 @@ class Backend(PlotBackend):
     def save( self, figures, filename ):
         import pathlib
         self.check_format(filename)
-        pathlib.Path(filename).write_text(describe(figures)+'\n')
+        pathlib.Path(filename).write_text(describe(figures)+'\n',encoding='utf-8')
         return [ filename ]
