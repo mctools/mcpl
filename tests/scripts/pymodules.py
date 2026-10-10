@@ -52,18 +52,24 @@ layers = {
     '_reader' : 3,
     '_writer' : 4,
     '_fileops' : 5,
-    '_stats' : 7,
-    '_cli' : 8,
+    '_plotbackend' : 6,
+    'plotting' : 7,
+    '_plotbackend_mpl' : 8,
+    '_plotbackend_plotly' : 8,
+    '_plotbackend_test' : 8,
+    '_stats' : 8,
+    '_cli' : 9,
     '__init__' : top,
     '__main__' : top,
     'mcpl' : top,
 }
 
-public_submodules = ['constants']
+public_submodules = ['constants', 'plotting']
 
 allowed_external_imports = {
     'numpy' : ['_numpy'],
-    'matplotlib' : ['_stats'],
+    'matplotlib' : ['_plotbackend_mpl', '_stats'],
+    'plotly' : ['_plotbackend_plotly'],
 }
 
 def imports_of( path ):

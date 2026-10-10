@@ -1,0 +1,15 @@
+available_backends() only lists known backends, and not the test backend
+save(...,'x.pdf',backend='nosuchbackend'): Unknown plotting backend "nosuchbackend" (the plotting backends are: matplotlib, plotly)
+save(...,'x.foo',backend='test'): The test plotting backend can not create .foo files (supported: .txt, .pdf, .png, .html)
+save(...,backend='test',mpl_backend='agg'): Unsupported option(s) for the test plotting backend: mpl_backend
+Figure 1 (2x2): 'Example'
+  Panel 'Steps' xlabel='x [cm]' ylabel=None logy xlim=[0,10]
+    StepHist label='first' color=None bins=10 edges=[0,10] sum=45 max=9 nonzero_bins=9
+    StepHist label='second' color=3 bins=10 edges=[0,10] sum=10 max=1 nonzero_bins=10
+  Panel '2D' xlabel=None ylabel=None 
+    Hist2D shape=(10, 4) x=[0,10] y=[0,4] sum=40 logz=True
+  Panel 'Bars' xlabel=None ylabel=None 
+    Bars 'a'=1, 'b'=2 (horizontal)
+  Panel 'Text' xlabel=None ylabel=None 
+    Text 'No data'
+save() created ['figs.txt'], with 11 lines
