@@ -3271,6 +3271,22 @@ char* mcpl_usage_progname( const char * argv0 )
   return bn;
 }
 
+MCPL_LOCAL int32_t mcpl_internal_pdgcode_from_name( const char * name )
+{
+  //Names of a few common particles which can be used instead of PDG codes in
+  //"mcpltool -p" (pymcpltool has an identical list):
+  static const struct { const char * name; int32_t pdgcode; } names[] = {
+    { "neutron", 2112 }, { "antineutron", -2112 },
+    { "proton", 2212 }, { "antiproton", -2212 },
+    { "electron", 11 }, { "positron", -11 }, { "antielectron", -11 },
+    { "muon", 13 }, { "antimuon", -13 },
+    { "gamma", 22 }, { "photon", 22 } };
+  for ( size_t i = 0; i < sizeof(names)/sizeof(names[0]); ++i )
+    if ( strcmp( name, names[i].name ) == 0 )
+      return names[i].pdgcode;
+  return 0;
+}
+
 MCPL_LOCAL int mcpl_tool_usage( char** argv, const char * errmsg ) {
   if (errmsg) {
     size_t n = strlen(errmsg) + 128;
@@ -3348,7 +3364,10 @@ MCPL_LOCAL int mcpl_tool_usage( char** argv, const char * errmsg ) {
   mcpl_print("                    Extracts particles from FILE1 into a new FILE2.\n");
   mcpl_print("                    FILE2 will be gzipped if its name ends with .mcpl.gz.\n");
   mcpl_print("  -lN, -sN        : Select range of particles in FILE1 (as above).\n");
-  mcpl_print("  -pPDGCODE       : Select particles of type given by PDGCODE.\n");
+  mcpl_print("  -pPDGCODE       : Select particles of type given by PDGCODE. Instead of the\n");
+  mcpl_print("                    PDGCODE, one of the following names can be used: neutron,\n");
+  mcpl_print("                    antineutron, proton, antiproton, electron, positron (or\n");
+  mcpl_print("                    antielectron), muon, antimuon, gamma (or photon).\n");
   mcpl_print("\n");
   mcpl_print("Other options:\n");
   mcpl_print("  -r, --repair FILE\n");
@@ -3687,10 +3706,13 @@ int mcpl_tool(int argc,char** argv) {
 
     int32_t pdgcode_select = 0;
     if (pdgcode_str) {
+      pdgcode_select = mcpl_internal_pdgcode_from_name(pdgcode_str);
       int64_t pdgcode64;
-      if (!mcpl_str2int(pdgcode_str, 0, &pdgcode64) || -pdgcode64>2147483648 || pdgcode64>2147483647 || !pdgcode64)
-        return free(filenames),mcpl_tool_usage(argv,"Must specify non-zero 32bit integer as argument to -p.");
-      pdgcode_select = (int32_t)pdgcode64;
+      if ( !pdgcode_select ) {
+        if (!mcpl_str2int(pdgcode_str, 0, &pdgcode64) || -pdgcode64>2147483648 || pdgcode64>2147483647 || !pdgcode64)
+          return free(filenames),mcpl_tool_usage(argv,"Must specify non-zero 32bit integer or particle name as argument to -p.");
+        pdgcode_select = (int32_t)pdgcode64;
+      }
     }
 
     char * outfn;
