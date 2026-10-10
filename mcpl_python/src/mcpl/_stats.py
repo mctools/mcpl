@@ -26,6 +26,7 @@ __all__ = ['collect_stats', 'dump_stats', 'plot_stats']
 import os
 
 from ._common import MCPLError, _determine_version
+from ._messages import _warning
 from ._numpy import _np_add_at, np, np_dtype, np_unique
 from ._physics import _pdg_database
 from ._reader import MCPLFile
@@ -125,7 +126,7 @@ def collect_stats(mcplfile,stats='all',bin_data=True):
     if not isinstance(mcplfile,MCPLFile):
         mcplfile = MCPLFile(mcplfile)
     if mcplfile.nparticles==0:
-        print("MCPL WARNING: Can not calculate stats on an empty file")
+        _warning("Can not calculate stats on an empty file")
         return {}
 
     unknown = stats.difference(possible_std_stats.union(possible_freq_stats))
@@ -193,7 +194,7 @@ def collect_stats(mcplfile,stats='all',bin_data=True):
                 uc_block = _unique_count(getattr(pb,s),vals_weight)
                 freq_uc[s] = _merge_unique_count(freq_uc[s],uc_block)
                 if len(freq_uc[s][0])>10000:
-                    print(f"MCPL WARNING: Too many unique values in {s} field. Disabling {s} statistics")
+                    _warning(f"Too many unique values in {s} field. Disabling {s} statistics")
                     disable+=[s]
             for s in disable:
                 del freq_uc[s]

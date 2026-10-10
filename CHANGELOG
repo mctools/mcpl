@@ -6,6 +6,11 @@ v2.2.9  (work in progress)
         mcpl.MCPLFile instead of mcpl.mcpl.MCPLFile). Running a copy of the
         mcpl.py file on its own is no longer supported. Use the pymcpltool
         command or "python -m mcpl" instead.
+      * Messages and warnings from the Python API (e.g. "MCPL WARNING: Input
+        file appears to not have been closed properly") are still printed by
+        default, but can now be sent to the logger "mcpl" of Python's logging
+        module instead, by calling mcpl.use_logging(). pymcpltool always prints
+        them.
       * mcpltool --extract no longer leaves a broken output file behind when
         given an invalid -p argument.
       * ssw2mcpl and phits2mcpl no longer leave an unfinished output file behind

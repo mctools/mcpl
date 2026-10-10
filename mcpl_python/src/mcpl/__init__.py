@@ -58,7 +58,8 @@ __all__ = [
             'dump_stats',
             'encode_stat_sum',
             'is_valid_stat_sum_key',
-            'plot_stats'
+            'plot_stats',
+            'use_logging',
            ]
 
 __version__ = '2.2.9'
@@ -67,6 +68,7 @@ from ._blocks import MCPLParticle, MCPLParticleBlock
 from ._cli import app_pymcpltool
 from ._common import MCPLError
 from ._fileops import convert2ascii, dump_file
+from ._messages import use_logging
 from ._reader import MCPLFile
 from ._stats import collect_stats, dump_stats, plot_stats
 from ._statsum import encode_stat_sum, is_valid_stat_sum_key
