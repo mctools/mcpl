@@ -85,6 +85,16 @@ v2.2.9  (work in progress)
         matplotlib). The histograms are drawn as lines instead of bars, and
         when shown interactively, all plots are shown at once. Without
         matplotlib, it now gives an MCPLError.
+      * pymcpltool --stats --pdf and --gui (and plot_stats in the Python API)
+        now start with an overview page, with distributions of kinetic energies,
+        wavelengths and directions by particle type (with logarithmic axes when
+        values span several decades), positions in the x-y plane, times, and
+        particle types. The other histograms show how much is outside their
+        range. plot_stats gets backend and filename arguments to select the
+        plotting backend and the output file (any format supported by the
+        backend, e.g. .pdf or .png), and the figures can also be obtained with
+        the new stats_figures function. The pdf argument of plot_stats is
+        deprecated (use filename instead).
       * mcpltool --extract no longer leaves a broken output file behind when
         given an invalid -p argument.
       * ssw2mcpl and phits2mcpl no longer leave an unfinished output file behind

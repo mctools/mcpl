@@ -85,6 +85,7 @@ class MCPLFile:
                 raise MCPLError('Unsupported type of filename object'
                                 ' (should be path-like, a string or similar)')
 
+        self._filename = filename
         #prepare file i/o (opens file):
         self._open_file(filename)
         #load info from mcpl header:

@@ -23,7 +23,7 @@ Modules of the mcpl package and their imports from the package:
 numpy is imported by: _numpy
 matplotlib is imported by: _plotbackend_mpl
 plotly is imported by: _plotbackend_plotly
-mcpl.__all__ has 28 names, provided by:
+mcpl.__all__ has 29 names, provided by:
   _common              : MCPLError
   _messages            : use_logging
   _statsum             : encode_stat_sum, is_valid_stat_sum_key
@@ -32,5 +32,5 @@ mcpl.__all__ has 28 names, provided by:
   _reader              : MCPLFile
   _writer              : MCPLOutFile, gzip_file
   _fileops             : can_merge, convert2ascii, create_outfile_mpi, dump_file, forcemerge_files, merge_files, merge_inplace, merge_outfiles_mpi, name_helper, repair
-  _stats               : collect_stats, dump_stats, plot_stats
+  _stats               : collect_stats, dump_stats, plot_stats, stats_figures
   _cli                 : app_pymcpltool

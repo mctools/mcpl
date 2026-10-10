@@ -74,6 +74,7 @@ __all__ = [
             'plot_stats',
             'plotting',
             'repair',
+            'stats_figures',
             'use_logging',
            ]
 
@@ -85,19 +86,19 @@ from ._cli import app_pymcpltool
 from ._common import MCPLError
 from ._expressions import ParticleEdit, ParticleFilter, ParticleValue
 from ._fileops import (
-    can_merge,
-    convert2ascii,
-    create_outfile_mpi,
-    dump_file,
-    forcemerge_files,
-    merge_files,
-    merge_inplace,
-    merge_outfiles_mpi,
-    name_helper,
-    repair,
+            can_merge,
+            convert2ascii,
+            create_outfile_mpi,
+            dump_file,
+            forcemerge_files,
+            merge_files,
+            merge_inplace,
+            merge_outfiles_mpi,
+            name_helper,
+            repair,
 )
 from ._messages import use_logging
 from ._reader import MCPLFile
-from ._stats import collect_stats, dump_stats, plot_stats
+from ._stats import collect_stats, dump_stats, plot_stats, stats_figures
 from ._statsum import encode_stat_sum, is_valid_stat_sum_key
 from ._writer import MCPLOutFile, gzip_file

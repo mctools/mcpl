@@ -26,10 +26,10 @@
 # the figures), and the figures of plot_stats.
 
 import pathlib
+import warnings
 
 import mcpldev as mcpl
 import numpy as np
-from mcpldev._stats import _stats_figures
 from mcpldev.plotting import Bars, Figure, Hist2D, Panel, StepHist, Text
 from MCPLTestUtils.dirs import test_data_dir
 
@@ -65,7 +65,12 @@ def test_figures():
     print(f'save() created {files}, with {nlines} lines')
 
 def test_stats_figures():
-    mcpl.plotting.show(_stats_figures(example_file), backend='test')
+    mcpl.plotting.show(mcpl.stats_figures(example_file), backend='test')
+    with warnings.catch_warnings(record=True) as wlist:
+        warnings.simplefilter('always')
+        files = mcpl.plot_stats(example_file, pdf='stats.txt', backend='test')
+    print(f'plot_stats with pdf parameter created {files}, with warnings:'
+          f' {[ f"{w.category.__name__}: {w.message}" for w in wlist ]}')
 
 if __name__ == '__main__':
     test_backends()
