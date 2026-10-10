@@ -106,3 +106,16 @@ else:
     def _np_add_at(a,indices,b):
         for ib,i in enumerate(indices):
             a[i] += b[ib]
+
+def _fma_exact( a, b, c ):
+    #Correctly rounded a*b+c with exact rational arithmetic:
+    from fractions import Fraction
+    return float( Fraction(a) * Fraction(b) + Fraction(c) )
+
+def np_fma( a, b, c ):
+    """Fused multiply-add, a*b+c with a single rounding (like fma() in C), for
+    numpy arrays. Uses math.fma (Python 3.13+), or slower exact rational
+    arithmetic for older Python versions."""
+    import math
+    fct = getattr(math,'fma',_fma_exact)
+    return np.frompyfunc(fct,3,1)(a,b,c).astype(float)

@@ -23,7 +23,7 @@
 
 __all__ = ['MCPLParticle', 'MCPLParticleBlock']
 
-from ._numpy import np, np_stack
+from ._numpy import np, np_fma, np_stack
 from ._physics import wavelength_from_ekin
 
 
@@ -387,7 +387,10 @@ class MCPLParticleBlock:
         not_zneg = np.logical_not(zneg)
         self._ux = not_zneg * in0 + zneg * ( 1.0 - abs_in1 ) * np.where(in0 >= 0.0,1.0,-1.0)
         self._uy = not_zneg * in1 + zneg * ( 1.0 - abs_in0 ) * np.where(in1 >= 0.0,1.0,-1.0)
-        n = 1.0 / np.sqrt(np.square(self._ux)+np.square(self._uy)+np.square(self._uz))
+        #Like mcpl_unitvect_unpack_oct in C, which uses fma() to get identical
+        #results on all platforms:
+        n = 1.0 / np.sqrt(np_fma(self._uz,self._uz,
+                                 np_fma(self._uy,self._uy,np.square(self._ux))))
         self._ux *= n
         self._uy *= n
         self._uz *= n

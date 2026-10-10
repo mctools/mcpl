@@ -44,6 +44,11 @@ v2.2.9  (work in progress)
       * pymcpltool can now also do what mcpltool does: --merge (also with
         --inplace), --forcemerge, --extract (with -l, -s, -p and --no-comment)
         and --repair, with the same results and printouts as mcpltool.
+      * When reading files in the old MCPL-2 format, directions are now unpacked
+        with fma() (in C, and with the same calculation in Python), so the
+        results are identical on all platforms. Previously they could differ in
+        the last bit, depending on whether the compiler used fused multiply-add
+        instructions.
       * mcpltool --extract no longer leaves a broken output file behind when
         given an invalid -p argument.
       * ssw2mcpl and phits2mcpl no longer leave an unfinished output file behind
