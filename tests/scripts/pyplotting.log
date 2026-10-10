@@ -1,0 +1,57 @@
+available_backends() only lists known backends, and not the test backend
+save(...,'x.pdf',backend='nosuchbackend'): Unknown plotting backend "nosuchbackend" (the plotting backends are: matplotlib, plotly)
+save(...,'x.foo',backend='test'): The test plotting backend can not create .foo files (supported: .txt, .pdf, .png, .html)
+save(...,backend='test',mpl_backend='agg'): Unsupported option(s) for the test plotting backend: mpl_backend
+Figure 1 (2x2): 'Example'
+  Panel 'Steps' xlabel='x [cm]' ylabel=None logy xlim=[0,10]
+    StepHist label='first' color=None bins=10 edges=[0,10] sum=45 max=9 nonzero_bins=9
+    StepHist label='second' color=3 bins=10 edges=[0,10] sum=10 max=1 nonzero_bins=10
+  Panel '2D' xlabel=None ylabel=None 
+    Hist2D shape=(10, 4) x=[0,10] y=[0,4] sum=40 logz=True
+  Panel 'Bars' xlabel=None ylabel=None 
+    Bars 'a'=1, 'b'=2 (horizontal)
+  Panel 'Text' xlabel=None ylabel=None 
+    Text 'No data'
+save() created ['figs.txt'], with 11 lines
+Figure 1 (1x1): None
+  Panel 'pdgcode' xlabel=None ylabel=None 
+    Bars '2112\n(n)\n72.17%'=726, '22\n(gamma)\n23.76%'=239, '11\n(e-)\n1.49%'=15, '2212\n(p)\n0.99%'=10, '-11\n(e+)\n0.80%'=8, '211\n(pi+)\n0.50%'=5, '-211\n(pi-)\n0.20%'=2, '14\n(nu_mu)\n0.10%'=1
+Figure 2 (1x1): None
+  Panel 'userflags' xlabel=None ylabel=None 
+    Bars '0\n(0x00000000)\n100.00%'=1006
+Figure 3 (1x1): None
+  Panel 'ekin [MeV] (weighted)' xlabel='min=0.00139345, max=9724.96, mean=52.165, rms=548.838, integral=1006' ylabel=None xlim=[0.00139345,1149.84]
+    StepHist label=None color=None bins=201 edges=[0.00139345,1149.84] sum=997 max=856 nonzero_bins=40
+Figure 4 (1x1): None
+  Panel 'x [cm] (weighted)' xlabel='min=-60.0882, max=65.8944, mean=-0.248153, rms=12.0726, integral=1006' ylabel=None xlim=[-24.3934,23.8971]
+    StepHist label=None color=None bins=201 edges=[-24.3934,23.8971] sum=942 max=48 nonzero_bins=172
+Figure 5 (1x1): None
+  Panel 'y [cm] (weighted)' xlabel='min=-61.3354, max=57.6935, mean=2.54021, rms=12.7636, integral=1006' ylabel=None xlim=[-22.9871,28.0675]
+    StepHist label=None color=None bins=201 edges=[-22.9871,28.0675] sum=931 max=62 nonzero_bins=177
+Figure 6 (1x1): None
+  Panel 'z [cm] (weighted)' xlabel='min=20, max=20, mean=20, rms=0, integral=1006' ylabel=None xlim=[19,21]
+    StepHist label=None color=None bins=201 edges=[19,21] sum=1006 max=1006 nonzero_bins=1
+Figure 7 (1x1): None
+  Panel 'ux (weighted)' xlabel='min=-0.994109, max=0.995773, mean=0.0216263, rms=0.487791, integral=1006' ylabel=None xlim=[-0.953957,0.995773]
+    StepHist label=None color=None bins=201 edges=[-0.953957,0.995773] sum=1004 max=16 nonzero_bins=199
+Figure 8 (1x1): None
+  Panel 'uy (weighted)' xlabel='min=-0.994904, max=0.979886, mean=-0.00868233, rms=0.47584, integral=1006' ylabel=None xlim=[-0.960362,0.942998]
+    StepHist label=None color=None bins=201 edges=[-0.960362,0.942998] sum=995 max=13 nonzero_bins=199
+Figure 9 (1x1): None
+  Panel 'uz (weighted)' xlabel='min=-0.734438, max=0.999994, mean=0.690676, rms=0.240955, integral=1006' ylabel=None xlim=[0.208767,0.999994]
+    StepHist label=None color=None bins=201 edges=[0.208767,0.999994] sum=972 max=18 nonzero_bins=191
+Figure 10 (1x1): None
+  Panel 'time [ms] (weighted)' xlabel='min=7.01658e-07, max=0.00166018, mean=5.04828e-05, rms=0.00010785, integral=1006' ylabel=None xlim=[7.01658e-07,0.000266182]
+    StepHist label=None color=None bins=201 edges=[7.01658e-07,0.000266182] sum=968 max=305 nonzero_bins=137
+Figure 11 (1x1): None
+  Panel 'weight (unweighted)' xlabel='min=1, max=1, mean=1, rms=0, integral=1006' ylabel=None xlim=[0,2]
+    StepHist label=None color=None bins=201 edges=[0,2] sum=1006 max=1006 nonzero_bins=1
+Figure 12 (1x1): None
+  Panel 'polx (weighted)' xlabel='min=0, max=0, mean=0, rms=0, integral=1006' ylabel=None xlim=[-1,1]
+    StepHist label=None color=None bins=201 edges=[-1,1] sum=1006 max=1006 nonzero_bins=1
+Figure 13 (1x1): None
+  Panel 'poly (weighted)' xlabel='min=0, max=0, mean=0, rms=0, integral=1006' ylabel=None xlim=[-1,1]
+    StepHist label=None color=None bins=201 edges=[-1,1] sum=1006 max=1006 nonzero_bins=1
+Figure 14 (1x1): None
+  Panel 'polz (weighted)' xlabel='min=0, max=0, mean=0, rms=0, integral=1006' ylabel=None xlim=[-1,1]
+    StepHist label=None color=None bins=201 edges=[-1,1] sum=1006 max=1006 nonzero_bins=1

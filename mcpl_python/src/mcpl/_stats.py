@@ -25,12 +25,13 @@ __all__ = ['collect_stats', 'dump_stats', 'plot_stats']
 
 import os
 
-from ._common import MCPLError, _determine_version
+from ._common import MCPLError
 from ._expressions import _as_filter
 from ._messages import _warning
 from ._numpy import _np_add_at, np, np_dtype, np_unique
 from ._physics import _pdg_database
 from ._reader import MCPLFile
+from .plotting import Bars, Figure, Panel, StepHist, save, show
 
 
 class _SelectedFile:
@@ -377,6 +378,45 @@ def dump_stats(stats):
         print ('                     [ values ]             [ weighted counts ]')
     print('------------------------------------------------------------------------------')
 
+def _stats_figures(stats):
+    """Figures (see mcpl.plotting) with plots of the statistics collected with
+    collect_stats() (or a file, for which collect_stats() is called)."""
+    if not isinstance(stats,dict):
+        stats = collect_stats(stats,bin_data=True)
+    figures = []
+    showmax=10
+    for s in _possible_freq_stats:
+        if s not in stats:
+            continue
+        freq=stats[s]
+        u,c=freq['unique_values'],freq['unique_values_counts']
+        fct_alt_descr = _freq_alt_descr.get(s,lambda x: None)
+        def fmt_fct_raw(x, fct_alt_descr=fct_alt_descr):
+            alttxt = fct_alt_descr(x)
+            return f'{x!s}\n({alttxt})' if alttxt is not None else str(x)
+        names = [ fmt_fct_raw(x) for x in u ]
+        if len(c)>showmax:
+            sum_other = c[showmax-1:].sum()
+            names, c = names[0:showmax], c[0:showmax].copy()
+            c[showmax-1] = sum_other
+            names[showmax-1] = 'other'
+        percents = c.astype(float)*100.0/sum(c)
+        labels = [f'{e}\n{percents[i]:.2f}%' for i,e in enumerate(names)]
+        figures.append(Figure( panels = [ Panel( title = s,
+                                                 items = [ Bars(labels,c) ] ) ] ))
+    for s in _possible_std_stats:
+        if s not in stats:
+            continue
+        h=stats[s]
+        hist,bins = h['hist'],h['hist_bins']
+        title = '{}{} ({})'.format(s,
+                                   ' [{}]'.format(h['unit']) if h['unit'] is not None else '',
+                                   'weighted' if h['weighted'] else 'unweighted')
+        figures.append(Figure( panels = [ Panel( title = title, xlabel = h['summary'],
+                                                 xlim = ( bins[0], bins[-1] ),
+                                                 items = [ StepHist(bins,hist) ] ) ] ))
+    return figures
+
 def plot_stats(stats,pdf=False,set_backend=None):
     """Produce plots of provided statistics object with matplotlib. The pdf
     parameter can be set to a filename and if so, the plots will be produced in
@@ -391,109 +431,8 @@ def plot_stats(stats,pdf=False,set_backend=None):
     if pdf and os.path.exists(pdf):
         raise MCPLError(f'PDF file {pdf} already exists')
 
-    try:
-        import matplotlib
-    except ImportError:
-        print()
-        print("ERROR: For plotting, this MCPL python module requires matplotlib (matplotlib.org) to be")
-        print("ERROR: installed. You can perhaps install it using using your software manager and searching")
-        print("ERROR: for \"matplotlib\" or \"python-matplotlib\", or it might come bundled with software")
-        print("ERROR: such as scientific python or anaconda, depending on your platform. Alternatively, if")
-        print("ERROR: you are using the pip package manager, you might be able to install it with the")
-        print("ERROR: command \"pip install matplotlib\".")
-        print()
-        raise
-
-    if set_backend:
-        matplotlib.use(set_backend)
-
+    figures = _stats_figures(stats)
     if pdf:
-        try:
-            from matplotlib.backends.backend_pdf import PdfPages
-        except ImportError:
-            print()
-            print("ERROR: matplotlib installation does not have required support for PDF output.")
-            print()
-            raise
-        pdf_file = pdf # noqa F841 (not really sure if this variable was needed
-                       # for object lifetime reasons).
-        pdf = PdfPages(pdf)
-
-    try:
-        import matplotlib.pyplot as plt
-    except ImportError:
-        print()
-        print("ERROR: importing matplotlib succeeded, but importing matplotlib.pyplot failed.")
-        print("ERROR: This is rather unusual, an is perhaps related to issues with your chosen")
-        print("ERROR: matplotlib backend, which you might have set globally in a matplotlib")
-        print("ERROR: configuration file.")
-        print()
-        raise
-
-    if not isinstance(stats,dict):
-        stats = collect_stats(stats,bin_data=True)
-
-    showmax=10
-    for s in _possible_freq_stats:
-        if s not in stats:
-            continue
-        freq=stats[s]
-        u,c=freq['unique_values'],freq['unique_values_counts']
-        fct_alt_descr = _freq_alt_descr.get(s,lambda x: None)
-        def fmt_fct_raw(x, fct_alt_descr=fct_alt_descr):
-            alttxt = fct_alt_descr(x)
-            return f'{x!s}\n({alttxt})' if alttxt is not None else str(x)
-        #fmt_fct_raw = freq_formats_fcts[s]
-        def fmt_fct( i, x ):
-            return fmt_fct_raw(x)
-        if len(c)>showmax:
-            sum_other = c[showmax-1:].sum()
-            u,c = u[0:showmax].copy(), c[0:showmax].copy()
-            c[showmax-1] = sum_other
-            def fmt_fct( i, x ):
-                return 'other' if i==showmax-1 else fmt_fct_raw(x)
-        percents = c.astype(float)*100.0/sum(c)
-        labels = [f'{fmt_fct(i,e)}\n{percents[i]:.2f}%' for i,e in enumerate(u)]
-        barcenters=list(range(len(c)))
-        plt.bar(barcenters, c, width=0.7,align='center',linewidth=0)
-        ax=plt.gca()
-        ax.set_xticks(barcenters)
-        percents=c.astype(float)*100.0/sum(c)
-        ax.set_xticklabels(labels,fontsize='small')
-        ax.yaxis.grid(True,color='white',linestyle='-')
-        ax.set_xlim(-0.5,len(c)-0.5)
-        plt.title(s)
-        plt.subplots_adjust(left=0.1, right=0.94, top=0.93, bottom=0.13)
-        if pdf:
-            pdf.savefig(plt.gcf())
-            plt.close()
-        else:
-            plt.show()
-
-    for s in _possible_std_stats:
-        if s not in stats:
-            continue
-        h=stats[s]
-        hist,bins = h['hist'],h['hist_bins']
-        plt.bar(0.5*(bins[:-1] + bins[1:]), hist, align='center', width=(bins[1] - bins[0]),linewidth=0)
-        plt.grid()
-        plt.title('{}{} ({})'.format(s,
-                               ' [{}]'.format(h['unit']) if h['unit'] is not None else '',
-                               'weighted' if h['weighted'] else 'unweighted'))
-        plt.xlabel(h['summary'],fontsize='small')
-        plt.xlim(bins[0],bins[-1])
-        plt.subplots_adjust(left=0.1, right=0.94, top=0.93, bottom=0.13)
-        if pdf:
-            pdf.savefig(plt.gcf())
-            plt.close()
-        else:
-            plt.show()
-
-    if pdf:
-        if hasattr(pdf,'infodict'):
-            d = pdf.infodict()
-            d['Title'] = ( f'Plots made with mcpl.py version {_determine_version()}' )
-            d['Author'] = f'mcpl.py v{_determine_version()}'
-            d['Subject'] = 'mcpl plots'
-            d['Keywords'] = 'mcpl'
-        pdf.close()
+        save(figures,pdf,backend='matplotlib',mpl_backend=set_backend)
+    else:
+        show(figures,backend='matplotlib',mpl_backend=set_backend)
