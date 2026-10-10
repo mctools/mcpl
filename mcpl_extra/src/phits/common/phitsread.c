@@ -45,6 +45,21 @@
 #include <stdint.h>
 #include <limits.h>
 
+//Read integers from buffers without assuming alignment:
+static uint32_t phits_rd_u32( const char * buf )
+{
+  uint32_t v;
+  memcpy( &v, buf, sizeof(v) );
+  return v;
+}
+
+static uint64_t phits_rd_u64( const char * buf )
+{
+  uint64_t v;
+  memcpy( &v, buf, sizeof(v) );
+  return v;
+}
+
 FILE** phits_impl_stdout_data(void)
 {
   static FILE* thefh = NULL;
@@ -183,14 +198,14 @@ int phits_tryload_reclen(phits_fileinternal_t* f, int reclen ) {
   if ( ! phits_ensure_load( f, reclen ) )
     return 0;
   char * buf = & ( f->buf[0] );
-  uint64_t l1 = ( reclen == 4 ? (uint64_t)(*((uint32_t*)buf)) : (uint64_t)(*((uint64_t*)buf)) );
+  uint64_t l1 = ( reclen == 4 ? (uint64_t)phits_rd_u32(buf) : phits_rd_u64(buf) );
   uint64_t tmp = l1 + 2*reclen;
   if ( tmp > INT_MAX )
     phits_error("Unexpectedly large record encountered");
   if ( ! phits_ensure_load( f, (int)tmp ) )
     return 0;
   buf += (reclen + l1);
-  uint64_t l2 = ( reclen == 4 ? (uint64_t)(*((uint32_t*)buf)) : (uint64_t)(*((uint64_t*)buf)) );
+  uint64_t l2 = ( reclen == 4 ? (uint64_t)phits_rd_u32(buf) : phits_rd_u64(buf) );
   if (l1!=l2)
     return 0;
   //All ok!
@@ -315,7 +330,8 @@ const phits_particle_t * phits_load_particle(phits_file_t ff)
   }
 
   assert( f->lbuf == f->particlesize + f->reclen * 2 );
-  double * pdata = (double*)(f->buf+f->reclen);
+  double pdata[13];
+  memcpy( pdata, f->buf+f->reclen, f->particlesize );
   phits_particle_t * pp =  & (f->part);
   pp->rawtype = (long)pdata[0];
   //NB: PHITS units, not MCPL units here (only difference is time unit which is ns in PHITS and ms in MCPL):

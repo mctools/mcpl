@@ -46,6 +46,28 @@
 #include <stdint.h>
 #include <limits.h>
 
+//Read integers from buffers without assuming alignment:
+static uint32_t ssw_rd_u32( const char * buf )
+{
+  uint32_t v;
+  memcpy( &v, buf, sizeof(v) );
+  return v;
+}
+
+static uint64_t ssw_rd_u64( const char * buf )
+{
+  uint64_t v;
+  memcpy( &v, buf, sizeof(v) );
+  return v;
+}
+
+static int32_t ssw_rd_i32( const char * buf )
+{
+  int32_t v;
+  memcpy( &v, buf, sizeof(v) );
+  return v;
+}
+
 
 //Should be large enough to hold first record in all supported files:
 #define SSWREAD_STDBUFSIZE 1024
@@ -274,8 +296,8 @@ ssw_file_t ssw_open_and_procrec0( const char * filename )
   //Thus, we probe the first 36 bytes and search the patterns above:
 
   ssw_readbytes(f,buf,36);
-  uint32_t first32 = *((uint32_t*)buf);
-  uint64_t first64 = *((uint64_t*)buf);
+  uint32_t first32 = ssw_rd_u32(buf);
+  uint64_t first64 = ssw_rd_u64(buf);
 
   f->reclen = 0;
   f->mcnp_type = SSW_MCNP_NOTFOUND;
@@ -284,21 +306,21 @@ ssw_file_t ssw_open_and_procrec0( const char * filename )
 
   //First look for MCNP6:
   unsigned mcnp6_lenaids = 80;
-  if ( first32==8 && *((uint32_t*)(buf+12))==8 && (*((uint32_t*)(buf+16))==143||*((uint32_t*)(buf+16))==191) && buf[20]>=32 && buf[20]<127) {
+  if ( first32==8 && ssw_rd_u32(buf+12)==8 && (ssw_rd_u32(buf+16)==143||ssw_rd_u32(buf+16)==191) && buf[20]>=32 && buf[20]<127) {
     //Looks like 3), an mcnp6 file with 32bit fortran records.
     f->mcnp_type = SSW_MCNP6;
     f->reclen = 4;
-    lenrec0 = *((uint32_t*)(buf+16));
+    lenrec0 = ssw_rd_u32(buf+16);
     rec0begin = 20;
-    if (*((uint32_t*)(buf+16))==191)
+    if (ssw_rd_u32(buf+16)==191)
       mcnp6_lenaids = 128;
-  } else if ( first32==8 && *((uint64_t*)(buf+16))==8 && (*((uint64_t*)(buf+24))==143||*((uint64_t*)(buf+24))==191) && buf[32]>=32 && buf[32]<127) {
+  } else if ( first32==8 && ssw_rd_u64(buf+16)==8 && (ssw_rd_u64(buf+24)==143||ssw_rd_u64(buf+24)==191) && buf[32]>=32 && buf[32]<127) {
     //Looks like 4), an mcnp6 file with 64bit fortran records.
     f->mcnp_type = SSW_MCNP6;
     f->reclen = 8;
-    lenrec0 = *((uint64_t*)(buf+24));
+    lenrec0 = ssw_rd_u64(buf+24);
     rec0begin = 32;
-    if (*((uint64_t*)(buf+24))==191)
+    if (ssw_rd_u64(buf+24)==191)
       mcnp6_lenaids = 128;
   }
 
@@ -355,9 +377,9 @@ ssw_file_t ssw_open_and_procrec0( const char * filename )
   //Check final marker:
   uint64_t lenrec0_b;
   if (f->reclen==4)
-    lenrec0_b = *((uint32_t*)(buf+(rec0begin+lenrec0)));
+    lenrec0_b = ssw_rd_u32(buf+(rec0begin+lenrec0));
   else
-    lenrec0_b = *((uint64_t*)(buf+(rec0begin+lenrec0)));
+    lenrec0_b = ssw_rd_u64(buf+(rec0begin+lenrec0));
   if (lenrec0!=lenrec0_b)
     ssw_openerror(f,"ssw_open_file error: Unexpected header contents\n");
 
@@ -454,7 +476,8 @@ ssw_file_t ssw_open_file( const char * filename )
   current_recpos -= f->lbuf;
 
   //Read size data and mark position of nrss & np1 variables.
-  int32_t * bi = (int32_t*)f->buf;
+  int32_t bi[10] = {0};
+  memcpy( bi, f->buf, ( f->lbuf < sizeof(bi) ? (size_t)f->lbuf : sizeof(bi) ) );
   if ( (f->mcnp_type == SSW_MCNP6) && f->lbuf>=32 ) {
     f->np1 = bi[0];
     f->np1pos = current_recpos + 0 * sizeof(int32_t);
@@ -472,13 +495,13 @@ ssw_file_t ssw_open_file( const char * filename )
     f->njsw = bi[3];
     f->niss = bi[4];
   } else if ( (f->mcnp_type == SSW_MCNP5) && f->lbuf==32 ) {
-    int64_t np1_64 = ((int64_t*)f->buf)[0];
+    int64_t np1_64 = (int64_t)ssw_rd_u64(f->buf);
     if (np1_64 > 2147483647 || np1_64 < -2147483647)
       ssw_openerror(f,"ssw_open_file error: MCNP5 files with more than 2147483647"
                     " histories are not supported");
     f->np1 = (int32_t)np1_64;
     f->np1pos = current_recpos + 0 * sizeof(int64_t);
-    uint64_t nrss_64 = ((uint64_t*)f->buf)[1];
+    uint64_t nrss_64 = ssw_rd_u64(f->buf+8);
     if (nrss_64 > 2147483647 )
       ssw_openerror(f,"ssw_open_file error: MCNP5 files with more than 2147483647"
                     " particles are not supported");
@@ -534,7 +557,7 @@ ssw_file_t ssw_open_file( const char * filename )
     f->np1 = - f->np1;
     if (!ssw_loadrecord(f))
       ssw_openerror(f,"ssw_open_file error: problems loading record (B)");
-    niwr = bi[0];
+    niwr = ssw_rd_i32(f->buf);
     //mipts = bi[1];//source particle type
     //kjaq  = bi[2];//macrobody facet flag
   }
@@ -671,7 +694,8 @@ const ssw_particle_t * ssw_load_particle(ssw_file_t ff)
     //return 0;
   }
 
-  double * ssb = (double*)f->buf;
+  double ssb[11];
+  memcpy( ssb, f->buf, 8*f->nrcd );
 
   ssw_particle_t* p = &(f->part);
 
