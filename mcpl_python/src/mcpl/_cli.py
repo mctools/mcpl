@@ -79,6 +79,7 @@ Other options:
                     using a simple ASCII-based format.
   -v, --version   : Display version of MCPL installation.
   -h, --help      : Display this usage information (ignores all other options).
+  --traceback     : Show the Python traceback for errors (for debugging).
 """
     print(helpmsg.strip().replace('PROGNAME',progname))
     sys.exit(0)
@@ -132,6 +133,8 @@ def _app_pymcpltool(argv):
                 opt_gui=True
             elif a=='--text':
                 opt_text=True
+            elif a=='--traceback':
+                pass#handled by main()
             elif a=='--help':
                 _pymcpltool_usage(progname)
             else:
@@ -262,7 +265,11 @@ def main():
     """This function simply calls app_pymcpltool(), but any raised MCPLError
     exception will be caught and transformed into a corresponding error message
     followed by a call to sys.exit(1). This is what the pymcpltool command and
-    "python -m mcpl" run."""
+    "python -m mcpl" run. With the --traceback option, MCPLError exceptions
+    are not caught, so their Python traceback is shown."""
+    if '--traceback' in sys.argv[1:]:
+        app_pymcpltool()
+        return
     try:
         app_pymcpltool()
     except MCPLError as e:

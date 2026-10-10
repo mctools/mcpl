@@ -81,6 +81,7 @@ Other options:
                     using a simple ASCII-based format.
   -v, --version   : Display version of MCPL installation.
   -h, --help      : Display this usage information (ignores all other options).
+  --traceback     : Show the Python traceback for errors (for debugging).
 ===> mcpltool ended with exit code 0
 MCPL version 99.99.99
 ===> mcpltool ended with exit code 0
@@ -132,6 +133,7 @@ Other options:
                     using a simple ASCII-based format.
   -v, --version   : Display version of MCPL installation.
   -h, --help      : Display this usage information (ignores all other options).
+  --traceback     : Show the Python traceback for errors (for debugging).
 ===> mcpltool ended with exit code 0
 ERROR: Too many arguments.
 
