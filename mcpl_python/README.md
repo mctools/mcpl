@@ -23,10 +23,9 @@ files. More details about the Python API and how to use it can be found at the
 https://mctools.github.io/mcpl/usage_python page.
 
 Additionally, the package also provides the command-line tool `pymcpltool`,
-which has similar capabilities as the binary `mcpltool` from the `mcpl-core`
-package. The main difference being an ability to extract statistics and plots
-from MCPL files, and that the `pymcpltool` (unlike the `mcpltool`) only provides
-read-only capabilities.
+which has the same capabilities as the binary `mcpltool` from the `mcpl-core`
+package, and can in addition show statistics and plots of the contents of MCPL
+files, and select or edit particles with expressions.
 
 Note that it is recommmended for most users to simply install the package named
 `mcpl`, rather than referring to the package named `mcpl-python` directly.

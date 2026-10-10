@@ -72,8 +72,9 @@ class Backend(PlotBackend):
                     pdf.savefig(self._draw(f))
                     plt.close()
                 d = pdf.infodict()
-                d['Title'] = f'Plots made with mcpl.py version {_determine_version()}'
-                d['Author'] = f'mcpl.py v{_determine_version()}'
+                d['Title'] = ( 'Plots made with the mcpl Python package version'
+                               f' {_determine_version()}' )
+                d['Author'] = f'mcpl Python package v{_determine_version()}'
                 d['Subject'] = 'mcpl plots'
                 d['Keywords'] = 'mcpl'
             return [ filename ]
