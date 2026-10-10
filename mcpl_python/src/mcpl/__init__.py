@@ -72,13 +72,14 @@ __all__ = [
             'merge_outfiles_mpi',
             'name_helper',
             'plot_stats',
+            'plotting',
             'repair',
             'use_logging',
            ]
 
 __version__ = '2.2.9'
 
-from . import constants
+from . import constants, plotting
 from ._blocks import MCPLParticle, MCPLParticleBlock
 from ._cli import app_pymcpltool
 from ._common import MCPLError

@@ -77,6 +77,10 @@ v2.2.9  (work in progress)
         not available (-1) when --edit modifies weights, unless the new
         --keep-statsum option is used. The header comments describe the
         selection and edits, unless --no-comment is used.
+      * New module mcpl.plotting with a backend-independent description of
+        plots (Figure, Panel, and the items StepHist, Hist2D, Bars and Text),
+        which can be shown or saved with matplotlib or plotly (with the show and
+        save functions, and available_backends to list the available ones).
       * mcpltool --extract no longer leaves a broken output file behind when
         given an invalid -p argument.
       * ssw2mcpl and phits2mcpl no longer leave an unfinished output file behind
