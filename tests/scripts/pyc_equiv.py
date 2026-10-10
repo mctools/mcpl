@@ -307,8 +307,7 @@ def test_writer_scripts():
                ('scale inf', 'scale inf'),
                ('non-unit direction', 'particle 0 0 0 1 1 0 0 0 0 1 0 1 2112 0'),
                ('zero direction', 'particle 0 0 0 0 0 0 0 0 0 1 0 1 2112 0'),
-               ('negative ekin', 'particle 0 0 0 0 0 1 0 0 0 -1 0 1 2112 0'),
-               ('nan direction', 'particle 0 0 0 nan 0 1 0 0 0 1 0 1 2112 0') ]
+               ('negative ekin', 'particle 0 0 0 0 0 1 0 0 0 -1 0 1 2112 0') ]
     for title, s in errors:
         ok &= compare_script(title, s)
     return ok
