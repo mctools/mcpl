@@ -12,18 +12,19 @@ Modules of the mcpl package and their imports from the package:
   layer   5 : _fileops             <- _common, _expressions, _messages, _reader, _statsum, _writer
   layer   6 : _plotbackend         <- _common
   layer   7 : plotting             <- _plotbackend
+  layer   8 : _histogram           <- _common, _expressions, _numpy, _physics, _reader, plotting
   layer   8 : _plotbackend_mpl     <- _common, _numpy, _plotbackend, plotting
   layer   8 : _plotbackend_plotly  <- _numpy, _plotbackend, plotting
   layer   8 : _plotbackend_test    <- _numpy, _plotbackend, plotting
   layer   8 : _stats               <- _common, _expressions, _messages, _numpy, _physics, _reader, plotting
   layer   9 : _cli                 <- _common, _expressions, _fileops, _messages, _physics, _reader, _stats, _writer
-  layer top : __init__             <- _blocks, _cli, _common, _expressions, _fileops, _messages, _reader, _stats, _statsum, _writer, constants, plotting
+  layer top : __init__             <- _blocks, _cli, _common, _expressions, _fileops, _histogram, _messages, _reader, _stats, _statsum, _writer, constants, plotting
   layer top : __main__             <- _cli
   layer top : mcpl                 <- _blocks, _cli, _common, _fileops, _reader, _stats, _statsum
 numpy is imported by: _numpy
 matplotlib is imported by: _plotbackend_mpl
 plotly is imported by: _plotbackend_plotly
-mcpl.__all__ has 29 names, provided by:
+mcpl.__all__ has 34 names, provided by:
   _common              : MCPLError
   _messages            : use_logging
   _statsum             : encode_stat_sum, is_valid_stat_sum_key
@@ -32,5 +33,6 @@ mcpl.__all__ has 29 names, provided by:
   _reader              : MCPLFile
   _writer              : MCPLOutFile, gzip_file
   _fileops             : can_merge, convert2ascii, create_outfile_mpi, dump_file, forcemerge_files, merge_files, merge_inplace, merge_outfiles_mpi, name_helper, repair
+  _histogram           : Histogram, Histogram2D, histogram, histogram2d, plot_histograms
   _stats               : collect_stats, dump_stats, plot_stats, stats_figures
   _cli                 : app_pymcpltool
