@@ -23,9 +23,12 @@
 # NEEDS: numpy
 
 # Test that messages and warnings are printed by default, sent to the logger
-# "mcpl" after use_logging(), and always printed by pymcpltool.
+# "mcpl" after use_logging(), and always printed by pymcpltool. Also test the
+# --traceback option of pymcpltool.
 
 import logging
+import subprocess
+import sys
 
 import mcpldev as mcpl
 from MCPLTestUtils.dirs import test_data_dir
@@ -45,6 +48,17 @@ def open_files():
         print(f'--> Opening {f.name}')
         with mcpl.MCPLFile(f):
             pass
+
+def run_tool(*args):
+    print(f'--> Running pymcpltool {" ".join(args)}')
+    sys.stdout.flush()
+    rv = subprocess.run([sys.executable, '-m', 'mcpldev', *args],
+                        capture_output=True, text=True, check=False)
+    print(f'    exit code: {rv.returncode}')
+    for line in rv.stdout.splitlines():
+        print(f'    stdout: {line}')
+    if rv.stderr:
+        print(f'    last line of stderr: {rv.stderr.splitlines()[-1]}')
 
 def main():
     print('==> By default, warnings are printed:')
@@ -74,6 +88,10 @@ def main():
     mcpl.use_logging(False)
     open_files()
     assert len(handler.records) == nrecords
+
+    print('==> Errors in pymcpltool, with and without --traceback:')
+    run_tool('nonexistent.mcpl')
+    run_tool('--traceback', 'nonexistent.mcpl')
 
 if __name__ == '__main__':
     main()

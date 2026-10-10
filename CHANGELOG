@@ -11,6 +11,8 @@ v2.2.9  (work in progress)
         default, but can now be sent to the logger "mcpl" of Python's logging
         module instead, by calling mcpl.use_logging(). pymcpltool always prints
         them.
+      * New pymcpltool option --traceback, which shows the Python traceback of
+        errors, for debugging.
       * mcpltool --extract no longer leaves a broken output file behind when
         given an invalid -p argument.
       * ssw2mcpl and phits2mcpl no longer leave an unfinished output file behind
