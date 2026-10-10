@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+
+################################################################################
+##                                                                            ##
+##  This file is part of MCPL (see https://mctools.github.io/mcpl/)           ##
+##                                                                            ##
+##  Copyright 2015-2026 MCPL developers.                                      ##
+##                                                                            ##
+##  Licensed under the Apache License, Version 2.0 (the "License");           ##
+##  you may not use this file except in compliance with the License.          ##
+##  You may obtain a copy of the License at                                   ##
+##                                                                            ##
+##      http://www.apache.org/licenses/LICENSE-2.0                            ##
+##                                                                            ##
+##  Unless required by applicable law or agreed to in writing, software       ##
+##  distributed under the License is distributed on an "AS IS" BASIS,         ##
+##  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  ##
+##  See the License for the specific language governing permissions and       ##
+##  limitations under the License.                                            ##
+##                                                                            ##
+################################################################################
+
+#  Example showing how one can use the mcpl Python API to split an MCPL file
+#  into several files and edit particle properties on the way, here moving the
+#  neutrons and gammas from an input file into separate output files with a new
+#  coordinate system, and changing all neutron wavelengths.
+
+import sys
+
+import mcpl
+import numpy as np
+
+infilename = sys.argv[1]
+
+with mcpl.MCPLFile(infilename) as fi:
+
+    #Create the output files, which get the same metadata as the input file:
+    outfiles = {}
+    for name, pdgcode in [('neutrons',2112), ('gammas',22)]:
+        fo = mcpl.MCPLOutFile(f'{name}.mcpl')
+        fo.transfer_metadata(fi)
+        fo.hdr_add_comment(f'Selected {name}, rotated 90 degrees around the'
+                           ' z axis and moved 10cm along it')
+        outfiles[pdgcode] = fo
+    outfiles[2112].hdr_add_comment('All neutrons have wavelength 1.8Aa')
+
+    for block in fi.particle_blocks:
+        for pdgcode, fo in outfiles.items():
+            #Select the particles for this file:
+            b = block[ block.pdgcode == pdgcode ]
+            #Particle fields to change are given as keyword arguments together
+            #with the block when adding particles. Values are computed from the
+            #original values of the particles (so the rotation is correct):
+            edits = { 'x' : -b.y, 'y' : b.x, 'z' : b.z + 10.0,
+                      'ux' : -b.uy, 'uy' : b.ux }
+            if pdgcode == 2112:
+                #For neutrons and gammas, the wavelength [Aa] can be set
+                #instead of the kinetic energy:
+                edits['wavelength'] = 1.8
+            fo.add_particles( b, **edits )
+
+    for fo in outfiles.values():
+        print(f'Wrote {fo.nparticles} particles to {fo.filename}')
+        fo.close()
+
+#Wavelengths can also be obtained from particles and blocks of particles with
+#their wavelength attribute (NaN for particles which are not neutrons or
+#gammas):
+with mcpl.MCPLFile('neutrons.mcpl') as f:
+    b = f.read_block()
+    wl = b.wavelength
+    print(f'Neutron wavelengths in neutrons.mcpl: {np.min(wl):.4g}Aa - {np.max(wl):.4g}Aa')
+    print(f'1.8Aa neutrons have ekin = {b.ekin[0]*1e9:.4g}meV')
+
+#The same edits can be expressed as strings, which is convenient when they are
+#for instance provided by users of a script:
+#
+#   edit = mcpl.ParticleEdit('rotate_z(90deg), z += 10cm, wavelength = 1.8Aa')
+#   flt = mcpl.ParticleFilter('pdgcode == neutron')
+#   for block in fi.particle_blocks:
+#       b = block[ flt(block) ]
+#       fo.add_particles( b, **edit(b) )

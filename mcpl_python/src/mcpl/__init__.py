@@ -52,6 +52,9 @@ __all__ = [
             'MCPLOutFile',
             'MCPLParticle',
             'MCPLParticleBlock',
+            'ParticleEdit',
+            'ParticleFilter',
+            'ParticleValue',
             'app_pymcpltool',
             'can_merge',
             'collect_stats',
@@ -79,6 +82,7 @@ from . import constants
 from ._blocks import MCPLParticle, MCPLParticleBlock
 from ._cli import app_pymcpltool
 from ._common import MCPLError
+from ._expressions import ParticleEdit, ParticleFilter, ParticleValue
 from ._fileops import (
     can_merge,
     convert2ascii,
