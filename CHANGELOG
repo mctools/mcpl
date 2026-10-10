@@ -12,6 +12,9 @@ v2.2.9  (work in progress)
         module (as on conda-forge), mcpl-config is still used.
       * Avoid misaligned memory access (undefined behaviour) when reading SSW
         and PHITS files in mcpl-extra.
+      * mcpltool --extract -p now also accepts the names neutron, antineutron,
+        proton, antiproton, electron, positron (or antielectron), muon,
+        antimuon, and gamma (or photon) instead of PDG codes, e.g. -pneutron.
       * Fix mcpl_transfer_last_read_particle for transfers from files with
         double precision to files with single precision, which wrote wrong
         kinetic energies and directions. The transfers done by mcpltool were not

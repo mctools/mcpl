@@ -44,7 +44,10 @@ Extract options:
                     Extracts particles from FILE1 into a new FILE2.
                     FILE2 will be gzipped if its name ends with .mcpl.gz.
   -lN, -sN        : Select range of particles in FILE1 (as above).
-  -pPDGCODE       : Select particles of type given by PDGCODE.
+  -pPDGCODE       : Select particles of type given by PDGCODE. Instead of the
+                    PDGCODE, one of the following names can be used: neutron,
+                    antineutron, proton, antiproton, electron, positron (or
+                    antielectron), muon, antimuon, gamma (or photon).
 
 Other options:
   -r, --repair FILE
@@ -102,7 +105,10 @@ Extract options:
                     Extracts particles from FILE1 into a new FILE2.
                     FILE2 will be gzipped if its name ends with .mcpl.gz.
   -lN, -sN        : Select range of particles in FILE1 (as above).
-  -pPDGCODE       : Select particles of type given by PDGCODE.
+  -pPDGCODE       : Select particles of type given by PDGCODE. Instead of the
+                    PDGCODE, one of the following names can be used: neutron,
+                    antineutron, proton, antiproton, electron, positron (or
+                    antielectron), muon, antimuon, gamma (or photon).
 
 Other options:
   -r, --repair FILE
@@ -160,7 +166,10 @@ Extract options:
                     Extracts particles from FILE1 into a new FILE2.
                     FILE2 will be gzipped if its name ends with .mcpl.gz.
   -lN, -sN        : Select range of particles in FILE1 (as above).
-  -pPDGCODE       : Select particles of type given by PDGCODE.
+  -pPDGCODE       : Select particles of type given by PDGCODE. Instead of the
+                    PDGCODE, one of the following names can be used: neutron,
+                    antineutron, proton, antiproton, electron, positron (or
+                    antielectron), muon, antimuon, gamma (or photon).
 
 Other options:
   -r, --repair FILE
@@ -360,7 +369,10 @@ Extract options:
                     Extracts particles from FILE1 into a new FILE2.
                     FILE2 will be gzipped if its name ends with .mcpl.gz.
   -lN, -sN        : Select range of particles in FILE1 (as above).
-  -pPDGCODE       : Select particles of type given by PDGCODE.
+  -pPDGCODE       : Select particles of type given by PDGCODE. Instead of the
+                    PDGCODE, one of the following names can be used: neutron,
+                    antineutron, proton, antiproton, electron, positron (or
+                    antielectron), muon, antimuon, gamma (or photon).
 
 Other options:
   -r, --repair FILE
@@ -1574,7 +1586,7 @@ MCPL: Successfully extracted 5 / 195 particles from miscphysnogz.mcpl into extra
 ----------------------------------------------
 Running mcpltool -e -p0 miscphysnogz.mcpl badpdg.mcpl
 ----------------------------------------------
-ERROR: Must specify non-zero 32bit integer as argument to -p.
+ERROR: Must specify non-zero 32bit integer or particle name as argument to -p.
 
 Run with -h or --help for usage information
 
@@ -1582,11 +1594,53 @@ Run with -h or --help for usage information
 ----------------------------------------------
 Running mcpltool -e -pabc miscphysnogz.mcpl badpdg.mcpl
 ----------------------------------------------
-ERROR: Must specify non-zero 32bit integer as argument to -p.
+ERROR: Must specify non-zero 32bit integer or particle name as argument to -p.
 
 Run with -h or --help for usage information
 
 ===> Command failed!
+----------------------------------------------
+Running mcpltool -e -pNeutron miscphysnogz.mcpl badpdg.mcpl
+----------------------------------------------
+ERROR: Must specify non-zero 32bit integer or particle name as argument to -p.
+
+Run with -h or --help for usage information
+
+===> Command failed!
+----------------------------------------------
+Running mcpltool -e -pneutron miscphysnogz.mcpl extracted_names_1.mcpl
+----------------------------------------------
+MCPL: Successfully extracted 15 / 195 particles from miscphysnogz.mcpl into extracted_names_1.mcpl
+
+----------------------------------------------
+Running mcpltool -e -pantiproton -l200 miscphysnogz.mcpl extracted_names_2.mcpl
+----------------------------------------------
+MCPL: Successfully extracted 5 / 195 particles from miscphysnogz.mcpl into extracted_names_2.mcpl
+
+----------------------------------------------
+Running mcpltool -e -pphoton miscphysnogz.mcpl extracted_names_3.mcpl
+----------------------------------------------
+MCPL: Successfully extracted 15 / 195 particles from miscphysnogz.mcpl into extracted_names_3.mcpl
+
+----------------------------------------------
+Running mcpltool -e -pantielectron miscphysnogz.mcpl extracted_names_4.mcpl
+----------------------------------------------
+MCPL: Successfully extracted 10 / 195 particles from miscphysnogz.mcpl into extracted_names_4.mcpl
+
+----------------------------------------------
+Running mcpltool -e -p-11 miscphysnogz.mcpl extracted_names_5.mcpl
+----------------------------------------------
+MCPL: Successfully extracted 10 / 195 particles from miscphysnogz.mcpl into extracted_names_5.mcpl
+
+----------------------------------------------
+Running mcpltool -n -l3 extracted_names_3.mcpl
+----------------------------------------------
+Opened MCPL file extracted_names_3.mcpl:
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0          22         0.5           0           0          10           0           1           0           0           1           0           0           0 0x00000000
+    1          22         0.5          10           0           0           0           0          -1           0           1           0           0           1 0x00000000
+    2          22         0.5           0          10           0           1           0           0       60000           1           0           0           0 0x00000000
+
 ----------------------------------------------
 Running mcpltool -l0 extracted_1.mcpl.gz
 ----------------------------------------------

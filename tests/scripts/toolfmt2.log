@@ -44,7 +44,10 @@ Extract options:
                     Extracts particles from FILE1 into a new FILE2.
                     FILE2 will be gzipped if its name ends with .mcpl.gz.
   -lN, -sN        : Select range of particles in FILE1 (as above).
-  -pPDGCODE       : Select particles of type given by PDGCODE.
+  -pPDGCODE       : Select particles of type given by PDGCODE. Instead of the
+                    PDGCODE, one of the following names can be used: neutron,
+                    antineutron, proton, antiproton, electron, positron (or
+                    antielectron), muon, antimuon, gamma (or photon).
 
 Other options:
   -r, --repair FILE
@@ -102,7 +105,10 @@ Extract options:
                     Extracts particles from FILE1 into a new FILE2.
                     FILE2 will be gzipped if its name ends with .mcpl.gz.
   -lN, -sN        : Select range of particles in FILE1 (as above).
-  -pPDGCODE       : Select particles of type given by PDGCODE.
+  -pPDGCODE       : Select particles of type given by PDGCODE. Instead of the
+                    PDGCODE, one of the following names can be used: neutron,
+                    antineutron, proton, antiproton, electron, positron (or
+                    antielectron), muon, antimuon, gamma (or photon).
 
 Other options:
   -r, --repair FILE
@@ -160,7 +166,10 @@ Extract options:
                     Extracts particles from FILE1 into a new FILE2.
                     FILE2 will be gzipped if its name ends with .mcpl.gz.
   -lN, -sN        : Select range of particles in FILE1 (as above).
-  -pPDGCODE       : Select particles of type given by PDGCODE.
+  -pPDGCODE       : Select particles of type given by PDGCODE. Instead of the
+                    PDGCODE, one of the following names can be used: neutron,
+                    antineutron, proton, antiproton, electron, positron (or
+                    antielectron), muon, antimuon, gamma (or photon).
 
 Other options:
   -r, --repair FILE
@@ -360,7 +369,10 @@ Extract options:
                     Extracts particles from FILE1 into a new FILE2.
                     FILE2 will be gzipped if its name ends with .mcpl.gz.
   -lN, -sN        : Select range of particles in FILE1 (as above).
-  -pPDGCODE       : Select particles of type given by PDGCODE.
+  -pPDGCODE       : Select particles of type given by PDGCODE. Instead of the
+                    PDGCODE, one of the following names can be used: neutron,
+                    antineutron, proton, antiproton, electron, positron (or
+                    antielectron), muon, antimuon, gamma (or photon).
 
 Other options:
   -r, --repair FILE
