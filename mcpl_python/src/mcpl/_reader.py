@@ -25,7 +25,12 @@ __all__ = ['MCPLFile']
 
 import os
 
-from ._blocks import MCPLParticleBlock, _concat_blocks, _EditedParticleBlock
+from ._blocks import (
+    MCPLParticleBlock,
+    _concat_blocks,
+    _EditedParticleBlock,
+    _nonfinite_masks,
+)
 from ._common import MCPLError, _output_bytearray_raw
 from ._expressions import _as_edit, _as_filter
 from ._messages import _warning
@@ -73,6 +78,12 @@ class MCPLFile:
         self._flt = _as_filter(select)
         self._edt = _as_edit(edit)
         self._fblocks, self._fparts = None, None
+        #NaN or infinite values are not allowed, but files might have them, so
+        #we warn when reading the first such particle (unless the check is
+        #disabled for raw copying of particle data, like in merges):
+        self._check_nonfinite = True
+        self._warned_nonfinite = False
+        self._nonfinite_mask = None
 
         self._fileclose = lambda : None
         self._str_decode = (not raw_strings)
@@ -277,7 +288,9 @@ class MCPLFile:
         rather than single numbers.  See also the particle_blocks property for
         an iterator-based access to blocks."""
         if self._flt is None and self._edt is None:
-            return self._read_raw_block()
+            b = self._read_raw_block()
+            self._warn_nonfinite()
+            return b
         if self._fblocks is None:
             self._fblocks = self._selected_blocks()
         return next(self._fblocks,None)
@@ -294,6 +307,7 @@ class MCPLFile:
             b = self._read_raw_block()
             if b is None:
                 break
+            self._warn_nonfinite()
             #NB: always index, since the block object is reused by the next read:
             b = b[self._flt(b)] if self._flt is not None else b[:]
             if len(b):
@@ -317,7 +331,38 @@ class MCPLFile:
             raise MCPLError('Errors encountered while attempting to read particle data.')
         self._currentblock._set_data(x,self._iblock*self._blocklength)
         self._iblock += 1
+        self._nonfinite_mask = None
+        if self._check_nonfinite and not self._warned_nonfinite:
+            masks = _nonfinite_masks(self._currentblock,self.opt_polarisation)
+            if masks:
+                self._nonfinite_mask = np.logical_or.reduce(list(masks.values()))
         return self._currentblock
+
+    def _warn_if_nonfinite(self, block):
+        """Warn (once per file) if block (from this file) has NaN or infinite
+        values"""
+        if self._warned_nonfinite:
+            return
+        masks = _nonfinite_masks(block,self.opt_polarisation)
+        if masks:
+            self._warned_nonfinite = True
+            i = min( int(np.argmax(m)) for m in masks.values() )
+            _warning('File contains particles with NaN or infinite values (first'
+                     f' one found at index {block.file_indices[i]}).'
+                     ' They can not be added to other MCPL files.')
+
+    def _warn_nonfinite(self, local_idx = None):
+        """Warn (once per file) if the current block (or the particle in it at
+        local_idx) has NaN or infinite values."""
+        m = self._nonfinite_mask
+        if m is None or ( local_idx is not None and not m[local_idx] ):
+            return
+        i = int(np.argmax(m)) if local_idx is None else local_idx
+        self._nonfinite_mask = None
+        self._warned_nonfinite = True
+        _warning('File contains particles with NaN or infinite values (first'
+                 f' one found at index {self._currentblock.file_offset + i}).'
+                 ' They can not be added to other MCPL files.')
 
     def read(self):
         """Read and return next particle in file (None when EOF) as a particle object,
@@ -346,6 +391,7 @@ class MCPLFile:
             self._read_raw_block()
             p = self._currentblock.get_by_global(self._ipos)
         self._ipos += 1
+        self._warn_nonfinite(p._i)
         return p
 
     def _selected_particles(self):

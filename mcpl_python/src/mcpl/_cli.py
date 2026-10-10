@@ -627,6 +627,9 @@ def _pymcpltool_extract(filelist, limit, skip, pdgcode_str, select, edit,
     limit = limit or 0
     skip = skip or 0
     with MCPLFile(filelist[0],raw_strings=True) as fi:
+        #Like mcpltool, only warn about NaN or infinite values in the
+        #particles in the range given by -s and -l:
+        fi._check_nonfinite = False
         fo = MCPLOutFile(outfn)
         fo.transfer_metadata(fi)
         n_in = fi.nparticles
@@ -667,6 +670,7 @@ def _pymcpltool_extract(filelist, limit, skip, pdgcode_str, select, edit,
                 if off >= iend:
                     break
                 b = b[max(0,skip-off):min(len(b),iend-off)]
+                fi._warn_if_nonfinite(b)
                 if pdgcode:
                     b = b[b.pdgcode == pdgcode]
                 if flt is not None:
@@ -676,8 +680,7 @@ def _pymcpltool_extract(filelist, limit, skip, pdgcode_str, select, edit,
                 else:
                     fo.add_particles(b)
         except MCPLError:
-            fo.close()
-            pathlib.Path(fo.filename).unlink()
+            fo._abort()
             raise
         n_added = fo.nparticles
         outname = _pymcpltool_close(fo,attempt_gzip)

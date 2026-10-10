@@ -25,6 +25,7 @@
 __all__ = ['MCPLOutFile', 'gzip_file']
 
 import os
+import pathlib
 
 from ._blocks import (
     MCPLParticle,
@@ -32,6 +33,7 @@ from ._blocks import (
     _ArrayBlock,
     _block_fields,
     _EditedParticleBlock,
+    _nonfinite_masks,
 )
 from ._common import MCPLError, _native_endianness
 from ._expressions import _as_edit, _as_filter
@@ -589,13 +591,7 @@ class MCPLOutFile:
         ux, uy, uz = col('ux'), col('uy'), col('uz')
         ekin = col('ekin')
         if validate:
-            dirsq = ux * ux + uy * uy + uz * uz
-            if np.any( np.abs( dirsq - 1.0 ) > 1.0e-5 ):
-                raise MCPLError('attempting to add particle with non-unit'
-                                ' direction vector')
-            if np.any( ekin < 0.0 ):
-                raise MCPLError('attempting to add particle with negative'
-                                ' kinetic energy')
+            self._validate(n,col)
         arr = np.empty(n,dtype=self._particle_dtype())
         if packed_ekindir is not None:
             arr['uve1'], arr['uve2'], arr['uve3'] = packed_ekindir
@@ -625,6 +621,36 @@ class MCPLOutFile:
             v = cols.get('userflags')
             arr['uf'] = 0 if v is None else np.broadcast_to(v,(n,))
         return arr
+
+    def _validate(self, n, col):
+        """Raise MCPLError for the first invalid particle (and its first failed
+        check), like the C library does. The particle fields are given as
+        col(name) arrays of length n."""
+        cols = _Columns(n,col)
+        checks = [ ( m, f'attempting to add particle with NaN or infinite {name}' )
+                   for name, m in _nonfinite_masks(cols,self._opt_polarisation,
+                                                   not self._opt_universalweight).items() ]
+        ux, uy, uz, ekin = col('ux'), col('uy'), col('uz'), col('ekin')
+        with np.errstate(invalid='ignore'):
+            checks.append( ( np.abs( ux * ux + uy * uy + uz * uz - 1.0 ) > 1.0e-5,
+                             'attempting to add particle with non-unit direction vector' ) )
+            checks.append( ( ekin < 0.0,
+                             'attempting to add particle with negative kinetic energy' ) )
+        if self._opt_singleprec:
+            fields = [ ('position',('x','y','z')) ]
+            if self._opt_polarisation:
+                fields.append( ('polarisation',('polx','poly','polz')) )
+            fields += [ ('kinetic energy',('ekin',)), ('time',('time',)) ]
+            if not self._opt_universalweight:
+                fields.append( ('weight',('weight',)) )
+            for name, cs in fields:
+                with np.errstate(over='ignore',invalid='ignore'):
+                    m = np.logical_or.reduce([ np.isfinite(col(c))
+                                               & ~np.isfinite(col(c).astype(np.float32))
+                                               for c in cs ])
+                checks.append( ( m, ( f'attempting to add particle with {name} too'
+                                      ' large for single precision storage' ) ) )
+        _raise_first_failure(checks)
 
     def add_particles(self, particles = None, **fields):
         """Add block of particles. Particle data is specified with keyword
@@ -740,13 +766,10 @@ class MCPLOutFile:
             ekin = float(cols['ekin'])
         else:
             ekin = float(fields.get('ekin',0.0))
-        dirsq = vals[3] * vals[3] + vals[4] * vals[4] + vals[5] * vals[5]
-        if abs( dirsq - 1.0 ) > 1.0e-5:
-            raise MCPLError('attempting to add particle with non-unit'
-                            ' direction vector')
-        if ekin < 0.0:
-            raise MCPLError('attempting to add particle with negative'
-                            ' kinetic energy')
+        values = dict( zip( ('x','y','z','ux','uy','uz','polx','poly','polz'), vals ) )
+        values.update( ekin = ekin, time = float(fields.get('time',0.0)),
+                       weight = float(fields.get('weight',0.0)) )
+        self._validate( 1, lambda name : np.array([ values[name] ]) )
         userflags = int(fields.get('userflags',0))
         if not ( -2147483648 <= pdgcode <= 2147483647 ):
             raise MCPLError('pdgcode out of range')
@@ -792,16 +815,29 @@ class MCPLOutFile:
         pdgcode = ocols['pdgcode'] if 'pdgcode' in ocols else block.pdgcode[sel]
         weight = ocols['weight'] if 'weight' in ocols else block.weight[sel]
         self._resolve_wavelength(ocols, pdgcode)
-        if self._opt_universalpdgcode and np.any( pdgcode != self._opt_universalpdgcode ):
-            bad = pdgcode[ pdgcode != self._opt_universalpdgcode ][0]
-            raise MCPLError(f'add_particles asked to transfer particle with pdgcode {bad}'
-                            ' into a file with universal pdgcode of'
-                            f' {self._opt_universalpdgcode}')
-        if self._opt_universalweight and np.any( weight != self._opt_universalweight ):
-            bad = weight[ weight != self._opt_universalweight ][0]
-            raise MCPLError(f'add_particles asked to transfer particle with weight {bad:g}'
-                            ' into a file with universal weight of'
-                            f' {self._opt_universalweight:g}')
+        #Checks like in mcpl_transfer_last_read_particle (for the first
+        #particle failing any of them):
+        checks = []
+        if self._opt_universalpdgcode:
+            m = np.asarray( pdgcode != self._opt_universalpdgcode )
+            checks.append( ( m, lambda i : 'add_particles asked to transfer particle'
+                             f' with pdgcode {pdgcode[i]} into a file with universal'
+                             f' pdgcode of {self._opt_universalpdgcode}' ) )
+        if self._opt_universalweight:
+            m = np.asarray( weight != self._opt_universalweight )
+            checks.append( ( m, lambda i : 'add_particles asked to transfer particle'
+                             f' with weight {weight[i]:g} into a file with universal'
+                             f' weight of {self._opt_universalweight:g}' ) )
+        if ocols:
+            src = _Columns(n,lambda name : ( ocols[name] if name in ocols
+                                             else getattr(block,name)[sel] ))
+        else:
+            src = block[sel]
+        for name, m in _nonfinite_masks(src,self._opt_polarisation,
+                                        not self._opt_universalweight).items():
+            checks.append( ( m, ( 'add_particles asked to transfer particle with'
+                                  f' NaN or infinite {name}' ) ) )
+        _raise_first_failure(checks)
         src_singleprec = ( data.dtype['x'].itemsize == 4 )
         if not ocols and block._fmtversion != 2 and data.dtype == self._particle_dtype():
             #Particle data is encoded in exactly the same manner in source and
@@ -824,6 +860,13 @@ class MCPLOutFile:
             arr = self._pack(n,cols,packed_ekindir = packed)
         self._flush_pending()
         self._write_records(arr)
+
+    def _abort(self):
+        """Close and remove the (unfinished) file, after an error"""
+        if self._fh is not None:
+            fh, self._fh = self._fh, None
+            fh.close()
+        pathlib.Path(self._filename).unlink(missing_ok=True)
 
     def close(self):
         """Close the file (writing all pending particles and updating the
@@ -866,3 +909,24 @@ def gzip_file(filename):
         return False
     _info(f'Compressed file into {bn}.gz')
     return True
+
+class _Columns:
+    """Block-like view of particle fields given by col(name)"""
+    def __init__( self, n, col ):
+        self._n, self._col = n, col
+    def __len__( self ):
+        return self._n
+    def __getattr__( self, name ):
+        return self._col(name)
+
+def _raise_first_failure( checks ):
+    """Raise MCPLError for the first particle failing any of the checks (masks
+    and messages, which can also be functions of the particle index), with the
+    message of the first check it fails."""
+    checks = [ ( np.asarray(m,dtype=bool), msg ) for m, msg in checks ]
+    failing = [ int(np.argmax(m)) for m, _ in checks if m.any() ]
+    if not failing:
+        return
+    i = min(failing)
+    msg = next( msg for m, msg in checks if m.ndim and m[i] or not m.ndim and m )
+    raise MCPLError( msg(i) if callable(msg) else msg )

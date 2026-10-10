@@ -39,7 +39,8 @@ example_file = test_data_dir.parent.parent.joinpath('examples','example.mcpl')
 def test_expressions():
     with mcpl.MCPLFile(example_file) as f:
         b = f.read_block()
-    wl = b.wavelength
+    #Wavelengths, NaN for particles other than neutrons and gammas:
+    wl = wavelength_from_ekin(b.ekin,b.pdgcode)
     cases = [ ('ekin > 25keV && x <= 2cm + y && pdgcode != 22',
                (b.ekin>0.025)&(b.x<=2.0+b.y)&(b.pdgcode!=22)),
               ('pdgcode == neutron && ekin < 500keV', (b.pdgcode==2112)&(b.ekin<0.5)),
@@ -137,7 +138,10 @@ def test_expressions():
                 'degrees(acos(uz)) < 10',
                 'ekin = 1MeV', 'ekin > 1MeV & x < 2cm', 'foo > 1',
                 "__import__('os').system('ls')", 'ekin', 'lambda: 1',
-                'sin(x, y=1) > 0', 'x.real > 0', '[x][0] > 0', "x > 'a'", ''):
+                'sin(x, y=1) > 0', 'x.real > 0', '[x][0] > 0', "x > 'a'", '',
+                'sqrt(x/cm) > 1', '1/(x/cm - x/cm) > 1', 'log(ekin/MeV - ekin/MeV) > 0',
+                'x/cm % 0 > 1', '1e999 > x/cm', '(-1)^(x/cm) > 0',
+                'x != x && 1/(x/cm - x/cm) > 1'):
         try:
             mcpl.ParticleFilter(bad)(b)
             print(f'ParticleFilter({bad!r}): no error')
@@ -149,12 +153,40 @@ def test_expressions():
                 'swap(x,ekin)', 'swap(x)', 'swap(x,2)', 'rotate_z(1cm)', 'rotate_q(1)',
                 'rotate_z(1,2)', 'x = clamp(x,1cm)', 'x = min(x)',
                 'x == 1cm', 'pi = 3', 'wl = 1Aa', 'x = 1cm; y = 1cm',
-                'x = y = 1cm', 'x, y = y, x', '', 'pdgcode = 1.5'):
+                'x = y = 1cm', 'x, y = y, x', '', 'pdgcode = 1.5',
+                'x = sqrt(x/cm)*1cm', 'weight = 1/(x/cm - x/cm)'):
         try:
             mcpl.ParticleEdit(bad)(b)
             print(f'ParticleEdit({bad!r}): no error')
         except mcpl.MCPLError as e:
             print(f'ParticleEdit({bad!r}): {e}')
+
+def test_nonfinite():
+    #Errors instead of NaN or infinite values (for the particles which an
+    #expression is used for):
+    with mcpl.MCPLFile(example_file) as f:
+        b = f.read_block()
+    n = b[b.pdgcode==2112]
+    for bad in ('wavelength = 0', 'wavelength = -1Aa', 'wavelength = wavelength - wavelength'):
+        try:
+            mcpl.ParticleEdit(bad)(n)
+            print(f'ParticleEdit({bad!r}) on neutrons: no error')
+        except mcpl.MCPLError as e:
+            print(f'ParticleEdit({bad!r}) on neutrons: {e}')
+    with mcpl.MCPLOutFile('zero_ekin.mcpl') as o:
+        o.add_particles( direction = (0,0,1), ekin = [0.0, 1e-6, 0.0],
+                         pdgcode = [2112, 2112, 11] )
+    with mcpl.MCPLFile('zero_ekin.mcpl') as f:
+        z = f.read_block()
+    for expr in ( 'pdgcode == neutron && wavelength > 1Aa',
+                  'pdgcode == neutron && ekin > 0 && wavelength > 1Aa',
+                  'ekin > 0 && 1/(ekin/MeV) > 1',
+                  '1/(ekin/MeV) > 1' ):
+        try:
+            print(f'ParticleFilter({expr!r}) with zero ekin: selects'
+                  f' {np.sum(mcpl.ParticleFilter(expr)(z))}')
+        except mcpl.MCPLError as e:
+            print(f'ParticleFilter({expr!r}) with zero ekin: {e}')
 
 def run_example(name, *args):
     f = test_data_dir.parent.parent.joinpath('examples',name)
@@ -183,5 +215,6 @@ def test_dump_and_stats():
 
 if __name__ == '__main__':
     test_expressions()
+    test_nonfinite()
     test_examples()
     test_dump_and_stats()

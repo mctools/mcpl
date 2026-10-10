@@ -1131,6 +1131,32 @@ MCPL_LOCAL double mcpl_internal_rd_double( const char * buf ) { double v; memcpy
 MCPL_LOCAL int32_t mcpl_internal_rd_int32( const char * buf ) { int32_t v; memcpy( &v, buf, sizeof(v) ); return v; }
 MCPL_LOCAL uint32_t mcpl_internal_rd_uint32( const char * buf ) { uint32_t v; memcpy( &v, buf, sizeof(v) ); return v; }
 
+MCPL_LOCAL int mcpl_internal_isfinite3( const double* v )
+{
+  return isfinite(v[0]) && isfinite(v[1]) && isfinite(v[2]);
+}
+
+MCPL_LOCAL const char * mcpl_internal_nonfinite_field( const mcpl_particle_t* p,
+                                                       int check_polarisation,
+                                                       int check_weight )
+{
+  //Name of the first field (to be stored) with a NaN or infinite value, or
+  //NULL if all are finite:
+  if ( !mcpl_internal_isfinite3( p->position ) )
+    return "position";
+  if ( !mcpl_internal_isfinite3( p->direction ) )
+    return "direction";
+  if ( check_polarisation && !mcpl_internal_isfinite3( p->polarisation ) )
+    return "polarisation";
+  if ( !isfinite( p->ekin ) )
+    return "kinetic energy";
+  if ( !isfinite( p->time ) )
+    return "time";
+  if ( check_weight && !isfinite( p->weight ) )
+    return "weight";
+  return NULL;
+}
+
 MCPL_LOCAL void mcpl_internal_serialise_particle_to_buffer( const mcpl_particle_t* particle,
                                                             mcpl_outfileinternal_t * f ) {
 
@@ -1139,7 +1165,16 @@ MCPL_LOCAL void mcpl_internal_serialise_particle_to_buffer( const mcpl_particle_
 
   double pack_ekindir[3];
 
-  //Sanity check (add more??):
+  //Sanity checks:
+  const char * nonfinite = mcpl_internal_nonfinite_field( particle,
+                                                          f->opt_polarisation,
+                                                          !f->opt_universalweight );
+  if ( nonfinite ) {
+    char buf[128];
+    snprintf(buf,sizeof(buf),"attempting to add particle with NaN or"
+             " infinite %s",nonfinite);
+    mcpl_error(buf);
+  }
   double dirsq = particle->direction[0] * particle->direction[0]
     + particle->direction[1] * particle->direction[1]
     + particle->direction[2] * particle->direction[2];
@@ -1153,6 +1188,34 @@ MCPL_LOCAL void mcpl_internal_serialise_particle_to_buffer( const mcpl_particle_
   //ekin in that field as well (since it must be non-negative). We use copysign
   //to be sure the signbit is set also if ekin=0:
   pack_ekindir[2] = copysign(particle->ekin,pack_ekindir[2]);
+
+  if (f->opt_singleprec) {
+    //Values must not overflow when stored in single precision (except the
+    //first two values of the packed direction, which can legitimately be
+    //infinite):
+    const char * toolarge = NULL;
+    if ( !isfinite((float)particle->position[0])
+         || !isfinite((float)particle->position[1])
+         || !isfinite((float)particle->position[2]) )
+      toolarge = "position";
+    else if ( f->opt_polarisation
+              && ( !isfinite((float)particle->polarisation[0])
+                   || !isfinite((float)particle->polarisation[1])
+                   || !isfinite((float)particle->polarisation[2]) ) )
+      toolarge = "polarisation";
+    else if ( !isfinite((float)particle->ekin) )
+      toolarge = "kinetic energy";
+    else if ( !isfinite((float)particle->time) )
+      toolarge = "time";
+    else if ( !f->opt_universalweight && !isfinite((float)particle->weight) )
+      toolarge = "weight";
+    if ( toolarge ) {
+      char buf[128];
+      snprintf(buf,sizeof(buf),"attempting to add particle with %s too large"
+               " for single precision storage",toolarge);
+      mcpl_error(buf);
+    }
+  }
 
   //serialise particle object to buffer:
   unsigned ibuf = 0;
@@ -1360,6 +1423,7 @@ typedef struct {
   char particle_buffer[MCPLIMP_MAX_PARTICLE_SIZE];
   uint64_t first_comment_pos;
   uint32_t * repaired_statsum_icomments;
+  int warned_nonfinite;
 } mcpl_fileinternal_t;
 
 #define MCPLIMP_FILEDECODE mcpl_fileinternal_t * f = (mcpl_fileinternal_t *)ff.internal; assert(f)
@@ -2180,6 +2244,19 @@ const mcpl_particle_t* mcpl_read(mcpl_file_t ff)
       p->direction[2] = 0.0;
     }
   }
+
+  //NaN or infinite values are not allowed in MCPL files, but files might
+  //still have them, so warn (once per file):
+  if ( !f->warned_nonfinite
+       && mcpl_internal_nonfinite_field( p, f->opt_polarisation, 1 ) ) {
+    f->warned_nonfinite = 1;
+    char buf[256];
+    snprintf(buf,sizeof(buf),"MCPL WARNING: File contains particles with NaN"
+             " or infinite values (first one found at index %llu). They can"
+             " not be added to other MCPL files.\n",
+             (unsigned long long)(f->current_particle_idx-1));
+    mcpl_print(buf);
+  }
   return p;
 }
 
@@ -2345,6 +2422,19 @@ void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
   //NB: We don't sanity check that polarisation/userflags are enabled if present
   //in the input particle, since it is a valid use-case to use this function to
   //discard such info.
+
+  //NaN or infinite values are not allowed (the source file might have them,
+  //and they might otherwise be transferred directly):
+  const char * nonfinite = mcpl_internal_nonfinite_field( fs->particle,
+                                                          ft->opt_polarisation,
+                                                          !ft->opt_universalweight );
+  if ( nonfinite ) {
+    char buf[160];
+    snprintf(buf,sizeof(buf),"mcpl_transfer_last_read_particle asked to"
+             " transfer particle with NaN or infinite %s",nonfinite);
+    mcpl_error(buf);
+    return;
+  }
 
   if ( fs->format_version == 2 || ( fs->opt_singleprec && !ft->opt_singleprec ) ) {
     //source file is in old format with different unit vector packing, or the

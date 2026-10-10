@@ -38,6 +38,7 @@ import shutil
 import mcpldev as mcpl
 from MCPLTestUtils.dirs import test_data_dir
 from MCPLTestUtils.loadlib import getlib
+from MCPLTestUtils.mcplpatch import set_values
 
 
 def _c_child(resfile, fctname, args):
@@ -234,6 +235,17 @@ def test_writer_scripts():
         for src in ('a1.mcpl', 'b_dp.mcpl', 'b_pol.mcpl', 'b_uf.mcpl', 'b_uw2.mcpl'):
             ok &= compare_script(f'transfer from {src} with options {opts!r}',
                                  script(opts, f'transfer {src}', 'close'))
+    for src in ('n_x_nan', 'n_t_inf', 'n_w_nan', 'n_ekin_inf', 'n_dir_nan',
+                'n_dir_inf', 'n_pol_nan', 'n_dir_valid_inf'):
+        for opts in ('', 'pol'):
+            ok &= compare_script(f'transfer from {src}.mcpl with options {opts!r}',
+                                 script(opts, f'transfer {src}.mcpl', 'close'))
+    #An error (here about the weight) before the particle with NaN or infinite
+    #values is reached. Only for n_ekin_inf, where that is the first particle,
+    #since the Python API warns about such particles when reading the block
+    #with them, while the C API warns when reading the particle:
+    ok &= compare_script('transfer from n_ekin_inf.mcpl into universal weight',
+                         script('uw 2.5', 'transfer n_ekin_inf.mcpl', 'close'))
     ok &= compare_script('metadata and transfer', script('metadata a1.mcpl',
                                                          'transfer a2.mcpl', 'close'))
     ok &= compare_script('transfer into universal pdgcode', script('updg 2112',
@@ -255,6 +267,14 @@ def test_writer_scripts():
     ok &= compare_script('extreme pdgcodes', script(
         particle(0,pdg=-2147483648), particle(1,pdg=2147483647), particle(2,pdg=0),
         'close'))
+    #NaN or infinite values in fields which are not stored are fine, as are
+    #large values in double precision:
+    ok &= compare_script('NaN polarisation not stored', script(
+        'particle 0 0 0 0 0 1 nan inf 0 1 0 1 2112 0', 'close'))
+    ok &= compare_script('NaN weight not stored', script(
+        'uw 2', 'particle 0 0 0 0 0 1 0 0 0 1 0 nan 2112 0', 'close'))
+    ok &= compare_script('large values in double precision', script(
+        'dp', 'pol', 'particle 1e39 0 0 0 0 1 1e300 0 0 1e39 -1e39 1e39 2112 0', 'close'))
     ok &= compare_script('userflags values', script(
         'userflags', particle(0,uf=0), particle(1,uf=4294967295), 'close'))
     ok &= compare_script('stat:sum updates', script(
@@ -307,7 +327,26 @@ def test_writer_scripts():
                ('scale inf', 'scale inf'),
                ('non-unit direction', 'particle 0 0 0 1 1 0 0 0 0 1 0 1 2112 0'),
                ('zero direction', 'particle 0 0 0 0 0 0 0 0 0 1 0 1 2112 0'),
-               ('negative ekin', 'particle 0 0 0 0 0 1 0 0 0 -1 0 1 2112 0') ]
+               ('negative ekin', 'particle 0 0 0 0 0 1 0 0 0 -1 0 1 2112 0'),
+               ('NaN position', 'particle 0 nan 0 0 0 1 0 0 0 1 0 1 2112 0'),
+               ('infinite position', 'particle 0 0 -inf 0 0 1 0 0 0 1 0 1 2112 0'),
+               ('NaN direction', 'particle 0 0 0 nan 0 1 0 0 0 1 0 1 2112 0'),
+               ('infinite direction', 'particle 0 0 0 0 inf 1 0 0 0 1 0 1 2112 0'),
+               ('NaN polarisation', script('pol','particle 0 0 0 0 0 1 0 0 nan 1 0 1 2112 0')),
+               ('NaN ekin', 'particle 0 0 0 0 0 1 0 0 0 nan 0 1 2112 0'),
+               ('infinite ekin', 'particle 0 0 0 0 0 1 0 0 0 inf 0 1 2112 0'),
+               ('NaN time', 'particle 0 0 0 0 0 1 0 0 0 1 nan 1 2112 0'),
+               ('infinite weight', 'particle 0 0 0 0 0 1 0 0 0 1 0 inf 2112 0'),
+               ('NaN in second particle', script(parts(1),
+                                                 'particle 0 0 0 0 0 1 0 0 0 1 nan 1 2112 0')),
+               ('NaN position and ekin', 'particle nan 0 0 0 0 1 0 0 0 nan 0 1 2112 0'),
+               ('NaN ekin and non-unit direction', 'particle 0 0 0 1 1 0 0 0 0 nan 0 1 2112 0'),
+               ('x too large for single precision', 'particle 1e39 0 0 0 0 1 0 0 0 1 0 1 2112 0'),
+               ('ekin too large for single precision', 'particle 0 0 0 0 0 1 0 0 0 1e39 0 1 2112 0'),
+               ('time too large for single precision', 'particle 0 0 0 0 0 1 0 0 0 1 -1e39 1 2112 0'),
+               ('weight too large for single precision', 'particle 0 0 0 0 0 1 0 0 0 1 0 1e39 2112 0'),
+               ('polarisation too large for single precision',
+                script('pol','particle 0 0 0 0 0 1 0 1e39 0 1 0 1 2112 0')) ]
     for title, s in errors:
         ok &= compare_script(title, s)
     return ok
@@ -350,6 +389,19 @@ def make_inputs():
         shutil.copy(test_data_dir.joinpath('ref',f), input_dir / f)
     for f in ('reffile_1.mcpl', 'reffile_5.mcpl'):
         shutil.copy(test_data_dir.joinpath('reffmt2',f), input_dir / ('fmt2_'+f))
+    #Files with NaN or infinite values, which can not be written with the APIs,
+    #so we modify values in the files:
+    nan, inf = float('nan'), float('inf')
+    for name, src, ipart, values in (
+            ('n_x_nan', 'b_dp', 1, {'x':nan}),
+            ('n_t_inf', 'b_dp', 2, {'t':-inf}),
+            ('n_w_nan', 'a1', 4, {'w':nan}),
+            ('n_ekin_inf', 'a1', 0, {'uve3':inf}),
+            ('n_dir_nan', 'a1', 2, {'uve1':nan}),
+            ('n_dir_inf', 'a1', 1, {'uve1':inf,'uve2':inf}),
+            ('n_pol_nan', 'b_pol', 1, {'poly':nan}),
+            ('n_dir_valid_inf', 'a1', 1, {'uve1':inf}) ):
+        set_values(input_dir/f'{src}.mcpl', input_dir/f'{name}.mcpl', ipart, values)
 
 def py_merge_files(out, files):
     mcpl.merge_files(out, files.split('|')).close()
@@ -368,7 +420,8 @@ def test_file_functions():
                'a1.mcpl|c_comment.mcpl', 'a1.mcpl|c_blob.mcpl', 'a1.mcpl|c_statkey.mcpl',
                'b_updg.mcpl|b_updg2.mcpl', 'b_uw.mcpl|b_uw2.mcpl',
                'a1.mcpl|nonexistent.mcpl', 'reffile_truncated.mcpl|reffile_truncated.mcpl',
-               'ref_statsum_crash.mcpl|ref_statsum.mcpl.gz' ]
+               'ref_statsum_crash.mcpl|ref_statsum.mcpl.gz',
+               'a1.mcpl|n_w_nan.mcpl', 'n_ekin_inf.mcpl|a2.mcpl', 'b_dp.mcpl|n_x_nan.mcpl' ]
     for files in merges:
         ok &= compare(f'merge_files "{files}"', 'mcpltest_merge_files',
                       ('merged', files), py_merge_files)
@@ -379,7 +432,9 @@ def test_file_functions():
                     'b_updg.mcpl|b_uw.mcpl', 'b_updg.mcpl|b_updg2.mcpl|b_empty_pol.mcpl',
                     'b_uw.mcpl|b_uw2.mcpl', 'b_dp.mcpl|b_pol.mcpl|agz.mcpl.gz',
                     'fmt2_reffile_1.mcpl|reffile_1.mcpl|b_uf.mcpl',
-                    'reffile_skip123.mcpl|b_dp.mcpl', 'a1.mcpl|a1.mcpl' ]
+                    'reffile_skip123.mcpl|b_dp.mcpl', 'a1.mcpl|a1.mcpl',
+                    'a1.mcpl|n_x_nan.mcpl', 'n_pol_nan.mcpl|b_dp.mcpl',
+                    'b_pol.mcpl|n_dir_valid_inf.mcpl' ]
     for files in forcemerges:
         for keep in (0,1):
             ok &= compare(f'forcemerge_files "{files}" keep_userflags={keep}',
@@ -391,7 +446,8 @@ def test_file_functions():
                 ('a1.mcpl','a1.mcpl'), ('a1.mcpl','b_dp.mcpl'),
                 ('reffile_1.mcpl','fmt2_reffile_1.mcpl'),
                 ('fmt2_reffile_1.mcpl','fmt2_reffile_5.mcpl'),
-                ('reffile_crash.mcpl','reffile_1.mcpl'), ('a1.mcpl','nonexistent.mcpl') ]
+                ('reffile_crash.mcpl','reffile_1.mcpl'), ('a1.mcpl','nonexistent.mcpl'),
+                ('a2.mcpl','n_w_nan.mcpl'), ('n_dir_nan.mcpl','a1.mcpl') ]
     for f1, f2 in inplace:
         ok &= compare(f'merge_inplace "{f1}" "{f2}"', 'mcpltest_merge_inplace',
                       (f1, f2), mcpl.merge_inplace)

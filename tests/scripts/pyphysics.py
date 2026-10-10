@@ -63,12 +63,29 @@ def test_attributes():
         p = f.read()
         print(f'first particle: pdgcode={p.pdgcode} ekin={p.ekin:.6g}'
               f' wavelength={p.wavelength:.6g}')
-        wl = b.wavelength
-        isnum = np.isin(b.pdgcode,(2112,22))
-        assert np.all(np.isnan(wl) == ~isnum)
-        assert np.allclose(ekin_from_wavelength(wl[isnum],b.pdgcode[isnum]),
-                           b.ekin[isnum],rtol=1e-12)
-        print(f'block wavelengths: {np.sum(isnum)} numbers, {np.sum(~isnum)} NaN')
+        isng = np.isin(b.pdgcode,(2112,22))
+        ng = b[isng]
+        wl = ng.wavelength
+        assert np.allclose(ekin_from_wavelength(wl,ng.pdgcode),ng.ekin,rtol=1e-12)
+        print(f'wavelengths of the {len(ng)} neutrons and gammas in the block:'
+              f' {np.min(wl):.6g}Aa - {np.max(wl):.6g}Aa')
+        #Errors for other particles, and for zero kinetic energy:
+        for desc, obj in ( ('block with other particles', b),
+                           ('particle which is not a neutron or gamma',
+                            b[int(np.argmax(~isng))]) ):
+            try:
+                obj.wavelength  # noqa: B018
+            except mcpl.MCPLError as e:
+                print(f'wavelength of {desc}: MCPLError: {e}')
+    with mcpl.MCPLOutFile('zero_ekin.mcpl', opt_universalpdgcode=2112) as o:
+        o.add_particles( direction = (0,0,1), ekin = [0.0, 1e-6] )
+    with mcpl.MCPLFile('zero_ekin.mcpl') as f:
+        b = f.read_block()
+        try:
+            b.wavelength  # noqa: B018
+        except mcpl.MCPLError as e:
+            print(f'wavelength of neutrons with zero ekin: MCPLError: {e}')
+        print(f'wavelength of the other neutron: {b[1:].wavelength[0]:.6g}Aa')
 
 if __name__ == '__main__':
     test_constants()

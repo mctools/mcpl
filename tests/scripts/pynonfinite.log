@@ -1,0 +1,39 @@
+==> read() of all particles of nan.mcpl:
+MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 7). They can not be added to other MCPL files.
+==> read() of all particles of nan2.mcpl:
+MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 7). They can not be added to other MCPL files.
+==> read() of the first 7 particles of nan.mcpl:
+==> read() of the first 7 particles of nan2.mcpl:
+==> skip past particle 7, then read() of nan.mcpl:
+==> skip past particle 7, then read() of nan2.mcpl:
+==> read_block() with blocklength 10 of nan.mcpl:
+MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 7). They can not be added to other MCPL files.
+==> read_block() with blocklength 10 of nan2.mcpl:
+MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 7). They can not be added to other MCPL files.
+==> particle_blocks of nan.mcpl:
+MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 7). They can not be added to other MCPL files.
+==> particle_blocks of nan2.mcpl:
+MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 7). They can not be added to other MCPL files.
+==> particles twice of nan.mcpl:
+MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 7). They can not be added to other MCPL files.
+==> particles twice of nan2.mcpl:
+MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 7). They can not be added to other MCPL files.
+==> select (with blocklength 10):
+MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 7). They can not be added to other MCPL files.
+   selected 12 particles
+MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 7). They can not be added to other MCPL files.
+MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 7). They can not be added to other MCPL files.
+collect_stats: MCPLError: Can not calculate statistics for particles with NaN or infinite values
+ParticleFilter("x > 10cm"): MCPLError: The particle field x has NaN or infinite values in expression "x > 10cm"
+ParticleFilter("ekin > 1.2MeV") selects 20
+add_particles(block): MCPLError: add_particles asked to transfer particle with NaN or infinite position
+add_particles(block of finite particles): no error
+add_particles(block,x=...) replacing the NaN: no error
+add_particles(block,time=...) with NaN: MCPLError: add_particles asked to transfer particle with NaN or infinite time
+add_particle(x=inf): MCPLError: attempting to add particle with NaN or infinite position
+   out.mcpl has 49 particles
+MCPL force-merge: Transferring 25 particles from file ok_dp.mcpl
+MCPL force-merge: Transferring 25 particles from file nan.mcpl
+MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 7). They can not be added to other MCPL files.
+forcemerge_files: MCPLError: add_particles asked to transfer particle with NaN or infinite position
+   merged.mcpl exists: False

@@ -206,6 +206,228 @@ mcpltool -j b_dp.mcpl: exit code 0
    |     Endianness         : little
    |     Storage            : 72 bytes/particle
    | 
+mcpltool nan.mcpl: exit code 0
+   | Opened MCPL file nan.mcpl:
+   | 
+   |   Basic info
+   |     Format             : MCPL-3
+   |     No. of particles   : 30
+   |     Header storage     : 133 bytes
+   |     Data storage       : 1080 bytes
+   | 
+   |   Custom meta data
+   |     Source             : "MySim"
+   |     Number of comments : 2
+   |           -> comment 0 : "a comment"
+   |           -> comment 1 : "stat:sum:nsim:                    1000"
+   |     Number of blobs    : 1
+   |           -> 9 bytes of data with key "key1"
+   | 
+   |   Particle data format
+   |     User flags         : no
+   |     Polarisation info  : no
+   |     Fixed part. type   : no
+   |     Fixed part. weight : no
+   |     FP precision       : single
+   |     Endianness         : little
+   |     Storage            : 36 bytes/particle
+   | 
+   | index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+   |     0        2112       0.001           0          -0           0        -0.8           0         0.6           0           1
+   |     1          22       0.002         1.5          -2         0.1         0.6           0         0.8        0.01         1.5
+   |     2          11       0.003           3          -4         0.2        -0.8           0         0.6        0.02           2
+   |     3        2112       0.004         4.5          -6         0.3         0.6           0         0.8        0.03         2.5
+   |     4          22       0.005           6          -8         0.4        -0.8           0         0.6        0.04           3
+   |     5          11       0.006         7.5         -10         0.5         0.6           0         0.8        0.05         3.5
+   |     6        2112       0.007           9         -12         0.6        -0.8           0         0.6        0.06           4
+   |     7          22       0.008        10.5         -14         0.7         0.6           0         0.8        0.07         4.5
+   |     8          11       0.009          12         -16         0.8        -0.8           0         0.6        0.08           5
+   |     9        2112        0.01        13.5         -18         0.9         0.6           0         0.8        0.09         5.5
+mcpltool -n -l0 nan.mcpl: exit code 0
+   | Opened MCPL file nan.mcpl:
+   | index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+   |     0        2112       0.001           0          -0           0        -0.8           0         0.6           0           1
+   |     1          22       0.002         1.5          -2         0.1         0.6           0         0.8        0.01         1.5
+   |     2          11       0.003           3          -4         0.2        -0.8           0         0.6        0.02           2
+   |     3        2112       0.004         4.5          -6         0.3         0.6           0         0.8        0.03         2.5
+   |     4          22       0.005           6          -8         0.4        -0.8           0         0.6        0.04           3
+   |     5          11       0.006         7.5         -10         0.5         0.6           0         0.8        0.05         3.5
+   |     6        2112       0.007           9         -12         0.6        -0.8           0         0.6        0.06           4
+   |     7          22       0.008        10.5         -14         0.7         0.6           0         0.8        0.07         4.5
+   |     8          11       0.009          12         -16         0.8        -0.8           0         0.6        0.08           5
+   |     9        2112        0.01        13.5         -18         0.9         0.6           0         0.8        0.09         5.5
+   |    10          22       0.011          15         -20           1        -0.8           0         0.6         0.1           6
+   |    11          11       0.012        16.5         -22         1.1         0.6           0         0.8        0.11         6.5
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 12). They can not be added to other MCPL files.
+   |    12        2112       0.013         nan         -24         1.2        -0.8           0         0.6        0.12           7
+   |    13          22       0.014        19.5         -26         1.3         0.6           0         0.8        0.13         7.5
+   |    14          11       0.015          21         -28         1.4        -0.8           0         0.6        0.14           8
+   |    15        2112       0.016        22.5         -30         1.5         0.6           0         0.8        0.15         8.5
+   |    16          22       0.017          24         -32         1.6        -0.8           0         0.6        0.16           9
+   |    17          11       0.018        25.5         -34         1.7         0.6           0         0.8        0.17         9.5
+   |    18        2112       0.019          27         -36         1.8        -0.8           0         0.6        0.18          10
+   |    19          22        0.02        28.5         -38         1.9         0.6           0         0.8        0.19        10.5
+   |    20          11       0.021          30         -40           2        -0.8           0         0.6         0.2          11
+   |    21        2112       0.022        31.5         -42         2.1         0.6           0         0.8        0.21        11.5
+   |    22          22       0.023          33         -44         2.2        -0.8           0         0.6        0.22          12
+   |    23          11       0.024        34.5         -46         2.3         0.6           0         0.8        0.23        12.5
+   |    24        2112       0.025          36         -48         2.4        -0.8           0         0.6        0.24          13
+   |    25          22       0.026        37.5         -50         2.5         0.6           0         0.8        0.25        13.5
+   |    26          11       0.027          39         -52         2.6        -0.8           0         0.6        0.26          14
+   |    27        2112       0.028        40.5         -54         2.7         0.6           0         0.8        0.27        14.5
+   |    28          22       0.029          42         -56         2.8        -0.8           0         0.6        0.28          15
+   |    29          11        0.03        43.5         -58         2.9         0.6           0         0.8        0.29        15.5
+mcpltool -s10 -l5 nan.mcpl: exit code 0
+   | Opened MCPL file nan.mcpl:
+   | 
+   |   Basic info
+   |     Format             : MCPL-3
+   |     No. of particles   : 30
+   |     Header storage     : 133 bytes
+   |     Data storage       : 1080 bytes
+   | 
+   |   Custom meta data
+   |     Source             : "MySim"
+   |     Number of comments : 2
+   |           -> comment 0 : "a comment"
+   |           -> comment 1 : "stat:sum:nsim:                    1000"
+   |     Number of blobs    : 1
+   |           -> 9 bytes of data with key "key1"
+   | 
+   |   Particle data format
+   |     User flags         : no
+   |     Polarisation info  : no
+   |     Fixed part. type   : no
+   |     Fixed part. weight : no
+   |     FP precision       : single
+   |     Endianness         : little
+   |     Storage            : 36 bytes/particle
+   | 
+   | index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+   |    10          22       0.011          15         -20           1        -0.8           0         0.6         0.1           6
+   |    11          11       0.012        16.5         -22         1.1         0.6           0         0.8        0.11         6.5
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 12). They can not be added to other MCPL files.
+   |    12        2112       0.013         nan         -24         1.2        -0.8           0         0.6        0.12           7
+   |    13          22       0.014        19.5         -26         1.3         0.6           0         0.8        0.13         7.5
+   |    14          11       0.015          21         -28         1.4        -0.8           0         0.6        0.14           8
+mcpltool -s13 nan.mcpl: exit code 0
+   | Opened MCPL file nan.mcpl:
+   | 
+   |   Basic info
+   |     Format             : MCPL-3
+   |     No. of particles   : 30
+   |     Header storage     : 133 bytes
+   |     Data storage       : 1080 bytes
+   | 
+   |   Custom meta data
+   |     Source             : "MySim"
+   |     Number of comments : 2
+   |           -> comment 0 : "a comment"
+   |           -> comment 1 : "stat:sum:nsim:                    1000"
+   |     Number of blobs    : 1
+   |           -> 9 bytes of data with key "key1"
+   | 
+   |   Particle data format
+   |     User flags         : no
+   |     Polarisation info  : no
+   |     Fixed part. type   : no
+   |     Fixed part. weight : no
+   |     FP precision       : single
+   |     Endianness         : little
+   |     Storage            : 36 bytes/particle
+   | 
+   | index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+   |    13          22       0.014        19.5         -26         1.3         0.6           0         0.8        0.13         7.5
+   |    14          11       0.015          21         -28         1.4        -0.8           0         0.6        0.14           8
+   |    15        2112       0.016        22.5         -30         1.5         0.6           0         0.8        0.15         8.5
+   |    16          22       0.017          24         -32         1.6        -0.8           0         0.6        0.16           9
+   |    17          11       0.018        25.5         -34         1.7         0.6           0         0.8        0.17         9.5
+   |    18        2112       0.019          27         -36         1.8        -0.8           0         0.6        0.18          10
+   |    19          22        0.02        28.5         -38         1.9         0.6           0         0.8        0.19        10.5
+   |    20          11       0.021          30         -40           2        -0.8           0         0.6         0.2          11
+   |    21        2112       0.022        31.5         -42         2.1         0.6           0         0.8        0.21        11.5
+   |    22          22       0.023          33         -44         2.2        -0.8           0         0.6        0.22          12
+mcpltool -n -l0 inf.mcpl: exit code 0
+   | Opened MCPL file inf.mcpl:
+   | index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+   |     0        2112       0.001           0          -0           0        -0.8           0         0.6           0           1
+   |     1          22       0.002         1.5          -2         0.1         0.6           0         0.8        0.01         1.5
+   |     2          11       0.003           3          -4         0.2        -0.8           0         0.6        0.02           2
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 3). They can not be added to other MCPL files.
+   |     3        2112         inf         4.5          -6         0.3         0.6           0         0.8        -inf         2.5
+   |     4          22       0.005           6          -8         0.4        -0.8           0         0.6        0.04           3
+   |     5          11       0.006         7.5         -10         0.5         0.6           0         0.8        0.05         3.5
+   |     6        2112       0.007           9         -12         0.6        -0.8           0         0.6        0.06           4
+   |     7          22       0.008        10.5         -14         0.7         0.6           0         0.8        0.07         4.5
+   |     8          11       0.009          12         -16         0.8        -0.8           0         0.6        0.08           5
+   |     9        2112        0.01        13.5         -18         0.9         0.6           0         0.8        0.09         5.5
+   |    10          22       0.011          15         -20           1        -0.8           0         0.6         0.1           6
+   |    11          11       0.012        16.5         -22         1.1         0.6           0         0.8        0.11         6.5
+   |    12        2112       0.013          18         -24         1.2        -0.8           0         0.6        0.12           7
+   |    13          22       0.014        19.5         -26         1.3         0.6           0         0.8        0.13         7.5
+   |    14          11       0.015          21         -28         1.4        -0.8           0         0.6        0.14           8
+   |    15        2112       0.016        22.5         -30         1.5         0.6           0         0.8        0.15         8.5
+   |    16          22       0.017          24         -32         1.6        -0.8           0         0.6        0.16           9
+   |    17          11       0.018        25.5         -34         1.7         0.6           0         0.8        0.17         9.5
+   |    18        2112       0.019          27         -36         1.8        -0.8           0         0.6        0.18          10
+   |    19          22        0.02        28.5         -38         1.9         0.6           0         0.8        0.19        10.5
+   |    20          11       0.021          30         -40           2        -0.8           0         0.6         0.2          11
+   |    21        2112       0.022        31.5         -42         2.1         0.6           0         0.8        0.21        11.5
+   |    22          22       0.023          33         -44         2.2        -0.8           0         0.6        0.22          12
+   |    23          11       0.024        34.5         -46         2.3         0.6           0         0.8        0.23        12.5
+   |    24        2112       0.025          36         -48         2.4        -0.8           0         0.6        0.24          13
+   |    25          22       0.026        37.5         -50         2.5         0.6           0         0.8        0.25        13.5
+   |    26          11       0.027          39         -52         2.6        -0.8           0         0.6        0.26          14
+   |    27        2112       0.028        40.5         -54         2.7         0.6           0         0.8        0.27        14.5
+   |    28          22       0.029          42         -56         2.8        -0.8           0         0.6        0.28          15
+   |    29          11        0.03        43.5         -58         2.9         0.6           0         0.8        0.29        15.5
+mcpltool -j nan.mcpl: exit code 0
+   | Opened MCPL file nan.mcpl:
+   | 
+   |   Basic info
+   |     Format             : MCPL-3
+   |     No. of particles   : 30
+   |     Header storage     : 133 bytes
+   |     Data storage       : 1080 bytes
+   | 
+   |   Custom meta data
+   |     Source             : "MySim"
+   |     Number of comments : 2
+   |           -> comment 0 : "a comment"
+   |           -> comment 1 : "stat:sum:nsim:                    1000"
+   |     Number of blobs    : 1
+   |           -> 9 bytes of data with key "key1"
+   | 
+   |   Particle data format
+   |     User flags         : no
+   |     Polarisation info  : no
+   |     Fixed part. type   : no
+   |     Fixed part. weight : no
+   |     FP precision       : single
+   |     Endianness         : little
+   |     Storage            : 36 bytes/particle
+   | 
+mcpltool --extract nan.mcpl out.mcpl: exit code 1
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 12). They can not be added to other MCPL files.
+   | MCPL ERROR: add_particles asked to transfer particle with NaN or infinite position
+mcpltool --extract -l12 nan.mcpl out.mcpl: exit code 0
+   | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
+   | MCPL: Successfully extracted 12 / 30 particles from nan.mcpl into out.mcpl
+mcpltool --extract -p22 nan.mcpl out.mcpl: exit code 0
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 12). They can not be added to other MCPL files.
+   | MCPL: Successfully extracted 10 / 30 particles from nan.mcpl into out.mcpl
+mcpltool --extract -p2112 inf.mcpl out.mcpl: exit code 1
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 3). They can not be added to other MCPL files.
+   | MCPL ERROR: add_particles asked to transfer particle with NaN or infinite kinetic energy
+mcpltool --merge out.mcpl a1.mcpl nan.mcpl inf.mcpl: exit code 0
+mcpltool --merge --inplace a2.mcpl nan.mcpl: exit code 0
+mcpltool --forcemerge out.mcpl b_dp.mcpl nan.mcpl: exit code 1
+   | MCPL force-merge: Transferring 12 particles from file b_dp.mcpl
+   | MCPL force-merge: Transferring 30 particles from file nan.mcpl
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 12). They can not be added to other MCPL files.
+   | MCPL ERROR: add_particles asked to transfer particle with NaN or infinite position
+mcpltool --repair nan.mcpl: exit code 1
+   | MCPL ERROR: File does not appear to be broken.
 pymcpltool --extract a1.mcpl out.mcpl --select pdgcode == neutron: MCPL: Successfully extracted 10 / 30 particles from a1.mcpl into out.mcpl
    same as with the Python API: True
 pymcpltool --extract a1.mcpl out.mcpl --select ekin > 5keV && ekin <= 20keV && x <= 2cm + abs(y): MCPL: Successfully extracted 15 / 30 particles from a1.mcpl into out.mcpl
@@ -337,4 +559,4 @@ pymcpltool --extract -l5: stat:sum:nsim = None
 pymcpltool --extract -s1 --select x > 0: stat:sum:nsim = None
    | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
    | MCPL: Successfully extracted 29 / 30 particles from a1.mcpl into out.mcpl
-Compared 53 command lines with mcpltool
+Compared 67 command lines with mcpltool
