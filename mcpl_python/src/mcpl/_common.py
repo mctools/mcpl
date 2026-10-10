@@ -31,7 +31,7 @@ import sys
 
 def _checkpyversion():
     pyversion = sys.version_info[0:3]
-    _minpyv=(3,8,0)
+    _minpyv=(3,9,0)
     if pyversion < _minpyv:
         a = '.'.join(str(i) for i in pyversion)
         b = '.'.join(str(i) for i in _minpyv)
