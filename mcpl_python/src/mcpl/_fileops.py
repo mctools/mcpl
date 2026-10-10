@@ -37,21 +37,27 @@ __all__ = [
 import os
 
 from ._common import MCPLError, _determine_version
+from ._expressions import _as_filter
 from ._messages import _info, _warning
 from ._reader import MCPLFile
 from ._statsum import _parse_statsum_comment, _statsum_syntax_error, encode_stat_sum
 from ._writer import MCPLOutFile
 
 
-def dump_file(filename,header=True,particles=True,limit=10,skip=0,**kwargs):
+def dump_file(filename,header=True,particles=True,limit=10,skip=0,select=None,**kwargs):
     """Python equivalent of mcpl_dump(..) function from mcpl.h, which can be used to
-    dump both header and particle contents of a file to stdout."""
+    dump both header and particle contents of a file to stdout. If select is
+    given (an expression or a ParticleFilter), only the selected particles are
+    shown."""
     f = MCPLFile(filename,**kwargs)
     print(f"Opened MCPL file {os.path.basename(filename)}:")
     if header:
         f.dump_hdr()
     if particles:
-        f.dump_particles(limit=limit,skip=skip)
+        if select is not None:
+            print(f"Showing particles selected with: {_as_filter(select).expression}")
+            print()
+        f.dump_particles(limit=limit,skip=skip,select=select)
 
 def convert2ascii(mcplfile,outfile):
     """Read particle contents of mcplfile and write into outfile using a simple ASCII-based format"""

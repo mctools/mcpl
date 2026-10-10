@@ -395,3 +395,67 @@ class MCPLParticleBlock:
         self._uy *= n
         self._uz *= n
         self._uz = np.where(np.signbit(self._data['uve3']),0.0,self._uz)
+
+_block_fields = ( 'x', 'y', 'z', 'ux', 'uy', 'uz', 'polx', 'poly', 'polz',
+                  'ekin', 'time', 'weight', 'pdgcode', 'userflags' )
+
+class _EditedParticleBlock(MCPLParticleBlock):
+    """Block of particles where some fields have new values (from a
+    ParticleEdit). The other fields come from the packed particle data, which
+    is still transferred exactly by MCPLOutFile.add_particles."""
+    def __init__(self, base, edits):
+        super().__init__(*base._ctor_args)
+        self._set_data(base._data,base._offset)
+        self._indices = base._indices
+        n = len(base)
+        self._edits = dict(getattr(base,'_edits',{}))
+        self._edits.update( (k,np.broadcast_to(np.asarray(v),(n,))) for k,v in edits.items() )
+    def __getitem__(self,ipos):
+        if isinstance(ipos,(int,np.integer)):
+            return super().__getitem__(ipos)
+        base = super().__getitem__(ipos)
+        return _EditedParticleBlock(base,{ k : v[ipos] for k,v in self._edits.items() })
+    @property
+    def position(self):
+        return np.stack((self.x,self.y,self.z),axis=1)
+    @property
+    def direction(self):
+        return np.stack((self.ux,self.uy,self.uz),axis=1)
+    @property
+    def polarisation(self):
+        return np.stack((self.polx,self.poly,self.polz),axis=1)
+
+def _edited_field(name):
+    def get(self):
+        if name in self._edits:
+            return self._edits[name]
+        return getattr(MCPLParticleBlock,name).fget(self)
+    return property(get,doc=getattr(MCPLParticleBlock,name).__doc__)
+for _f in _block_fields:
+    setattr(_EditedParticleBlock,_f,_edited_field(_f))
+del _f
+
+def _concat_blocks(blocks):
+    """Merge blocks (without edits) of particles from the same file"""
+    if len(blocks) == 1:
+        return blocks[0]
+    res = MCPLParticleBlock(*blocks[0]._ctor_args)
+    res._set_data(np.concatenate([ b._data for b in blocks ]),9223372036854775807)
+    res._indices = np.concatenate([ b.file_indices for b in blocks ])
+    return res
+
+class _ArrayBlock:
+    """Block-like object with particle fields given as arrays (for selecting
+    and editing particles added to MCPLOutFile as arrays)."""
+    def __init__(self, cols, n, defaults):
+        self._n = n
+        for f in _block_fields:
+            v = cols.get(f)
+            if v is None:
+                v = defaults.get(f,0)
+            setattr(self,f,np.broadcast_to(np.asarray(v),(n,)))
+    def __len__(self):
+        return self._n
+    @property
+    def wavelength(self):
+        return wavelength_from_ekin(self.ekin,self.pdgcode)

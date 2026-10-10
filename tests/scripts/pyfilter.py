@@ -22,9 +22,9 @@
 
 # NEEDS: numpy
 
-# Test selection and editing of particles with expressions in the Python API
-# (ParticleFilter and ParticleEdit), and the python examples about selecting
-# and editing particles.
+# Test selection and editing of particles with expressions in the Python API:
+# ParticleFilter and ParticleEdit, dump_file and collect_stats with a
+# selection, and the python examples using them.
 
 import pathlib
 import sys
@@ -173,6 +173,15 @@ def test_examples():
     for fn in ('neutrons.mcpl','gammas.mcpl'):
         assert pathlib.Path(fn).is_file()
 
+def test_dump_and_stats():
+    mcpl.dump_file(example_file, header=False, limit=4, skip=1,
+                   select='pdgcode == gamma && ekin > 1MeV')
+    mcpl.dump_stats(mcpl.collect_stats(example_file, select='pdgcode == neutron && ekin < 1MeV',
+                                       bin_data=False))
+    s = mcpl.collect_stats(example_file, select=mcpl.ParticleFilter('x > 1km'))
+    print(f'stats for no selected particles: {s}')
+
 if __name__ == '__main__':
     test_expressions()
     test_examples()
+    test_dump_and_stats()

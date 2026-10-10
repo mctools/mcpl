@@ -1,0 +1,48 @@
+select=ParticleFilter('pdgcode == neutron') edit=None nparticles=1006
+block lengths with blocklength=100: [185, 188, 179, 168, 6]
+first particle after rewind: 3
+skip_forward: skip_forward can not be used with files opened with select or edit
+edited block (_EditedParticleBlock) as expected: True
+selection from edited block: 81 particles, as expected: True
+particle 14: z=120 x=-22.5224 y=-6.54176
+Opened MCPL file example.mcpl:
+Showing particles selected with: pdgcode == gamma
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0          22      1.2635           0    -0.81223          20    -0.41453   -0.022799     0.90975  7.3389e-07           1
+    1          22      2.6273           0      10.196          20   0.0031473     0.75937     0.65065  8.6567e-07           1
+   46          22      1.7843           0     0.78225          20   -0.034013   -0.088335     0.99551  1.0907e-06           1
+------------------------------------------------------------------------------
+selection    : (pdgcode == neutron) && (ekin < 1MeV)
+edit         : z += 1m
+nparticles   : 466
+sum(weights) : 466
+------------------------------------------------------------------------------
+             :            mean             rms             min             max
+------------------------------------------------------------------------------
+ekin   [MeV] :        0.353984         0.26353      0.00139345        0.997896
+x       [cm] :      -0.0177799          15.783        -60.0882         65.8944
+y       [cm] :         4.06901          14.971        -52.1726         57.6935
+z       [cm] :             120               0             120             120
+ux           :      0.00643447         0.51237       -0.994109        0.993176
+uy           :      -0.0167063         0.48608       -0.994904        0.979886
+uz           :        0.665826         0.23991       0.0794396        0.999233
+time    [ms] :     0.000102071       0.0001415     1.62966e-06      0.00166018
+weight       :               1               0               1               1
+polx         :               0               0               0               0
+poly         :               0               0               0               0
+polz         :               0               0               0               0
+------------------------------------------------------------------------------
+pdgcode      :        2112 (n)                   466 (100.00%)
+                     [ values ]             [ weighted counts ]
+------------------------------------------------------------------------------
+userflags    :           0 (0x00000000)          466 (100.00%)
+                     [ values ]             [ weighted counts ]
+------------------------------------------------------------------------------
+edited blocks written like explicit field values: True
+MCPLOutFile with select and edit gives the same: True True
+fields then selection and edit: 239 particles, weights {2.0}, pdgcodes {22}
+arrays: ekin=[1.5 2.5 3. ] weight=[2. 2. 2.] x=[2. 2. 2.] pdgcode=[2112 2112   22]
+MCPLOutFile({'select': 'x > 2'}): Incompatible units in comparison: length and value without units (add units, e.g. 2cm) in expression "x > 2"
+MCPLOutFile({'edit': 'x = 2'}): Can not assign value without units to x, which is a length (add units, e.g. 2cm), in expression "x = 2"
+MCPLOutFile({'select': 'wavelength > 1Aa'}): The wavelength is only defined for neutrons and gammas, so select those before using it, e.g. "pdgcode == neutron && wavelength > 1.8Aa" (in expression "wavelength > 1Aa")
