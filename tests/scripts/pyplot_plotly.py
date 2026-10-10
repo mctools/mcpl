@@ -22,8 +22,8 @@
 
 # NEEDS: numpy plotly
 
-# Test that the plotly plotting backend can save plots of statistics (as HTML
-# files).
+# Test that the plotly plotting backend can save plots of statistics and
+# histograms (as HTML files).
 
 import pathlib
 
@@ -34,11 +34,16 @@ example_file = test_data_dir.parent.parent.joinpath('examples','example.mcpl')
 
 files = mcpl.plot_stats(mcpl.collect_stats(example_file), backend='plotly',
                         filename='stats.html')
+files += mcpl.histogram(example_file, 'ekin/MeV', logx=True,
+                        split='pdgcode').plot(backend='plotly', filename='ekin.html',
+                                              logy=True)
+files += mcpl.histogram2d(example_file, 'x/cm', 'y/cm').plot(backend='plotly',
+                                                             filename='xy.html')
 for f in files:
     text = pathlib.Path(f).read_text(encoding='utf-8')
     assert 'plotly' in text.lower() and len(text) > 10000
     print(f'created {f}')
 try:
-    mcpl.plot_stats(mcpl.collect_stats(example_file), backend='plotly', filename='stats.foo')
+    mcpl.histogram(example_file, 'x/cm').plot(backend='plotly', filename='x.foo')
 except mcpl.MCPLError as e:
     print(e if 'html' in str(e) else 'unexpected error message')

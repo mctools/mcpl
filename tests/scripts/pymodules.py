@@ -58,6 +58,7 @@ layers = {
     '_plotbackend_plotly' : 8,
     '_plotbackend_test' : 8,
     '_stats' : 8,
+    '_histogram' : 8,
     '_cli' : 9,
     '__init__' : top,
     '__main__' : top,

@@ -47,6 +47,8 @@ agreement No 676548 (the BrightnESS project)
 """
 
 __all__ = [
+            'Histogram',
+            'Histogram2D',
             'MCPLError',
             'MCPLFile',
             'MCPLOutFile',
@@ -66,11 +68,14 @@ __all__ = [
             'encode_stat_sum',
             'forcemerge_files',
             'gzip_file',
+            'histogram',
+            'histogram2d',
             'is_valid_stat_sum_key',
             'merge_files',
             'merge_inplace',
             'merge_outfiles_mpi',
             'name_helper',
+            'plot_histograms',
             'plot_stats',
             'plotting',
             'repair',
@@ -96,6 +101,13 @@ from ._fileops import (
             merge_outfiles_mpi,
             name_helper,
             repair,
+)
+from ._histogram import (
+            Histogram,
+            Histogram2D,
+            histogram,
+            histogram2d,
+            plot_histograms,
 )
 from ._messages import use_logging
 from ._reader import MCPLFile

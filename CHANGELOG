@@ -95,6 +95,13 @@ v2.2.9  (work in progress)
         backend, e.g. .pdf or .png), and the figures can also be obtained with
         the new stats_figures function. The pdf argument of plot_stats is
         deprecated (use filename instead).
+      * New histogram API: histograms of values given by expressions, e.g.
+        mcpl.histogram(FILE,"ekin/eV",lethargy=True).plot(), with options for
+        selections, logarithmic axes, separate curves for each particle type
+        (split="pdgcode") or file, 2D histograms (mcpl.histogram2d), and
+        printing the contents as text. mcpl.plot_histograms shows or saves
+        several histograms, also on top of each other in one plot with
+        overlay=True (e.g. to compare simulations).
       * mcpltool --extract no longer leaves a broken output file behind when
         given an invalid -p argument.
       * ssw2mcpl and phits2mcpl no longer leave an unfinished output file behind
