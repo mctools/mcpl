@@ -48,6 +48,7 @@ layers = {
     '_physics' : 1,
     '_statsum' : 1,
     '_blocks' : 2,
+    '_expressions' : 2,
     '_reader' : 3,
     '_writer' : 4,
     '_fileops' : 5,
@@ -119,7 +120,7 @@ def main():
             else:
                 assert layers[i] < layers[name], ( f'{name} (layer {layers[name]})'
                                                    f' imports {i} (layer {layers[i]})' )
-        print(f'  layer {layername(name):>3} : {name:<10} <- {", ".join(sorted(internal)) or "-"}')
+        print(f'  layer {layername(name):>3} : {name:<20} <- {", ".join(sorted(internal)) or "-"}')
 
     for ext, allowed in allowed_external_imports.items():
         users = external_users.get(ext,set())
@@ -147,7 +148,7 @@ def main():
                                                f'{sorted(expected-set(mcpldev.__all__))}' )
     print(f'mcpl.__all__ has {len(mcpldev.__all__)} names, provided by:')
     for name in sorted(set(public_names.values()), key=lambda n: (layers[n], n)):
-        print(f'  {name:<10} : {", ".join(sorted(n for n,m in public_names.items() if m == name))}')
+        print(f'  {name:<20} : {", ".join(sorted(n for n,m in public_names.items() if m == name))}')
 
 if __name__ == '__main__':
     main()

@@ -49,6 +49,19 @@ v2.2.9  (work in progress)
         results are identical on all platforms. Previously they could differ in
         the last bit, depending on whether the compiler used fused multiply-add
         instructions.
+      * Particles can now be selected and edited with expressions in the Python
+        API, with the new ParticleFilter and ParticleEdit classes, e.g.
+        ParticleFilter("pdgcode == neutron && wavelength > 1.8Aa") or
+        ParticleEdit("rotate_z(90deg), z += 1cm"), which are applied to blocks
+        of particles. Values with units must always be given with units (like
+        25meV, 0.18nm or 1us, but a plain 0 is fine), and expressions with
+        missing or inconsistent units are rejected. The wavelength can only be
+        used for neutrons and gammas, which must be selected first (as in
+        "pdgcode == neutron && wavelength > 1.8Aa"). Edits are executed in
+        order, and can use variables (e.g. "tmp = x, x = y, y = tmp"),
+        swap(a,b), and rotations. ParticleValue gives the values of an
+        expression. See also the new examples pyexample_filtermcpl and
+        pyexample_editmcpl.
       * mcpltool --extract no longer leaves a broken output file behind when
         given an invalid -p argument.
       * ssw2mcpl and phits2mcpl no longer leave an unfinished output file behind
