@@ -274,7 +274,7 @@ test_stats(file1,stats=['userflags'],bin_data=True)
 test_stats(test_data_dir.joinpath('ref','reffile_empty.mcpl'),
            stats=['x','y'],bin_data=True)
 
-mcpl.plot_stats(fewstats,pdf='lala.pdf',set_backend='agg')
+mcpl.plot_stats(fewstats,filename='lala.pdf',set_backend='agg')
 test_stats(test_data_dir.joinpath('ref','reffile_uw.mcpl.gz'))
 test_stats(file1,stats=[])
 test_stats(file1,stats=['blabla'])

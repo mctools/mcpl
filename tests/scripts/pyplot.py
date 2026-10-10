@@ -22,16 +22,42 @@
 
 # NEEDS: numpy matplotlib
 
-# Test that plot_stats and the matplotlib plotting backend can create files.
+# Test the statistics collected for the overview page of plot_stats, that
+# plot_stats works for all reference files, and that the matplotlib plotting
+# backend can create PNG files.
 
 import pathlib
 
 import mcpldev as mcpl
+import numpy as np
 from MCPLTestUtils.dirs import test_data_dir
 
 example_file = test_data_dir.parent.parent.joinpath('examples','example.mcpl')
 
-def test_plot_stats():
+def check_overview(fn, select=None):
+    s = mcpl.collect_stats(fn, select=select)
+    ov = s['overview']
+    integral = s['file']['integral']
+    print(f'{pathlib.Path(fn).name} (selection: {select}): {s["file"]["nparticles"]} particles,'
+          f' ekin bins log: {ov["ekin_log"]}, time bins log: {ov["time_log"]}')
+    for k, h in ov['ekin'].items():
+        print(f'   ekin hist of {k}: sum {h.sum():g}, theta hist sum {ov["theta"][k].sum():g}')
+    for k, h in ov['wl'].items():
+        print(f'   wavelength hist of {k}: sum {h.sum():g}')
+    tot = sum(h.sum() for h in ov['ekin'].values())
+    assert np.isclose(tot, integral)
+    assert np.isclose(sum(h.sum() for h in ov['theta'].values()), integral)
+    assert np.isclose(ov['time'].sum(), integral)
+    for k, h in ov['wl'].items():
+        assert np.isclose(h.sum(), ov['ekin'][k].sum())
+    xyout = s['x']['hist_outside'] + s['y']['hist_outside']
+    print(f'   xy hist sum {ov["xy"].sum():g} (weight outside x or y range: {xyout:g})')
+    assert ov['xy'].sum() <= integral and ov['xy'].sum() >= integral - xyout - 1e-9
+    for v in ('ekin','x','time'):
+        print(f'   {v} weight outside plot range: {s[v]["hist_outside"]:g}')
+    return s
+
+def test_plots():
     import matplotlib
     matplotlib.use('agg')
     files = sorted( f for f in test_data_dir.joinpath('ref').glob('*.mcpl*')
@@ -43,18 +69,20 @@ def test_plot_stats():
             if not mf.nparticles:
                 continue
         pdf = f'plots_{i}.pdf'
-        mcpl.plot_stats(mcpl.collect_stats(f), pdf=pdf)
+        mcpl.plot_stats(mcpl.collect_stats(f), filename=pdf)
         assert pathlib.Path(pdf).stat().st_size > 1000
         print(f'plot_stats ok for {f.name}')
 
 def test_png():
-    from mcpldev._stats import _stats_figures
-    figs = _stats_figures(example_file)[:3]
+    figs = mcpl.stats_figures(example_file)[:3]
     files = mcpl.plotting.save(figs, 'stats.png', backend='matplotlib', mpl_backend='agg')
     for f in files:
         assert pathlib.Path(f).read_bytes()[:4] == b'\x89PNG'
     print(f'Created {files}')
 
-if __name__ == '__main__':
-    test_plot_stats()
-    test_png()
+check_overview(example_file)
+check_overview(example_file, 'pdgcode == neutron && ekin < 1MeV')
+check_overview(example_file, 'pdgcode == gamma')
+check_overview(test_data_dir.joinpath('ref','reffile_1.mcpl'))
+test_plots()
+test_png()

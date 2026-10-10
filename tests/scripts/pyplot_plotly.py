@@ -22,22 +22,23 @@
 
 # NEEDS: numpy plotly
 
-# Test that the plotly plotting backend can save plots (as HTML files).
+# Test that the plotly plotting backend can save plots of statistics (as HTML
+# files).
 
 import pathlib
 
 import mcpldev as mcpl
-from mcpldev._stats import _stats_figures
 from MCPLTestUtils.dirs import test_data_dir
 
 example_file = test_data_dir.parent.parent.joinpath('examples','example.mcpl')
 
-files = mcpl.plotting.save(_stats_figures(example_file), 'stats.html', backend='plotly')
+files = mcpl.plot_stats(mcpl.collect_stats(example_file), backend='plotly',
+                        filename='stats.html')
 for f in files:
     text = pathlib.Path(f).read_text(encoding='utf-8')
     assert 'plotly' in text.lower() and len(text) > 10000
     print(f'created {f}')
 try:
-    mcpl.plotting.save(_stats_figures(example_file), 'stats.foo', backend='plotly')
+    mcpl.plot_stats(mcpl.collect_stats(example_file), backend='plotly', filename='stats.foo')
 except mcpl.MCPLError as e:
     print(e if 'html' in str(e) else 'unexpected error message')

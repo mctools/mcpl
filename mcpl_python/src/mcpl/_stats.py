@@ -21,17 +21,28 @@
 
 """Statistics of the particles in MCPL files."""
 
-__all__ = ['collect_stats', 'dump_stats', 'plot_stats']
+__all__ = ['collect_stats', 'dump_stats', 'plot_stats', 'stats_figures']
 
 import os
+import warnings
 
 from ._common import MCPLError
 from ._expressions import _as_filter
 from ._messages import _warning
 from ._numpy import _np_add_at, np, np_dtype, np_unique
-from ._physics import _pdg_database
+from ._physics import _pdg_database, wavelength_from_ekin
 from ._reader import MCPLFile
-from .plotting import Bars, Figure, Panel, StepHist, save, show
+from .plotting import (
+    Bars,
+    Figure,
+    Hist2D,
+    Panel,
+    StepHist,
+    Text,
+    available_backends,
+    save,
+    show,
+)
 
 
 class _SelectedFile:
@@ -53,6 +64,7 @@ class _SelectedFile:
     def particle_blocks(self):
         for b in self._f.particle_blocks:
             yield b[self._flt(b)] if self._flt is not None else b
+
 
 def _unique_count(a,weights=None):
     """returns (unique,count) where unique is an array of sorted unique values in a, and count is the corresponding frequency counts"""
@@ -127,6 +139,79 @@ class _StatCollector:
 
 _possible_std_stats = ['ekin','x','y','z','ux','uy','uz','time','weight','polx','poly','polz']
 _possible_freq_stats = ['pdgcode','userflags']
+
+class _Overview:
+    """Collects histograms for the overview page of plot_stats: kinetic
+    energies, wavelengths and polar angles (to the z axis) by particle type,
+    positions in the x-y plane, and times."""
+    maxtypes = 50#further types are merged into 'other'
+    def __init__(self,collected_stats,ranges,nbins):
+        needed = ('ekin','x','y','uz','time')
+        self.enabled = all( s in collected_stats for s in needed )
+        if not self.enabled:
+            return
+        self.nbins = nbins
+        self.ekin_bins, self.ekin_log = self._bins(collected_stats['ekin'])
+        self.time_bins, self.time_log = self._bins(collected_stats['time'])
+        self.theta_bins = np.linspace(0.0,180.0,91)
+        self.wl_bins = {}
+        if self.ekin_log:
+            for pdg in (2112,22):
+                self.wl_bins[pdg] = np.sort(wavelength_from_ekin(self.ekin_bins,pdg))
+        self.xy_range = [ranges['x'],ranges['y']]
+        self.ekin, self.theta, self.wl, self.sumw = {}, {}, {}, {}
+        self.time = np.zeros(len(self.time_bins)-1)
+        self.xy = np.zeros((80,80))
+    @staticmethod
+    def _bins(sc):
+        """Bins covering all values, logarithmic for positive values spanning
+        more than two decades."""
+        vmin, vmax = sc['min'], sc['max']
+        if vmin > 0.0 and vmax > 100.0 * vmin:
+            return np.geomspace(vmin,vmax,101), True
+        if not vmin < vmax:
+            vmin, vmax = vmin - 1.0, vmax + 1.0
+        return np.linspace(vmin,vmax,101), False
+    def _key(self,pdg):
+        return pdg if ( pdg in self.ekin or len(self.ekin) < self.maxtypes ) else None
+    def add(self,pb):
+        w = pb.weight
+        self.time += np.histogram(pb.time,bins=self.time_bins,weights=w)[0]
+        self.xy += np.histogram2d(pb.x,pb.y,bins=80,range=self.xy_range,weights=w)[0]
+        pdgs = pb.pdgcode
+        theta = np.degrees(np.arccos(np.clip(pb.uz,-1.0,1.0)))
+        ekin = pb.ekin
+        for pdg in np.unique(pdgs):
+            m = pdgs == pdg
+            key = self._key(int(pdg))
+            if key not in self.ekin:
+                self.ekin[key] = np.zeros(len(self.ekin_bins)-1)
+                self.theta[key] = np.zeros(len(self.theta_bins)-1)
+                self.sumw[key] = 0.0
+            wm = w[m]
+            self.sumw[key] += float(wm.sum())
+            self.ekin[key] += np.histogram(ekin[m],bins=self.ekin_bins,weights=wm)[0]
+            self.theta[key] += np.histogram(theta[m],bins=self.theta_bins,weights=wm)[0]
+            if key in self.wl_bins:
+                h = np.histogram(wavelength_from_ekin(ekin[m],key),
+                                 bins=self.wl_bins[key],weights=wm)[0]
+                self.wl[key] = self.wl.get(key,0.0) + h
+    def result(self,ntypes=5):
+        #Show the ntypes most common types, and merge the rest into 'other':
+        keys = sorted(self.sumw,key=lambda k : (-self.sumw[k],str(k)))
+        shown, rest = keys[:ntypes], keys[ntypes:]
+        def merged(hists):
+            res = { k : hists[k] for k in shown if k is not None }
+            if rest or None in shown:
+                res['other'] = sum( hists[k] for k in rest + [ k for k in shown if k is None ] )
+            return res
+        return { 'ekin_bins' : self.ekin_bins, 'ekin_log' : self.ekin_log,
+                 'ekin' : merged(self.ekin),
+                 'theta_bins' : self.theta_bins, 'theta' : merged(self.theta),
+                 'wl_bins' : self.wl_bins, 'wl' : self.wl,
+                 'time_bins' : self.time_bins, 'time_log' : self.time_log,
+                 'time' : self.time,
+                 'xy' : self.xy, 'xy_range' : self.xy_range }
 
 def collect_stats(mcplfile,stats='all',bin_data=True,select=None):
     """Efficiently collect statistics from an entire file. Returns dictionary
@@ -210,6 +295,10 @@ def collect_stats(mcplfile,stats='all',bin_data=True,select=None):
             ranges[s] = (ranges[s][0]-1.0,ranges[s][1]+1.0)
 
     hists={}
+    outside={}
+    ov = _Overview(collected_stats,ranges,nbins) if bin_data else None
+    if ov and not ov.enabled:
+        ov = None
     freq_uc={s: (np.asarray([],dtype=int),np.asarray([],dtype=float)) for s in freq_stats}
     if (std_stats and bin_data) or freq_stats:
         #pass through and collect data:
@@ -229,12 +318,18 @@ def collect_stats(mcplfile,stats='all',bin_data=True,select=None):
                 freq_stats.remove(s)
             for s in (std_stats if bin_data else []):
                 vals = getattr(pb,s) if s!='weight' else vals_weight
+                w = None if s=='weight' else vals_weight
                 h,bins = np.histogram(vals, bins=nbins, range=ranges[s],
-                                      weights=(None if s=='weight' else vals_weight))
+                                      weights=w)
                 if s in hists:
                     hists[s][0] += h
                 else:
                     hists[s] = [ h, bins ]
+                out = ( vals < ranges[s][0] ) | ( vals > ranges[s][1] )
+                outside[s] = outside.get(s,0.0) + float( np.count_nonzero(out)
+                                                         if w is None else w[out].sum() )
+            if ov:
+                ov.add(pb)
             if weight_sum is None:
                 sumw += pb.weight.sum()
         if weight_sum is None:
@@ -293,7 +388,10 @@ def collect_stats(mcplfile,stats='all',bin_data=True,select=None):
         freq_uc[s] = u[sortidx],c[sortidx]
 
     results = { 'file':{'type':'fileinfo','integral':weight_sum,'nparticles':mcplfile.nparticles,
-                        'stat_sum':dict(mcplfile.stat_sum)} }
+                        'stat_sum':dict(mcplfile.stat_sum),
+                        'filename':os.path.basename(os.fsdecode(mcplfile._filename))} }
+    if ov:
+        results['overview'] = ov.result()
     if isinstance(mcplfile,_SelectedFile):
         if mcplfile.selection:
             results['file']['selection'] = mcplfile.selection
@@ -314,7 +412,8 @@ def collect_stats(mcplfile,stats='all',bin_data=True,select=None):
         if bin_data:
             h,bins = hists[s]
             d.update({'hist_bins' : bins,
-                      'hist' : h})
+                      'hist' : h,
+                      'hist_outside' : outside.get(s,0.0)})
         results[s] = d
 
     return results
@@ -378,12 +477,85 @@ def dump_stats(stats):
         print ('                     [ values ]             [ weighted counts ]')
     print('------------------------------------------------------------------------------')
 
-def _stats_figures(stats):
+def _type_label(k):
+    if k == 'other':
+        return 'other'
+    descr = _pdg_database(k)
+    return f'{descr} ({k})' if descr else str(k)
+
+def _overview_figure(stats):
+    """Overview page with energy, wavelength and angle distributions by
+    particle type, the x-y distribution, and times."""
+    ov = stats['overview']
+    info = stats['file']
+    title = f"{info.get('filename','')}: {info['nparticles']} particles, sum(weights) = {info['integral']:g}"
+    if info.get('selection'):
+        title += f"\nselection: {info['selection']}"
+    if info.get('edit'):
+        title += f"\nedit: {info['edit']}"
+    fig = Figure( title = title, nrows = 2, ncols = 3 )
+    #Same colour for each particle type in all plots:
+    colors = { k : i for i,k in enumerate(ov['ekin']) }
+    def steps(panel,bins,hists):
+        for k,h in hists.items():
+            if h.any():
+                panel.add(StepHist(bins,h,label=_type_label(k),color=colors.get(k)))
+    def nonzero_range(bins,hists):
+        nz = np.flatnonzero(sum(h for h in hists))
+        return ( bins[nz[0]], bins[nz[-1]+1] ) if len(nz) else None
+    p = fig.add(Panel( title = 'Kinetic energy (weighted)', xlabel = 'ekin [MeV]',
+                       logx = ov['ekin_log'], logy = True,
+                       xlim = nonzero_range(ov['ekin_bins'],ov['ekin'].values()) ))
+    steps(p,ov['ekin_bins'],ov['ekin'])
+    p = fig.add(Panel( title = 'Wavelength of neutrons and gammas (weighted)',
+                       xlabel = 'wavelength [Aa]', logx = True ))
+    if ov['wl']:
+        lo, hi = [], []
+        for k in sorted(ov['wl'],key=lambda k : colors.get(k,len(colors))):
+            h, bins = ov['wl'][k], ov['wl_bins'][k]
+            p.add(StepHist(bins,h,label=_type_label(k),color=colors.get(k)))
+            r = nonzero_range(bins,[h])
+            if r:
+                lo.append(r[0])
+                hi.append(r[1])
+        if lo:
+            p.xlim = ( min(lo), max(hi) )
+    else:
+        p.logx = False
+        p.add(Text('No neutrons or gammas' if ov['ekin_log'] else 'Not available'))
+    p = fig.add(Panel( title = 'Direction (weighted)',
+                       xlabel = 'angle to z axis [degrees]', logy = True,
+                       xlim = ( 0.0, 180.0 ) ))
+    steps(p,ov['theta_bins'],ov['theta'])
+    (x0,x1),(y0,y1) = ov['xy_range']
+    p = fig.add(Panel( title = 'Position (weighted)', xlabel = 'x [cm]',
+                       ylabel = 'y [cm]' ))
+    nb = ov['xy'].shape
+    p.add(Hist2D(np.linspace(x0,x1,nb[0]+1),np.linspace(y0,y1,nb[1]+1),ov['xy']))
+    p = fig.add(Panel( title = 'Time (weighted)', xlabel = 'time [ms]',
+                       logx = ov['time_log'], logy = True ))
+    p.add(StepHist(ov['time_bins'],ov['time']))
+    p = fig.add(Panel( title = 'Particle types (weighted)' ))
+    if 'pdgcode' in stats:
+        u,c = stats['pdgcode']['unique_values'], stats['pdgcode']['unique_values_counts']
+        n = min(len(u),10)
+        labels = [ _type_label(int(e)) for e in u[:n] ]
+        counts = list(c[:n])
+        if len(u) > n:
+            labels[-1], counts[-1] = 'other', c[n-1:].sum()
+        p.add(Bars(labels,counts,horizontal=True))
+        p.logx = max(counts) > 100 * min(counts)
+    return fig
+
+def stats_figures(stats):
     """Figures (see mcpl.plotting) with plots of the statistics collected with
-    collect_stats() (or a file, for which collect_stats() is called)."""
+    collect_stats() (or a file, for which collect_stats() is called): an
+    overview page, and a page for each field."""
     if not isinstance(stats,dict):
         stats = collect_stats(stats,bin_data=True)
     figures = []
+    if 'overview' in stats:
+        figures.append(_overview_figure(stats))
     showmax=10
     for s in _possible_freq_stats:
         if s not in stats:
@@ -409,30 +581,43 @@ def _stats_figures(stats):
             continue
         h=stats[s]
         hist,bins = h['hist'],h['hist_bins']
+        xlabel = h['summary']
+        if h.get('hist_outside') and stats['file']['integral']:
+            frac = h['hist_outside'] / stats['file']['integral']
+            xlabel += f'\n({100.0*frac:.3g}% of {"weights" if h["weighted"] else "particles"} outside plot range)'
         title = '{}{} ({})'.format(s,
                                    ' [{}]'.format(h['unit']) if h['unit'] is not None else '',
                                    'weighted' if h['weighted'] else 'unweighted')
-        figures.append(Figure( panels = [ Panel( title = title, xlabel = h['summary'],
+        figures.append(Figure( panels = [ Panel( title = title, xlabel = xlabel,
                                                  xlim = ( bins[0], bins[-1] ),
                                                  items = [ StepHist(bins,hist) ] ) ] ))
     return figures
 
-def plot_stats(stats,pdf=False,set_backend=None):
-    """Produce plots of provided statistics object with matplotlib. The pdf
-    parameter can be set to a filename and if so, the plots will be produced in
-    that newly created PDF file, rather than being shown interactively. The
-    set_backend parameter can be used to select a matplotlib backend. The stats
-    object is assumed to have been created by a call to collect_stats()."""
-
+def plot_stats(stats,pdf=False,set_backend=None,backend=None,filename=None):
+    """Produce plots of provided statistics object (from collect_stats(), or a
+    file for which collect_stats() is called). The plots are shown
+    interactively, or saved in a file if filename is given, in the format
+    given by its extension (e.g. "plots.pdf", or "plots.png" which gives one
+    numbered file per plot). The backend parameter selects the plotting
+    backend (default is the first available one, see
+    mcpl.plotting.available_backends()), and set_backend can be used to select
+    a matplotlib backend (e.g. 'agg') when using matplotlib. Returns the list
+    of created files when saving. The pdf parameter is deprecated (use filename
+    instead)."""
     if pdf is True:
         raise MCPLError('If set, the pdf parameter should be a string'
                         +' containing the desired filename of the PDF file to be created')
-
-    if pdf and os.path.exists(pdf):
-        raise MCPLError(f'PDF file {pdf} already exists')
-
-    figures = _stats_figures(stats)
     if pdf:
-        save(figures,pdf,backend='matplotlib',mpl_backend=set_backend)
-    else:
-        show(figures,backend='matplotlib',mpl_backend=set_backend)
+        warnings.warn('The pdf parameter of plot_stats is deprecated, use'
+                      ' filename instead', DeprecationWarning, stacklevel=2)
+    filename = filename or pdf or None
+    if filename and os.path.exists(filename):
+        raise MCPLError(f'File {filename} already exists')
+    kwargs = {}
+    if set_backend and ( backend or next(iter(available_backends()),None) ) == 'matplotlib':
+        kwargs['mpl_backend'] = set_backend
+    figures = stats_figures(stats)
+    if filename:
+        return save(figures,filename,backend=backend,**kwargs)
+    show(figures,backend=backend,**kwargs)
+    return None
