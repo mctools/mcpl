@@ -93,7 +93,6 @@ Script "scale inf": error: hdr_scale_stat_sums called with infinite scale
 Script "non-unit direction": error: attempting to add particle with non-unit direction vector
 Script "zero direction": error: attempting to add particle with non-unit direction vector
 Script "negative ekin": error: attempting to add particle with negative kinetic energy
-Script "nan direction": ok
 merge_files "a1.mcpl|a2.mcpl": ok
 merge_files "a1.mcpl|a2.mcpl|a3.mcpl": ok
 merge_files "a2.mcpl|a1.mcpl": ok
@@ -772,4 +771,4 @@ Script "random script 146": error: enable_userflags called too late.
 Script "random script 147": error: enable_universal_pdgcode must be called with non-zero pdgcode.
 Script "random script 148": ok
 Script "random script 149": ok
-Compared 484 operations
+Compared 483 operations
