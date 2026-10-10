@@ -34,7 +34,7 @@ example_file = test_data_dir.parent.parent.joinpath('examples','example.mcpl')
 
 files = mcpl.plotting.save(_stats_figures(example_file), 'stats.html', backend='plotly')
 for f in files:
-    text = pathlib.Path(f).read_text()
+    text = pathlib.Path(f).read_text(encoding='utf-8')
     assert 'plotly' in text.lower() and len(text) > 10000
     print(f'created {f}')
 try:

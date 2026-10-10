@@ -61,7 +61,8 @@ def test_figures():
     fig.add(Panel( title = 'Text', items = [ Text('No data') ] ))
     mcpl.plotting.show(fig, backend='test')
     files = mcpl.plotting.save([fig,Figure(title='Empty')], 'figs.txt', backend='test')
-    print(f'save() created {files}, with {len(pathlib.Path(files[0]).read_text().splitlines())} lines')
+    nlines = len(pathlib.Path(files[0]).read_text(encoding='utf-8').splitlines())
+    print(f'save() created {files}, with {nlines} lines')
 
 def test_stats_figures():
     mcpl.plotting.show(_stats_figures(example_file), backend='test')
