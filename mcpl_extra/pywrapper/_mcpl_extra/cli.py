@@ -34,8 +34,22 @@ def cli_wrapper_phits2mcpl():
     _run('phits2mcpl')
 
 def _get_mcpl_shlibdir_unix():
-    import _mcpl_core.info
-    return _mcpl_core.info.libpath().parent
+    try:
+        import _mcpl_core.info
+    except ImportError:
+        #The mcpl-core package does not provide the _mcpl_core module when the
+        #MCPL library is installed separately (e.g. on conda-forge), so ask
+        #mcpl-config:
+        pass
+    else:
+        return _mcpl_core.info.libpath().parent
+    import subprocess
+    rv = subprocess.run( ['mcpl-config','--show','shlibdir'],
+                         check = True, capture_output = True )
+    if rv.returncode or rv.stderr:
+        raise RuntimeError('Problems invoking mcpl-config for shlibdir')
+    import pathlib
+    return pathlib.Path(rv.stdout.decode().strip()).absolute().resolve()
 
 def _run(toolname):
     import pathlib
