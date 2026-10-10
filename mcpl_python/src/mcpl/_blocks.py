@@ -109,6 +109,8 @@ class MCPLParticle:
     @property
     def file_index(self):
         """Particle position in file (counting from 0)"""
+        if self._b._indices is not None:
+            return int(self._b._indices[self._i])
         return self._b._offset + self._i
 
 class MCPLParticleBlock:
@@ -117,6 +119,7 @@ class MCPLParticleBlock:
 
     def __init__(self,opt_polarisation,opt_userflags,opt_globalw,opt_globalpdg,fmtversion):
         """For internal use only - users should not normally create MCPLParticle objects themselves"""
+        self._ctor_args = (opt_polarisation,opt_userflags,opt_globalw,opt_globalpdg,fmtversion)
         #empty block (set offset to max int to ensure d<0 in contains_ipos and get_by_global:
         self._offset = 9223372036854775807
         #non-constant columns (never the same in all blocks):
@@ -135,6 +138,9 @@ class MCPLParticleBlock:
         self._view_pol = None
         self._view_dir = None
         self._pos_cache,self._pol_cache = None,None#extra ndarrays for numpy 1.14 issue
+        #positions in file of the particles, for selected particles (otherwise
+        #given by the offset):
+        self._indices = None
 
     def _set_data(self,data,file_offset):
         #always present, but must unpack:
@@ -161,10 +167,28 @@ class MCPLParticleBlock:
         return d>=0 and d<len(self._data)
 
     def __getitem__(self,ipos):
-        """Access single particle in block by local position in block (not global position in file)"""
-        if ipos>=0 and ipos<len(self._data):
-            return MCPLParticle(self,ipos)
-        return None
+        """Access single particle in block by local position in block (not
+        global position in file). Alternatively, select a subset of the
+        particles with a slice, an array of indices, or a boolean mask (e.g.
+        block[block.ekin<1e-6]), which returns a new MCPLParticleBlock with
+        those particles. Such blocks can be passed to MCPLOutFile.add_particles
+        like any other block."""
+        if isinstance(ipos,(int,np.integer)):
+            if ipos>=0 and ipos<len(self._data):
+                return MCPLParticle(self,ipos)
+            return None
+        res = MCPLParticleBlock(*self._ctor_args)
+        if not len(self._data):
+            return res
+        data = self._data[ipos]
+        offset = 9223372036854775807#no well defined position in file
+        if isinstance(ipos,slice):
+            start,_,step = ipos.indices(len(self._data))
+            if step == 1 and self._indices is None:
+                offset = self._offset + start
+        res._set_data(data,offset)
+        res._indices = self.file_indices[ipos]
+        return res
 
     def get_by_global(self,ipos):
         """Access single particle in block by global position in file"""
@@ -195,6 +219,14 @@ class MCPLParticleBlock:
     def file_offset(self):
         """Particle position in file of first particle in block (counting from 0)"""
         return self._offset
+
+    @property
+    def file_indices(self):
+        """Array with the positions in the file of the particles in the block
+        (counting from 0), also for blocks with selected particles."""
+        if self._indices is not None:
+            return self._indices
+        return np.arange(self._offset,self._offset+len(self._data),dtype=np.int64)
 
     @property
     def polx(self):

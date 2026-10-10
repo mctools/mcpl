@@ -30,6 +30,13 @@ v2.2.9  (work in progress)
         given instead of the kinetic energy. The new gzip_file function
         compresses files like mcpl_gzip_file in the C API. See also the new
         examples/pyexample_writemcpl.
+      * Particle blocks in the Python API can be indexed with a boolean mask,
+        indices or a slice, which gives a new block with those particles (e.g.
+        block[block.pdgcode == 2112]). Such blocks can be passed to
+        MCPLOutFile.add_particles like any other block, also together with new
+        values of some of the fields (e.g. weight = 2 * block.weight). The new
+        file_indices attribute of blocks gives the positions of their particles
+        in the file.
       * mcpltool --extract no longer leaves a broken output file behind when
         given an invalid -p argument.
       * ssw2mcpl and phits2mcpl no longer leave an unfinished output file behind
