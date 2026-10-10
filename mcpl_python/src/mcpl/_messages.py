@@ -58,9 +58,9 @@ class _ForcePrinting:
         global _logger
         _logger = self._orig
 
-def _info( msg ):
+def _info( msg, prefix = 'MCPL: ' ):
     if _logger is None:
-        print(f'MCPL: {msg}')
+        print(f'{prefix}{msg}')
     else:
         _logger.info(msg)
 
@@ -69,3 +69,9 @@ def _warning( msg ):
         print(f'MCPL WARNING: {msg}')
     else:
         _logger.warning(msg)
+
+def _error( msg ):
+    if _logger is None:
+        print(f'MCPL ERROR: {msg}')
+    else:
+        _logger.error(msg)

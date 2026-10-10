@@ -33,16 +33,26 @@ def encode_stat_sum( key, value ):
     or -1.0 maps to -1.0 in the encoding.
     """
     import math
-    if not is_valid_stat_sum_key(key):
-        raise MCPLError(f'invalid key for scat:sum: entries: "{key}"')
     if hasattr(key,'decode'):
         key = key.decode('ascii')
     value = float(-1.0 if value is None else value)
-    if ( math.isinf(value)
-         or math.isnan(value)
-         or not ( value==-1.0 or value>=0.0) ):
-        raise MCPLError('stat:sum: values must be non-nan, '
-                        'non-inf and either -1.0 or >=0.0')
+    if math.isnan(value):
+        raise MCPLError('Invalid value for "stat:sum:...". Value is invalid (NaN)')
+    if math.isinf(value):
+        raise MCPLError('Invalid value for "stat:sum:...". Value is invalid'
+                        f' ({"+" if value > 0 else "-"}INF).')
+    if not ( value >= 0.0 or value == -1.0 ):
+        raise MCPLError('Invalid value for "stat:sum:...". Value is negative'
+                        f' but is not -1.0 (it is {value:.15g}).')
+    if not key:
+        raise MCPLError('stat:sum: key must not be empty')
+    if len(key) > 64:
+        raise MCPLError(f'stat:sum: key "{key}" too long ({len(key)} chars,'
+                        ' max 64 allowed)')
+    if not is_valid_stat_sum_key(key):
+        raise MCPLError(f'Invalid stat:sum: key "{key}" (must begin with a'
+                        ' letter and otherwise only contain alphanumeric'
+                        ' characters and underscores)')
     v = f'{value:24.15g}'
     if float(v)!=value:
         v = f'{value:24.17g}'
@@ -60,6 +70,49 @@ def is_valid_stat_sum_key( key ):
         return b'a' <= k0 <= b'z'
     else:
         return 'a' <= k0 <= 'z'
+
+def _statsum_syntax_error( comment ):
+    """Error message for invalid "stat:sum:..." comment (bytes), with the same
+    reasons as given by the C library"""
+    def reason():
+        c = comment[len(b'stat:sum:'):]
+        i = c.find(b':')
+        if i < 0:
+            return 'did not find colon separating key and value'
+        key, v = c[:i], c[i+1:]
+        if not key:
+            return 'empty key'
+        if len(key) > 64:
+            return 'key length exceeds 64 characters'
+        if not is_valid_stat_sum_key(key.decode('ascii','replace')):
+            return 'key does not adhere to naming [a-zA-Z][a-zA-Z0-9_]*'
+        if len(v) != 24:
+            return 'value field is not exactly 24 characters wide'
+        v = v.strip(b' ')
+        if not v:
+            return 'value field missing actual value'
+        if not all( e in b'0123456789.-+eE' for e in v ):
+            return ( 'value field holds forbidden characters, only'
+                     ' 0123456789.-+eE are allowed in addition to leading'
+                     ' or trailing simply spaces)' )
+        try:
+            val = float(v)
+        except ValueError:
+            return 'could not decode contents of value field'
+        import math
+        if math.isnan(val):
+            return 'value field holds forbidden value (NaN)'
+        if not ( val >= 0.0 or val == -1.0 ):
+            return 'value field must hold non-zero value or -1'
+        if math.isinf(val):
+            return 'value field holds forbidden value (+INFINITY)'
+        return 'unknown issue'
+    if len(comment) > 16 * ( 64 + 24 + len(b'stat:sum:') + 1 ):
+        return ( 'Syntax error: could not properly decode comment '
+                 'starting with "stat:sum:" (content too long to show)' )
+    return ( 'Syntax error: could not properly decode comment starting'
+             f' with "stat:sum:" ({reason()}). Issue with comment'
+             f' "{comment.decode("utf-8","replace")}"' )
 
 def _parse_statsum_comment( comment ):
     prefix = b'stat:sum:'

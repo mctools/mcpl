@@ -49,6 +49,7 @@ agreement No 676548 (the BrightnESS project)
 __all__ = [
             'MCPLError',
             'MCPLFile',
+            'MCPLOutFile',
             'MCPLParticle',
             'MCPLParticleBlock',
             'app_pymcpltool',
@@ -58,6 +59,7 @@ __all__ = [
             'dump_file',
             'dump_stats',
             'encode_stat_sum',
+            'gzip_file',
             'is_valid_stat_sum_key',
             'plot_stats',
             'use_logging',
@@ -74,3 +76,4 @@ from ._messages import use_logging
 from ._reader import MCPLFile
 from ._stats import collect_stats, dump_stats, plot_stats
 from ._statsum import encode_stat_sum, is_valid_stat_sum_key
+from ._writer import MCPLOutFile, gzip_file

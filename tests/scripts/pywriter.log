@@ -1,0 +1,136 @@
+ref/difficult_unitvector.mcpl.gz (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/gammas_uw.mcpl.gz (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/miscphys.mcpl.gz (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/ref_statsum.mcpl.gz (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_1.mcpl (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_10.mcpl (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_11.mcpl (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_12.mcpl (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_13.mcpl (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_14.mcpl (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_15.mcpl (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_16.mcpl (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_2.mcpl (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_2.mcpl.gz (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_3.mcpl (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_4.mcpl (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_5.mcpl (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_5.mcpl.gz (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_6.mcpl (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_7.mcpl (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_8.mcpl (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_9.mcpl (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_empty.mcpl (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_empty.mcpl.gz (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_encodings.mcpl.gz (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_notreallygz.mcpl.gz (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_skip123.mcpl (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_skip123.mcpl.gz (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_userflags_is_pos.mcpl.gz (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+ref/reffile_uw.mcpl.gz (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
+reffmt2/miscphys.mcpl.gz (MCPL-2): exact transfer reproduces file: False, repacking identical to C: True
+reffmt2/reffile_1.mcpl (MCPL-2): exact transfer reproduces file: False, repacking identical to C: True
+reffmt2/reffile_10.mcpl (MCPL-2): exact transfer reproduces file: False, repacking identical to C: True
+reffmt2/reffile_11.mcpl (MCPL-2): exact transfer reproduces file: False, repacking identical to C: True
+reffmt2/reffile_12.mcpl (MCPL-2): exact transfer reproduces file: False, repacking identical to C: True
+reffmt2/reffile_13.mcpl (MCPL-2): exact transfer reproduces file: False, repacking identical to C: True
+reffmt2/reffile_14.mcpl (MCPL-2): exact transfer reproduces file: False, repacking identical to C: True
+reffmt2/reffile_15.mcpl (MCPL-2): exact transfer reproduces file: False, repacking identical to C: True
+reffmt2/reffile_16.mcpl (MCPL-2): exact transfer reproduces file: False, repacking identical to C: True
+reffmt2/reffile_2.mcpl (MCPL-2): exact transfer reproduces file: False, repacking identical to C: True
+reffmt2/reffile_2.mcpl.gz (MCPL-2): exact transfer reproduces file: False, repacking identical to C: True
+reffmt2/reffile_3.mcpl (MCPL-2): exact transfer reproduces file: False, repacking identical to C: True
+reffmt2/reffile_4.mcpl (MCPL-2): exact transfer reproduces file: False, repacking identical to C: True
+reffmt2/reffile_5.mcpl (MCPL-2): exact transfer reproduces file: False, repacking identical to C: True
+reffmt2/reffile_5.mcpl.gz (MCPL-2): exact transfer reproduces file: False, repacking identical to C: True
+reffmt2/reffile_6.mcpl (MCPL-2): exact transfer reproduces file: False, repacking identical to C: True
+reffmt2/reffile_7.mcpl (MCPL-2): exact transfer reproduces file: False, repacking identical to C: True
+reffmt2/reffile_8.mcpl (MCPL-2): exact transfer reproduces file: False, repacking identical to C: True
+reffmt2/reffile_9.mcpl (MCPL-2): exact transfer reproduces file: False, repacking identical to C: True
+reffmt2/reffile_empty.mcpl (MCPL-2): exact transfer reproduces file: False, repacking identical to C: True
+reffmt2/reffile_empty.mcpl.gz (MCPL-2): exact transfer reproduces file: False, repacking identical to C: True
+reffmt2/reffile_skip123.mcpl (MCPL-2): exact transfer reproduces file: False, repacking identical to C: True
+reffmt2/reffile_skip123.mcpl.gz (MCPL-2): exact transfer reproduces file: False, repacking identical to C: True
+Options "": identical to C with add_particles: True, with add_particle: True
+Options "d": identical to C with add_particles: True, with add_particle: True
+Options "p": identical to C with add_particles: True, with add_particle: True
+Options "u": identical to C with add_particles: True, with add_particle: True
+Options "P": identical to C with add_particles: True, with add_particle: True
+Options "W": identical to C with add_particles: True, with add_particle: True
+Options "dpu": identical to C with add_particles: True, with add_particle: True
+Options "dPW": identical to C with add_particles: True, with add_particle: True
+Options "puPW": identical to C with add_particles: True, with add_particle: True
+Options "dpuPW": identical to C with add_particles: True, with add_particle: True
+Transfer from "" to "": identical to C: True
+Transfer from "" to "d": identical to C: True
+Transfer from "" to "p": identical to C: True
+Transfer from "" to "u": identical to C: True
+Transfer from "" to "dpu": identical to C: True
+Transfer from "dpu" to "": identical to C: True
+Transfer from "dpu" to "d": identical to C: True
+Transfer from "dpu" to "p": identical to C: True
+Transfer from "dpu" to "u": identical to C: True
+Transfer from "dpu" to "dpu": identical to C: True
+Transfer from double to single precision gives expected values
+Filtered 71 neutrons with universal pdgcode 2112
+Writing to api.mcpl
+  nparticles=3 particlesize=44
+  Got expected error: hdr_add_comment called too late.
+  Got expected error: enable_userflags called too late.
+  Got expected error: hdr_add_stat_sum called after first particle was added to file, but without first registering a value for the same key earlier (the special value -1 can be used for this)
+  stat_sum={'nsim': 1000.0}
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 3
+    Header storage     : 161 bytes
+    Data storage       : 132 bytes
+
+  Custom meta data
+    Source             : "MySim"
+    Number of comments : 3
+          -> comment 0 : "first comment"
+          -> comment 1 : "stat:sum:nsim:                    1000"
+          -> comment 2 : "second comment"
+    Number of blobs    : 1
+          -> 8 bytes of data with key "cfg"
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : yes (weight 1.5)
+    FP precision       : single
+    Endianness         : little
+    Storage            : 44 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]       pol-x       pol-y       pol-z
+    0        2112       0.025           1           2           3           0           0           1           0           0           1           0
+    1          22           1           0           0           0           1           0           0           0           0           0           0
+    2          22           2           0           0           0           0           1           0           0           0           0           0
+blobs={'cfg': b'\x00\x01binary'} stat_sum={'nsim': 1000.0}
+Errors:
+  Got expected error: attempting to add particle with non-unit direction vector
+  Got expected error: attempting to add particle with negative kinetic energy
+  Got expected error: attempting to add particle with non-unit direction vector
+  Got expected error: Inconsistent lengths of particle field arrays
+  Got expected error: Do not specify both position and any of x, y, z
+  Got expected error: pdgcode out of range
+  Got expected error: Refusing to create file with comments starting with "stat:" unless starting with "stat:sum:", as such syntax is reserved for future usage.
+  Got expected error: Syntax error: could not properly decode comment starting with "stat:sum:" (did not find colon separating key and value). Issue with comment "stat:sum:bad"
+  Got expected error: Invalid stat:sum: key "bad key" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
+  Got expected error: Invalid value for "stat:sum:...". Value is negative but is not -1.0 (it is -2).
+  Got expected error: hdr_add_data got duplicate key
+  Got expected error: enable_universal_pdgcode must be called with non-zero pdgcode.
+  Got expected error: enable_universal_weight must be called with positive but finite weight.
+  Got expected error: enable_universal_pdgcode called multiple times
+  Got expected error: Duplicate stat:sum: key. The key "a" appears more than once.
+  stat_sum after scaling={'a': 2.0}
+  Got expected error: hdr_scale_stat_sums called with zero scale
+  Got expected error: MCPLOutFile called with string with no basename part (".mcpl").
+MCPL: Compressing file gz2.mcpl
+MCPL: Compressed file into gz2.mcpl.gz
+gz2.mcpl.gz: 5 particles, ekin=[1.   1.25 1.5  1.75 2.  ]
+MCPL: Compressing file example_output.mcpl
+MCPL: Compressed file into example_output.mcpl.gz
+pyexample_writemcpl wrote 10001 particles from "my_cool_program_name" with comments ['Some comment.', 'Another comment.']
