@@ -28,10 +28,6 @@ from ._numpy import np
 from ._plotbackend import PlotBackend
 from .plotting import Bars, Hist2D, StepHist, Text
 
-requirement = 'numpy'
-
-def is_available():
-    return True
 
 def _fmt( x ):
     return f'{float(x):.6g}'

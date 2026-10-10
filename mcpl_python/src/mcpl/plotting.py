@@ -22,7 +22,12 @@
 """Backend-independent description of plots, and functions to show or save
 them. Plots are described with the Figure, Panel and item classes below (which
 hold numbers, not graphics objects), and are drawn by one of the plotting
-backends: matplotlib or plotly (see available_backends()).
+backends: matplotlib or plotly (see available_backends()), or a custom backend
+(see Backend and register_backend()).
+
+Unless a backend is specified when plotting, the default backend is used: the
+one set with set_default_backend(), or else the one named by the
+MCPL_PLOT_BACKEND environment variable, or else the first available one.
 
 For instance:
 
@@ -32,10 +37,20 @@ For instance:
    save( fig, 'myplot.pdf' )
 """
 
-__all__ = [ 'Bars', 'Figure', 'Hist2D', 'Panel', 'StepHist', 'Text',
-            'available_backends', 'save', 'show' ]
+__all__ = [ 'Backend', 'Bars', 'Figure', 'Hist2D', 'Panel', 'StepHist', 'Text',
+            'available_backends', 'formats', 'register_backend', 'save',
+            'set_default_backend', 'show' ]
 
-from ._plotbackend import _available_backends, _create_backend
+from ._plotbackend import (
+    PlotBackend,
+    _available_backends,
+    _create_backend,
+    _formats,
+    _register_backend,
+    _set_default_backend,
+)
+
+Backend = PlotBackend
 
 
 class StepHist:
@@ -91,23 +106,44 @@ def available_backends():
     required Python packages are installed), in order of preference."""
     return _available_backends()
 
+def register_backend( backend_class ):
+    """Register a custom plotting backend, a subclass of Backend, which can
+    then be selected by its name (it is added after the built-in backends in
+    the order of preference)."""
+    _register_backend(backend_class)
+
+def set_default_backend( backend ):
+    """Set the plotting backend to use when no backend is specified: the name
+    of a backend, or a Backend object. If that backend is not available when
+    plotting, an error is raised. Use None to go back to using the
+    MCPL_PLOT_BACKEND environment variable (if set) or the first available
+    backend."""
+    _set_default_backend(backend)
+
+def formats( backend = None ):
+    """File extensions of the formats which the backend (name or Backend
+    object, default is the default backend) can save in this installation."""
+    return list(_formats(backend))
+
 def _as_list( figures ):
     return [ figures ] if isinstance(figures,Figure) else list(figures)
 
 def show( figures, backend = None, **options ):
     """Show a Figure (or a list of figures) interactively, with the plotting
-    backend of the given name (default is the first in available_backends()).
-    Further keyword arguments are options for the backend (e.g.
-    mpl_backend='qtagg' to select a matplotlib backend)."""
+    backend of the given name (or a Backend object, default is the default
+    backend). Further keyword arguments are options for the backend, named
+    with the backend name as prefix (e.g. matplotlib_backend='qtagg' or
+    plotly_renderer='browser')."""
     _create_backend(backend,**options).show(_as_list(figures))
 
 def save( figures, filename, backend = None, **options ):
     """Save a Figure (or a list of figures) in a file, with the plotting
-    backend of the given name (default is the first in available_backends()).
+    backend of the given name (or a Backend object, default is the default
+    backend).
     The format is given by the extension of the filename: .pdf, .png or .svg
     with matplotlib, and .html with plotly (or .pdf, .png or .svg if the
     kaleido package is installed). If the format can only hold one figure,
     and there are more figures, the files get numbered names (e.g. plot_1.png,
     plot_2.png). Returns the list of created files. Further keyword arguments
-    are options for the backend."""
+    are options for the backend (see show())."""
     return _create_backend(backend,**options).save(_as_list(figures),filename)

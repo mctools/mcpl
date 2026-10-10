@@ -75,7 +75,7 @@ def test_plots():
 
 def test_png():
     figs = mcpl.stats_figures(example_file)[:3]
-    files = mcpl.plotting.save(figs, 'stats.png', backend='matplotlib', mpl_backend='agg')
+    files = mcpl.plotting.save(figs, 'stats.png', backend='matplotlib', matplotlib_backend='agg')
     for f in files:
         assert pathlib.Path(f).read_bytes()[:4] == b'\x89PNG'
     print(f'Created {files}')

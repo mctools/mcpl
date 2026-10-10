@@ -47,3 +47,8 @@ try:
     mcpl.histogram(example_file, 'x/cm').plot(backend='plotly', filename='x.foo')
 except mcpl.MCPLError as e:
     print(e if 'html' in str(e) else 'unexpected error message')
+#Options for the plotly backend:
+files = mcpl.plotting.save(mcpl.stats_figures(example_file)[:1], 'opt.html',
+                           backend='plotly', plotly_renderer='browser')
+print(f'created {files} (with plotly_renderer option)')
+print(f'formats of the plotly backend include html: {"html" in mcpl.plotting.formats("plotly")}')

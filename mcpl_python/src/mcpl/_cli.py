@@ -42,6 +42,7 @@ from ._fileops import (
 from ._histogram import histogram, histogram2d
 from ._messages import _ForcePrinting, _info, _warning
 from ._physics import _particle_names
+from ._plotbackend import _backend_name
 from ._reader import MCPLFile
 from ._stats import _SelectedFile, dump_stats, plot_stats
 from ._writer import MCPLOutFile
@@ -156,8 +157,9 @@ Histogram options:
   --unweighted    : Count particles instead of summing their weights.
   --print         : Print histogram contents rather than plotting it.
   --output FILE   : Save plot in FILE (e.g. .pdf, .png, or .html with plotly).
-  --backend NAME  : Plotting backend (default is the first available of:
-                    matplotlib, plotly).
+  --backend NAME  : Plotting backend (default is the one named by the
+                    MCPL_PLOT_BACKEND environment variable, or else the first
+                    available of: matplotlib, plotly).
 
 Stat options:
   --stats FILE    : Print statistics summary of particle state data from FILE.
@@ -452,7 +454,7 @@ def _app_pymcpltool(argv):
         if outfn or opt_gui or '--backend' in vopts:
             try:
                 plot_stats(f,filename=outfn,backend=vopts.get('--backend'),
-                           set_backend=('agg' if outfn else None))
+                           **_save_options(outfn,vopts.get('--backend')))
             except MCPLError as e:
                 bad(str(e))
             if outfn:
@@ -541,7 +543,8 @@ def _pymcpltool_hist(filelist,expr,select,vopts,hflags,bad):
         bad("Requested output file already exists.")
     kw = {} if len(exprs) == 2 else { 'logy' : '--logy' in hflags }
     try:
-        files = h.plot(filename=outfn,backend=vopts.get('--backend'),**kw)
+        files = h.plot(filename=outfn,backend=vopts.get('--backend'),**kw,
+                       **_save_options(outfn,vopts.get('--backend')))
     except MCPLError as e:
         bad(str(e))
     if files:
@@ -556,6 +559,13 @@ def _tool_pdgcode(pdgcode_str,bad):
          or not int(pdgcode_str) ):
         bad("Must specify non-zero 32bit integer or particle name as argument to -p.")
     return int(pdgcode_str)
+
+def _save_options(outfn, backend):
+    """Options for the plotting backend: when saving files with matplotlib, its
+    agg backend is used (which does not need a display)."""
+    if outfn and _backend_name(backend) == 'matplotlib':
+        return { 'matplotlib_backend' : 'agg' }
+    return {}
 
 def _tool_outfn(fn):
     """Output filename for --merge and --extract like in mcpltool (returns error

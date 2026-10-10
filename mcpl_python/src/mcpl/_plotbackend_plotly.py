@@ -24,30 +24,48 @@ as HTML files, or as image files if the kaleido module is installed)."""
 
 __all__ = []
 
+import pathlib
+
+from ._common import MCPLError
 from ._numpy import np
 from ._plotbackend import PlotBackend, numbered_filenames
 from .plotting import Bars, Hist2D, StepHist, Text
 
-requirement = 'plotly'
-
-def is_available():
-    import importlib.util
-    return importlib.util.find_spec('plotly') is not None
 
 def _has_kaleido():
     import importlib.util
     return importlib.util.find_spec('kaleido') is not None
 
 class Backend(PlotBackend):
-    """Plotting with plotly."""
+    """Plotting with plotly. The plotly_renderer option can be used to select a
+    renderer of plotly for showing figures (e.g. 'browser')."""
     name = 'plotly'
+    formats = ('html','png','pdf','svg')
+    requirement = 'plotly'
 
-    def __init__( self ):
-        self.formats = ('html','png','pdf','svg') if _has_kaleido() else ('html',)
+    @classmethod
+    def is_available( cls ):
+        import importlib.util
+        return importlib.util.find_spec('plotly') is not None
+
+    @classmethod
+    def available_formats( cls ):
+        #Image files need the kaleido package:
+        return cls.formats if _has_kaleido() else ('html',)
+
+    def __init__( self, plotly_renderer = None ):
+        self._renderer = plotly_renderer
+
+    def check_format( self, filename ):
+        ext = pathlib.Path(filename).suffix.lower().lstrip('.')
+        if ext in self.formats and ext not in self.available_formats():
+            raise MCPLError(f'The plotly plotting backend needs the kaleido'
+                            f' Python package to create .{ext} files')
+        return super().check_format(filename)
 
     def show( self, figures ):
         for f in figures:
-            self._draw(f).show()
+            self._draw(f).show(renderer=self._renderer)
 
     def save( self, figures, filename ):
         ext = self.check_format(filename)
@@ -56,7 +74,6 @@ class Backend(PlotBackend):
             parts = [ self._draw(f).to_html(full_html=False,
                                             include_plotlyjs=(i==0))
                       for i,f in enumerate(figures) ]
-            import pathlib
             pathlib.Path(filename).write_text('<html><head><meta charset="utf-8"/></head><body>\n'
                                               + '\n'.join(parts) + '\n</body></html>\n',
                                               encoding='utf-8')
