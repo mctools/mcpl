@@ -94,6 +94,498 @@ Script "non-unit direction": error: attempting to add particle with non-unit dir
 Script "zero direction": error: attempting to add particle with non-unit direction vector
 Script "negative ekin": error: attempting to add particle with negative kinetic energy
 Script "nan direction": ok
+merge_files "a1.mcpl|a2.mcpl": ok
+merge_files "a1.mcpl|a2.mcpl|a3.mcpl": ok
+merge_files "a2.mcpl|a1.mcpl": ok
+merge_files "a1.mcpl": ok
+merge_files "a1.mcpl|a_empty.mcpl": ok
+merge_files "a_empty.mcpl|a_empty.mcpl.gz": error: Unable to open file!
+merge_files "a4.mcpl|a5.mcpl": ok
+   | MCPL WARNING: Merging files results in one or more stat:sum: entries overflowing floating point range and producing infinity. Reverting value to -1 to indicate that a precise result is not available.
+merge_files "a1.mcpl|agz.mcpl.gz|a2.mcpl": ok
+merge_files "reffile_1.mcpl|fmt2_reffile_1.mcpl": ok
+   | MCPL WARNING: Merging files from older MCPL format. Output will be in latest format.
+merge_files "fmt2_reffile_1.mcpl|fmt2_reffile_5.mcpl": error: Attempting to merge incompatible files.
+merge_files "reffile_crash.mcpl|reffile_crash.mcpl": error: Merging file with itself
+merge_files "a1.mcpl|a1.mcpl": error: Merging file with itself
+merge_files "a1.mcpl|./a1.mcpl": error: Merging file with itself
+merge_files "a1.mcpl|b_dp.mcpl": error: Attempting to merge incompatible files.
+merge_files "a1.mcpl|c_comment.mcpl": error: Attempting to merge incompatible files.
+merge_files "a1.mcpl|c_blob.mcpl": error: Attempting to merge incompatible files.
+merge_files "a1.mcpl|c_statkey.mcpl": error: Attempting to merge incompatible files.
+merge_files "b_updg.mcpl|b_updg2.mcpl": ok
+merge_files "b_uw.mcpl|b_uw2.mcpl": error: Attempting to merge incompatible files.
+merge_files "a1.mcpl|nonexistent.mcpl": error: Unable to open file!
+merge_files "reffile_truncated.mcpl|reffile_truncated.mcpl": error: Merging file with itself
+merge_files "ref_statsum_crash.mcpl|ref_statsum.mcpl.gz": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+merge_files to existing file: error: requested output file of merge_files already exists
+forcemerge_files "a1.mcpl|b_dp.mcpl" keep_userflags=0: ok
+   | MCPL force-merge: Transferring 5 particles from file a1.mcpl
+   | MCPL force-merge: Transferring 3 particles from file b_dp.mcpl
+   | MCPL force-merge: Transferred a total of 8 particles to new file merged
+forcemerge_files "a1.mcpl|b_dp.mcpl" keep_userflags=1: ok
+   | MCPL force-merge: Transferring 5 particles from file a1.mcpl
+   | MCPL force-merge: Transferring 3 particles from file b_dp.mcpl
+   | MCPL force-merge: Transferred a total of 8 particles to new file merged
+forcemerge_files "a1.mcpl|a2.mcpl" keep_userflags=0: ok
+   | MCPL forcemerge_files called with 2 files that are compatible for a standard merge => falling back to standard merge_files function
+forcemerge_files "a1.mcpl|a2.mcpl" keep_userflags=1: ok
+   | MCPL forcemerge_files called with 2 files that are compatible for a standard merge => falling back to standard merge_files function
+forcemerge_files "b_pol.mcpl|b_uf.mcpl" keep_userflags=0: ok
+   | MCPL force-merge: Transferring 3 particles from file b_pol.mcpl
+   | MCPL force-merge: Transferring 3 particles from file b_uf.mcpl
+   | MCPL force-merge: Transferred a total of 6 particles to new file merged
+forcemerge_files "b_pol.mcpl|b_uf.mcpl" keep_userflags=1: ok
+   | MCPL force-merge: Transferring 3 particles from file b_pol.mcpl
+   | MCPL force-merge: Transferring 3 particles from file b_uf.mcpl
+   | MCPL force-merge: Transferred a total of 6 particles to new file merged
+forcemerge_files "b_uf.mcpl|b_pol.mcpl|a1.mcpl" keep_userflags=0: ok
+   | MCPL force-merge: Transferring 3 particles from file b_uf.mcpl
+   | MCPL force-merge: Transferring 3 particles from file b_pol.mcpl
+   | MCPL force-merge: Transferring 5 particles from file a1.mcpl
+   | MCPL force-merge: Transferred a total of 11 particles to new file merged
+forcemerge_files "b_uf.mcpl|b_pol.mcpl|a1.mcpl" keep_userflags=1: ok
+   | MCPL force-merge: Transferring 3 particles from file b_uf.mcpl
+   | MCPL force-merge: Transferring 3 particles from file b_pol.mcpl
+   | MCPL force-merge: Transferring 5 particles from file a1.mcpl
+   | MCPL force-merge: Transferred a total of 11 particles to new file merged
+forcemerge_files "b_updg.mcpl|b_updg_g.mcpl" keep_userflags=0: ok
+   | MCPL force-merge: Transferring 3 particles from file b_updg.mcpl
+   | MCPL force-merge: Transferring 2 particles from file b_updg_g.mcpl
+   | MCPL force-merge: Transferred a total of 5 particles to new file merged
+forcemerge_files "b_updg.mcpl|b_updg_g.mcpl" keep_userflags=1: ok
+   | MCPL force-merge: Transferring 3 particles from file b_updg.mcpl
+   | MCPL force-merge: Transferring 2 particles from file b_updg_g.mcpl
+   | MCPL force-merge: Transferred a total of 5 particles to new file merged
+forcemerge_files "b_updg.mcpl|b_uw.mcpl" keep_userflags=0: ok
+   | MCPL force-merge: Transferring 3 particles from file b_updg.mcpl
+   | MCPL force-merge: Transferring 3 particles from file b_uw.mcpl
+   | MCPL force-merge: Transferred a total of 6 particles to new file merged
+forcemerge_files "b_updg.mcpl|b_uw.mcpl" keep_userflags=1: ok
+   | MCPL force-merge: Transferring 3 particles from file b_updg.mcpl
+   | MCPL force-merge: Transferring 3 particles from file b_uw.mcpl
+   | MCPL force-merge: Transferred a total of 6 particles to new file merged
+forcemerge_files "b_updg.mcpl|b_updg2.mcpl|b_empty_pol.mcpl" keep_userflags=0: ok
+   | MCPL force-merge: Transferring 3 particles from file b_updg.mcpl
+   | MCPL force-merge: Transferring 2 particles from file b_updg2.mcpl
+   | MCPL force-merge: Transferring 0 particles from file b_empty_pol.mcpl
+   | MCPL force-merge: Transferred a total of 5 particles to new file merged
+forcemerge_files "b_updg.mcpl|b_updg2.mcpl|b_empty_pol.mcpl" keep_userflags=1: ok
+   | MCPL force-merge: Transferring 3 particles from file b_updg.mcpl
+   | MCPL force-merge: Transferring 2 particles from file b_updg2.mcpl
+   | MCPL force-merge: Transferring 0 particles from file b_empty_pol.mcpl
+   | MCPL force-merge: Transferred a total of 5 particles to new file merged
+forcemerge_files "b_uw.mcpl|b_uw2.mcpl" keep_userflags=0: ok
+   | MCPL force-merge: Transferring 3 particles from file b_uw.mcpl
+   | MCPL force-merge: Transferring 3 particles from file b_uw2.mcpl
+   | MCPL force-merge: Transferred a total of 6 particles to new file merged
+forcemerge_files "b_uw.mcpl|b_uw2.mcpl" keep_userflags=1: ok
+   | MCPL force-merge: Transferring 3 particles from file b_uw.mcpl
+   | MCPL force-merge: Transferring 3 particles from file b_uw2.mcpl
+   | MCPL force-merge: Transferred a total of 6 particles to new file merged
+forcemerge_files "b_dp.mcpl|b_pol.mcpl|agz.mcpl.gz" keep_userflags=0: ok
+   | MCPL force-merge: Transferring 3 particles from file b_dp.mcpl
+   | MCPL force-merge: Transferring 3 particles from file b_pol.mcpl
+   | MCPL force-merge: Transferring 4 particles from file agz.mcpl.gz
+   | MCPL force-merge: Transferred a total of 10 particles to new file merged
+forcemerge_files "b_dp.mcpl|b_pol.mcpl|agz.mcpl.gz" keep_userflags=1: ok
+   | MCPL force-merge: Transferring 3 particles from file b_dp.mcpl
+   | MCPL force-merge: Transferring 3 particles from file b_pol.mcpl
+   | MCPL force-merge: Transferring 4 particles from file agz.mcpl.gz
+   | MCPL force-merge: Transferred a total of 10 particles to new file merged
+forcemerge_files "fmt2_reffile_1.mcpl|reffile_1.mcpl|b_uf.mcpl" keep_userflags=0: ok
+   | MCPL force-merge: Transferring 5 particles from file fmt2_reffile_1.mcpl
+   | MCPL force-merge: Transferring 5 particles from file reffile_1.mcpl
+   | MCPL force-merge: Transferring 3 particles from file b_uf.mcpl
+   | MCPL force-merge: Transferred a total of 13 particles to new file merged
+forcemerge_files "fmt2_reffile_1.mcpl|reffile_1.mcpl|b_uf.mcpl" keep_userflags=1: ok
+   | MCPL force-merge: Transferring 5 particles from file fmt2_reffile_1.mcpl
+   | MCPL force-merge: Transferring 5 particles from file reffile_1.mcpl
+   | MCPL force-merge: Transferring 3 particles from file b_uf.mcpl
+   | MCPL force-merge: Transferred a total of 13 particles to new file merged
+forcemerge_files "reffile_skip123.mcpl|b_dp.mcpl" keep_userflags=0: ok
+   | MCPL force-merge: Transferring 123 particles from file reffile_skip123.mcpl
+   | MCPL force-merge: Transferring 3 particles from file b_dp.mcpl
+   | MCPL force-merge: Transferred a total of 126 particles to new file merged
+forcemerge_files "reffile_skip123.mcpl|b_dp.mcpl" keep_userflags=1: ok
+   | MCPL force-merge: Transferring 123 particles from file reffile_skip123.mcpl
+   | MCPL force-merge: Transferring 3 particles from file b_dp.mcpl
+   | MCPL force-merge: Transferred a total of 126 particles to new file merged
+forcemerge_files "a1.mcpl|a1.mcpl" keep_userflags=0: error: Merging file with itself
+forcemerge_files "a1.mcpl|a1.mcpl" keep_userflags=1: error: Merging file with itself
+merge_inplace "a1.mcpl" "a2.mcpl": ok
+merge_inplace "a1.mcpl" "a3.mcpl": ok
+merge_inplace "a3.mcpl" "a1.mcpl": ok
+merge_inplace "a1.mcpl" "a_empty.mcpl": ok
+merge_inplace "a_empty.mcpl" "a1.mcpl": ok
+merge_inplace "a4.mcpl" "a5.mcpl": ok
+   | MCPL WARNING: Merging files results in one or more stat:sum: entries overflowing floating point range and producing infinity. Reverting value to -1 to indicate that a precise result is not available.
+merge_inplace "a1.mcpl" "agz.mcpl.gz": ok
+merge_inplace "agz.mcpl.gz" "a1.mcpl": error: direct modification of gzipped files is not supported.
+merge_inplace "a1.mcpl" "a1.mcpl": error: Merging file with itself
+merge_inplace "a1.mcpl" "b_dp.mcpl": error: Attempting to merge incompatible files
+merge_inplace "reffile_1.mcpl" "fmt2_reffile_1.mcpl": error: Attempting to merge incompatible files (can not mix MCPL format versions when merging inplace)
+merge_inplace "fmt2_reffile_1.mcpl" "fmt2_reffile_5.mcpl": error: Attempting to merge incompatible files
+merge_inplace "reffile_crash.mcpl" "reffile_1.mcpl": error: Attempting to merge incompatible files
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+merge_inplace "a1.mcpl" "nonexistent.mcpl": error: Unable to open file!
+repair "reffile_crash.mcpl": ok
+   | MCPL: Successfully repaired file with 4 particles.
+repair "reffile_1.mcpl": error: File does not appear to be broken.
+repair "reffile_empty.mcpl": error: File does not appear to be broken.
+repair "reffile_truncated.mcpl": ok
+   | MCPL: Successfully repaired file with 7 particles.
+repair "ref_statsum_crash.mcpl": ok
+   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+   | MCPL: Successfully repaired file with 9 particles.
+repair "reffile_5.mcpl.gz": error: File must be gunzipped before it can be checked and possibly repaired.
+repair "agz.mcpl.gz": error: File must be gunzipped before it can be checked and possibly repaired.
+repair "nonexistent.mcpl": error: Unable to open file!
+can_merge "a1.mcpl" "a1.mcpl": ok
+can_merge "a1.mcpl" "a4.mcpl": ok
+can_merge "a1.mcpl" "agz.mcpl.gz": ok
+can_merge "a1.mcpl" "b_pol.mcpl": ok
+can_merge "a1.mcpl" "b_updg2.mcpl": ok
+can_merge "a1.mcpl" "b_uw2.mcpl": ok
+can_merge "a1.mcpl" "c_statkey.mcpl": ok
+can_merge "a1.mcpl" "ref_statsum.mcpl.gz": ok
+can_merge "a1.mcpl" "reffile_5.mcpl.gz": ok
+can_merge "a1.mcpl" "reffile_skip123.mcpl": ok
+can_merge "a2.mcpl" "a2.mcpl": ok
+can_merge "a2.mcpl" "a5.mcpl": ok
+can_merge "a2.mcpl" "b_dp.mcpl": ok
+can_merge "a2.mcpl" "b_uf.mcpl": ok
+can_merge "a2.mcpl" "b_updg_g.mcpl": ok
+can_merge "a2.mcpl" "c_blob.mcpl": ok
+can_merge "a2.mcpl" "fmt2_reffile_1.mcpl": ok
+can_merge "a2.mcpl" "ref_statsum_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+can_merge "a2.mcpl" "reffile_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+can_merge "a2.mcpl" "reffile_truncated.mcpl": ok
+can_merge "a3.mcpl" "a3.mcpl": ok
+can_merge "a3.mcpl" "a_empty.mcpl": ok
+can_merge "a3.mcpl" "b_empty_pol.mcpl": ok
+can_merge "a3.mcpl" "b_updg.mcpl": ok
+can_merge "a3.mcpl" "b_uw.mcpl": ok
+can_merge "a3.mcpl" "c_comment.mcpl": ok
+can_merge "a3.mcpl" "fmt2_reffile_5.mcpl": ok
+can_merge "a3.mcpl" "reffile_1.mcpl": ok
+can_merge "a3.mcpl" "reffile_empty.mcpl": ok
+can_merge "a4.mcpl" "a4.mcpl": ok
+can_merge "a4.mcpl" "agz.mcpl.gz": ok
+can_merge "a4.mcpl" "b_pol.mcpl": ok
+can_merge "a4.mcpl" "b_updg2.mcpl": ok
+can_merge "a4.mcpl" "b_uw2.mcpl": ok
+can_merge "a4.mcpl" "c_statkey.mcpl": ok
+can_merge "a4.mcpl" "ref_statsum.mcpl.gz": ok
+can_merge "a4.mcpl" "reffile_5.mcpl.gz": ok
+can_merge "a4.mcpl" "reffile_skip123.mcpl": ok
+can_merge "a5.mcpl" "a5.mcpl": ok
+can_merge "a5.mcpl" "b_dp.mcpl": ok
+can_merge "a5.mcpl" "b_uf.mcpl": ok
+can_merge "a5.mcpl" "b_updg_g.mcpl": ok
+can_merge "a5.mcpl" "c_blob.mcpl": ok
+can_merge "a5.mcpl" "fmt2_reffile_1.mcpl": ok
+can_merge "a5.mcpl" "ref_statsum_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+can_merge "a5.mcpl" "reffile_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+can_merge "a5.mcpl" "reffile_truncated.mcpl": ok
+can_merge "a_empty.mcpl" "a_empty.mcpl": ok
+can_merge "a_empty.mcpl" "b_empty_pol.mcpl": ok
+can_merge "a_empty.mcpl" "b_updg.mcpl": ok
+can_merge "a_empty.mcpl" "b_uw.mcpl": ok
+can_merge "a_empty.mcpl" "c_comment.mcpl": ok
+can_merge "a_empty.mcpl" "fmt2_reffile_5.mcpl": ok
+can_merge "a_empty.mcpl" "reffile_1.mcpl": ok
+can_merge "a_empty.mcpl" "reffile_empty.mcpl": ok
+can_merge "agz.mcpl.gz" "agz.mcpl.gz": ok
+can_merge "agz.mcpl.gz" "b_pol.mcpl": ok
+can_merge "agz.mcpl.gz" "b_updg2.mcpl": ok
+can_merge "agz.mcpl.gz" "b_uw2.mcpl": ok
+can_merge "agz.mcpl.gz" "c_statkey.mcpl": ok
+can_merge "agz.mcpl.gz" "ref_statsum.mcpl.gz": ok
+can_merge "agz.mcpl.gz" "reffile_5.mcpl.gz": ok
+can_merge "agz.mcpl.gz" "reffile_skip123.mcpl": ok
+can_merge "b_dp.mcpl" "b_dp.mcpl": ok
+can_merge "b_dp.mcpl" "b_uf.mcpl": ok
+can_merge "b_dp.mcpl" "b_updg_g.mcpl": ok
+can_merge "b_dp.mcpl" "c_blob.mcpl": ok
+can_merge "b_dp.mcpl" "fmt2_reffile_1.mcpl": ok
+can_merge "b_dp.mcpl" "ref_statsum_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+can_merge "b_dp.mcpl" "reffile_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+can_merge "b_dp.mcpl" "reffile_truncated.mcpl": ok
+can_merge "b_empty_pol.mcpl" "b_empty_pol.mcpl": ok
+can_merge "b_empty_pol.mcpl" "b_updg.mcpl": ok
+can_merge "b_empty_pol.mcpl" "b_uw.mcpl": ok
+can_merge "b_empty_pol.mcpl" "c_comment.mcpl": ok
+can_merge "b_empty_pol.mcpl" "fmt2_reffile_5.mcpl": ok
+can_merge "b_empty_pol.mcpl" "reffile_1.mcpl": ok
+can_merge "b_empty_pol.mcpl" "reffile_empty.mcpl": ok
+can_merge "b_pol.mcpl" "b_pol.mcpl": ok
+can_merge "b_pol.mcpl" "b_updg2.mcpl": ok
+can_merge "b_pol.mcpl" "b_uw2.mcpl": ok
+can_merge "b_pol.mcpl" "c_statkey.mcpl": ok
+can_merge "b_pol.mcpl" "ref_statsum.mcpl.gz": ok
+can_merge "b_pol.mcpl" "reffile_5.mcpl.gz": ok
+can_merge "b_pol.mcpl" "reffile_skip123.mcpl": ok
+can_merge "b_uf.mcpl" "b_uf.mcpl": ok
+can_merge "b_uf.mcpl" "b_updg_g.mcpl": ok
+can_merge "b_uf.mcpl" "c_blob.mcpl": ok
+can_merge "b_uf.mcpl" "fmt2_reffile_1.mcpl": ok
+can_merge "b_uf.mcpl" "ref_statsum_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+can_merge "b_uf.mcpl" "reffile_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+can_merge "b_uf.mcpl" "reffile_truncated.mcpl": ok
+can_merge "b_updg.mcpl" "b_updg.mcpl": ok
+can_merge "b_updg.mcpl" "b_uw.mcpl": ok
+can_merge "b_updg.mcpl" "c_comment.mcpl": ok
+can_merge "b_updg.mcpl" "fmt2_reffile_5.mcpl": ok
+can_merge "b_updg.mcpl" "reffile_1.mcpl": ok
+can_merge "b_updg.mcpl" "reffile_empty.mcpl": ok
+can_merge "b_updg2.mcpl" "b_updg2.mcpl": ok
+can_merge "b_updg2.mcpl" "b_uw2.mcpl": ok
+can_merge "b_updg2.mcpl" "c_statkey.mcpl": ok
+can_merge "b_updg2.mcpl" "ref_statsum.mcpl.gz": ok
+can_merge "b_updg2.mcpl" "reffile_5.mcpl.gz": ok
+can_merge "b_updg2.mcpl" "reffile_skip123.mcpl": ok
+can_merge "b_updg_g.mcpl" "b_updg_g.mcpl": ok
+can_merge "b_updg_g.mcpl" "c_blob.mcpl": ok
+can_merge "b_updg_g.mcpl" "fmt2_reffile_1.mcpl": ok
+can_merge "b_updg_g.mcpl" "ref_statsum_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+can_merge "b_updg_g.mcpl" "reffile_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+can_merge "b_updg_g.mcpl" "reffile_truncated.mcpl": ok
+can_merge "b_uw.mcpl" "b_uw.mcpl": ok
+can_merge "b_uw.mcpl" "c_comment.mcpl": ok
+can_merge "b_uw.mcpl" "fmt2_reffile_5.mcpl": ok
+can_merge "b_uw.mcpl" "reffile_1.mcpl": ok
+can_merge "b_uw.mcpl" "reffile_empty.mcpl": ok
+can_merge "b_uw2.mcpl" "b_uw2.mcpl": ok
+can_merge "b_uw2.mcpl" "c_statkey.mcpl": ok
+can_merge "b_uw2.mcpl" "ref_statsum.mcpl.gz": ok
+can_merge "b_uw2.mcpl" "reffile_5.mcpl.gz": ok
+can_merge "b_uw2.mcpl" "reffile_skip123.mcpl": ok
+can_merge "c_blob.mcpl" "c_blob.mcpl": ok
+can_merge "c_blob.mcpl" "fmt2_reffile_1.mcpl": ok
+can_merge "c_blob.mcpl" "ref_statsum_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+can_merge "c_blob.mcpl" "reffile_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+can_merge "c_blob.mcpl" "reffile_truncated.mcpl": ok
+can_merge "c_comment.mcpl" "c_comment.mcpl": ok
+can_merge "c_comment.mcpl" "fmt2_reffile_5.mcpl": ok
+can_merge "c_comment.mcpl" "reffile_1.mcpl": ok
+can_merge "c_comment.mcpl" "reffile_empty.mcpl": ok
+can_merge "c_statkey.mcpl" "c_statkey.mcpl": ok
+can_merge "c_statkey.mcpl" "ref_statsum.mcpl.gz": ok
+can_merge "c_statkey.mcpl" "reffile_5.mcpl.gz": ok
+can_merge "c_statkey.mcpl" "reffile_skip123.mcpl": ok
+can_merge "fmt2_reffile_1.mcpl" "fmt2_reffile_1.mcpl": ok
+can_merge "fmt2_reffile_1.mcpl" "ref_statsum_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+can_merge "fmt2_reffile_1.mcpl" "reffile_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+can_merge "fmt2_reffile_1.mcpl" "reffile_truncated.mcpl": ok
+can_merge "fmt2_reffile_5.mcpl" "fmt2_reffile_5.mcpl": ok
+can_merge "fmt2_reffile_5.mcpl" "reffile_1.mcpl": ok
+can_merge "fmt2_reffile_5.mcpl" "reffile_empty.mcpl": ok
+can_merge "ref_statsum.mcpl.gz" "ref_statsum.mcpl.gz": ok
+can_merge "ref_statsum.mcpl.gz" "reffile_5.mcpl.gz": ok
+can_merge "ref_statsum.mcpl.gz" "reffile_skip123.mcpl": ok
+can_merge "ref_statsum_crash.mcpl" "ref_statsum_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+can_merge "ref_statsum_crash.mcpl" "reffile_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+can_merge "ref_statsum_crash.mcpl" "reffile_truncated.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+can_merge "reffile_1.mcpl" "reffile_1.mcpl": ok
+can_merge "reffile_1.mcpl" "reffile_empty.mcpl": ok
+can_merge "reffile_5.mcpl.gz" "reffile_5.mcpl.gz": ok
+can_merge "reffile_5.mcpl.gz" "reffile_skip123.mcpl": ok
+can_merge "reffile_crash.mcpl" "reffile_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+can_merge "reffile_crash.mcpl" "reffile_truncated.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+can_merge "reffile_empty.mcpl" "reffile_empty.mcpl": ok
+can_merge "reffile_skip123.mcpl" "reffile_skip123.mcpl": ok
+can_merge "reffile_truncated.mcpl" "reffile_truncated.mcpl": ok
+gzip_file "a1.mcpl": ok
+   | MCPL: Compressing file a1.mcpl
+   | MCPL: Compressed file into a1.mcpl.gz
+gzip_file "nonexistent.mcpl": ok
+   | MCPL: Compressing file nonexistent.mcpl
+   | MCPL ERROR: Problems encountered while compressing file nonexistent.mcpl.
+repair file truncated to 97 bytes, header says 0 particles: error: Errors encountered while attempting to read header
+repair file truncated to 98 bytes, header says 0 particles: error: File does not appear to be broken.
+repair file truncated to 99 bytes, header says 0 particles: ok
+   | MCPL WARNING: Marking stat:sum:a entry as not available (-1) since file not closed properly.
+   | MCPL: Successfully repaired file with 0 particles.
+repair file truncated to 145 bytes, header says 0 particles: ok
+   | MCPL WARNING: Marking stat:sum:a entry as not available (-1) since file not closed properly.
+   | MCPL: Successfully repaired file with 0 particles.
+repair file truncated to 146 bytes, header says 0 particles: ok
+   | MCPL WARNING: Marking stat:sum:a entry as not available (-1) since file not closed properly.
+   | MCPL: Successfully repaired file with 1 particles.
+repair file truncated to 247 bytes, header says 0 particles: ok
+   | MCPL WARNING: Marking stat:sum:a entry as not available (-1) since file not closed properly.
+   | MCPL: Successfully repaired file with 3 particles.
+repair file truncated to 577 bytes, header says 0 particles: ok
+   | MCPL WARNING: Marking stat:sum:a entry as not available (-1) since file not closed properly.
+   | MCPL: Successfully repaired file with 9 particles.
+repair file truncated to 578 bytes, header says 0 particles: ok
+   | MCPL WARNING: Marking stat:sum:a entry as not available (-1) since file not closed properly.
+   | MCPL: Successfully repaired file with 10 particles.
+repair file truncated to 97 bytes, header says 10 particles: error: Errors encountered while attempting to read header
+repair file truncated to 98 bytes, header says 10 particles: ok
+   | MCPL WARNING: Marking stat:sum:a entry as not available (-1) since file not closed properly.
+   | MCPL: Successfully repaired file with 0 particles.
+repair file truncated to 99 bytes, header says 10 particles: ok
+   | MCPL WARNING: Marking stat:sum:a entry as not available (-1) since file not closed properly.
+   | MCPL: Successfully repaired file with 0 particles.
+repair file truncated to 145 bytes, header says 10 particles: ok
+   | MCPL WARNING: Marking stat:sum:a entry as not available (-1) since file not closed properly.
+   | MCPL: Successfully repaired file with 0 particles.
+repair file truncated to 146 bytes, header says 10 particles: ok
+   | MCPL WARNING: Marking stat:sum:a entry as not available (-1) since file not closed properly.
+   | MCPL: Successfully repaired file with 1 particles.
+repair file truncated to 247 bytes, header says 10 particles: ok
+   | MCPL WARNING: Marking stat:sum:a entry as not available (-1) since file not closed properly.
+   | MCPL: Successfully repaired file with 3 particles.
+repair file truncated to 577 bytes, header says 10 particles: ok
+   | MCPL WARNING: Marking stat:sum:a entry as not available (-1) since file not closed properly.
+   | MCPL: Successfully repaired file with 9 particles.
+repair file truncated to 578 bytes, header says 10 particles: error: File does not appear to be broken.
+name_helper("x","M") identical: True
+name_helper("x","G") identical: True
+name_helper("x","B") identical: True
+name_helper("x","m") identical: True
+name_helper("x","g") identical: True
+name_helper("x","b") identical: True
+name_helper("x.mcpl","M") identical: True
+name_helper("x.mcpl","G") identical: True
+name_helper("x.mcpl","B") identical: True
+name_helper("x.mcpl","m") identical: True
+name_helper("x.mcpl","g") identical: True
+name_helper("x.mcpl","b") identical: True
+name_helper("x.mcpl.gz","M") identical: True
+name_helper("x.mcpl.gz","G") identical: True
+name_helper("x.mcpl.gz","B") identical: True
+name_helper("x.mcpl.gz","m") identical: True
+name_helper("x.mcpl.gz","g") identical: True
+name_helper("x.mcpl.gz","b") identical: True
+name_helper("dir/x.mcpl","M") identical: True
+name_helper("dir/x.mcpl","G") identical: True
+name_helper("dir/x.mcpl","B") identical: True
+name_helper("dir/x.mcpl","m") identical: True
+name_helper("dir/x.mcpl","g") identical: True
+name_helper("dir/x.mcpl","b") identical: True
+name_helper("/abs/dir/x.mcpl.gz","M") identical: True
+name_helper("/abs/dir/x.mcpl.gz","G") identical: True
+name_helper("/abs/dir/x.mcpl.gz","B") identical: True
+name_helper("/abs/dir/x.mcpl.gz","m") identical: True
+name_helper("/abs/dir/x.mcpl.gz","g") identical: True
+name_helper("/abs/dir/x.mcpl.gz","b") identical: True
+name_helper("x.gz","M") identical: True
+name_helper("x.gz","G") identical: True
+name_helper("x.gz","B") identical: True
+name_helper("x.gz","m") identical: True
+name_helper("x.gz","g") identical: True
+name_helper("x.gz","b") identical: True
+name_helper("x.mcpl.mcpl","M") identical: True
+name_helper("x.mcpl.mcpl","G") identical: True
+name_helper("x.mcpl.mcpl","B") identical: True
+name_helper("x.mcpl.mcpl","m") identical: True
+name_helper("x.mcpl.mcpl","g") identical: True
+name_helper("x.mcpl.mcpl","b") identical: True
+name_helper(".x","M") identical: True
+name_helper(".x","G") identical: True
+name_helper(".x","B") identical: True
+name_helper(".x","m") identical: True
+name_helper(".x","g") identical: True
+name_helper(".x","b") identical: True
+name_helper("x.mcpl.gz.mcpl","M") identical: True
+name_helper("x.mcpl.gz.mcpl","G") identical: True
+name_helper("x.mcpl.gz.mcpl","B") identical: True
+name_helper("x.mcpl.gz.mcpl","m") identical: True
+name_helper("x.mcpl.gz.mcpl","g") identical: True
+name_helper("x.mcpl.gz.mcpl","b") identical: True
+MPI file creation and merge with nproc=1: ok
+   | MCPL: Compressing file mpiout.mcpl
+   | MCPL: Compressed file into mpiout.mcpl.gz
+MPI file creation and merge with nproc=2: ok
+   | MCPL: Compressing file mpiout.mpiworker0.mcpl
+   | MCPL: Compressed file into mpiout.mpiworker0.mcpl.gz
+   | MCPL: Compressing file mpiout.mpiworker1.mcpl
+   | MCPL: Compressed file into mpiout.mpiworker1.mcpl.gz
+   | MCPL: Removing file mpiout.mpiworker0.mcpl.gz
+   | MCPL: Removing file mpiout.mpiworker1.mcpl.gz
+   | MCPL: Compressing file mpiout.mcpl
+   | MCPL: Compressed file into mpiout.mcpl.gz
+MPI file creation and merge with nproc=4: ok
+   | MCPL: Compressing file mpiout.mpiworker0.mcpl
+   | MCPL: Compressed file into mpiout.mpiworker0.mcpl.gz
+   | MCPL: Compressing file mpiout.mpiworker1.mcpl
+   | MCPL: Compressed file into mpiout.mpiworker1.mcpl.gz
+   | MCPL: Compressing file mpiout.mpiworker2.mcpl
+   | MCPL: Compressed file into mpiout.mpiworker2.mcpl.gz
+   | MCPL: Compressing file mpiout.mpiworker3.mcpl
+   | MCPL: Compressed file into mpiout.mpiworker3.mcpl.gz
+   | MCPL: Removing file mpiout.mpiworker0.mcpl.gz
+   | MCPL: Removing file mpiout.mpiworker1.mcpl.gz
+   | MCPL: Removing file mpiout.mpiworker2.mcpl.gz
+   | MCPL: Removing file mpiout.mpiworker3.mcpl.gz
+   | MCPL: Compressing file mpiout.mcpl
+   | MCPL: Compressed file into mpiout.mcpl.gz
+MPI file creation and merge with nproc=3: ok
+   | MCPL: Compressing file mpiout.mpiworker0.mcpl
+   | MCPL: Compressed file into mpiout.mpiworker0.mcpl.gz
+   | MCPL: Compressing file mpiout.mpiworker1.mcpl
+   | MCPL: Compressed file into mpiout.mpiworker1.mcpl.gz
+   | MCPL: Compressing file mpiout.mpiworker2.mcpl
+   | MCPL: Compressed file into mpiout.mpiworker2.mcpl.gz
+   | MCPL: Removing file mpiout.mpiworker0.mcpl.gz
+   | MCPL: Removing file mpiout.mpiworker1.mcpl.gz
+   | MCPL: Removing file mpiout.mpiworker2.mcpl.gz
+   | MCPL: Compressing file mpiout.mcpl
+   | MCPL: Compressed file into mpiout.mcpl.gz
 Script "random script 0": ok
    | MCPL: Compressing file out.mcpl
    | MCPL: Compressed file into out.mcpl.gz
@@ -280,4 +772,4 @@ Script "random script 146": error: enable_userflags called too late.
 Script "random script 147": error: enable_universal_pdgcode must be called with non-zero pdgcode.
 Script "random script 148": ok
 Script "random script 149": ok
-Compared 238 operations
+Compared 484 operations

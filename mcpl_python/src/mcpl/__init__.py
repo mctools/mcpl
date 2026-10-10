@@ -53,15 +53,23 @@ __all__ = [
             'MCPLParticle',
             'MCPLParticleBlock',
             'app_pymcpltool',
+            'can_merge',
             'collect_stats',
             'constants',
             'convert2ascii',
+            'create_outfile_mpi',
             'dump_file',
             'dump_stats',
             'encode_stat_sum',
+            'forcemerge_files',
             'gzip_file',
             'is_valid_stat_sum_key',
+            'merge_files',
+            'merge_inplace',
+            'merge_outfiles_mpi',
+            'name_helper',
             'plot_stats',
+            'repair',
             'use_logging',
            ]
 
@@ -71,7 +79,18 @@ from . import constants
 from ._blocks import MCPLParticle, MCPLParticleBlock
 from ._cli import app_pymcpltool
 from ._common import MCPLError
-from ._fileops import convert2ascii, dump_file
+from ._fileops import (
+    can_merge,
+    convert2ascii,
+    create_outfile_mpi,
+    dump_file,
+    forcemerge_files,
+    merge_files,
+    merge_inplace,
+    merge_outfiles_mpi,
+    name_helper,
+    repair,
+)
 from ._messages import use_logging
 from ._reader import MCPLFile
 from ._stats import collect_stats, dump_stats, plot_stats

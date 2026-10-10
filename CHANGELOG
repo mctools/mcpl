@@ -37,6 +37,10 @@ v2.2.9  (work in progress)
         values of some of the fields (e.g. weight = 2 * block.weight). The new
         file_indices attribute of blocks gives the positions of their particles
         in the file.
+      * The Python API also gets the other file-level functions of the C API:
+        merge_files, forcemerge_files, merge_inplace, can_merge, repair,
+        name_helper, create_outfile_mpi and merge_outfiles_mpi. They give the
+        same results, printouts and errors as the C functions.
       * mcpltool --extract no longer leaves a broken output file behind when
         given an invalid -p argument.
       * ssw2mcpl and phits2mcpl no longer leave an unfinished output file behind
