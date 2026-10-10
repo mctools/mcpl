@@ -41,18 +41,21 @@ ERROR: -s specified more than once
 
 Run with -h or --help for usage information
 ===> mcpltool ended with exit code 1
-Tool for inspecting Monte Carlo Particle List (.mcpl) files.
+Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.
 
 The default behaviour is to display the contents of the FILE in human readable
 format (see Dump Options below for how to modify what is displayed).
 
-This is the read-only python version of the tool, and as such a lot of
-functionality is missing compared to the compiled C version of the tool.
+This is the python version of the tool, which in addition to the features of
+the compiled mcpltool can show statistics.
 
 This installation supports direct reading of gzipped files (.mcpl.gz).
 
 Usage:
   mcpltool [dump-options] FILE
+  mcpltool --merge [merge-options] FILE1 FILE2
+  mcpltool --extract [extract-options] FILE1 FILE2
+  mcpltool --repair FILE
   mcpltool --stats [stat-options] FILE
   mcpltool --version
   mcpltool --help
@@ -67,6 +70,31 @@ Dump options:
   -sN             : Skip past the first N particles in the file (default 0).
   -bKEY           : Dump binary blob stored under KEY to standard output.
 
+Merge options:
+  -m, --merge FILEOUT FILE1 FILE2 ... FILEN
+                    Creates new FILEOUT with combined particle contents from
+                    specified list of N existing and compatible files.
+                    FILEOUT will be gzipped if its name ends with .mcpl.gz.
+  -m, --merge --inplace FILE1 FILE2 ... FILEN
+                    Appends the particle contents in FILE2 ... FILEN into
+                    FILE1. Note that this action modifies FILE1!
+  --forcemerge [--keepuserflags] FILEOUT FILE1 FILE2 ... FILEN
+               Like --merge but works with incompatible files as well, at the
+               heavy price of discarding most metadata like comments and blobs.
+               Userflags will be discarded unless --keepuserflags is specified.
+
+Extract options:
+  -e, --extract FILE1 FILE2
+                    Extracts particles from FILE1 into a new FILE2.
+                    FILE2 will be gzipped if its name ends with .mcpl.gz.
+  -lN, -sN        : Select range of particles in FILE1 (as above).
+  -pPDGCODE       : Select particles of type given by PDGCODE. Instead of the
+                    PDGCODE, one of the following names can be used: neutron,
+                    antineutron, proton, antiproton, electron, positron (or
+                    antielectron), muon, antimuon, gamma (or photon).
+  --no-comment    : Do not add comments to the header of FILE2 about how the
+                    particles were extracted.
+
 Stat options:
   --stats FILE    : Print statistics summary of particle state data from FILE.
   --stats --pdf FILE
@@ -76,6 +104,9 @@ Stat options:
                   : Like --pdf, but opens interactive histogram views directly.
 
 Other options:
+  -r, --repair FILE
+                    Attempt to repair FILE which was not properly closed, by up-
+                    dating the file header with the correct number of particles.
   -t, --text MCPLFILE OUTFILE
                     Read particle contents of MCPLFILE and write into OUTFILE
                     using a simple ASCII-based format.
@@ -93,18 +124,21 @@ ERROR: Unrecognised arguments for --version.
 
 Run with -h or --help for usage information
 ===> mcpltool ended with exit code 1
-Tool for inspecting Monte Carlo Particle List (.mcpl) files.
+Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.
 
 The default behaviour is to display the contents of the FILE in human readable
 format (see Dump Options below for how to modify what is displayed).
 
-This is the read-only python version of the tool, and as such a lot of
-functionality is missing compared to the compiled C version of the tool.
+This is the python version of the tool, which in addition to the features of
+the compiled mcpltool can show statistics.
 
 This installation supports direct reading of gzipped files (.mcpl.gz).
 
 Usage:
   mcpltool [dump-options] FILE
+  mcpltool --merge [merge-options] FILE1 FILE2
+  mcpltool --extract [extract-options] FILE1 FILE2
+  mcpltool --repair FILE
   mcpltool --stats [stat-options] FILE
   mcpltool --version
   mcpltool --help
@@ -119,6 +153,31 @@ Dump options:
   -sN             : Skip past the first N particles in the file (default 0).
   -bKEY           : Dump binary blob stored under KEY to standard output.
 
+Merge options:
+  -m, --merge FILEOUT FILE1 FILE2 ... FILEN
+                    Creates new FILEOUT with combined particle contents from
+                    specified list of N existing and compatible files.
+                    FILEOUT will be gzipped if its name ends with .mcpl.gz.
+  -m, --merge --inplace FILE1 FILE2 ... FILEN
+                    Appends the particle contents in FILE2 ... FILEN into
+                    FILE1. Note that this action modifies FILE1!
+  --forcemerge [--keepuserflags] FILEOUT FILE1 FILE2 ... FILEN
+               Like --merge but works with incompatible files as well, at the
+               heavy price of discarding most metadata like comments and blobs.
+               Userflags will be discarded unless --keepuserflags is specified.
+
+Extract options:
+  -e, --extract FILE1 FILE2
+                    Extracts particles from FILE1 into a new FILE2.
+                    FILE2 will be gzipped if its name ends with .mcpl.gz.
+  -lN, -sN        : Select range of particles in FILE1 (as above).
+  -pPDGCODE       : Select particles of type given by PDGCODE. Instead of the
+                    PDGCODE, one of the following names can be used: neutron,
+                    antineutron, proton, antiproton, electron, positron (or
+                    antielectron), muon, antimuon, gamma (or photon).
+  --no-comment    : Do not add comments to the header of FILE2 about how the
+                    particles were extracted.
+
 Stat options:
   --stats FILE    : Print statistics summary of particle state data from FILE.
   --stats --pdf FILE
@@ -128,6 +187,9 @@ Stat options:
                   : Like --pdf, but opens interactive histogram views directly.
 
 Other options:
+  -r, --repair FILE
+                    Attempt to repair FILE which was not properly closed, by up-
+                    dating the file header with the correct number of particles.
   -t, --text MCPLFILE OUTFILE
                     Read particle contents of MCPLFILE and write into OUTFILE
                     using a simple ASCII-based format.
