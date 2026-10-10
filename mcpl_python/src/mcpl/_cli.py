@@ -28,6 +28,7 @@ import sys
 
 from ._common import MCPLError, _determine_version, _output_bytearray_raw
 from ._fileops import convert2ascii, dump_file
+from ._messages import _ForcePrinting
 from ._reader import MCPLFile
 from ._stats import dump_stats, plot_stats
 
@@ -85,7 +86,12 @@ Other options:
 def app_pymcpltool(argv=None):
     """Implements a python equivalent of the compiled MCPL tool. If no argv list is
     passed in, sys.argv will be used. In case of errors, MCPLError exceptions
-    are raised."""
+    are raised. Messages are always printed, even if use_logging() was
+    called."""
+    with _ForcePrinting():
+        _app_pymcpltool(argv)
+
+def _app_pymcpltool(argv):
     if argv is None:
         argv = sys.argv
 

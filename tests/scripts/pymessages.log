@@ -1,0 +1,29 @@
+==> By default, warnings are printed:
+--> Opening ref_statsum_crash.mcpl
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+--> Opening ref_statunsupported.mcpl.gz
+MCPL WARNING: Opened file with unknown "stat:..." syntax in comments. The present installation only has special support for "stat:sum:..." comments. It might be a sign that your installation of MCPL is too old.
+==> After use_logging(), they are sent to the logger:
+--> Opening ref_statsum_crash.mcpl
+--> Opening ref_statunsupported.mcpl.gz
+    logged by "mcpl" with level WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+    logged by "mcpl" with level WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+    logged by "mcpl" with level WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+    logged by "mcpl" with level WARNING: Opened file with unknown "stat:..." syntax in comments. The present installation only has special support for "stat:sum:..." comments. It might be a sign that your installation of MCPL is too old.
+==> pymcpltool always prints:
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+Opened MCPL file ref_statsum_crash.mcpl:
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112      9.1166     -21.123       56.62      59.688           0           0           1      19.755      3.3589
+--> pymcpltool exited with code 0
+==> After use_logging(False), warnings are printed again:
+--> Opening ref_statsum_crash.mcpl
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+--> Opening ref_statunsupported.mcpl.gz
+MCPL WARNING: Opened file with unknown "stat:..." syntax in comments. The present installation only has special support for "stat:sum:..." comments. It might be a sign that your installation of MCPL is too old.

@@ -43,6 +43,7 @@ top = 99
 layers = {
     '_numpy' : 0,
     '_common' : 0,
+    '_messages' : 0,
     '_physics' : 1,
     '_statsum' : 1,
     '_blocks' : 2,

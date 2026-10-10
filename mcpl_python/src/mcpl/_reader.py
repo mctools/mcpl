@@ -27,6 +27,7 @@ import os
 
 from ._blocks import MCPLParticleBlock
 from ._common import MCPLError, _output_bytearray_raw
+from ._messages import _warning
 from ._numpy import _numpy_oldfromfile, np, np_dtype
 from ._statsum import _parse_statsum, _parse_statsum_comment, encode_stat_sum
 
@@ -82,8 +83,8 @@ class MCPLFile:
                 if np_rec or ndata % self.particlesize:
                     self._np = np_rec
                     self._hdr['nparticles'] = np_rec
-                    print ("MCPL WARNING: Input file appears to not have been closed"
-                           +f" properly. Recovered {np_rec} particles.")
+                    _warning("Input file appears to not have been closed"
+                             f" properly. Recovered {np_rec} particles.")
 
                     comments = ( self._hdr.get('comments_raw')
                                  or self._hdr['comments'] )[:]
@@ -101,9 +102,9 @@ class MCPLFile:
                                 raise MCPLError("Unexpected statsum encoding"
                                                 " length")
                             comments[ic] = newc
-                            print(f"MCPL WARNING: Marking stat:sum:{key} "
-                                  "entry as not available (-1) since file"
-                                  " not closed properly.")
+                            _warning(f"Marking stat:sum:{key} "
+                                     "entry as not available (-1) since file"
+                                     " not closed properly.")
                     if 'comments_raw' in self._hdr:
                         self._hdr['comments_raw'] = comments
                         self._hdr['comments'] = [c.decode('utf-8','replace')
@@ -524,11 +525,11 @@ class MCPLFile:
             #detected issues.
             _ = self.stat_sum
         if saw_any_unsupportedstat:
-            print("MCPL WARNING: Opened file with unknown \"stat:...\" "
-                  "syntax in comments. The present installation only has"
-                  " special support for \"stat:sum:...\" comments. It"
-                  " might be a sign that your installation of MCPL is"
-                  " too old.")
+            _warning("Opened file with unknown \"stat:...\" "
+                     "syntax in comments. The present installation only has"
+                     " special support for \"stat:sum:...\" comments. It"
+                     " might be a sign that your installation of MCPL is"
+                     " too old.")
 
     def dump_hdr(self):
         """Dump file header to stdout (using a format identical to the one from
