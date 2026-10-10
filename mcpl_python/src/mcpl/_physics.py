@@ -73,6 +73,14 @@ def _pdg_database(pdgcode):
             return s
     return None
 
+#Names of a few common particles, which can be used instead of PDG codes in
+#"pymcpltool -p" (mcpltool has an identical list):
+_particle_names = { 'neutron' : 2112, 'antineutron' : -2112,
+                    'proton' : 2212, 'antiproton' : -2212,
+                    'electron' : 11, 'positron' : -11, 'antielectron' : -11,
+                    'muon' : 13, 'antimuon' : -13,
+                    'gamma' : 22, 'photon' : 22 }
+
 def wavelength_from_ekin(ekin, pdgcode = 2112):
     """Convert kinetic energy [MeV] to (de Broglie) wavelength [Aa] for
     neutrons (pdgcode 2112) and gammas (pdgcode 22), using the CODATA 2022

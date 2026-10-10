@@ -1,0 +1,209 @@
+MCPL: Compressing file a3.mcpl
+MCPL: Compressed file into a3.mcpl.gz
+mcpltool --merge out.mcpl a1.mcpl a2.mcpl: exit code 0
+mcpltool -m out.mcpl.gz a1.mcpl a2.mcpl a3.mcpl.gz: exit code 0
+   | MCPL: Compressing file out.mcpl
+   | MCPL: Compressed file into out.mcpl.gz
+mcpltool --merge out a1.mcpl: exit code 0
+mcpltool --merge --inplace a1.mcpl a2.mcpl a3.mcpl.gz: exit code 0
+mcpltool -m --inplace a3.mcpl.gz a1.mcpl: exit code 1
+   | MCPL ERROR: direct modification of gzipped files is not supported.
+mcpltool --merge out.mcpl a1.mcpl b_dp.mcpl: exit code 1
+   | ERROR: Requested files are incompatible for merge as they have different header info.
+   | 
+   | Run with -h or --help for usage information
+mcpltool --merge out.mcpl a1.mcpl: exit code 0
+mcpltool --merge a2.mcpl a1.mcpl a1.mcpl: exit code 1
+   | ERROR: Requested output file already exists.
+   | 
+   | Run with -h or --help for usage information
+mcpltool --merge out.gz a1.mcpl a2.mcpl: exit code 1
+   | ERROR: Requested output file should not have .gz extension (unless it is .mcpl.gz).
+   | 
+   | Run with -h or --help for usage information
+mcpltool --merge out.mcpl a1.mcpl a1.mcpl: exit code 1
+   | MCPL ERROR: Merging file with itself
+mcpltool --forcemerge out.mcpl a1.mcpl b_dp.mcpl b_pol.mcpl: exit code 0
+   | MCPL force-merge: Transferring 30 particles from file a1.mcpl
+   | MCPL force-merge: Transferring 12 particles from file b_dp.mcpl
+   | MCPL force-merge: Transferring 7 particles from file b_pol.mcpl
+   | MCPL force-merge: Transferred a total of 49 particles to new file out.mcpl
+mcpltool --forcemerge --keepuserflags out.mcpl.gz b_dp.mcpl b_pol.mcpl: exit code 0
+   | MCPL force-merge: Transferring 12 particles from file b_dp.mcpl
+   | MCPL force-merge: Transferring 7 particles from file b_pol.mcpl
+   | MCPL force-merge: Transferred a total of 19 particles to new file out.mcpl
+   | MCPL: Compressing file out.mcpl
+   | MCPL: Compressed file into out.mcpl.gz
+mcpltool --forcemerge out.mcpl a1.mcpl a2.mcpl: exit code 0
+   | MCPL forcemerge_files called with 2 files that are compatible for a standard merge => falling back to standard merge_files function
+mcpltool --forcemerge out.mcpl: exit code 1
+   | ERROR: Too few arguments for --forcemerge.
+   | 
+   | Run with -h or --help for usage information
+mcpltool --extract a1.mcpl out.mcpl: exit code 0
+   | MCPL: Successfully extracted 30 / 30 particles from a1.mcpl into out.mcpl
+mcpltool -e a1.mcpl out.mcpl.gz: exit code 0
+   | MCPL: Compressing file out.mcpl
+   | MCPL: Compressed file into out.mcpl.gz
+   | MCPL: Successfully extracted 30 / 30 particles from a1.mcpl into out.mcpl.gz
+mcpltool --extract -l5 a1.mcpl out.mcpl: exit code 0
+   | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
+   | MCPL: Successfully extracted 5 / 30 particles from a1.mcpl into out.mcpl
+mcpltool --extract -s25 a1.mcpl out: exit code 0
+   | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
+   | MCPL: Successfully extracted 5 / 30 particles from a1.mcpl into out.mcpl
+mcpltool --extract -l3 -s4 a3.mcpl.gz out.mcpl: exit code 0
+   | MCPL: Successfully extracted 1 / 5 particles from a3.mcpl.gz into out.mcpl
+mcpltool --extract -l100 -s0 a1.mcpl out.mcpl: exit code 0
+   | MCPL: Successfully extracted 30 / 30 particles from a1.mcpl into out.mcpl
+mcpltool --extract -p22 a1.mcpl out.mcpl: exit code 0
+   | MCPL: Successfully extracted 10 / 30 particles from a1.mcpl into out.mcpl
+mcpltool -e -p-11 b_dp.mcpl out.mcpl: exit code 0
+   | MCPL: Successfully extracted 0 / 12 particles from b_dp.mcpl into out.mcpl
+mcpltool -e -p11 -l10 -s3 a1.mcpl out.mcpl: exit code 0
+   | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
+   | MCPL: Successfully extracted 3 / 30 particles from a1.mcpl into out.mcpl
+mcpltool --extract -p2112 c_nostat.mcpl out.mcpl: exit code 0
+   | MCPL: Successfully extracted 3 / 9 particles from c_nostat.mcpl into out.mcpl
+mcpltool --extract -s5 c_nostat.mcpl out.mcpl: exit code 0
+   | MCPL: Successfully extracted 4 / 9 particles from c_nostat.mcpl into out.mcpl
+mcpltool --extract crash.mcpl out.mcpl: exit code 0
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+   | MCPL: Successfully extracted 4 / 4 particles from crash.mcpl into out.mcpl
+mcpltool --extract ref1.mcpl out.mcpl: exit code 0
+   | MCPL: Successfully extracted 5 / 5 particles from ref1.mcpl into out.mcpl
+mcpltool --extract a1.mcpl a2.mcpl: exit code 1
+   | ERROR: Requested output file already exists.
+   | 
+   | Run with -h or --help for usage information
+mcpltool --extract a1.mcpl out.gz: exit code 1
+   | ERROR: Requested output file should not have .gz extension (unless it is .mcpl.gz).
+   | 
+   | Run with -h or --help for usage information
+mcpltool --extract a1.mcpl: exit code 1
+   | ERROR: Must specify both input and output files with --extract.
+   | 
+   | Run with -h or --help for usage information
+mcpltool --extract a1.mcpl x.mcpl y.mcpl: exit code 1
+   | ERROR: Too many arguments.
+   | 
+   | Run with -h or --help for usage information
+mcpltool --extract -p0 a1.mcpl out.mcpl: exit code 1
+   | ERROR: Must specify non-zero 32bit integer or particle name as argument to -p.
+   | 
+   | Run with -h or --help for usage information
+mcpltool --extract -pabc a1.mcpl out.mcpl: exit code 1
+   | ERROR: Must specify non-zero 32bit integer or particle name as argument to -p.
+   | 
+   | Run with -h or --help for usage information
+mcpltool --extract --no-comment -p22 -l5 a1.mcpl out.mcpl: exit code 0
+   | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
+   | MCPL: Successfully extracted 2 / 30 particles from a1.mcpl into out.mcpl
+mcpltool --extract -p11 -l3 -s4 a1.mcpl out.mcpl: exit code 0
+   | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
+   | MCPL: Successfully extracted 1 / 30 particles from a1.mcpl into out.mcpl
+mcpltool --no-comment a1.mcpl: exit code 1
+   | ERROR: --no-comment can only be used with --extract.
+   | 
+   | Run with -h or --help for usage information
+mcpltool --extract -pgamma a1.mcpl out.mcpl: exit code 0
+   | MCPL: Successfully extracted 10 / 30 particles from a1.mcpl into out.mcpl
+mcpltool --extract -pphoton -l10 a1.mcpl out.mcpl: exit code 0
+   | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
+   | MCPL: Successfully extracted 3 / 30 particles from a1.mcpl into out.mcpl
+mcpltool --extract -pantielectron b_dp.mcpl out.mcpl: exit code 0
+   | MCPL: Successfully extracted 0 / 12 particles from b_dp.mcpl into out.mcpl
+mcpltool --extract -pneutron c_nostat.mcpl out.mcpl: exit code 0
+   | MCPL: Successfully extracted 3 / 9 particles from c_nostat.mcpl into out.mcpl
+mcpltool --extract -pNeutron a1.mcpl out.mcpl: exit code 1
+   | ERROR: Must specify non-zero 32bit integer or particle name as argument to -p.
+   | 
+   | Run with -h or --help for usage information
+mcpltool --extract -pfoo a1.mcpl out.mcpl: exit code 1
+   | ERROR: Must specify non-zero 32bit integer or particle name as argument to -p.
+   | 
+   | Run with -h or --help for usage information
+mcpltool --inplace a1.mcpl a2.mcpl: exit code 1
+   | ERROR: --inplace can only be used with --merge.
+   | 
+   | Run with -h or --help for usage information
+mcpltool --keepuserflags a1.mcpl: exit code 1
+   | ERROR: --keepuserflags can only be used with --forcemerge.
+   | 
+   | Run with -h or --help for usage information
+mcpltool --merge --forcemerge out.mcpl a1.mcpl a2.mcpl: exit code 1
+   | ERROR: --merge and --forcemerge can not both be specified .
+   | 
+   | Run with -h or --help for usage information
+mcpltool --merge --extract a1.mcpl out.mcpl: exit code 1
+   | ERROR: Conflicting options specified.
+   | 
+   | Run with -h or --help for usage information
+mcpltool -j --extract a1.mcpl out.mcpl: exit code 1
+   | ERROR: Conflicting options specified.
+   | 
+   | Run with -h or --help for usage information
+mcpltool --repair crash.mcpl: exit code 0
+   | MCPL: Successfully repaired file with 4 particles.
+mcpltool --repair a1.mcpl: exit code 1
+   | MCPL ERROR: File does not appear to be broken.
+mcpltool --repair a3.mcpl.gz: exit code 1
+   | MCPL ERROR: File must be gunzipped before it can be checked and possibly repaired.
+mcpltool -r a1.mcpl a2.mcpl: exit code 1
+   | ERROR: Too many arguments.
+   | 
+   | Run with -h or --help for usage information
+mcpltool -l3 a1.mcpl: exit code 0
+   | Opened MCPL file a1.mcpl:
+   | 
+   |   Basic info
+   |     Format             : MCPL-3
+   |     No. of particles   : 30
+   |     Header storage     : 133 bytes
+   |     Data storage       : 1080 bytes
+   | 
+   |   Custom meta data
+   |     Source             : "MySim"
+   |     Number of comments : 2
+   |           -> comment 0 : "a comment"
+   |           -> comment 1 : "stat:sum:nsim:                    1000"
+   |     Number of blobs    : 1
+   |           -> 9 bytes of data with key "key1"
+   | 
+   |   Particle data format
+   |     User flags         : no
+   |     Polarisation info  : no
+   |     Fixed part. type   : no
+   |     Fixed part. weight : no
+   |     FP precision       : single
+   |     Endianness         : little
+   |     Storage            : 36 bytes/particle
+   | 
+   | index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+   |     0        2112       0.001           0          -0           0        -0.8           0         0.6           0           1
+   |     1          22       0.002         1.5          -2         0.1         0.6           0         0.8        0.01         1.5
+   |     2          11       0.003           3          -4         0.2        -0.8           0         0.6        0.02           2
+mcpltool -j b_dp.mcpl: exit code 0
+   | Opened MCPL file b_dp.mcpl:
+   | 
+   |   Basic info
+   |     Format             : MCPL-3
+   |     No. of particles   : 12
+   |     Header storage     : 57 bytes
+   |     Data storage       : 864 bytes
+   | 
+   |   Custom meta data
+   |     Source             : "Other"
+   |     Number of comments : 0
+   |     Number of blobs    : 0
+   | 
+   |   Particle data format
+   |     User flags         : yes
+   |     Polarisation info  : no
+   |     Fixed part. type   : no
+   |     Fixed part. weight : no
+   |     FP precision       : double
+   |     Endianness         : little
+   |     Storage            : 72 bytes/particle
+   | 
+Compared 53 command lines with mcpltool
