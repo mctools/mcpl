@@ -1,4 +1,14 @@
 v2.2.9  (work in progress)
+      * NaN and infinite values are no longer allowed in the particle data of
+        MCPL files. Adding particles with such values (to fields which are
+        stored) now gives an error, in the C API (mcpl_add_particle and
+        mcpl_transfer_last_read_particle, and thus also mcpltool) and in the
+        Python API, as do values too large to be stored in single precision.
+        Existing files with such values can still be read, with a warning (once
+        per file). In the Python API, the wavelength attribute of particles and
+        blocks now gives an error for particles which are not neutrons or
+        gammas (instead of NaN) or have zero kinetic energy, and expressions
+        give an error if they produce NaN or infinite values.
       * The mcpl Python package is now split into several internal modules.
         Its public API is unchanged, and available after "import mcpl" as
         before. The mcpl.mcpl module is kept for backwards compatibility, but

@@ -64,8 +64,8 @@ with mcpl.MCPLFile(infilename) as fi:
         fo.close()
 
 #Wavelengths can also be obtained from particles and blocks of particles with
-#their wavelength attribute (NaN for particles which are not neutrons or
-#gammas):
+#their wavelength attribute (which gives an error for particles which are not
+#neutrons or gammas, so those must be selected first):
 with mcpl.MCPLFile('neutrons.mcpl') as f:
     b = f.read_block()
     wl = b.wavelength

@@ -194,45 +194,51 @@ def merge_files(file_output, files):
     if _file_certainly_exists(file_output):
         raise MCPLError('requested output file of merge_files already exists')
     out = MCPLOutFile(file_output)
-    warned_oldversion = False
-    scinfo = None
-    for ifile, fn in enumerate(files):
-        with _open_raw(fn) as fi:
-            if ifile == 0:
-                out.transfer_metadata(fi)
-                scinfo = []
-                for _, key, value in _statsum_entries(fi):
-                    s = [0.0, 0.0]
-                    if value == -1.0:
-                        s[0] = -1.0
-                    else:
-                        _stablesum_add(s, value)
-                    scinfo.append((key, s))
-                    if value != -1.0:
-                        out.hdr_add_stat_sum(key, -1.0)
-                out._write_header()
-            else:
-                for (key, s), (_, _, value) in zip(scinfo, _statsum_entries(fi)):
-                    if s[0] == -1.0 and s[1] == 0.0:
-                        continue
-                    if value == -1.0:
-                        s[0], s[1] = -1.0, 0.0
-                    else:
-                        _stablesum_add(s, value)
-            if fi.version == 3:
-                #Can transfer raw bytes:
-                for b in fi.particle_blocks:
-                    out._write_records(b._data)
-            else:
-                if not warned_oldversion:
-                    warned_oldversion = True
-                    _warning('Merging files from older MCPL'
-                             ' format. Output will be in latest format.')
-                for b in fi.particle_blocks:
-                    out.add_particles(position=b.position, direction=b.direction,
-                                      polarisation=b.polarisation, ekin=b.ekin,
-                                      time=b.time, weight=b.weight,
-                                      pdgcode=b.pdgcode, userflags=b.userflags)
+    try:
+        warned_oldversion = False
+        scinfo = None
+        for ifile, fn in enumerate(files):
+            with _open_raw(fn) as fi:
+                if ifile == 0:
+                    out.transfer_metadata(fi)
+                    scinfo = []
+                    for _, key, value in _statsum_entries(fi):
+                        s = [0.0, 0.0]
+                        if value == -1.0:
+                            s[0] = -1.0
+                        else:
+                            _stablesum_add(s, value)
+                        scinfo.append((key, s))
+                        if value != -1.0:
+                            out.hdr_add_stat_sum(key, -1.0)
+                    out._write_header()
+                else:
+                    for (key, s), (_, _, value) in zip(scinfo, _statsum_entries(fi)):
+                        if s[0] == -1.0 and s[1] == 0.0:
+                            continue
+                        if value == -1.0:
+                            s[0], s[1] = -1.0, 0.0
+                        else:
+                            _stablesum_add(s, value)
+                if fi.version == 3:
+                    #Can transfer raw bytes (like in C, without checking the
+                    #values of the particles):
+                    fi._check_nonfinite = False
+                    for b in fi.particle_blocks:
+                        out._write_records(b._data)
+                else:
+                    if not warned_oldversion:
+                        warned_oldversion = True
+                        _warning('Merging files from older MCPL'
+                                 ' format. Output will be in latest format.')
+                    for b in fi.particle_blocks:
+                        out.add_particles(position=b.position, direction=b.direction,
+                                          polarisation=b.polarisation, ekin=b.ekin,
+                                          time=b.time, weight=b.weight,
+                                          pdgcode=b.pdgcode, userflags=b.userflags)
+    except BaseException:
+        out._abort()
+        raise
     warned_statsuminf = False
     for key, s in scinfo:
         val = s[0] + s[1]
@@ -295,13 +301,17 @@ def forcemerge_files(file_output, files, keep_userflags = False):
                        opt_singleprec = not opt_dp,
                        opt_universalpdgcode = 0 if disallow_pdg else lastseen_pdg,
                        opt_universalweight = 0.0 if disallow_w else lastseen_w )
-    for fn in files:
-        with _open_raw(fn) as f:
-            np_ = f.nparticles
-            _info(f'force-merge: Transferring {np_} particle'
-                  f'{"" if np_==1 else "s"} from file {fn}', prefix = 'MCPL ')
-            for b in f.particle_blocks:
-                out.add_particles(b)
+    try:
+        for fn in files:
+            with _open_raw(fn) as f:
+                np_ = f.nparticles
+                _info(f'force-merge: Transferring {np_} particle'
+                      f'{"" if np_==1 else "s"} from file {fn}', prefix = 'MCPL ')
+                for b in f.particle_blocks:
+                    out.add_particles(b)
+    except BaseException:
+        out._abort()
+        raise
     np_ = out.nparticles
     _info(f'force-merge: Transferred a total of {np_} particle'
           f'{"" if np_==1 else "s"} to new file {file_output}', prefix = 'MCPL ')
@@ -355,6 +365,7 @@ def merge_inplace(file1, file2):
             for pos, key, _ in updates:
                 write_at(pos, encode_stat_sum(key, -1.0).encode('ascii'))
             fh.seek(first_particle_pos + psize * np1)
+            f2._check_nonfinite = False
             fh.writelines(b._data.tobytes() for b in f2.particle_blocks)
             for pos, key, newval in updates:
                 if newval != -1.0:

@@ -3,7 +3,7 @@ Modules of the mcpl package and their imports from the package:
   layer   0 : _messages            <- -
   layer   0 : _numpy               <- -
   layer   0 : constants            <- -
-  layer   1 : _physics             <- _numpy, constants
+  layer   1 : _physics             <- _common, _numpy, constants
   layer   1 : _statsum             <- _common
   layer   2 : _blocks              <- _numpy, _physics
   layer   2 : _expressions         <- _common, _numpy, _physics

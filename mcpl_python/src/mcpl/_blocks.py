@@ -24,7 +24,7 @@
 __all__ = ['MCPLParticle', 'MCPLParticleBlock']
 
 from ._numpy import np, np_fma, np_stack
-from ._physics import wavelength_from_ekin
+from ._physics import wavelength_checked
 
 
 class MCPLParticle:
@@ -100,8 +100,9 @@ class MCPLParticle:
         return self._b.userflags[self._i]
     @property
     def wavelength(self):
-        """wavelength [Aa] of neutrons and gammas (NaN for other particles)"""
-        return wavelength_from_ekin(self.ekin, self.pdgcode)
+        """wavelength [Aa] (only for neutrons and gammas with non-zero kinetic
+        energy, otherwise MCPLError is raised)"""
+        return wavelength_checked(self.ekin, self.pdgcode)
     @property
     def pdgcode(self):
         """MC particle number from the Particle Data Group (2112=neutron, 22=gamma, ...)"""
@@ -212,8 +213,9 @@ class MCPLParticleBlock:
 
     @property
     def wavelength(self):
-        """wavelength [Aa] of neutrons and gammas (NaN for other particles)"""
-        return wavelength_from_ekin(self.ekin, self.pdgcode)
+        """wavelength [Aa] (only for blocks with just neutrons and gammas, with
+        non-zero kinetic energy, otherwise MCPLError is raised)"""
+        return wavelength_checked(self.ekin, self.pdgcode)
 
     @property
     def file_offset(self):
@@ -458,4 +460,43 @@ class _ArrayBlock:
         return self._n
     @property
     def wavelength(self):
-        return wavelength_from_ekin(self.ekin,self.pdgcode)
+        return wavelength_checked(self.ekin,self.pdgcode)
+
+def _nonfinite_masks( b, check_polarisation = True, check_weight = True ):
+    """Masks of the particles in block b with NaN or infinite values, for each
+    field (named as in error messages, in the order checked by the C library),
+    for the fields which have any."""
+    res = {}
+    def add( name, *arrays ):
+        mask = np.zeros(len(b),dtype=bool)
+        for a in arrays:
+            mask |= ~np.isfinite(np.broadcast_to(a,(len(b),)))
+        if mask.any():
+            res[name] = mask
+    add('position',b.x,b.y,b.z)
+    if type(b) is MCPLParticleBlock and len(b):
+        #Only unpack directions which might be non-finite (packed values
+        #can be infinite for valid directions):
+        mask = np.zeros(len(b),dtype=bool)
+        cand = ~( np.isfinite(b._data['uve1']) & np.isfinite(b._data['uve2']) )
+        if cand.any():
+            mask[cand] = ~np.all(np.isfinite(b[cand].direction),axis=1)
+        if mask.any():
+            res['direction'] = mask
+    else:
+        add('direction',b.ux,b.uy,b.uz)
+    if check_polarisation:
+        add('polarisation',b.polx,b.poly,b.polz)
+    add('kinetic energy',b.ekin)
+    add('time',b.time)
+    if check_weight:
+        add('weight',b.weight)
+    return res
+
+def _first_nonfinite( masks ):
+    """(index,field) of the first particle with NaN or infinite values (and the
+    first such field of it), or None"""
+    if not masks:
+        return None
+    idx = min( int(np.argmax(m)) for m in masks.values() )
+    return idx, next( name for name, m in masks.items() if m[idx] )

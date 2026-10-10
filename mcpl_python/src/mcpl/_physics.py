@@ -23,6 +23,7 @@
 
 __all__ = []
 
+from ._common import MCPLError
 from ._numpy import np
 from .constants import hc_eV_Aa, neutron_mass_energy
 
@@ -110,3 +111,21 @@ def ekin_from_wavelength(wavelength, pdgcode = 2112):
         res = np.where( pdg == 2112, np.square(pc) / ( np.sqrt( np.square(pc) + mc2*mc2 ) + mc2 ),
                         np.where( pdg == 22, pc, np.nan ) )
     return res if res.ndim else float(res)
+
+def wavelength_checked(ekin, pdgcode):
+    """Like wavelength_from_ekin, but raising MCPLError instead of returning NaN
+    or infinite values (for particles which are not neutrons or gammas, or which
+    have zero kinetic energy)."""
+    pdg = np.asarray(pdgcode)
+    notng = ~np.isin(pdg,(2112,22))
+    if np.any(notng):
+        bad = int(pdg[notng].flat[0])
+        raise MCPLError('The wavelength is only defined for neutrons (pdgcode'
+                        ' 2112) and gammas (pdgcode 22), not for particles with'
+                        f' pdgcode {bad}, so select neutrons or gammas first'
+                        ' (e.g. with block[block.pdgcode == 2112])')
+    res = wavelength_from_ekin(ekin, pdgcode)
+    if not np.all(np.isfinite(res)):
+        raise MCPLError('The wavelength of particles with zero kinetic energy is'
+                        ' infinite')
+    return res

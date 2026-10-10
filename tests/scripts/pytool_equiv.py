@@ -36,6 +36,7 @@ import mcpldev as mcpl
 import numpy as np
 from MCPLTestUtils.dirs import mcpltool_cmd, test_data_dir
 from MCPLTestUtils.loadlib import getlib
+from MCPLTestUtils.mcplpatch import set_values
 
 input_dir = pathlib.Path('inputs').absolute()
 
@@ -61,6 +62,10 @@ def make_inputs():
     w('c_nostat', 'srcname MySim', *parts(9), 'close')
     shutil.copy(test_data_dir.joinpath('ref','reffile_crash.mcpl'), input_dir/'crash.mcpl')
     shutil.copy(test_data_dir.joinpath('ref','reffile_1.mcpl'), input_dir/'ref1.mcpl')
+    #Files with NaN or infinite values (see pyc_equiv.py):
+    set_values(input_dir/'a1.mcpl', input_dir/'nan.mcpl', 12, {'x':float('nan')})
+    set_values(input_dir/'a1.mcpl', input_dir/'inf.mcpl', 3, {'uve3':float('inf'),
+                                                             't':float('-inf')})
 
 def dir_contents(d):
     res = {}
@@ -81,14 +86,22 @@ def fresh(d):
     shutil.copytree(input_dir, d)
 
 ncases = 0
+#Commands failing while transferring particles, after which mcpltool leaves an
+#unfinished output file behind, while pymcpltool removes it:
+unfinished_output = [ ['--extract','nan.mcpl','out.mcpl'],
+                      ['--extract','-p2112','inf.mcpl','out.mcpl'],
+                      ['--forcemerge','out.mcpl','b_dp.mcpl','nan.mcpl'] ]
+
 def compare(*args):
     global ncases
     ncases += 1
     fresh('c')
     fresh('py')
     c = run([str(mcpltool_cmd), *args], 'c')
-    #the Python API has no mcpl_ prefix on function names:
-    c = ( c[0], c[1].replace('mcpl_',''), c[2] )
+    #the Python API has no mcpl_ prefix on function names, and transfers
+    #particles with add_particles:
+    c = ( c[0], c[1].replace('mcpl_','').replace('transfer_last_read_particle',
+                                                 'add_particles'), c[2] )
     p = run([sys.executable, '-m', 'mcpldev', *args], 'py')
     problems = []
     if c[0] != p[0]:
@@ -98,6 +111,9 @@ def compare(*args):
     if p[2]:
         problems.append(f'pymcpltool stderr: {p[2]!r}')
     dc, dp = dir_contents('c'), dir_contents('py')
+    if list(args) in unfinished_output:
+        assert 'out.mcpl' in dc and 'out.mcpl' not in dp
+        del dc['out.mcpl']
     if set(dc) != set(dp):
         problems.append(f'different files: C: {sorted(dc)} Py: {sorted(dp)}')
     else:
@@ -165,6 +181,20 @@ def test_compare_with_mcpltool():
         ['-r','a1.mcpl','a2.mcpl'],
         ['-l3','a1.mcpl'],
         ['-j','b_dp.mcpl'],
+        ['nan.mcpl'],
+        ['-n','-l0','nan.mcpl'],
+        ['-s10','-l5','nan.mcpl'],
+        ['-s13','nan.mcpl'],
+        ['-n','-l0','inf.mcpl'],
+        ['-j','nan.mcpl'],
+        ['--extract','nan.mcpl','out.mcpl'],
+        ['--extract','-l12','nan.mcpl','out.mcpl'],
+        ['--extract','-p22','nan.mcpl','out.mcpl'],
+        ['--extract','-p2112','inf.mcpl','out.mcpl'],
+        ['--merge','out.mcpl','a1.mcpl','nan.mcpl','inf.mcpl'],
+        ['--merge','--inplace','a2.mcpl','nan.mcpl'],
+        ['--forcemerge','out.mcpl','b_dp.mcpl','nan.mcpl'],
+        ['--repair','nan.mcpl'],
     ]
     for args in cases:
         ok &= compare(*args)

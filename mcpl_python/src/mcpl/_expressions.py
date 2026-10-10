@@ -162,24 +162,50 @@ class _ExprEvaluator:
     def name( self, n ):
         if n == 'wavelength':
             self._check_wavelength()
+            q = self._wavelength()
+            v = np.asarray(q.v)
+            bad = ~np.isfinite(v)
+            if self.active is not None:
+                bad = bad & self.active
+            if np.any(bad):
+                self.error('The wavelength is infinite for particles with zero'
+                           ' kinetic energy')
+            return q
         if n in self.state:
             return self.state[n]
-        if n == 'wavelength' and ( 'ekin' in self.state or 'pdgcode' in self.state ):
-            #Wavelength of modified particles:
-            return _Q(wavelength_from_ekin(self.name('ekin').v,
-                                           self.name('pdgcode').v) * _expr_wl_unit,
-                      _dim_L)
         if n in _expr_constants:
             return _Q(_expr_constants[n])
         if n in _expr_units:
             v, d = _expr_units[n]
             return _Q(v,d)
         if n not in self._cache:
-            v = getattr(self._block,n)
-            if n == 'wavelength':
-                v = v * _expr_wl_unit
-            self._cache[n] = _Q(v,_expr_field_dims.get(n))
+            q = _Q(getattr(self._block,n),_expr_field_dims.get(n))
+            self._cache[n] = self.finite(q,f'The particle field {n} has')
         return self._cache[n]
+    def _wavelength( self ):
+        #Wavelengths (NaN for particles other than neutrons and gammas, for
+        #which they are not used), also of modified particles in edits:
+        if 'wavelength' in self.state:
+            return self.state['wavelength']
+        if 'ekin' in self.state or 'pdgcode' in self.state or 'wavelength' not in self._cache:
+            q = _Q(wavelength_from_ekin(self.name('ekin').v,
+                                        self.name('pdgcode').v) * _expr_wl_unit,
+                   _dim_L)
+            if 'ekin' in self.state or 'pdgcode' in self.state:
+                return q
+            self._cache['wavelength'] = q
+        return self._cache['wavelength']
+    def finite( self, q, what ):
+        """Raise MCPLError if q has NaN or infinite values (for the active
+        particles)"""
+        v = np.asarray(q.v)
+        if v.dtype.kind in 'fc':
+            bad = ~np.isfinite(v)
+            if self.active is not None:
+                bad = bad & self.active
+            if np.any(bad):
+                self.error(f'{what} NaN or infinite values')
+        return q
     def _check_wavelength( self ):
         pdg = np.asarray(self.name('pdgcode').v)
         bad = ~np.isin(pdg,(2112,22))
@@ -218,7 +244,7 @@ class _ExprEvaluator:
         if isinstance(node,ast.Expression):
             return ev(node.body)
         if isinstance(node,ast.Constant):
-            return _Q(node.value,zero=(node.value==0))
+            return self.finite(_Q(node.value,zero=(node.value==0)),'A constant has')
         if isinstance(node,ast.Name):
             return self.name(node.id)
         if isinstance(node,ast.BoolOp):
@@ -241,7 +267,12 @@ class _ExprEvaluator:
                 return _Q(np.invert(self._int(q,'~')))
             return q
         if isinstance(node,ast.BinOp):
-            return self.binop(node.op,ev(node.left),ev(node.right))
+            what = { ast.Add : 'Addition', ast.Sub : 'Subtraction',
+                     ast.Mult : 'Multiplication', ast.Div : 'Division',
+                     ast.Mod : 'The modulo operation', ast.FloorDiv : 'Floor division',
+                     ast.Pow : 'Raising to a power' }.get(type(node.op),'An operation')
+            return self.finite(self.binop(node.op,ev(node.left),ev(node.right)),
+                               f'{what} gives')
         if isinstance(node,ast.Compare):
             fcts = { ast.Eq : np.equal, ast.NotEq : np.not_equal,
                      ast.Lt : np.less, ast.LtE : np.less_equal,
@@ -259,7 +290,8 @@ class _ExprEvaluator:
                                 self._with_active(~test,node.orelse),'if-else')
             return _Q(np.where(test,a,b),d)
         if isinstance(node,ast.Call):
-            return self.call(node.func.id,[ev(a) for a in node.args])
+            return self.finite(self.call(node.func.id,[ev(a) for a in node.args]),
+                               f'{node.func.id}(..) gives')
         raise MCPLError('Unsupported expression')#should not happen
     def binop( self, op, a, b ):
         if isinstance(op,(ast.BitAnd,ast.BitOr)):
@@ -658,6 +690,9 @@ class ParticleEdit:
         if not np.all( np.isin( pdg, (2112,22) ) ):
             raise MCPLError('wavelength can only be assigned to neutrons'
                             ' (pdgcode 2112) and gammas (pdgcode 22)'
+                            f' in expression "{self._expr}"')
+        if np.any( np.asarray(wl) <= 0.0 ):
+            raise MCPLError('wavelength must be assigned positive values'
                             f' in expression "{self._expr}"')
         ev.state['ekin'] = _Q(np.broadcast_to(ekin_from_wavelength(wl/_expr_wl_unit,pdg),
                                               wl.shape),_dim_E)

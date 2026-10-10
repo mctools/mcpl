@@ -35,6 +35,38 @@ Script "transfer from b_dp.mcpl with options 'userflags\npol'": ok
 Script "transfer from b_pol.mcpl with options 'userflags\npol'": ok
 Script "transfer from b_uf.mcpl with options 'userflags\npol'": ok
 Script "transfer from b_uw2.mcpl with options 'userflags\npol'": ok
+Script "transfer from n_x_nan.mcpl with options ''": error: add_particles asked to transfer particle with NaN or infinite position
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 1). They can not be added to other MCPL files.
+Script "transfer from n_x_nan.mcpl with options 'pol'": error: add_particles asked to transfer particle with NaN or infinite position
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 1). They can not be added to other MCPL files.
+Script "transfer from n_t_inf.mcpl with options ''": error: add_particles asked to transfer particle with NaN or infinite time
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 2). They can not be added to other MCPL files.
+Script "transfer from n_t_inf.mcpl with options 'pol'": error: add_particles asked to transfer particle with NaN or infinite time
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 2). They can not be added to other MCPL files.
+Script "transfer from n_w_nan.mcpl with options ''": error: add_particles asked to transfer particle with NaN or infinite weight
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 4). They can not be added to other MCPL files.
+Script "transfer from n_w_nan.mcpl with options 'pol'": error: add_particles asked to transfer particle with NaN or infinite weight
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 4). They can not be added to other MCPL files.
+Script "transfer from n_ekin_inf.mcpl with options ''": error: add_particles asked to transfer particle with NaN or infinite kinetic energy
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 0). They can not be added to other MCPL files.
+Script "transfer from n_ekin_inf.mcpl with options 'pol'": error: add_particles asked to transfer particle with NaN or infinite kinetic energy
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 0). They can not be added to other MCPL files.
+Script "transfer from n_dir_nan.mcpl with options ''": error: add_particles asked to transfer particle with NaN or infinite direction
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 2). They can not be added to other MCPL files.
+Script "transfer from n_dir_nan.mcpl with options 'pol'": error: add_particles asked to transfer particle with NaN or infinite direction
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 2). They can not be added to other MCPL files.
+Script "transfer from n_dir_inf.mcpl with options ''": error: add_particles asked to transfer particle with NaN or infinite direction
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 1). They can not be added to other MCPL files.
+Script "transfer from n_dir_inf.mcpl with options 'pol'": error: add_particles asked to transfer particle with NaN or infinite direction
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 1). They can not be added to other MCPL files.
+Script "transfer from n_pol_nan.mcpl with options ''": ok
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 1). They can not be added to other MCPL files.
+Script "transfer from n_pol_nan.mcpl with options 'pol'": error: add_particles asked to transfer particle with NaN or infinite polarisation
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 1). They can not be added to other MCPL files.
+Script "transfer from n_dir_valid_inf.mcpl with options ''": ok
+Script "transfer from n_dir_valid_inf.mcpl with options 'pol'": ok
+Script "transfer from n_ekin_inf.mcpl into universal weight": error: add_particles asked to transfer particle with weight 1 into a file with universal weight of 2.5
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 0). They can not be added to other MCPL files.
 Script "metadata and transfer": ok
 Script "transfer into universal pdgcode": error: add_particles asked to transfer particle with pdgcode 22 into a file with universal pdgcode of 2112
 Script "transfer into universal weight": error: add_particles asked to transfer particle with weight 2.5 into a file with universal weight of 2
@@ -49,6 +81,9 @@ Script "empty filename": error: create_outfile called with empty string.
 Script "special directions": ok
 Script "zero and large ekin": ok
 Script "extreme pdgcodes": ok
+Script "NaN polarisation not stored": ok
+Script "NaN weight not stored": ok
+Script "large values in double precision": ok
 Script "userflags values": ok
 Script "stat:sum updates": ok
 Script "stat:sum scale -1": ok
@@ -93,6 +128,23 @@ Script "scale inf": error: hdr_scale_stat_sums called with infinite scale
 Script "non-unit direction": error: attempting to add particle with non-unit direction vector
 Script "zero direction": error: attempting to add particle with non-unit direction vector
 Script "negative ekin": error: attempting to add particle with negative kinetic energy
+Script "NaN position": error: attempting to add particle with NaN or infinite position
+Script "infinite position": error: attempting to add particle with NaN or infinite position
+Script "NaN direction": error: attempting to add particle with NaN or infinite direction
+Script "infinite direction": error: attempting to add particle with NaN or infinite direction
+Script "NaN polarisation": error: attempting to add particle with NaN or infinite polarisation
+Script "NaN ekin": error: attempting to add particle with NaN or infinite kinetic energy
+Script "infinite ekin": error: attempting to add particle with NaN or infinite kinetic energy
+Script "NaN time": error: attempting to add particle with NaN or infinite time
+Script "infinite weight": error: attempting to add particle with NaN or infinite weight
+Script "NaN in second particle": error: attempting to add particle with NaN or infinite time
+Script "NaN position and ekin": error: attempting to add particle with NaN or infinite position
+Script "NaN ekin and non-unit direction": error: attempting to add particle with NaN or infinite kinetic energy
+Script "x too large for single precision": error: attempting to add particle with position too large for single precision storage
+Script "ekin too large for single precision": error: attempting to add particle with kinetic energy too large for single precision storage
+Script "time too large for single precision": error: attempting to add particle with time too large for single precision storage
+Script "weight too large for single precision": error: attempting to add particle with weight too large for single precision storage
+Script "polarisation too large for single precision": error: attempting to add particle with polarisation too large for single precision storage
 merge_files "a1.mcpl|a2.mcpl": ok
 merge_files "a1.mcpl|a2.mcpl|a3.mcpl": ok
 merge_files "a2.mcpl|a1.mcpl": ok
@@ -123,6 +175,9 @@ merge_files "ref_statsum_crash.mcpl|ref_statsum.mcpl.gz": ok
    | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
    | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
    | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+merge_files "a1.mcpl|n_w_nan.mcpl": ok
+merge_files "n_ekin_inf.mcpl|a2.mcpl": ok
+merge_files "b_dp.mcpl|n_x_nan.mcpl": ok
 merge_files to existing file: error: requested output file of merge_files already exists
 forcemerge_files "a1.mcpl|b_dp.mcpl" keep_userflags=0: ok
    | MCPL force-merge: Transferring 5 particles from file a1.mcpl
@@ -218,6 +273,28 @@ forcemerge_files "reffile_skip123.mcpl|b_dp.mcpl" keep_userflags=1: ok
    | MCPL force-merge: Transferred a total of 126 particles to new file merged
 forcemerge_files "a1.mcpl|a1.mcpl" keep_userflags=0: error: Merging file with itself
 forcemerge_files "a1.mcpl|a1.mcpl" keep_userflags=1: error: Merging file with itself
+forcemerge_files "a1.mcpl|n_x_nan.mcpl" keep_userflags=0: error: add_particles asked to transfer particle with NaN or infinite position
+   | MCPL force-merge: Transferring 5 particles from file a1.mcpl
+   | MCPL force-merge: Transferring 3 particles from file n_x_nan.mcpl
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 1). They can not be added to other MCPL files.
+forcemerge_files "a1.mcpl|n_x_nan.mcpl" keep_userflags=1: error: add_particles asked to transfer particle with NaN or infinite position
+   | MCPL force-merge: Transferring 5 particles from file a1.mcpl
+   | MCPL force-merge: Transferring 3 particles from file n_x_nan.mcpl
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 1). They can not be added to other MCPL files.
+forcemerge_files "n_pol_nan.mcpl|b_dp.mcpl" keep_userflags=0: error: add_particles asked to transfer particle with NaN or infinite polarisation
+   | MCPL force-merge: Transferring 3 particles from file n_pol_nan.mcpl
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 1). They can not be added to other MCPL files.
+forcemerge_files "n_pol_nan.mcpl|b_dp.mcpl" keep_userflags=1: error: add_particles asked to transfer particle with NaN or infinite polarisation
+   | MCPL force-merge: Transferring 3 particles from file n_pol_nan.mcpl
+   | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 1). They can not be added to other MCPL files.
+forcemerge_files "b_pol.mcpl|n_dir_valid_inf.mcpl" keep_userflags=0: ok
+   | MCPL force-merge: Transferring 3 particles from file b_pol.mcpl
+   | MCPL force-merge: Transferring 5 particles from file n_dir_valid_inf.mcpl
+   | MCPL force-merge: Transferred a total of 8 particles to new file merged
+forcemerge_files "b_pol.mcpl|n_dir_valid_inf.mcpl" keep_userflags=1: ok
+   | MCPL force-merge: Transferring 3 particles from file b_pol.mcpl
+   | MCPL force-merge: Transferring 5 particles from file n_dir_valid_inf.mcpl
+   | MCPL force-merge: Transferred a total of 8 particles to new file merged
 merge_inplace "a1.mcpl" "a2.mcpl": ok
 merge_inplace "a1.mcpl" "a3.mcpl": ok
 merge_inplace "a3.mcpl" "a1.mcpl": ok
@@ -234,6 +311,8 @@ merge_inplace "fmt2_reffile_1.mcpl" "fmt2_reffile_5.mcpl": error: Attempting to 
 merge_inplace "reffile_crash.mcpl" "reffile_1.mcpl": error: Attempting to merge incompatible files
    | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 merge_inplace "a1.mcpl" "nonexistent.mcpl": error: Unable to open file!
+merge_inplace "a2.mcpl" "n_w_nan.mcpl": ok
+merge_inplace "n_dir_nan.mcpl" "a1.mcpl": ok
 repair "reffile_crash.mcpl": ok
    | MCPL: Successfully repaired file with 4 particles.
 repair "reffile_1.mcpl": error: File does not appear to be broken.
@@ -254,9 +333,16 @@ can_merge "a1.mcpl" "b_pol.mcpl": ok
 can_merge "a1.mcpl" "b_updg2.mcpl": ok
 can_merge "a1.mcpl" "b_uw2.mcpl": ok
 can_merge "a1.mcpl" "c_statkey.mcpl": ok
-can_merge "a1.mcpl" "ref_statsum.mcpl.gz": ok
-can_merge "a1.mcpl" "reffile_5.mcpl.gz": ok
-can_merge "a1.mcpl" "reffile_skip123.mcpl": ok
+can_merge "a1.mcpl" "n_dir_inf.mcpl": ok
+can_merge "a1.mcpl" "n_ekin_inf.mcpl": ok
+can_merge "a1.mcpl" "n_w_nan.mcpl": ok
+can_merge "a1.mcpl" "ref_statsum_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+can_merge "a1.mcpl" "reffile_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+can_merge "a1.mcpl" "reffile_truncated.mcpl": ok
 can_merge "a2.mcpl" "a2.mcpl": ok
 can_merge "a2.mcpl" "a5.mcpl": ok
 can_merge "a2.mcpl" "b_dp.mcpl": ok
@@ -264,13 +350,11 @@ can_merge "a2.mcpl" "b_uf.mcpl": ok
 can_merge "a2.mcpl" "b_updg_g.mcpl": ok
 can_merge "a2.mcpl" "c_blob.mcpl": ok
 can_merge "a2.mcpl" "fmt2_reffile_1.mcpl": ok
-can_merge "a2.mcpl" "ref_statsum_crash.mcpl": ok
-   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
-   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
-   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
-can_merge "a2.mcpl" "reffile_crash.mcpl": ok
-   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
-can_merge "a2.mcpl" "reffile_truncated.mcpl": ok
+can_merge "a2.mcpl" "n_dir_nan.mcpl": ok
+can_merge "a2.mcpl" "n_pol_nan.mcpl": ok
+can_merge "a2.mcpl" "n_x_nan.mcpl": ok
+can_merge "a2.mcpl" "reffile_1.mcpl": ok
+can_merge "a2.mcpl" "reffile_empty.mcpl": ok
 can_merge "a3.mcpl" "a3.mcpl": ok
 can_merge "a3.mcpl" "a_empty.mcpl": ok
 can_merge "a3.mcpl" "b_empty_pol.mcpl": ok
@@ -278,143 +362,242 @@ can_merge "a3.mcpl" "b_updg.mcpl": ok
 can_merge "a3.mcpl" "b_uw.mcpl": ok
 can_merge "a3.mcpl" "c_comment.mcpl": ok
 can_merge "a3.mcpl" "fmt2_reffile_5.mcpl": ok
-can_merge "a3.mcpl" "reffile_1.mcpl": ok
-can_merge "a3.mcpl" "reffile_empty.mcpl": ok
+can_merge "a3.mcpl" "n_dir_valid_inf.mcpl": ok
+can_merge "a3.mcpl" "n_t_inf.mcpl": ok
+can_merge "a3.mcpl" "ref_statsum.mcpl.gz": ok
+can_merge "a3.mcpl" "reffile_5.mcpl.gz": ok
+can_merge "a3.mcpl" "reffile_skip123.mcpl": ok
 can_merge "a4.mcpl" "a4.mcpl": ok
 can_merge "a4.mcpl" "agz.mcpl.gz": ok
 can_merge "a4.mcpl" "b_pol.mcpl": ok
 can_merge "a4.mcpl" "b_updg2.mcpl": ok
 can_merge "a4.mcpl" "b_uw2.mcpl": ok
 can_merge "a4.mcpl" "c_statkey.mcpl": ok
-can_merge "a4.mcpl" "ref_statsum.mcpl.gz": ok
-can_merge "a4.mcpl" "reffile_5.mcpl.gz": ok
-can_merge "a4.mcpl" "reffile_skip123.mcpl": ok
+can_merge "a4.mcpl" "n_dir_inf.mcpl": ok
+can_merge "a4.mcpl" "n_ekin_inf.mcpl": ok
+can_merge "a4.mcpl" "n_w_nan.mcpl": ok
+can_merge "a4.mcpl" "ref_statsum_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+can_merge "a4.mcpl" "reffile_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+can_merge "a4.mcpl" "reffile_truncated.mcpl": ok
 can_merge "a5.mcpl" "a5.mcpl": ok
 can_merge "a5.mcpl" "b_dp.mcpl": ok
 can_merge "a5.mcpl" "b_uf.mcpl": ok
 can_merge "a5.mcpl" "b_updg_g.mcpl": ok
 can_merge "a5.mcpl" "c_blob.mcpl": ok
 can_merge "a5.mcpl" "fmt2_reffile_1.mcpl": ok
-can_merge "a5.mcpl" "ref_statsum_crash.mcpl": ok
-   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
-   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
-   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
-can_merge "a5.mcpl" "reffile_crash.mcpl": ok
-   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
-can_merge "a5.mcpl" "reffile_truncated.mcpl": ok
+can_merge "a5.mcpl" "n_dir_nan.mcpl": ok
+can_merge "a5.mcpl" "n_pol_nan.mcpl": ok
+can_merge "a5.mcpl" "n_x_nan.mcpl": ok
+can_merge "a5.mcpl" "reffile_1.mcpl": ok
+can_merge "a5.mcpl" "reffile_empty.mcpl": ok
 can_merge "a_empty.mcpl" "a_empty.mcpl": ok
 can_merge "a_empty.mcpl" "b_empty_pol.mcpl": ok
 can_merge "a_empty.mcpl" "b_updg.mcpl": ok
 can_merge "a_empty.mcpl" "b_uw.mcpl": ok
 can_merge "a_empty.mcpl" "c_comment.mcpl": ok
 can_merge "a_empty.mcpl" "fmt2_reffile_5.mcpl": ok
-can_merge "a_empty.mcpl" "reffile_1.mcpl": ok
-can_merge "a_empty.mcpl" "reffile_empty.mcpl": ok
+can_merge "a_empty.mcpl" "n_dir_valid_inf.mcpl": ok
+can_merge "a_empty.mcpl" "n_t_inf.mcpl": ok
+can_merge "a_empty.mcpl" "ref_statsum.mcpl.gz": ok
+can_merge "a_empty.mcpl" "reffile_5.mcpl.gz": ok
+can_merge "a_empty.mcpl" "reffile_skip123.mcpl": ok
 can_merge "agz.mcpl.gz" "agz.mcpl.gz": ok
 can_merge "agz.mcpl.gz" "b_pol.mcpl": ok
 can_merge "agz.mcpl.gz" "b_updg2.mcpl": ok
 can_merge "agz.mcpl.gz" "b_uw2.mcpl": ok
 can_merge "agz.mcpl.gz" "c_statkey.mcpl": ok
-can_merge "agz.mcpl.gz" "ref_statsum.mcpl.gz": ok
-can_merge "agz.mcpl.gz" "reffile_5.mcpl.gz": ok
-can_merge "agz.mcpl.gz" "reffile_skip123.mcpl": ok
+can_merge "agz.mcpl.gz" "n_dir_inf.mcpl": ok
+can_merge "agz.mcpl.gz" "n_ekin_inf.mcpl": ok
+can_merge "agz.mcpl.gz" "n_w_nan.mcpl": ok
+can_merge "agz.mcpl.gz" "ref_statsum_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+can_merge "agz.mcpl.gz" "reffile_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+can_merge "agz.mcpl.gz" "reffile_truncated.mcpl": ok
 can_merge "b_dp.mcpl" "b_dp.mcpl": ok
 can_merge "b_dp.mcpl" "b_uf.mcpl": ok
 can_merge "b_dp.mcpl" "b_updg_g.mcpl": ok
 can_merge "b_dp.mcpl" "c_blob.mcpl": ok
 can_merge "b_dp.mcpl" "fmt2_reffile_1.mcpl": ok
-can_merge "b_dp.mcpl" "ref_statsum_crash.mcpl": ok
-   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
-   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
-   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
-can_merge "b_dp.mcpl" "reffile_crash.mcpl": ok
-   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
-can_merge "b_dp.mcpl" "reffile_truncated.mcpl": ok
+can_merge "b_dp.mcpl" "n_dir_nan.mcpl": ok
+can_merge "b_dp.mcpl" "n_pol_nan.mcpl": ok
+can_merge "b_dp.mcpl" "n_x_nan.mcpl": ok
+can_merge "b_dp.mcpl" "reffile_1.mcpl": ok
+can_merge "b_dp.mcpl" "reffile_empty.mcpl": ok
 can_merge "b_empty_pol.mcpl" "b_empty_pol.mcpl": ok
 can_merge "b_empty_pol.mcpl" "b_updg.mcpl": ok
 can_merge "b_empty_pol.mcpl" "b_uw.mcpl": ok
 can_merge "b_empty_pol.mcpl" "c_comment.mcpl": ok
 can_merge "b_empty_pol.mcpl" "fmt2_reffile_5.mcpl": ok
-can_merge "b_empty_pol.mcpl" "reffile_1.mcpl": ok
-can_merge "b_empty_pol.mcpl" "reffile_empty.mcpl": ok
+can_merge "b_empty_pol.mcpl" "n_dir_valid_inf.mcpl": ok
+can_merge "b_empty_pol.mcpl" "n_t_inf.mcpl": ok
+can_merge "b_empty_pol.mcpl" "ref_statsum.mcpl.gz": ok
+can_merge "b_empty_pol.mcpl" "reffile_5.mcpl.gz": ok
+can_merge "b_empty_pol.mcpl" "reffile_skip123.mcpl": ok
 can_merge "b_pol.mcpl" "b_pol.mcpl": ok
 can_merge "b_pol.mcpl" "b_updg2.mcpl": ok
 can_merge "b_pol.mcpl" "b_uw2.mcpl": ok
 can_merge "b_pol.mcpl" "c_statkey.mcpl": ok
-can_merge "b_pol.mcpl" "ref_statsum.mcpl.gz": ok
-can_merge "b_pol.mcpl" "reffile_5.mcpl.gz": ok
-can_merge "b_pol.mcpl" "reffile_skip123.mcpl": ok
+can_merge "b_pol.mcpl" "n_dir_inf.mcpl": ok
+can_merge "b_pol.mcpl" "n_ekin_inf.mcpl": ok
+can_merge "b_pol.mcpl" "n_w_nan.mcpl": ok
+can_merge "b_pol.mcpl" "ref_statsum_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+can_merge "b_pol.mcpl" "reffile_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+can_merge "b_pol.mcpl" "reffile_truncated.mcpl": ok
 can_merge "b_uf.mcpl" "b_uf.mcpl": ok
 can_merge "b_uf.mcpl" "b_updg_g.mcpl": ok
 can_merge "b_uf.mcpl" "c_blob.mcpl": ok
 can_merge "b_uf.mcpl" "fmt2_reffile_1.mcpl": ok
-can_merge "b_uf.mcpl" "ref_statsum_crash.mcpl": ok
-   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
-   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
-   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
-can_merge "b_uf.mcpl" "reffile_crash.mcpl": ok
-   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
-can_merge "b_uf.mcpl" "reffile_truncated.mcpl": ok
+can_merge "b_uf.mcpl" "n_dir_nan.mcpl": ok
+can_merge "b_uf.mcpl" "n_pol_nan.mcpl": ok
+can_merge "b_uf.mcpl" "n_x_nan.mcpl": ok
+can_merge "b_uf.mcpl" "reffile_1.mcpl": ok
+can_merge "b_uf.mcpl" "reffile_empty.mcpl": ok
 can_merge "b_updg.mcpl" "b_updg.mcpl": ok
 can_merge "b_updg.mcpl" "b_uw.mcpl": ok
 can_merge "b_updg.mcpl" "c_comment.mcpl": ok
 can_merge "b_updg.mcpl" "fmt2_reffile_5.mcpl": ok
-can_merge "b_updg.mcpl" "reffile_1.mcpl": ok
-can_merge "b_updg.mcpl" "reffile_empty.mcpl": ok
+can_merge "b_updg.mcpl" "n_dir_valid_inf.mcpl": ok
+can_merge "b_updg.mcpl" "n_t_inf.mcpl": ok
+can_merge "b_updg.mcpl" "ref_statsum.mcpl.gz": ok
+can_merge "b_updg.mcpl" "reffile_5.mcpl.gz": ok
+can_merge "b_updg.mcpl" "reffile_skip123.mcpl": ok
 can_merge "b_updg2.mcpl" "b_updg2.mcpl": ok
 can_merge "b_updg2.mcpl" "b_uw2.mcpl": ok
 can_merge "b_updg2.mcpl" "c_statkey.mcpl": ok
-can_merge "b_updg2.mcpl" "ref_statsum.mcpl.gz": ok
-can_merge "b_updg2.mcpl" "reffile_5.mcpl.gz": ok
-can_merge "b_updg2.mcpl" "reffile_skip123.mcpl": ok
+can_merge "b_updg2.mcpl" "n_dir_inf.mcpl": ok
+can_merge "b_updg2.mcpl" "n_ekin_inf.mcpl": ok
+can_merge "b_updg2.mcpl" "n_w_nan.mcpl": ok
+can_merge "b_updg2.mcpl" "ref_statsum_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+can_merge "b_updg2.mcpl" "reffile_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+can_merge "b_updg2.mcpl" "reffile_truncated.mcpl": ok
 can_merge "b_updg_g.mcpl" "b_updg_g.mcpl": ok
 can_merge "b_updg_g.mcpl" "c_blob.mcpl": ok
 can_merge "b_updg_g.mcpl" "fmt2_reffile_1.mcpl": ok
-can_merge "b_updg_g.mcpl" "ref_statsum_crash.mcpl": ok
-   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
-   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
-   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
-can_merge "b_updg_g.mcpl" "reffile_crash.mcpl": ok
-   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
-can_merge "b_updg_g.mcpl" "reffile_truncated.mcpl": ok
+can_merge "b_updg_g.mcpl" "n_dir_nan.mcpl": ok
+can_merge "b_updg_g.mcpl" "n_pol_nan.mcpl": ok
+can_merge "b_updg_g.mcpl" "n_x_nan.mcpl": ok
+can_merge "b_updg_g.mcpl" "reffile_1.mcpl": ok
+can_merge "b_updg_g.mcpl" "reffile_empty.mcpl": ok
 can_merge "b_uw.mcpl" "b_uw.mcpl": ok
 can_merge "b_uw.mcpl" "c_comment.mcpl": ok
 can_merge "b_uw.mcpl" "fmt2_reffile_5.mcpl": ok
-can_merge "b_uw.mcpl" "reffile_1.mcpl": ok
-can_merge "b_uw.mcpl" "reffile_empty.mcpl": ok
+can_merge "b_uw.mcpl" "n_dir_valid_inf.mcpl": ok
+can_merge "b_uw.mcpl" "n_t_inf.mcpl": ok
+can_merge "b_uw.mcpl" "ref_statsum.mcpl.gz": ok
+can_merge "b_uw.mcpl" "reffile_5.mcpl.gz": ok
+can_merge "b_uw.mcpl" "reffile_skip123.mcpl": ok
 can_merge "b_uw2.mcpl" "b_uw2.mcpl": ok
 can_merge "b_uw2.mcpl" "c_statkey.mcpl": ok
-can_merge "b_uw2.mcpl" "ref_statsum.mcpl.gz": ok
-can_merge "b_uw2.mcpl" "reffile_5.mcpl.gz": ok
-can_merge "b_uw2.mcpl" "reffile_skip123.mcpl": ok
+can_merge "b_uw2.mcpl" "n_dir_inf.mcpl": ok
+can_merge "b_uw2.mcpl" "n_ekin_inf.mcpl": ok
+can_merge "b_uw2.mcpl" "n_w_nan.mcpl": ok
+can_merge "b_uw2.mcpl" "ref_statsum_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+can_merge "b_uw2.mcpl" "reffile_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+can_merge "b_uw2.mcpl" "reffile_truncated.mcpl": ok
 can_merge "c_blob.mcpl" "c_blob.mcpl": ok
 can_merge "c_blob.mcpl" "fmt2_reffile_1.mcpl": ok
-can_merge "c_blob.mcpl" "ref_statsum_crash.mcpl": ok
-   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
-   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
-   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
-can_merge "c_blob.mcpl" "reffile_crash.mcpl": ok
-   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
-can_merge "c_blob.mcpl" "reffile_truncated.mcpl": ok
+can_merge "c_blob.mcpl" "n_dir_nan.mcpl": ok
+can_merge "c_blob.mcpl" "n_pol_nan.mcpl": ok
+can_merge "c_blob.mcpl" "n_x_nan.mcpl": ok
+can_merge "c_blob.mcpl" "reffile_1.mcpl": ok
+can_merge "c_blob.mcpl" "reffile_empty.mcpl": ok
 can_merge "c_comment.mcpl" "c_comment.mcpl": ok
 can_merge "c_comment.mcpl" "fmt2_reffile_5.mcpl": ok
-can_merge "c_comment.mcpl" "reffile_1.mcpl": ok
-can_merge "c_comment.mcpl" "reffile_empty.mcpl": ok
+can_merge "c_comment.mcpl" "n_dir_valid_inf.mcpl": ok
+can_merge "c_comment.mcpl" "n_t_inf.mcpl": ok
+can_merge "c_comment.mcpl" "ref_statsum.mcpl.gz": ok
+can_merge "c_comment.mcpl" "reffile_5.mcpl.gz": ok
+can_merge "c_comment.mcpl" "reffile_skip123.mcpl": ok
 can_merge "c_statkey.mcpl" "c_statkey.mcpl": ok
-can_merge "c_statkey.mcpl" "ref_statsum.mcpl.gz": ok
-can_merge "c_statkey.mcpl" "reffile_5.mcpl.gz": ok
-can_merge "c_statkey.mcpl" "reffile_skip123.mcpl": ok
-can_merge "fmt2_reffile_1.mcpl" "fmt2_reffile_1.mcpl": ok
-can_merge "fmt2_reffile_1.mcpl" "ref_statsum_crash.mcpl": ok
+can_merge "c_statkey.mcpl" "n_dir_inf.mcpl": ok
+can_merge "c_statkey.mcpl" "n_ekin_inf.mcpl": ok
+can_merge "c_statkey.mcpl" "n_w_nan.mcpl": ok
+can_merge "c_statkey.mcpl" "ref_statsum_crash.mcpl": ok
    | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
    | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
    | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
-can_merge "fmt2_reffile_1.mcpl" "reffile_crash.mcpl": ok
+can_merge "c_statkey.mcpl" "reffile_crash.mcpl": ok
    | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
-can_merge "fmt2_reffile_1.mcpl" "reffile_truncated.mcpl": ok
+can_merge "c_statkey.mcpl" "reffile_truncated.mcpl": ok
+can_merge "fmt2_reffile_1.mcpl" "fmt2_reffile_1.mcpl": ok
+can_merge "fmt2_reffile_1.mcpl" "n_dir_nan.mcpl": ok
+can_merge "fmt2_reffile_1.mcpl" "n_pol_nan.mcpl": ok
+can_merge "fmt2_reffile_1.mcpl" "n_x_nan.mcpl": ok
+can_merge "fmt2_reffile_1.mcpl" "reffile_1.mcpl": ok
+can_merge "fmt2_reffile_1.mcpl" "reffile_empty.mcpl": ok
 can_merge "fmt2_reffile_5.mcpl" "fmt2_reffile_5.mcpl": ok
-can_merge "fmt2_reffile_5.mcpl" "reffile_1.mcpl": ok
-can_merge "fmt2_reffile_5.mcpl" "reffile_empty.mcpl": ok
+can_merge "fmt2_reffile_5.mcpl" "n_dir_valid_inf.mcpl": ok
+can_merge "fmt2_reffile_5.mcpl" "n_t_inf.mcpl": ok
+can_merge "fmt2_reffile_5.mcpl" "ref_statsum.mcpl.gz": ok
+can_merge "fmt2_reffile_5.mcpl" "reffile_5.mcpl.gz": ok
+can_merge "fmt2_reffile_5.mcpl" "reffile_skip123.mcpl": ok
+can_merge "n_dir_inf.mcpl" "n_dir_inf.mcpl": ok
+can_merge "n_dir_inf.mcpl" "n_ekin_inf.mcpl": ok
+can_merge "n_dir_inf.mcpl" "n_w_nan.mcpl": ok
+can_merge "n_dir_inf.mcpl" "ref_statsum_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+can_merge "n_dir_inf.mcpl" "reffile_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+can_merge "n_dir_inf.mcpl" "reffile_truncated.mcpl": ok
+can_merge "n_dir_nan.mcpl" "n_dir_nan.mcpl": ok
+can_merge "n_dir_nan.mcpl" "n_pol_nan.mcpl": ok
+can_merge "n_dir_nan.mcpl" "n_x_nan.mcpl": ok
+can_merge "n_dir_nan.mcpl" "reffile_1.mcpl": ok
+can_merge "n_dir_nan.mcpl" "reffile_empty.mcpl": ok
+can_merge "n_dir_valid_inf.mcpl" "n_dir_valid_inf.mcpl": ok
+can_merge "n_dir_valid_inf.mcpl" "n_t_inf.mcpl": ok
+can_merge "n_dir_valid_inf.mcpl" "ref_statsum.mcpl.gz": ok
+can_merge "n_dir_valid_inf.mcpl" "reffile_5.mcpl.gz": ok
+can_merge "n_dir_valid_inf.mcpl" "reffile_skip123.mcpl": ok
+can_merge "n_ekin_inf.mcpl" "n_ekin_inf.mcpl": ok
+can_merge "n_ekin_inf.mcpl" "n_w_nan.mcpl": ok
+can_merge "n_ekin_inf.mcpl" "ref_statsum_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+can_merge "n_ekin_inf.mcpl" "reffile_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+can_merge "n_ekin_inf.mcpl" "reffile_truncated.mcpl": ok
+can_merge "n_pol_nan.mcpl" "n_pol_nan.mcpl": ok
+can_merge "n_pol_nan.mcpl" "n_x_nan.mcpl": ok
+can_merge "n_pol_nan.mcpl" "reffile_1.mcpl": ok
+can_merge "n_pol_nan.mcpl" "reffile_empty.mcpl": ok
+can_merge "n_t_inf.mcpl" "n_t_inf.mcpl": ok
+can_merge "n_t_inf.mcpl" "ref_statsum.mcpl.gz": ok
+can_merge "n_t_inf.mcpl" "reffile_5.mcpl.gz": ok
+can_merge "n_t_inf.mcpl" "reffile_skip123.mcpl": ok
+can_merge "n_w_nan.mcpl" "n_w_nan.mcpl": ok
+can_merge "n_w_nan.mcpl" "ref_statsum_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+can_merge "n_w_nan.mcpl" "reffile_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+can_merge "n_w_nan.mcpl" "reffile_truncated.mcpl": ok
+can_merge "n_x_nan.mcpl" "n_x_nan.mcpl": ok
+can_merge "n_x_nan.mcpl" "reffile_1.mcpl": ok
+can_merge "n_x_nan.mcpl" "reffile_empty.mcpl": ok
 can_merge "ref_statsum.mcpl.gz" "ref_statsum.mcpl.gz": ok
 can_merge "ref_statsum.mcpl.gz" "reffile_5.mcpl.gz": ok
 can_merge "ref_statsum.mcpl.gz" "reffile_skip123.mcpl": ok
@@ -771,4 +954,4 @@ Script "random script 146": error: enable_userflags called too late.
 Script "random script 147": error: enable_universal_pdgcode must be called with non-zero pdgcode.
 Script "random script 148": ok
 Script "random script 149": ok
-Compared 483 operations
+Compared 623 operations

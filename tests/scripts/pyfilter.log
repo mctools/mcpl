@@ -86,6 +86,13 @@ ParticleFilter('x.real > 0'): Unsupported syntax in expression "x.real > 0"
 ParticleFilter('[x][0] > 0'): Unsupported syntax in expression "[x][0] > 0"
 ParticleFilter("x > 'a'"): Unsupported value in expression "x > 'a'"
 ParticleFilter(''): Syntax error in expression ""
+ParticleFilter('sqrt(x/cm) > 1'): sqrt(..) gives NaN or infinite values in expression "sqrt(x/cm) > 1"
+ParticleFilter('1/(x/cm - x/cm) > 1'): Division gives NaN or infinite values in expression "1/(x/cm - x/cm) > 1"
+ParticleFilter('log(ekin/MeV - ekin/MeV) > 0'): log(..) gives NaN or infinite values in expression "log(ekin/MeV - ekin/MeV) > 0"
+ParticleFilter('x/cm % 0 > 1'): The modulo operation gives NaN or infinite values in expression "x/cm % 0 > 1"
+ParticleFilter('1e999 > x/cm'): A constant has NaN or infinite values in expression "1e999 > x/cm"
+ParticleFilter('(-1)^(x/cm) > 0'): Raising to a power gives NaN or infinite values in expression "(-1)^(x/cm) > 0"
+ParticleFilter('x != x && 1/(x/cm - x/cm) > 1'): no error
 ParticleEdit('x = 2*ux'): Can not assign value without units to x, which is a length (add units, e.g. 2cm), in expression "x = 2*ux"
 ParticleEdit('x = 2'): Can not assign value without units to x, which is a length (add units, e.g. 2cm), in expression "x = 2"
 ParticleEdit('ekin = 0.025'): Can not assign value without units to ekin, which is an energy (add units, e.g. 2MeV), in expression "ekin = 0.025"
@@ -119,6 +126,15 @@ ParticleEdit('x = y = 1cm'): Unsupported assignment "x = y = 1cm" in "x = y = 1c
 ParticleEdit('x, y = y, x'): Expected assignments like "x = 2*y" (or swap(..) or rotate_x/y/z(..)) in "x, y = y, x"
 ParticleEdit(''): Empty edit expression
 ParticleEdit('pdgcode = 1.5'): Non-integer values assigned to pdgcode
+ParticleEdit('x = sqrt(x/cm)*1cm'): sqrt(..) gives NaN or infinite values in expression "x = sqrt(x/cm)*1cm"
+ParticleEdit('weight = 1/(x/cm - x/cm)'): Division gives NaN or infinite values in expression "weight = 1/(x/cm - x/cm)"
+ParticleEdit('wavelength = 0') on neutrons: wavelength must be assigned positive values in expression "wavelength = 0"
+ParticleEdit('wavelength = -1Aa') on neutrons: wavelength must be assigned positive values in expression "wavelength = -1Aa"
+ParticleEdit('wavelength = wavelength - wavelength') on neutrons: wavelength must be assigned positive values in expression "wavelength = wavelength - wavelength"
+ParticleFilter('pdgcode == neutron && wavelength > 1Aa') with zero ekin: The wavelength is infinite for particles with zero kinetic energy in expression "pdgcode == neutron && wavelength > 1Aa"
+ParticleFilter('pdgcode == neutron && ekin > 0 && wavelength > 1Aa') with zero ekin: selects 0
+ParticleFilter('ekin > 0 && 1/(ekin/MeV) > 1') with zero ekin: selects 1
+ParticleFilter('1/(ekin/MeV) > 1') with zero ekin: Division gives NaN or infinite values in expression "1/(ekin/MeV) > 1"
 pyexample_filtermcpl wrote 81 particles with comments ['Transmission spectrum from 10GeV proton beam on 20cm lead', 'Applied filter for neutrons with ekin<0.1MeV']
 Wrote 726 particles to neutrons.mcpl
 Wrote 239 particles to gammas.mcpl

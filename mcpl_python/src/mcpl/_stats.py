@@ -105,7 +105,9 @@ class _StatCollector:
     def add_data(self,a,w = None):
         amin,amax = a.min(),a.max()
         assert w is None or len(w)==len(a)
-        assert not np.isnan(amin),"input array has NaN's!"
+        if not ( np.isfinite(amin) and np.isfinite(amax) ):
+            raise MCPLError('Can not calculate statistics for particles with NaN'
+                            ' or infinite values')
         self.__min = min(amin,amin if self.__min is None else self.__min)
         self.__max = max(amax,amax if self.__max is None else self.__max)
         new_sumw = float(len(a)) if w is None else w.sum()
