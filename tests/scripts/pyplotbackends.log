@@ -1,0 +1,81 @@
+printing backend available: True, unavailable backend available: False, built-in backends first: True
+printing backend shows: 'A figure'
+[options] printing backend shows: 'A figure'
+formats of the printing backend: ['txt']
+formats of the test backend: ['txt', 'pdf', 'png', 'html']
+register_backend(PrintingBackend) again: MCPLError: A plotting backend named "printing" is already registered
+register_backend(object): MCPLError: register_backend must be called with a subclass of mcpl.plotting.Backend
+unavailable backend: MCPLError: The unavailable plotting backend is not available (install the some_missing_package Python package)
+unknown option: MCPLError: Unsupported option(s) for the printing plotting backend: matplotlib_backend
+wrong format: MCPLError: The printing plotting backend can not create .pdf files (supported: .txt)
+backend=42: MCPLError: The backend must be the name of a plotting backend or a mcpl.plotting.Backend object
+==> set_default_backend('printing'):
+printing backend shows: 'A figure'
+Figure 1 (1x1): 'A figure'
+  Panel None xlabel=None ylabel=None 
+    Text 'Hello'
+printing backend shows: None
+printing backend shows: 'example.mcpl: 1006 particles, sum(weights) = 1006'
+printing backend shows: None
+printing backend shows: None
+printing backend shows: None
+printing backend shows: None
+printing backend shows: None
+printing backend shows: None
+printing backend shows: None
+printing backend shows: None
+printing backend shows: None
+printing backend shows: None
+printing backend shows: None
+printing backend shows: None
+printing backend shows: None
+printing backend shows: None
+   formats: ['txt']
+==> set_default_backend(PrintingBackend object):
+[object] printing backend shows: 'A figure'
+Figure 1 (1x1): 'A figure'
+  Panel None xlabel=None ylabel=None 
+    Text 'Hello'
+[object] printing backend shows: None
+[object] printing backend shows: 'example.mcpl: 1006 particles, sum(weights) = 1006'
+[object] printing backend shows: None
+[object] printing backend shows: None
+[object] printing backend shows: None
+[object] printing backend shows: None
+[object] printing backend shows: None
+[object] printing backend shows: None
+[object] printing backend shows: None
+[object] printing backend shows: None
+[object] printing backend shows: None
+[object] printing backend shows: None
+[object] printing backend shows: None
+[object] printing backend shows: None
+[object] printing backend shows: None
+[object] printing backend shows: None
+   formats: ['txt']
+==> set_default_backend(None):
+   default backend is the first available: True
+Backend object with options: MCPLError: Options for plotting backends (printing_prefix) can not be used together with a mcpl.plotting.Backend object
+default Backend object with options: MCPLError: Options for plotting backends (printing_prefix) can not be used together with a mcpl.plotting.Backend object
+unavailable default backend: MCPLError: The unavailable plotting backend (selected with set_default_backend) is not available (install the some_missing_package Python package)
+set_default_backend("foo"): MCPLError: Unknown plotting backend "foo". The plotting backends are: matplotlib, plotly, printing, unavailable
+set_default_backend(42): MCPLError: set_default_backend must be called with the name of a plotting backend, a mcpl.plotting.Backend object, or None
+printing backend shows: 'A figure'
+Figure 1 (1x1): 'A figure'
+  Panel None xlabel=None ylabel=None 
+    Text 'Hello'
+MCPL_PLOT_BACKEND=unavailable: MCPLError: The unavailable plotting backend (selected with the MCPL_PLOT_BACKEND environment variable) is not available (install the some_missing_package Python package)
+MCPL_PLOT_BACKEND=foo: MCPLError: Unknown plotting backend "foo" (selected with the MCPL_PLOT_BACKEND environment variable). The plotting backends are: matplotlib, plotly, printing, unavailable
+==> MCPL_PLOT_BACKEND=test pymcpltool --hist ... : exit code 0
+   | Figure 1 (1x1): None
+   |   Panel None xlabel='ekin/MeV' ylabel='weights per bin' xlim=[0.00139345,9724.96]
+   |     StepHist label=None color=0 bins=3 edges=[0.00139345,9724.96] sum=1006 max=1003 nonzero_bins=2
+==> MCPL_PLOT_BACKEND=test pymcpltool --hist ... --backend foo: exit code 1
+   | ERROR: Unknown plotting backend "foo". The plotting backends are: matplotlib, plotly
+   | 
+   | Run with -h or --help for usage information
+==> MCPL_PLOT_BACKEND=foo pymcpltool --hist ... : exit code 1
+   | ERROR: Unknown plotting backend "foo" (selected with the MCPL_PLOT_BACKEND environment variable). The plotting backends are: matplotlib, plotly
+   | 
+   | Run with -h or --help for usage information
+plot_stats with set_backend created ['stats.txt'], with warnings: ['DeprecationWarning: The set_backend parameter of plot_stats is deprecated, use matplotlib_backend instead']

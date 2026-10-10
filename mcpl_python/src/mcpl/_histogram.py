@@ -137,12 +137,13 @@ class Histogram:
         """Figure (see mcpl.plotting) with the histogram."""
         return Figure( panels = [ self.panel(logy = logy) ] )
 
-    def plot( self, filename = None, backend = None, logy = False ):
+    def plot( self, filename = None, backend = None, logy = False, **options ):
         """Show the histogram (or save it in a file if filename is given) with
-        the named plotting backend (default is the first available, see
-        mcpl.plotting.available_backends()). Returns the list of created files
-        when saving."""
-        return _show_or_save([self.figure(logy = logy)],filename,backend)
+        the plotting backend (name or Backend object, default is the default
+        backend, see mcpl.plotting). Further keyword arguments are options for
+        the backend (e.g. matplotlib_backend='agg'). Returns the list of
+        created files when saving."""
+        return _show_or_save([self.figure(logy = logy)],filename,backend,options)
 
     def to_text( self ):
         """Text table with the histogram contents."""
@@ -184,10 +185,10 @@ class Histogram2D:
         """Figure (see mcpl.plotting) with the histogram."""
         return Figure( panels = [ self.panel(logz = logz) ] )
 
-    def plot( self, filename = None, backend = None, logz = True ):
+    def plot( self, filename = None, backend = None, logz = True, **options ):
         """Show the histogram (or save it in a file if filename is given) with
-        the named plotting backend."""
-        return _show_or_save([self.figure(logz = logz)],filename,backend)
+        the plotting backend (see Histogram.plot)."""
+        return _show_or_save([self.figure(logz = logz)],filename,backend,options)
 
     def to_text( self ):
         lines = [ f'# 2D histogram of: {self.xexpression} : {self.yexpression}',
@@ -201,10 +202,10 @@ class Histogram2D:
                                          self.contents[i,j] ) ))
         return '\n'.join(lines)
 
-def _show_or_save( figures, filename, backend ):
+def _show_or_save( figures, filename, backend, options ):
     if filename:
-        return save(figures,filename,backend=backend)
-    show(figures,backend=backend)
+        return save(figures,filename,backend=backend,**options)
+    show(figures,backend=backend,**options)
     return None
 
 def _find_range( files, flt, vals, logx ):
@@ -347,10 +348,9 @@ def histogram2d( files, xexpression, yexpression, select = None, bins = 100,
     return h
 
 def plot_histograms( histograms, filename = None, backend = None, logy = False,
-                     overlay = False, labels = None ):
+                     overlay = False, labels = None, **options ):
     """Show histograms (or save them in a file if filename is given) with the
-    named plotting backend (default is the first available, see
-    mcpl.plotting.available_backends()). Each histogram is shown in a separate
+    plotting backend and options (see Histogram.plot). Each histogram is shown in a separate
     figure (e.g. on separate pages of a PDF file), or with overlay=True, all the
     (1D) histograms are drawn in the same plot with a legend, for instance to
     compare histograms of the same expression from different simulations. The
@@ -363,7 +363,7 @@ def plot_histograms( histograms, filename = None, backend = None, logy = False,
         for h in histograms:
             figs.append( h.figure(logy = logy) if isinstance(h,Histogram)
                          else h.figure() )
-        return _show_or_save(figs,filename,backend)
+        return _show_or_save(figs,filename,backend,options)
     if not histograms:
         raise MCPLError('No histograms to plot')
     if not all( isinstance(h,Histogram) for h in histograms ):
@@ -383,4 +383,4 @@ def plot_histograms( histograms, filename = None, backend = None, logy = False,
             label = name if curve is None else f'{name}: {curve}'
             p.add(StepHist(h.edges,h.values(curve),label = label,color = color))
             color += 1
-    return _show_or_save([Figure(panels = [p])],filename,backend)
+    return _show_or_save([Figure(panels = [p])],filename,backend,options)

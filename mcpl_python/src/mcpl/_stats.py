@@ -31,6 +31,7 @@ from ._expressions import _as_filter
 from ._messages import _warning
 from ._numpy import _np_add_at, np, np_dtype, np_unique
 from ._physics import _pdg_database, wavelength_from_ekin
+from ._plotbackend import _backend_name
 from ._reader import MCPLFile
 from .plotting import (
     Bars,
@@ -39,7 +40,6 @@ from .plotting import (
     Panel,
     StepHist,
     Text,
-    available_backends,
     save,
     show,
 )
@@ -595,17 +595,17 @@ def stats_figures(stats):
                                                  items = [ StepHist(bins,hist) ] ) ] ))
     return figures
 
-def plot_stats(stats,pdf=False,set_backend=None,backend=None,filename=None):
+def plot_stats(stats,pdf=False,set_backend=None,backend=None,filename=None,**options):
     """Produce plots of provided statistics object (from collect_stats(), or a
     file for which collect_stats() is called). The plots are shown
     interactively, or saved in a file if filename is given, in the format
     given by its extension (e.g. "plots.pdf", or "plots.png" which gives one
     numbered file per plot). The backend parameter selects the plotting
-    backend (default is the first available one, see
-    mcpl.plotting.available_backends()), and set_backend can be used to select
-    a matplotlib backend (e.g. 'agg') when using matplotlib. Returns the list
-    of created files when saving. The pdf parameter is deprecated (use filename
-    instead)."""
+    backend (name or Backend object, default is the default backend, see
+    mcpl.plotting), and further keyword arguments are options for it (e.g.
+    matplotlib_backend='agg'). Returns the list of created files when saving.
+    The pdf and set_backend parameters are deprecated (use filename and
+    matplotlib_backend instead)."""
     if pdf is True:
         raise MCPLError('If set, the pdf parameter should be a string'
                         +' containing the desired filename of the PDF file to be created')
@@ -615,11 +615,15 @@ def plot_stats(stats,pdf=False,set_backend=None,backend=None,filename=None):
     filename = filename or pdf or None
     if filename and os.path.exists(filename):
         raise MCPLError(f'File {filename} already exists')
-    kwargs = {}
-    if set_backend and ( backend or next(iter(available_backends()),None) ) == 'matplotlib':
-        kwargs['mpl_backend'] = set_backend
+    if set_backend:
+        warnings.warn('The set_backend parameter of plot_stats is deprecated,'
+                      ' use matplotlib_backend instead', DeprecationWarning,
+                      stacklevel=2)
+        #It was only used for matplotlib:
+        if _backend_name(backend) == 'matplotlib':
+            options.setdefault('matplotlib_backend',set_backend)
     figures = stats_figures(stats)
     if filename:
-        return save(figures,filename,backend=backend,**kwargs)
-    show(figures,backend=backend,**kwargs)
+        return save(figures,filename,backend=backend,**options)
+    show(figures,backend=backend,**options)
     return None

@@ -45,9 +45,9 @@ def test_backends():
         except mcpl.MCPLError as e:
             print(f'save(...,{fn!r},backend={name!r}): {e}')
     try:
-        mcpl.plotting.save(Figure(), 'x.txt', backend='test', mpl_backend='agg')
+        mcpl.plotting.save(Figure(), 'x.txt', backend='test', matplotlib_backend='agg')
     except mcpl.MCPLError as e:
-        print(f"save(...,backend='test',mpl_backend='agg'): {e}")
+        print(f"save(...,backend='test',matplotlib_backend='agg'): {e}")
 
 def test_figures():
     edges = np.linspace(0.0,10.0,11)

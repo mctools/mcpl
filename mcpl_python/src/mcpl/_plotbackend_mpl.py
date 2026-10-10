@@ -28,22 +28,24 @@ from ._numpy import np
 from ._plotbackend import PlotBackend, numbered_filenames
 from .plotting import Bars, Hist2D, StepHist, Text
 
-requirement = 'matplotlib'
-
-def is_available():
-    import importlib.util
-    return importlib.util.find_spec('matplotlib') is not None
 
 class Backend(PlotBackend):
-    """Plotting with matplotlib. The mpl_backend argument can be used to select
-    a matplotlib backend (e.g. 'agg')."""
+    """Plotting with matplotlib. The matplotlib_backend option can be used to
+    select a backend of matplotlib (e.g. 'agg' for saving files without a
+    display)."""
     name = 'matplotlib'
     formats = ('pdf','png','svg')
+    requirement = 'matplotlib'
 
-    def __init__( self, mpl_backend = None ):
+    @classmethod
+    def is_available( cls ):
+        import importlib.util
+        return importlib.util.find_spec('matplotlib') is not None
+
+    def __init__( self, matplotlib_backend = None ):
         import matplotlib
-        if mpl_backend:
-            matplotlib.use(mpl_backend)
+        if matplotlib_backend:
+            matplotlib.use(matplotlib_backend)
         try:
             import matplotlib.pyplot as plt
         except ImportError:

@@ -1,4 +1,13 @@
 v2.2.9  (work in progress)
+      * Plotting backends in the Python API: the default backend can be set
+        with mcpl.plotting.set_default_backend(...) or the MCPL_PLOT_BACKEND
+        environment variable (also used by pymcpltool), custom backends can be
+        added by subclassing mcpl.plotting.Backend and calling
+        mcpl.plotting.register_backend, and mcpl.plotting.formats lists the
+        file formats a backend can save. Options for backends are named with
+        the backend name as prefix (matplotlib_backend, plotly_renderer), and
+        can be given to all plotting functions. The set_backend parameter of
+        plot_stats is deprecated (use matplotlib_backend instead).
       * NaN and infinite values are no longer allowed in the particle data of
         MCPL files. Adding particles with such values (to fields which are
         stored) now gives an error, in the C API (mcpl_add_particle and

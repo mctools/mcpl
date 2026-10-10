@@ -14,10 +14,10 @@ Modules of the mcpl package and their imports from the package:
   layer   7 : plotting             <- _plotbackend
   layer   8 : _histogram           <- _common, _expressions, _numpy, _physics, _reader, plotting
   layer   8 : _plotbackend_mpl     <- _common, _numpy, _plotbackend, plotting
-  layer   8 : _plotbackend_plotly  <- _numpy, _plotbackend, plotting
+  layer   8 : _plotbackend_plotly  <- _common, _numpy, _plotbackend, plotting
   layer   8 : _plotbackend_test    <- _numpy, _plotbackend, plotting
-  layer   8 : _stats               <- _common, _expressions, _messages, _numpy, _physics, _reader, plotting
-  layer   9 : _cli                 <- _common, _expressions, _fileops, _histogram, _messages, _physics, _reader, _stats, _writer
+  layer   8 : _stats               <- _common, _expressions, _messages, _numpy, _physics, _plotbackend, _reader, plotting
+  layer   9 : _cli                 <- _common, _expressions, _fileops, _histogram, _messages, _physics, _plotbackend, _reader, _stats, _writer
   layer top : __init__             <- _blocks, _cli, _common, _expressions, _fileops, _histogram, _messages, _reader, _stats, _statsum, _writer, constants, plotting
   layer top : __main__             <- _cli
   layer top : mcpl                 <- _blocks, _cli, _common, _fileops, _reader, _stats, _statsum
