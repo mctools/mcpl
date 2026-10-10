@@ -19,32 +19,40 @@
 ##                                                                            ##
 ################################################################################
 
-[build-system]
-requires = ["setuptools>=75.3.2"]
-build-backend = "setuptools.build_meta"
+"""MCPLError, the version, and small helpers used by the other modules."""
 
-[tool.setuptools.dynamic]
-version = {attr = "mcpl.__version__"}
+__all__ = ['MCPLError']
 
-[project]
-name = "mcpl-python"
-dynamic = [ 'version' ]
-requires-python = ">=3.9"
-dependencies = [ 'numpy>=1.22' ]
-readme = "README.md"
-license = {text = "Apache-2.0"}
-authors = [
-  { name="MCPL developers (Thomas Kittelmann, et. al.)" },
-]
-description = "Utilities and API for accessing MCPL (.mcpl) files"
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: Apache Software License",
-]
+__version__ = '2.2.9'
 
-[project.urls]
-"Homepage" = "https://mctools.github.io/mcpl/"
-"Bug Tracker" = "https://github.com/mctools/mcpl/issues"
+import os
+import sys
 
-[project.scripts]
-pymcpltool = "mcpl._cli:main"
+
+def _checkpyversion():
+    pyversion = sys.version_info[0:3]
+    _minpyv=(3,8,0)
+    if pyversion < _minpyv:
+        a = '.'.join(str(i) for i in pyversion)
+        b = '.'.join(str(i) for i in _minpyv)
+        raise ImportError('MCPL Error: Unsupported python version'
+                          f' {a} detected (needs {b} or later).')
+_checkpyversion()
+
+
+#For raw output of byte-array contents to stdout, without any troubles depending
+#on encoding or python versions:
+def _output_bytearray_raw(b):
+    sys.stdout.flush()
+    getattr(sys.stdout,'buffer',sys.stdout).write(b)
+    sys.stdout.flush()
+
+
+class MCPLError(Exception):
+    """Common exception class for all exceptions raised by module"""
+
+def _determine_version():
+    if os.environ.get('PYMCPLTOOL_FAKE_PYVERSION','').strip():
+        return '99.99.99'
+    else:
+        return __version__

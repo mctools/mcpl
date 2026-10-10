@@ -53,7 +53,6 @@ def main():
         'mcpl_core/src/mcpl.c' : 200,
         'tests/scripts/forcemerge.log' : 500,
         'tests/scripts/pystat.log' : 500,
-        'mcpl_python/src/mcpl/mcpl.py' : 80,
     }
     for f in all_files_iter():
         frel = get_frel(f)
