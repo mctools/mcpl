@@ -41,6 +41,7 @@ import pathlib
 
 top = 99
 layers = {
+    'constants' : 0,
     '_numpy' : 0,
     '_common' : 0,
     '_messages' : 0,
@@ -56,7 +57,7 @@ layers = {
     'mcpl' : top,
 }
 
-public_submodules = []
+public_submodules = ['constants']
 
 allowed_external_imports = {
     'numpy' : ['_numpy'],

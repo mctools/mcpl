@@ -1,0 +1,19 @@
+mcpl.constants.c_light = 299792458.0
+mcpl.constants.e_charge = 1.602176634e-19
+mcpl.constants.h_planck = 6.62607015e-34
+mcpl.constants.hc_eV_Aa = 12398.419843320025
+mcpl.constants.neutron_mass = 1.67492750056e-27
+mcpl.constants.neutron_mass_energy = 939.5654219340053
+h/m_n = 3956.034006 Aa*m/s
+ekin=2.53e-08MeV pdgcode=2112: wavelength=1.79816Aa, back to ekin=2.53e-08MeV
+ekin=2.5e-08MeV pdgcode=2112: wavelength=1.80891Aa, back to ekin=2.5e-08MeV
+ekin=1MeV pdgcode=2112: wavelength=0.000285938Aa, back to ekin=1MeV
+ekin=10000MeV pdgcode=2112: wavelength=1.13756e-06Aa, back to ekin=10000MeV
+ekin=0.012398MeV pdgcode=22: wavelength=1.00003Aa, back to ekin=0.012398MeV
+ekin=1e-06MeV pdgcode=22: wavelength=12398.4Aa, back to ekin=1e-06MeV
+ekin=1MeV pdgcode=11: wavelength=nanAa, back to ekin=nanMeV
+ekin=0MeV pdgcode=2112: wavelength=infAa, back to ekin=0MeV
+arrays: [1.808914e+00 4.959368e+05          nan]
+relative difference to non-relativistic result at 2.5e-08MeV: -6.65e-12
+first particle: pdgcode=22 ekin=1.26347 wavelength=0.00981299
+block wavelengths: 965 numbers, 41 NaN

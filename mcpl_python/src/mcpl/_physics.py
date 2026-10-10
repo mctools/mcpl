@@ -19,9 +19,12 @@
 ##                                                                            ##
 ################################################################################
 
-"""Physics data, like the descriptions of PDG codes."""
+"""Physics data and conversions, like descriptions of PDG codes and wavelengths."""
 
 __all__ = []
+
+from ._numpy import np
+from .constants import hc_eV_Aa, neutron_mass_energy
 
 _db_pdg = None
 _db_elem = None
@@ -69,3 +72,33 @@ def _pdg_database(pdgcode):
             s += ')'
             return s
     return None
+
+def wavelength_from_ekin(ekin, pdgcode = 2112):
+    """Convert kinetic energy [MeV] to (de Broglie) wavelength [Aa] for
+    neutrons (pdgcode 2112) and gammas (pdgcode 22), using the CODATA 2022
+    constants in mcpl.constants (and relativistic kinematics for neutrons).
+    Returns NaN for other particles. Works with numbers or numpy arrays."""
+    e = np.asarray(ekin,dtype=float)
+    pdg = np.asarray(pdgcode)
+    with np.errstate(divide='ignore',invalid='ignore'):
+        #momentum times c [MeV] (for neutrons: pc = sqrt(E*(E+2mc^2))):
+        pc = np.where( pdg == 2112, np.sqrt( e * ( e + 2 * neutron_mass_energy ) ),
+                       np.where( pdg == 22, e, np.nan ) )
+        res = hc_eV_Aa * 1e-6 / pc
+    return res if res.ndim else float(res)
+
+def ekin_from_wavelength(wavelength, pdgcode = 2112):
+    """Convert (de Broglie) wavelength [Aa] to kinetic energy [MeV] for
+    neutrons (pdgcode 2112) and gammas (pdgcode 22), using the CODATA 2022
+    constants in mcpl.constants (and relativistic kinematics for neutrons).
+    Returns NaN for other particles. Works with numbers or numpy arrays."""
+    wl = np.asarray(wavelength,dtype=float)
+    pdg = np.asarray(pdgcode)
+    mc2 = neutron_mass_energy
+    with np.errstate(divide='ignore',invalid='ignore'):
+        pc = hc_eV_Aa * 1e-6 / wl#[MeV]
+        #For neutrons E = sqrt(pc^2+(mc^2)^2)-mc^2, written in a form which is
+        #numerically stable when pc << mc^2:
+        res = np.where( pdg == 2112, np.square(pc) / ( np.sqrt( np.square(pc) + mc2*mc2 ) + mc2 ),
+                        np.where( pdg == 22, pc, np.nan ) )
+    return res if res.ndim else float(res)

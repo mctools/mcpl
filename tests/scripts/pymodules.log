@@ -2,19 +2,20 @@ Modules of the mcpl package and their imports from the package:
   layer   0 : _common    <- -
   layer   0 : _messages  <- -
   layer   0 : _numpy     <- -
-  layer   1 : _physics   <- -
+  layer   0 : constants  <- -
+  layer   1 : _physics   <- _numpy, constants
   layer   1 : _statsum   <- _common
-  layer   2 : _blocks    <- _numpy
+  layer   2 : _blocks    <- _numpy, _physics
   layer   3 : _reader    <- _blocks, _common, _messages, _numpy, _statsum
   layer   4 : _fileops   <- _reader
   layer   6 : _stats     <- _common, _messages, _numpy, _physics, _reader
   layer   7 : _cli       <- _common, _fileops, _messages, _reader, _stats
-  layer top : __init__   <- _blocks, _cli, _common, _fileops, _messages, _reader, _stats, _statsum
+  layer top : __init__   <- _blocks, _cli, _common, _fileops, _messages, _reader, _stats, _statsum, constants
   layer top : __main__   <- _cli
   layer top : mcpl       <- _blocks, _cli, _common, _fileops, _reader, _stats, _statsum
 numpy is imported by: _numpy
 matplotlib is imported by: _stats
-mcpl.__all__ has 13 names, provided by:
+mcpl.__all__ has 14 names, provided by:
   _common    : MCPLError
   _messages  : use_logging
   _statsum   : encode_stat_sum, is_valid_stat_sum_key

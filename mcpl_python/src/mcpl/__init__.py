@@ -53,6 +53,7 @@ __all__ = [
             'MCPLParticleBlock',
             'app_pymcpltool',
             'collect_stats',
+            'constants',
             'convert2ascii',
             'dump_file',
             'dump_stats',
@@ -64,6 +65,7 @@ __all__ = [
 
 __version__ = '2.2.9'
 
+from . import constants
 from ._blocks import MCPLParticle, MCPLParticleBlock
 from ._cli import app_pymcpltool
 from ._common import MCPLError

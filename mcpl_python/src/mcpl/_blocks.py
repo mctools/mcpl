@@ -24,6 +24,7 @@
 __all__ = ['MCPLParticle', 'MCPLParticleBlock']
 
 from ._numpy import np, np_stack
+from ._physics import wavelength_from_ekin
 
 
 class MCPLParticle:
@@ -97,6 +98,10 @@ class MCPLParticle:
     def userflags(self):
         """custom per-particle flags"""
         return self._b.userflags[self._i]
+    @property
+    def wavelength(self):
+        """wavelength [Aa] of neutrons and gammas (NaN for other particles)"""
+        return wavelength_from_ekin(self.ekin, self.pdgcode)
     @property
     def pdgcode(self):
         """MC particle number from the Particle Data Group (2112=neutron, 22=gamma, ...)"""
@@ -180,6 +185,11 @@ class MCPLParticleBlock:
 
     def __len__(self):
         return len(self._data)
+
+    @property
+    def wavelength(self):
+        """wavelength [Aa] of neutrons and gammas (NaN for other particles)"""
+        return wavelength_from_ekin(self.ekin, self.pdgcode)
 
     @property
     def file_offset(self):
