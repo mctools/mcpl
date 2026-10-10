@@ -4,7 +4,7 @@ set -u
 export REPOROOT="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 
 function pymcpltool {
-    python3 "${REPOROOT}/mcpl_python/src/mcpl/mcpl.py" "$@"
+    PYTHONPATH="${REPOROOT}/mcpl_python/src" python3 -m mcpl "$@"
 }
 function md5sum {
     python3 -c 'import hashlib,sys,pathlib; print(hashlib.md5(pathlib.Path(sys.argv[1]).read_bytes()).hexdigest())' "$1"

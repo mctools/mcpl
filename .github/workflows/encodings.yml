@@ -64,13 +64,13 @@ jobs:
     - name: Make test dirs
       run: mkdir ./testdir_pymcpltool ./testdir_enc
 
-    - name: Standalone pymcpltool
+    - name: pymcpltool from the source tree
       working-directory: ./testdir_pymcpltool
-      run: python ../src/mcpl_python/src/mcpl/mcpl.py ../src/examples/example.mcpl
+      run: PYTHONPATH=../src/mcpl_python/src python -m mcpl ../src/examples/example.mcpl
 
-    - name: Standalone pymcpltool
+    - name: pymcpltool from the source tree
       working-directory: ./testdir_pymcpltool
-      run: python ../src/mcpl_python/src/mcpl/mcpl.py --stats ../src/examples/example.mcpl
+      run: PYTHONPATH=../src/mcpl_python/src python -m mcpl --stats ../src/examples/example.mcpl
 
     - name: Run encoding test
       working-directory: ./testdir_enc

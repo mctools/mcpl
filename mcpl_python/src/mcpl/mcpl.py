@@ -19,54 +19,35 @@
 ##                                                                            ##
 ################################################################################
 
-"""Python module for accessing MCPL files.
+"""The mcpl.mcpl module of earlier releases, kept for backwards compatibility.
 
-The MCPL (Monte Carlo Particle Lists) format is thoroughly documented on the
-project homepage, from where it is also possible to download the entire MCPL
-distribution:
-
-     https://mctools.github.io/mcpl/
-
-Specifically, more documentation about how to use the present python module to
-access MCPL files can be found at:
-
-     https://mctools.github.io/mcpl/usage_python/
-
-This file can freely used as per the terms in the LICENSE file distributed with
-MCPL, also available at https://github.com/mctools/mcpl/blob/master/LICENSE .
-
-A substantial effort went into developing MCPL. If you use it for your work, we
-would appreciate it if you would use the following reference in your work:
-
-   T. Kittelmann, et al., Monte Carlo Particle Lists: MCPL, Computer Physics
-   Communications 218, 17-42 (2017), https://doi.org/10.1016/j.cpc.2017.04.012
-
-mcpl.py written by Thomas Kittelmann, 2017-2022. The work was supported by the
-European Union's Horizon 2020 research and innovation programme under grant
-agreement No 676548 (the BrightnESS project)
+All the names are also available directly in the mcpl package (after "import
+mcpl"), which is the recommended way to use them.
 """
 
 __all__ = [
-            'MCPLError',
-            'MCPLFile',
-            'MCPLParticle',
-            'MCPLParticleBlock',
-            'app_pymcpltool',
-            'collect_stats',
-            'convert2ascii',
-            'dump_file',
-            'dump_stats',
-            'encode_stat_sum',
-            'is_valid_stat_sum_key',
-            'plot_stats'
-           ]
-
-__version__ = '2.2.9'
+    'MCPLError',
+    'MCPLFile',
+    'MCPLParticle',
+    'MCPLParticleBlock',
+    'app_pymcpltool',
+    'collect_stats',
+    'convert2ascii',
+    'dump_file',
+    'dump_stats',
+    'encode_stat_sum',
+    'is_valid_stat_sum_key',
+    'main',
+    'plot_stats',
+]
 
 from ._blocks import MCPLParticle, MCPLParticleBlock
-from ._cli import app_pymcpltool
-from ._common import MCPLError
+from ._cli import app_pymcpltool, main
+from ._common import MCPLError, __version__  # noqa: F401
 from ._fileops import convert2ascii, dump_file
 from ._reader import MCPLFile
 from ._stats import collect_stats, dump_stats, plot_stats
 from ._statsum import encode_stat_sum, is_valid_stat_sum_key
+
+if __name__ == '__main__':
+    main()
