@@ -23,8 +23,10 @@
 #include <cstdint>
 #include <limits>
 #include <stdexcept>
+#include <string>
 #include <iostream>
 #include "mcpl.h"
+#include "mcpltestdiskspace.h"
 
 namespace {
   struct FileDeleter {
@@ -71,6 +73,17 @@ int do_test()
   static_assert( file_size < 2*val_uint32_max,
                  "Test file unnecessarily large" );
 
+  //Make sure that there is enough free disk space for the file (plus the much smaller gzipped file),
+  //waiting for the space of files deleted by other tests to be freed if
+  //needed:
+  {
+    const double needed = double(file_size) + 200e6;
+    const double avail = mcpltests_wait_for_disk_space( needed, 120 );
+    if ( avail >= 0.0 && avail < needed )
+      throw std::runtime_error("Not enough free disk space for the test (need "
+                               + std::to_string(needed*1e-9) + " GB, have "
+                               + std::to_string(avail*1e-9) + " GB)");
+  }
   //Create file:
   {
     mcpl_outfile_t f = mcpl_create_outfile("test.mcpl");
