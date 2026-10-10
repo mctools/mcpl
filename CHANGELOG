@@ -102,6 +102,13 @@ v2.2.9  (work in progress)
         printing the contents as text. mcpl.plot_histograms shows or saves
         several histograms, also on top of each other in one plot with
         overlay=True (e.g. to compare simulations).
+      * New pymcpltool --hist option for histograms of expressions, e.g.
+        pymcpltool --hist "ekin/eV" --lethargy -pneutron FILE, with options for
+        the binning (--bins, --range, --logx), --logy, separate curves for each
+        value of an expression (--split pdgcode) or file, 2D histograms ("x/cm :
+        y/cm"), unweighted histograms, and printing the contents as text
+        (--print). Plots can be made with matplotlib or plotly (select with
+        --backend), and saved in files with --output (also for --stats).
       * mcpltool --extract no longer leaves a broken output file behind when
         given an invalid -p argument.
       * ssw2mcpl and phits2mcpl no longer leave an unfinished output file behind

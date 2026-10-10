@@ -23,9 +23,11 @@
 # NEEDS: numpy
 
 # Test histograms (mcpl.histogram, mcpl.histogram2d, mcpl.plot_histograms),
-# and the figures of plot_stats, using the plotting backend for tests (which
-# prints descriptions of the figures).
+# the figures of plot_stats, and pymcpltool --hist, using the plotting backend
+# for tests (which prints descriptions of the figures).
 
+import contextlib
+import io
 import pathlib
 import shutil
 
@@ -101,6 +103,36 @@ def test_overlay():
         except mcpl.MCPLError as e:
             print(f'plot_histograms(overlay=True) with {len(args)} histograms {kwargs}: {e}')
 
+def tool(*args):
+    out = io.StringIO()
+    rc = 0
+    with contextlib.redirect_stdout(out):
+        try:
+            mcpl.app_pymcpltool(['pymcpltool',*args])
+        except SystemExit as e:
+            rc = e.code
+    print(f'pymcpltool {" ".join(args)}: exit code {rc}')
+    for line in out.getvalue().splitlines():
+        print(f'   | {line}')
+
+def test_cmdline():
+    ex = str(example_file)
+    tool('--hist','ekin/MeV','--logx','--split','pdgcode','--backend','test',ex)
+    tool('--hist','ekin/eV','--lethargy','-pneutron','--bins','5','--print',ex)
+    tool('--hist','x/cm : y/cm','--bins','4','--select','pdgcode == gamma','--print',ex)
+    tool('--hist','x/cm : y/cm','--bins','2','--range','-10:10,0:5','--print',ex)
+    tool('--hist','x/cm','--range','-10:10','--bins','4','--backend','test',ex,str(ref1))
+    tool('--hist','time/ms','--logx','--logy','--unweighted','--backend','test',ex)
+    for bad in ( ['--hist','ekin',ex], ['--hist','ekin/MeV','--bins','0',ex],
+                 ['--hist','ekin/MeV','--range','1',ex], ['--hist','ekin/MeV','--range','2:1',ex],
+                 ['--hist','ekin/MeV','--range','1:2,3:4',ex],
+                 ['--hist','x/cm : y/cm','--logx',ex], ['--hist','x/cm : y/cm : z/cm',ex],
+                 ['--hist','x/cm','--backend','foo',ex], ['--logx',ex], ['--bins','10',ex],
+                 ['--output','a.pdf',ex], ['--hist','x/cm','--extract',ex,'out.mcpl'],
+                 ['--hist','x/cm'] ):
+        tool(*bad)
+
 test_histograms()
 test_stats_figures()
 test_overlay()
+test_cmdline()
