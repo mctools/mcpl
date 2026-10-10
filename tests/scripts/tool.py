@@ -176,11 +176,12 @@ def main():
     cmd('fake2.mcpl.gz',fail=True)
     cmd('-e',fmisc,'extracted_0')
     cmd('-e',fmisc,'extracted_0',fail=True)#already exists (as .mcpl)
-    cmd('--extract','-p2112',fmisc,'extracted_1.mcpl.gz')
-    cmd('--extract','-p-11',fmisc,'extracted_2.mcpl.gz')
-    cmd('-ep-1000020040',fmiscnogz,'extracted_3.mcpl.gz')
-    cmd('-e','-p1000922350',fmisc,'extracted_4.mcpl.gz')
-    cmd('-e','-p111','-l999999','-s150',fmiscnogz,'extracted_5.mcpl.gz')
+    #(--no-comment, since the files are merged again below):
+    cmd('--extract','-p2112','--no-comment',fmisc,'extracted_1.mcpl.gz')
+    cmd('--extract','-p-11','--no-comment',fmisc,'extracted_2.mcpl.gz')
+    cmd('-ep-1000020040','--no-comment',fmiscnogz,'extracted_3.mcpl.gz')
+    cmd('-e','-p1000922350','--no-comment',fmisc,'extracted_4.mcpl.gz')
+    cmd('-e','-p111','-l999999','-s150','--no-comment',fmiscnogz,'extracted_5.mcpl.gz')
     #invalid -p arguments must not leave output files behind:
     cmd('-e','-p0',fmiscnogz,'badpdg.mcpl',fail=True)
     cmd('-e','-pabc',fmiscnogz,'badpdg.mcpl',fail=True)
@@ -215,9 +216,9 @@ def main():
     gunzip('extracted_3.mcpl.gz')
     gunzip('extracted_4.mcpl.gz')
     gunzip('extracted_5.mcpl.gz')
-    cmd('--extract','-p2112',fmiscnogz,'extracted_1_new.mcpl')
-    cmd('--extract','-p-11',fmiscnogz,'extracted_2_new.mcpl')
-    cmd('-e','-p1000922350',fmiscnogz,'extracted_4_new.mcpl')
+    cmd('--extract','-p2112','--no-comment',fmiscnogz,'extracted_1_new.mcpl')
+    cmd('--extract','-p-11','--no-comment',fmiscnogz,'extracted_2_new.mcpl')
+    cmd('-e','-p1000922350','--no-comment',fmiscnogz,'extracted_4_new.mcpl')
     cmd('--merge','merged_1to5_new_filec.mcpl','extracted_1_new.mcpl','extracted_2_new.mcpl','extracted_3.mcpl','extracted_4_new.mcpl','extracted_5.mcpl')
     #merge to gzipped output by specifying .mcpl.gz:
     #  -> but fail since .mcpl file exists:
@@ -247,6 +248,26 @@ def main():
     #(using hidden --preventcomment flag):
     cmd('-e','difficult_unitvector.mcpl','extracted_all','-l0','--preventcomment')
     cmd('-e','difficult_unitvector.mcpl','extracted_none','-s999999999','--preventcomment')
+    #comments describing the extraction (and --no-comment):
+    cmd('-e','-l3','-s2','-pneutron',fmiscnogz,'extracted_comment_1.mcpl')
+    cmd('-e','-p-11',fmiscnogz,'extracted_comment_2.mcpl')
+    cmd('-e',fmiscnogz,'extracted_comment_3.mcpl')
+    cmd('-e','--no-comment','-p22',fmiscnogz,'extracted_comment_4.mcpl')
+    cmd('-j','extracted_comment_1.mcpl')
+    cmd('-j','extracted_comment_2.mcpl')
+    cmd('-j','extracted_comment_3.mcpl')
+    cmd('-j','extracted_comment_4.mcpl')
+    cmd('--no-comment',fmiscnogz,fail=True)
+    #with comments, files extracted in the same way can be merged, but not
+    #files extracted in different ways:
+    cmd('-e','-pneutron','-s5',fmiscnogz,'extracted_comment_5.mcpl')
+    cmd('-e','-pneutron','-l5',fmiscnogz,'extracted_comment_6.mcpl')
+    cmd('-e','-p2112',fmisc,'extracted_comment_7.mcpl')
+    cmd('--merge','merged_comment_1.mcpl','extracted_comment_1.mcpl','extracted_comment_5.mcpl',fail=True)
+    cmd('--merge','merged_comment_2.mcpl','extracted_comment_7.mcpl','extracted_comment_6.mcpl',fail=True)
+    cmd('-e','-pneutron',fmisc,'extracted_comment_8.mcpl')
+    cmd('--merge','merged_comment_3.mcpl','extracted_comment_7.mcpl','extracted_comment_8.mcpl')
+    cmd('-j','merged_comment_3.mcpl')
 
     cmd('-m','extracted_recombined','extracted_none.mcpl','extracted_all.mcpl')
     cmd('-m','--inplace','extracted_none.mcpl','extracted_all.mcpl')

@@ -45,6 +45,8 @@ Extract options:
                     PDGCODE, one of the following names can be used: neutron,
                     antineutron, proton, antiproton, electron, positron (or
                     antielectron), muon, antimuon, gamma (or photon).
+  --no-comment    : Do not add a comment to the header of FILE2 about how the
+                    particles were extracted.
 
 Other options:
   -r, --repair FILE

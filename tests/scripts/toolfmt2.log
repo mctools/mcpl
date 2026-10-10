@@ -48,6 +48,8 @@ Extract options:
                     PDGCODE, one of the following names can be used: neutron,
                     antineutron, proton, antiproton, electron, positron (or
                     antielectron), muon, antimuon, gamma (or photon).
+  --no-comment    : Do not add a comment to the header of FILE2 about how the
+                    particles were extracted.
 
 Other options:
   -r, --repair FILE
@@ -109,6 +111,8 @@ Extract options:
                     PDGCODE, one of the following names can be used: neutron,
                     antineutron, proton, antiproton, electron, positron (or
                     antielectron), muon, antimuon, gamma (or photon).
+  --no-comment    : Do not add a comment to the header of FILE2 about how the
+                    particles were extracted.
 
 Other options:
   -r, --repair FILE
@@ -170,6 +174,8 @@ Extract options:
                     PDGCODE, one of the following names can be used: neutron,
                     antineutron, proton, antiproton, electron, positron (or
                     antielectron), muon, antimuon, gamma (or photon).
+  --no-comment    : Do not add a comment to the header of FILE2 about how the
+                    particles were extracted.
 
 Other options:
   -r, --repair FILE
@@ -373,6 +379,8 @@ Extract options:
                     PDGCODE, one of the following names can be used: neutron,
                     antineutron, proton, antiproton, electron, positron (or
                     antielectron), muon, antimuon, gamma (or photon).
+  --no-comment    : Do not add a comment to the header of FILE2 about how the
+                    particles were extracted.
 
 Other options:
   -r, --repair FILE
@@ -1245,35 +1253,35 @@ Run with -h or --help for usage information
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool --extract -p2112 miscphys.mcpl.gz extracted_1.mcpl.gz
+Running mcpltool --no-comment --extract -p2112 miscphys.mcpl.gz extracted_1.mcpl.gz
 ----------------------------------------------
 MCPL: Compressing file extracted_1.mcpl
 MCPL: Compressed file into extracted_1.mcpl.gz
 MCPL: Successfully extracted 15 / 195 particles from miscphys.mcpl.gz into extracted_1.mcpl.gz
 
 ----------------------------------------------
-Running mcpltool --extract -p-11 miscphys.mcpl.gz extracted_2.mcpl.gz
+Running mcpltool --no-comment --extract -p-11 miscphys.mcpl.gz extracted_2.mcpl.gz
 ----------------------------------------------
 MCPL: Compressing file extracted_2.mcpl
 MCPL: Compressed file into extracted_2.mcpl.gz
 MCPL: Successfully extracted 10 / 195 particles from miscphys.mcpl.gz into extracted_2.mcpl.gz
 
 ----------------------------------------------
-Running mcpltool -ep-1000020040 miscphysnogz.mcpl extracted_3.mcpl.gz
+Running mcpltool --no-comment -ep-1000020040 miscphysnogz.mcpl extracted_3.mcpl.gz
 ----------------------------------------------
 MCPL: Compressing file extracted_3.mcpl
 MCPL: Compressed file into extracted_3.mcpl.gz
 MCPL: Successfully extracted 5 / 195 particles from miscphysnogz.mcpl into extracted_3.mcpl.gz
 
 ----------------------------------------------
-Running mcpltool -e -p1000922350 miscphys.mcpl.gz extracted_4.mcpl.gz
+Running mcpltool --no-comment -e -p1000922350 miscphys.mcpl.gz extracted_4.mcpl.gz
 ----------------------------------------------
 MCPL: Compressing file extracted_4.mcpl
 MCPL: Compressed file into extracted_4.mcpl.gz
 MCPL: Successfully extracted 5 / 195 particles from miscphys.mcpl.gz into extracted_4.mcpl.gz
 
 ----------------------------------------------
-Running mcpltool -e -p111 -l999999 -s150 miscphysnogz.mcpl extracted_5.mcpl.gz
+Running mcpltool --no-comment -e -p111 -l999999 -s150 miscphysnogz.mcpl extracted_5.mcpl.gz
 ----------------------------------------------
 MCPL: Compressing file extracted_5.mcpl
 MCPL: Compressed file into extracted_5.mcpl.gz
@@ -1287,14 +1295,13 @@ Opened MCPL file extracted_1.mcpl.gz:
   Basic info
     Format             : MCPL-3
     No. of particles   : 15
-    Header storage     : 214 bytes
+    Header storage     : 152 bytes
     Data storage       : 780 bytes
 
   Custom meta data
     Source             : "ESS/dgcode/MCPLTests/miscphys"
-    Number of comments : 2
+    Number of comments : 1
           -> comment 0 : "A simple file with various particle species intended as test input."
-          -> comment 1 : "mcpltool: extracted particles from file with 195 particles"
     Number of blobs    : 0
 
   Particle data format
@@ -1331,14 +1338,13 @@ Opened MCPL file extracted_2.mcpl.gz:
   Basic info
     Format             : MCPL-3
     No. of particles   : 10
-    Header storage     : 214 bytes
+    Header storage     : 152 bytes
     Data storage       : 520 bytes
 
   Custom meta data
     Source             : "ESS/dgcode/MCPLTests/miscphys"
-    Number of comments : 2
+    Number of comments : 1
           -> comment 0 : "A simple file with various particle species intended as test input."
-          -> comment 1 : "mcpltool: extracted particles from file with 195 particles"
     Number of blobs    : 0
 
   Particle data format
@@ -1370,14 +1376,13 @@ Opened MCPL file extracted_3.mcpl.gz:
   Basic info
     Format             : MCPL-3
     No. of particles   : 5
-    Header storage     : 214 bytes
+    Header storage     : 152 bytes
     Data storage       : 260 bytes
 
   Custom meta data
     Source             : "ESS/dgcode/MCPLTests/miscphys"
-    Number of comments : 2
+    Number of comments : 1
           -> comment 0 : "A simple file with various particle species intended as test input."
-          -> comment 1 : "mcpltool: extracted particles from file with 195 particles"
     Number of blobs    : 0
 
   Particle data format
@@ -1404,14 +1409,13 @@ Opened MCPL file extracted_4.mcpl.gz:
   Basic info
     Format             : MCPL-3
     No. of particles   : 5
-    Header storage     : 214 bytes
+    Header storage     : 152 bytes
     Data storage       : 260 bytes
 
   Custom meta data
     Source             : "ESS/dgcode/MCPLTests/miscphys"
-    Number of comments : 2
+    Number of comments : 1
           -> comment 0 : "A simple file with various particle species intended as test input."
-          -> comment 1 : "mcpltool: extracted particles from file with 195 particles"
     Number of blobs    : 0
 
   Particle data format
@@ -1438,14 +1442,13 @@ Opened MCPL file extracted_5.mcpl.gz:
   Basic info
     Format             : MCPL-3
     No. of particles   : 5
-    Header storage     : 214 bytes
+    Header storage     : 152 bytes
     Data storage       : 260 bytes
 
   Custom meta data
     Source             : "ESS/dgcode/MCPLTests/miscphys"
-    Number of comments : 2
+    Number of comments : 1
           -> comment 0 : "A simple file with various particle species intended as test input."
-          -> comment 1 : "mcpltool: extracted particles from file with 195 particles"
     Number of blobs    : 0
 
   Particle data format
@@ -1489,14 +1492,13 @@ Opened MCPL file extracted_1.mcpl:
   Basic info
     Format             : MCPL-3
     No. of particles   : 25
-    Header storage     : 214 bytes
+    Header storage     : 152 bytes
     Data storage       : 1300 bytes
 
   Custom meta data
     Source             : "ESS/dgcode/MCPLTests/miscphys"
-    Number of comments : 2
+    Number of comments : 1
           -> comment 0 : "A simple file with various particle species intended as test input."
-          -> comment 1 : "mcpltool: extracted particles from file with 195 particles"
     Number of blobs    : 0
 
   Particle data format
@@ -1528,17 +1530,17 @@ Running mcpltool --merge --inplace extracted_1.mcpl extracted_3.mcpl.gz extracte
 
 ===> Checking that extracted_1.mcpl and merged_1to5_new_fileb.mcpl have identical contents.
 ----------------------------------------------
-Running mcpltool --extract -p2112 miscphysnogz.mcpl extracted_1_new.mcpl
+Running mcpltool --no-comment --extract -p2112 miscphysnogz.mcpl extracted_1_new.mcpl
 ----------------------------------------------
 MCPL: Successfully extracted 15 / 195 particles from miscphysnogz.mcpl into extracted_1_new.mcpl
 
 ----------------------------------------------
-Running mcpltool --extract -p-11 miscphysnogz.mcpl extracted_2_new.mcpl
+Running mcpltool --no-comment --extract -p-11 miscphysnogz.mcpl extracted_2_new.mcpl
 ----------------------------------------------
 MCPL: Successfully extracted 10 / 195 particles from miscphysnogz.mcpl into extracted_2_new.mcpl
 
 ----------------------------------------------
-Running mcpltool -e -p1000922350 miscphysnogz.mcpl extracted_4_new.mcpl
+Running mcpltool --no-comment -e -p1000922350 miscphysnogz.mcpl extracted_4_new.mcpl
 ----------------------------------------------
 MCPL: Successfully extracted 5 / 195 particles from miscphysnogz.mcpl into extracted_4_new.mcpl
 

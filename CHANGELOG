@@ -12,6 +12,11 @@ v2.2.9  (work in progress)
         module (as on conda-forge), mcpl-config is still used.
       * Avoid misaligned memory access (undefined behaviour) when reading SSW
         and PHITS files in mcpl-extra.
+      * The comment added by mcpltool --extract to the header of the new file
+        now describes how particles were selected (e.g. "mcpltool: extracted
+        particles with -l100 -p2112"), instead of giving the number of particles
+        in the input file. Files extracted in the same way from different files
+        can thus be merged. The new --no-comment option disables the comment.
       * mcpltool --extract -p now also accepts the names neutron, antineutron,
         proton, antiproton, electron, positron (or antielectron), muon,
         antimuon, and gamma (or photon) instead of PDG codes, e.g. -pneutron.
