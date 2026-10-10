@@ -51,6 +51,9 @@ def _output_bytearray_raw(b):
 class MCPLError(Exception):
     """Common exception class for all exceptions raised by module"""
 
+def _native_endianness():
+    return 'L' if sys.byteorder == 'little' else 'B'
+
 def _determine_version():
     if os.environ.get('PYMCPLTOOL_FAKE_PYVERSION','').strip():
         return '99.99.99'

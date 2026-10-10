@@ -18,6 +18,18 @@ v2.2.9  (work in progress)
         (NaN for other particles), calculated with relativistic kinematics for
         neutrons. The new module mcpl.constants contains the physical
         constants used (CODATA 2022).
+      * The Python API can now also write MCPL files, with the new MCPLOutFile
+        class (GitHub issues #54 and #70). Like the MCPLFile reader, it is
+        implemented in pure Python, using numpy to efficiently process blocks of
+        particles, and it has the same capabilities as the C API for writing
+        files. Header settings can be given as keyword arguments named like the
+        MCPLFile attributes, or with methods named like the functions of the C
+        API. The written files are identical to those written by the C library.
+        Particles read with MCPLFile can be added directly, and are then
+        transferred exactly. For neutrons and gammas, the wavelength can be
+        given instead of the kinetic energy. The new gzip_file function
+        compresses files like mcpl_gzip_file in the C API. See also the new
+        examples/pyexample_writemcpl.
       * mcpltool --extract no longer leaves a broken output file behind when
         given an invalid -p argument.
       * ssw2mcpl and phits2mcpl no longer leave an unfinished output file behind
