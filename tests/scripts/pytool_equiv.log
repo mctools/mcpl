@@ -261,11 +261,11 @@ pymcpltool --extract a1.mcpl out.mcpl --select x>1cm --select y>1cm: exit code 1
 pymcpltool --extract a1.mcpl out.mcpl --edit wavelength=1.8Aa: exit code 1
    | MCPL ERROR: wavelength can only be assigned to neutrons (pdgcode 2112) and gammas (pdgcode 22) in expression "wavelength=1.8Aa"
 pymcpltool --select x>1cm -j a1.mcpl: exit code 1
-   | ERROR: --select can only be used with --extract, --stats, or when showing particles.
+   | ERROR: --select can only be used with --extract, --stats, --hist, or when showing particles.
    | 
    | Run with -h or --help for usage information
 pymcpltool --select x>1cm -ba a1.mcpl: exit code 1
-   | ERROR: --select can only be used with --extract, --stats, or when showing particles.
+   | ERROR: --select can only be used with --extract, --stats, --hist, or when showing particles.
    | 
    | Run with -h or --help for usage information
 pymcpltool --select x>1meV a1.mcpl: exit code 1
@@ -285,19 +285,19 @@ pymcpltool -pfoo a1.mcpl: exit code 1
    | 
    | Run with -h or --help for usage information
 pymcpltool -pgamma -j a1.mcpl: exit code 1
-   | ERROR: -p can only be used with --extract, --stats, or when showing particles.
+   | ERROR: -p can only be used with --extract, --stats, --hist, or when showing particles.
    | 
    | Run with -h or --help for usage information
 pymcpltool --repair --select x>1cm a1.mcpl: exit code 1
-   | ERROR: --select can only be used with --extract, --stats, or when showing particles.
+   | ERROR: --select can only be used with --extract, --stats, --hist, or when showing particles.
    | 
    | Run with -h or --help for usage information
 pymcpltool --repair -pgamma a1.mcpl: exit code 1
-   | ERROR: -p can only be used with --extract, --stats, or when showing particles.
+   | ERROR: -p can only be used with --extract, --stats, --hist, or when showing particles.
    | 
    | Run with -h or --help for usage information
 pymcpltool -p22 --merge out.mcpl a1.mcpl a2.mcpl: exit code 1
-   | ERROR: -p can only be used with --extract, --stats, or when showing particles.
+   | ERROR: -p can only be used with --extract, --stats, --hist, or when showing particles.
    | 
    | Run with -h or --help for usage information
 pymcpltool --keep-statsum a1.mcpl: exit code 1

@@ -57,6 +57,7 @@ Usage:
   mcpltool --merge [merge-options] FILE1 FILE2
   mcpltool --extract [extract-options] FILE1 FILE2
   mcpltool --repair FILE
+  mcpltool --hist EXPR [hist-options] FILE [FILE2 ...]
   mcpltool --stats [stat-options] FILE
   mcpltool --version
   mcpltool --help
@@ -125,6 +126,27 @@ Expressions:
   be assignments to variables (e.g. "tmp = x, x = y, y = tmp"), swap(a,b), and
   rotate_x(angle), rotate_y(angle) or rotate_z(angle).
 
+Histogram options:
+  --hist EXPR FILE1 [FILE2 ...]
+                    Plot histogram of the values of the expression EXPR, which
+                    must not have units (divide by a unit, e.g. "ekin/MeV").
+                    With more files, there is a curve for each file. For a 2D
+                    histogram, give two expressions separated by " : ".
+  --select EXPR, -pPDGCODE
+                  : Only include the selected particles (as above).
+  --bins N        : Number of bins (default 100).
+  --range LOW:HIGH: Range of the histogram (default is all values). For 2D
+                    histograms, use XLOW:XHIGH,YLOW:YHIGH (or XLOW:XHIGH).
+  --logx, --logy  : Logarithmic binning and x axis, or logarithmic y axis.
+  --lethargy      : Divide by the bin widths in lethargy (implies --logx).
+  --split EXPR    : Separate curves for each value of the expression EXPR,
+                    e.g. --split pdgcode, or --split "x > 0cm".
+  --unweighted    : Count particles instead of summing their weights.
+  --print         : Print histogram contents rather than plotting it.
+  --output FILE   : Save plot in FILE (e.g. .pdf, .png, or .html with plotly).
+  --backend NAME  : Plotting backend (default is the first available of:
+                    matplotlib, plotly).
+
 Stat options:
   --stats FILE    : Print statistics summary of particle state data from FILE.
   --stats --pdf FILE
@@ -136,6 +158,9 @@ Stat options:
                     name, see Extract options above) in the statistics.
   --select EXPR   : Only include particles for which the expression EXPR is
                     true in the statistics.
+  --output FILE, --backend NAME
+                  : Like --pdf, but saving plots in FILE, and/or with the given
+                    plotting backend (as for --hist).
 
 Other options:
   -r, --repair FILE
@@ -174,6 +199,7 @@ Usage:
   mcpltool --merge [merge-options] FILE1 FILE2
   mcpltool --extract [extract-options] FILE1 FILE2
   mcpltool --repair FILE
+  mcpltool --hist EXPR [hist-options] FILE [FILE2 ...]
   mcpltool --stats [stat-options] FILE
   mcpltool --version
   mcpltool --help
@@ -242,6 +268,27 @@ Expressions:
   be assignments to variables (e.g. "tmp = x, x = y, y = tmp"), swap(a,b), and
   rotate_x(angle), rotate_y(angle) or rotate_z(angle).
 
+Histogram options:
+  --hist EXPR FILE1 [FILE2 ...]
+                    Plot histogram of the values of the expression EXPR, which
+                    must not have units (divide by a unit, e.g. "ekin/MeV").
+                    With more files, there is a curve for each file. For a 2D
+                    histogram, give two expressions separated by " : ".
+  --select EXPR, -pPDGCODE
+                  : Only include the selected particles (as above).
+  --bins N        : Number of bins (default 100).
+  --range LOW:HIGH: Range of the histogram (default is all values). For 2D
+                    histograms, use XLOW:XHIGH,YLOW:YHIGH (or XLOW:XHIGH).
+  --logx, --logy  : Logarithmic binning and x axis, or logarithmic y axis.
+  --lethargy      : Divide by the bin widths in lethargy (implies --logx).
+  --split EXPR    : Separate curves for each value of the expression EXPR,
+                    e.g. --split pdgcode, or --split "x > 0cm".
+  --unweighted    : Count particles instead of summing their weights.
+  --print         : Print histogram contents rather than plotting it.
+  --output FILE   : Save plot in FILE (e.g. .pdf, .png, or .html with plotly).
+  --backend NAME  : Plotting backend (default is the first available of:
+                    matplotlib, plotly).
+
 Stat options:
   --stats FILE    : Print statistics summary of particle state data from FILE.
   --stats --pdf FILE
@@ -253,6 +300,9 @@ Stat options:
                     name, see Extract options above) in the statistics.
   --select EXPR   : Only include particles for which the expression EXPR is
                     true in the statistics.
+  --output FILE, --backend NAME
+                  : Like --pdf, but saving plots in FILE, and/or with the given
+                    plotting backend (as for --hist).
 
 Other options:
   -r, --repair FILE
