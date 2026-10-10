@@ -8,7 +8,7 @@ Modules of the mcpl package and their imports from the package:
   layer   2 : _blocks    <- _numpy, _physics
   layer   3 : _reader    <- _blocks, _common, _messages, _numpy, _statsum
   layer   4 : _writer    <- _blocks, _common, _messages, _numpy, _physics, _reader, _statsum
-  layer   5 : _fileops   <- _reader
+  layer   5 : _fileops   <- _common, _messages, _reader, _statsum, _writer
   layer   7 : _stats     <- _common, _messages, _numpy, _physics, _reader
   layer   8 : _cli       <- _common, _fileops, _messages, _reader, _stats
   layer top : __init__   <- _blocks, _cli, _common, _fileops, _messages, _reader, _stats, _statsum, _writer, constants
@@ -16,13 +16,13 @@ Modules of the mcpl package and their imports from the package:
   layer top : mcpl       <- _blocks, _cli, _common, _fileops, _reader, _stats, _statsum
 numpy is imported by: _numpy
 matplotlib is imported by: _stats
-mcpl.__all__ has 16 names, provided by:
+mcpl.__all__ has 24 names, provided by:
   _common    : MCPLError
   _messages  : use_logging
   _statsum   : encode_stat_sum, is_valid_stat_sum_key
   _blocks    : MCPLParticle, MCPLParticleBlock
   _reader    : MCPLFile
   _writer    : MCPLOutFile, gzip_file
-  _fileops   : convert2ascii, dump_file
+  _fileops   : can_merge, convert2ascii, create_outfile_mpi, dump_file, forcemerge_files, merge_files, merge_inplace, merge_outfiles_mpi, name_helper, repair
   _stats     : collect_stats, dump_stats, plot_stats
   _cli       : app_pymcpltool

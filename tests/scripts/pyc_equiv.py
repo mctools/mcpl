@@ -22,9 +22,9 @@
 
 # NEEDS: numpy
 
-# Check that the Python API (MCPLOutFile) gives the same results, printouts and
-# errors as the C API, by running the same operations with both in separate
-# directories and comparing everything.
+# Check that the Python API (MCPLOutFile and the file-level functions) gives
+# the same results, printouts and errors as the C API, by running the same
+# operations with both in separate directories and comparing everything.
 
 import contextlib
 import gzip
@@ -314,7 +314,7 @@ def test_writer_scripts():
     return ok
 
 ################################################################################
-# Input files:
+# File-level functions:
 
 def make_inputs():
     """Create input files with the C library"""
@@ -352,6 +352,120 @@ def make_inputs():
     for f in ('reffile_1.mcpl', 'reffile_5.mcpl'):
         shutil.copy(test_data_dir.joinpath('reffmt2',f), input_dir / ('fmt2_'+f))
 
+def py_merge_files(out, files):
+    mcpl.merge_files(out, files.split('|')).close()
+
+def py_forcemerge_files(out, files, keep_userflags):
+    mcpl.forcemerge_files(out, files.split('|'), bool(keep_userflags)).close()
+
+def test_file_functions():
+    ok = True
+    merges = [ 'a1.mcpl|a2.mcpl', 'a1.mcpl|a2.mcpl|a3.mcpl', 'a2.mcpl|a1.mcpl',
+               'a1.mcpl', 'a1.mcpl|a_empty.mcpl', 'a_empty.mcpl|a_empty.mcpl.gz',
+               'a4.mcpl|a5.mcpl', 'a1.mcpl|agz.mcpl.gz|a2.mcpl',
+               'reffile_1.mcpl|fmt2_reffile_1.mcpl', 'fmt2_reffile_1.mcpl|fmt2_reffile_5.mcpl',
+               'reffile_crash.mcpl|reffile_crash.mcpl',
+               'a1.mcpl|a1.mcpl', 'a1.mcpl|./a1.mcpl', 'a1.mcpl|b_dp.mcpl',
+               'a1.mcpl|c_comment.mcpl', 'a1.mcpl|c_blob.mcpl', 'a1.mcpl|c_statkey.mcpl',
+               'b_updg.mcpl|b_updg2.mcpl', 'b_uw.mcpl|b_uw2.mcpl',
+               'a1.mcpl|nonexistent.mcpl', 'reffile_truncated.mcpl|reffile_truncated.mcpl',
+               'ref_statsum_crash.mcpl|ref_statsum.mcpl.gz' ]
+    for files in merges:
+        ok &= compare(f'merge_files "{files}"', 'mcpltest_merge_files',
+                      ('merged', files), py_merge_files)
+    ok &= compare('merge_files to existing file', 'mcpltest_merge_files',
+                  ('a3.mcpl', 'a1.mcpl|a2.mcpl'), py_merge_files)
+    forcemerges = [ 'a1.mcpl|b_dp.mcpl', 'a1.mcpl|a2.mcpl', 'b_pol.mcpl|b_uf.mcpl',
+                    'b_uf.mcpl|b_pol.mcpl|a1.mcpl', 'b_updg.mcpl|b_updg_g.mcpl',
+                    'b_updg.mcpl|b_uw.mcpl', 'b_updg.mcpl|b_updg2.mcpl|b_empty_pol.mcpl',
+                    'b_uw.mcpl|b_uw2.mcpl', 'b_dp.mcpl|b_pol.mcpl|agz.mcpl.gz',
+                    'fmt2_reffile_1.mcpl|reffile_1.mcpl|b_uf.mcpl',
+                    'reffile_skip123.mcpl|b_dp.mcpl', 'a1.mcpl|a1.mcpl' ]
+    for files in forcemerges:
+        for keep in (0,1):
+            ok &= compare(f'forcemerge_files "{files}" keep_userflags={keep}',
+                          'mcpltest_forcemerge_files', ('merged', files, keep),
+                          py_forcemerge_files)
+    inplace = [ ('a1.mcpl','a2.mcpl'), ('a1.mcpl','a3.mcpl'), ('a3.mcpl','a1.mcpl'),
+                ('a1.mcpl','a_empty.mcpl'), ('a_empty.mcpl','a1.mcpl'),
+                ('a4.mcpl','a5.mcpl'), ('a1.mcpl','agz.mcpl.gz'), ('agz.mcpl.gz','a1.mcpl'),
+                ('a1.mcpl','a1.mcpl'), ('a1.mcpl','b_dp.mcpl'),
+                ('reffile_1.mcpl','fmt2_reffile_1.mcpl'),
+                ('fmt2_reffile_1.mcpl','fmt2_reffile_5.mcpl'),
+                ('reffile_crash.mcpl','reffile_1.mcpl'), ('a1.mcpl','nonexistent.mcpl') ]
+    for f1, f2 in inplace:
+        ok &= compare(f'merge_inplace "{f1}" "{f2}"', 'mcpltest_merge_inplace',
+                      (f1, f2), mcpl.merge_inplace)
+    for f in ('reffile_crash.mcpl', 'reffile_1.mcpl', 'reffile_empty.mcpl',
+              'reffile_truncated.mcpl', 'ref_statsum_crash.mcpl', 'reffile_5.mcpl.gz',
+              'agz.mcpl.gz', 'nonexistent.mcpl'):
+        ok &= compare(f'repair "{f}"', 'mcpltest_repair', (f,), mcpl.repair)
+    names = sorted(f.name for f in input_dir.iterdir())
+    for i, f1 in enumerate(names):
+        for f2 in names[i::3]:
+            ok &= compare(f'can_merge "{f1}" "{f2}"', 'mcpltest_can_merge',
+                          (f1, f2), mcpl.can_merge)
+    for f in ('a1.mcpl', 'nonexistent.mcpl'):
+        ok &= compare(f'gzip_file "{f}"', 'mcpltest_gzip_file', (f,), mcpl.gzip_file)
+    return ok
+
+def test_truncated_files():
+    #Repair and read files truncated at various places:
+    ok = True
+    lib = getlib('pywriter')
+    lib.mcpltest_script(str(input_dir/'trunc_src'),
+                        script('statsum a 2', 'pol', parts(10), 'close'))
+    data = (input_dir/'trunc_src.mcpl').read_bytes()
+    with mcpl.MCPLFile(input_dir/'trunc_src.mcpl') as f:
+        hs, ps = f.headersize, f.particlesize
+    for n_hdr in (0, 10):
+        for size in (hs-1, hs, hs+1, hs+ps-1, hs+ps, hs+3*ps+5, len(data)-1, len(data)):
+            d = bytearray(data[:size])
+            if len(d) >= 16:
+                d[8:16] = n_hdr.to_bytes(8,'little')
+            (input_dir/'trunc.mcpl').write_bytes(bytes(d))
+            ok &= compare(f'repair file truncated to {size} bytes, header says {n_hdr} particles',
+                          'mcpltest_repair', ('trunc.mcpl',), mcpl.repair)
+    (input_dir/'trunc.mcpl').unlink()
+    return ok
+
+def py_name_helper(f, mode):
+    return mcpl.name_helper(f, mode.decode() if isinstance(mode,bytes) else mode)
+
+def test_name_helper():
+    ok = True
+    lib = getlib('pywriter')
+    for f in ('x', 'x.mcpl', 'x.mcpl.gz', 'dir/x.mcpl', '/abs/dir/x.mcpl.gz',
+              'x.gz', 'x.mcpl.mcpl', '.x', 'x.mcpl.gz.mcpl'):
+        for mode in 'MGBmgb':
+            c = lib.mcpltest_name_helper(f, mode)
+            if isinstance(c, bytes):
+                c = c.decode()
+            p = mcpl.name_helper(f, mode)
+            same = ( c == p )
+            ok &= same
+            print(f'name_helper("{f}","{mode}") identical: {same}'
+                  + ( '' if same else f' (C: {c} Py: {p})' ))
+    return ok
+
+def py_mpi(filename, nproc, nparticles):
+    for iproc in range(nproc):
+        o = mcpl.create_outfile_mpi(filename, iproc, nproc)
+        o.hdr_set_srcname('mpitest')
+        o.hdr_add_stat_sum('nsim', 100.0 + iproc)
+        for i in range(nparticles):
+            o.add_particle(direction=(0,0,1), ekin=1.0+i+1000.0*iproc,
+                           pdgcode=2112, weight=1.0)
+        o.closeandgzip()
+    mcpl.merge_outfiles_mpi(filename, nproc)
+
+def test_mpi():
+    ok = True
+    for nproc, n in ((1, 3), (2, 3), (4, 0), (3, 1)):
+        ok &= compare(f'MPI file creation and merge with nproc={nproc}',
+                      'mcpltest_mpi', ('mpiout', nproc, n), py_mpi)
+    return ok
+
 def test_random_scripts(n):
     #Random sequences of writer calls (valid or not):
     import random
@@ -377,7 +491,8 @@ def test_random_scripts(n):
 
 def main():
     make_inputs()
-    results = [ test_writer_scripts(), test_random_scripts(150) ]
+    results = [ test_writer_scripts(), test_file_functions(), test_truncated_files(),
+                test_name_helper(), test_mpi(), test_random_scripts(150) ]
     print(f'Compared {ncases} operations')
     assert all(results), 'C and Python APIs give different results'
 

@@ -42,7 +42,8 @@ class MCPLFile:
         self._fileclose()
         self._fileclose = lambda : None
 
-    def __init__(self,filename,blocklength = 10000, raw_strings = False):
+    def __init__(self,filename,blocklength = 10000, raw_strings = False,
+                 _recover = True):
         """Open indicated mcpl file, which can either be uncompressed (.mcpl) or
         compressed (.mcpl.gz). The blocklength parameter can be used to control
         the number of particles read by each call to read_block(). The parameter
@@ -66,7 +67,7 @@ class MCPLFile:
         #load info from mcpl header:
         self._loadhdr()
         #Check if empty files are actually broken (like in mcpl.c):
-        if self.nparticles==0:
+        if self.nparticles==0 and _recover:
             if filename.endswith('.gz'):
                 #compressed - can only detect and raise error
                 try:
@@ -188,6 +189,7 @@ class MCPLFile:
                 pass
             fh.seek(0)
 
+        self._is_gz = is_gz
         can_use_np_fromfile = not _numpy_oldfromfile
         if is_gz:
             can_use_np_fromfile = False
@@ -440,7 +442,7 @@ class MCPLFile:
         dt= np_dtype("u8,5u4,i4,2u4").newbyteorder(endianness)
         y = self._fileread(dtype=dt,count=1)
         if len(y)!=1:
-            raise MCPLError('Invalid header')
+            raise MCPLError('Errors encountered while attempting to read header')
         (nparticles,(ncomments,nblobs,opt_userflags,opt_polarisation,opt_singleprec),
          opt_universalpdgcode,(particlesize,_tmp)) = y[0]
         #convert all int types to python 'int' (which is 64bit), to avoid
@@ -465,12 +467,12 @@ class MCPLFile:
             ll = self._fileread(dtype=np_dtype('u4').newbyteorder(endianness),
                                count=1)
             if len(ll)!=1:
-                raise MCPLError('Invalid header')
+                raise MCPLError('Errors encountered while attempting to read header')
             if ll==0:
                 return b''
             cont = self._fileread(dtype='u1',count=ll)
             if len(cont)!=ll:
-                raise MCPLError('Invalid header')
+                raise MCPLError('Errors encountered while attempting to read header')
             return cont.tobytes() if hasattr(cont,'tobytes') else cont.tostring()
 
         sourcename = readarr()

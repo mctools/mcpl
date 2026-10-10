@@ -33,6 +33,14 @@ MCPLTEST_CTYPE_DICTIONARY
     "void mcpltest_repack( const char *, const char * );"
     "void mcpltest_transfer( const char *, const char *, const char * );"
     "void mcpltest_script( const char *, const char * );"
+    "void mcpltest_merge_files( const char *, const char * );"
+    "void mcpltest_forcemerge_files( const char *, const char *, int );"
+    "void mcpltest_merge_inplace( const char *, const char * );"
+    "void mcpltest_repair( const char * );"
+    "int mcpltest_can_merge( const char *, const char * );"
+    "int mcpltest_gzip_file( const char * );"
+    "const char * mcpltest_name_helper( const char *, const char * );"
+    "void mcpltest_mpi( const char *, unsigned, unsigned );"
     ;
 }
 
@@ -204,4 +212,94 @@ MCPLTEST_CTYPES void mcpltest_script( const char * outfile, const char * script 
     }
   }
   mcpl_close_outfile(o);
+}
+
+static unsigned mcpltest_split( const char * files, char * buf, size_t nbuf,
+                                const char ** list, unsigned nmax )
+{
+  //Split "|"-separated list of filenames.
+  size_t n = strlen(files);
+  if ( n >= nbuf )
+    exit(1);
+  memcpy(buf,files,n+1);
+  unsigned count = 0;
+  char * c = buf;
+  while ( count < nmax ) {
+    list[count++] = c;
+    char * e = strchr(c,'|');
+    if (!e)
+      break;
+    *e = '\0';
+    c = e + 1;
+  }
+  return count;
+}
+
+MCPLTEST_CTYPES void mcpltest_merge_files( const char * out, const char * files )
+{
+  char buf[8192];
+  const char * list[256];
+  unsigned n = mcpltest_split(files,buf,sizeof(buf),list,256);
+  mcpl_close_outfile(mcpl_merge_files(out,n,list));
+}
+
+MCPLTEST_CTYPES void mcpltest_forcemerge_files( const char * out,
+                                                const char * files,
+                                                int keep_userflags )
+{
+  char buf[8192];
+  const char * list[256];
+  unsigned n = mcpltest_split(files,buf,sizeof(buf),list,256);
+  mcpl_close_outfile(mcpl_forcemerge_files(out,n,list,keep_userflags));
+}
+
+MCPLTEST_CTYPES void mcpltest_merge_inplace( const char * f1, const char * f2 )
+{
+  mcpl_merge_inplace(f1,f2);
+}
+
+MCPLTEST_CTYPES void mcpltest_repair( const char * f )
+{
+  mcpl_repair(f);
+}
+
+MCPLTEST_CTYPES int mcpltest_can_merge( const char * f1, const char * f2 )
+{
+  return mcpl_can_merge(f1,f2);
+}
+
+MCPLTEST_CTYPES int mcpltest_gzip_file( const char * f )
+{
+  return mcpl_gzip_file(f);
+}
+
+MCPLTEST_CTYPES const char * mcpltest_name_helper( const char * f,
+                                                   const char * mode )
+{
+  static char buf[8192];
+  char * res = mcpl_name_helper(f,mode[0]);
+  snprintf(buf,sizeof(buf),"%s",res);
+  free(res);
+  return buf;
+}
+
+MCPLTEST_CTYPES void mcpltest_mpi( const char * filename, unsigned nproc,
+                                   unsigned nparticles )
+{
+  //Write worker files like nproc processes would, then merge them.
+  for ( unsigned iproc = 0; iproc < nproc; ++iproc ) {
+    mcpl_outfile_t o = mcpl_create_outfile_mpi(filename,iproc,nproc);
+    mcpl_hdr_set_srcname(o,"mpitest");
+    mcpl_hdr_add_stat_sum(o,"nsim",100.0+iproc);
+    mcpl_particle_t * p = mcpl_get_empty_particle(o);
+    for ( unsigned i = 0; i < nparticles; ++i ) {
+      p->direction[2] = 1.0;
+      p->ekin = 1.0 + i + 1000.0*iproc;
+      p->pdgcode = 2112;
+      p->weight = 1.0;
+      mcpl_add_particle(o,p);
+    }
+    mcpl_closeandgzip_outfile(o);
+  }
+  mcpl_merge_outfiles_mpi(filename,nproc);
 }
