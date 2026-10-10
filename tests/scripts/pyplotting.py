@@ -23,14 +23,17 @@
 # NEEDS: numpy
 
 # Test the plotting module with the test backend (which prints descriptions of
-# the figures).
+# the figures), and the figures of plot_stats.
 
 import pathlib
 
 import mcpldev as mcpl
 import numpy as np
+from mcpldev._stats import _stats_figures
 from mcpldev.plotting import Bars, Figure, Hist2D, Panel, StepHist, Text
+from MCPLTestUtils.dirs import test_data_dir
 
+example_file = test_data_dir.parent.parent.joinpath('examples','example.mcpl')
 
 def test_backends():
     avail = mcpl.plotting.available_backends()
@@ -60,6 +63,10 @@ def test_figures():
     files = mcpl.plotting.save([fig,Figure(title='Empty')], 'figs.txt', backend='test')
     print(f'save() created {files}, with {len(pathlib.Path(files[0]).read_text().splitlines())} lines')
 
+def test_stats_figures():
+    mcpl.plotting.show(_stats_figures(example_file), backend='test')
+
 if __name__ == '__main__':
     test_backends()
     test_figures()
+    test_stats_figures()
