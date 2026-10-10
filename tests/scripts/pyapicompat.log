@@ -1,0 +1,33 @@
+All 12 released names are available in mcpl
+Importing mcpl.mcpl and mcpl.mcpl.main:
+    (no warnings)
+Using each name in mcpl.mcpl the first time:
+  MCPLError:
+    DeprecationWarning: mcpl.mcpl.MCPLError is deprecated, use mcpl.MCPLError (after "import mcpl") instead
+  MCPLFile:
+    DeprecationWarning: mcpl.mcpl.MCPLFile is deprecated, use mcpl.MCPLFile (after "import mcpl") instead
+  MCPLParticle:
+    DeprecationWarning: mcpl.mcpl.MCPLParticle is deprecated, use mcpl.MCPLParticle (after "import mcpl") instead
+  MCPLParticleBlock:
+    DeprecationWarning: mcpl.mcpl.MCPLParticleBlock is deprecated, use mcpl.MCPLParticleBlock (after "import mcpl") instead
+  app_pymcpltool:
+    DeprecationWarning: mcpl.mcpl.app_pymcpltool is deprecated, use mcpl.app_pymcpltool (after "import mcpl") instead
+  collect_stats:
+    DeprecationWarning: mcpl.mcpl.collect_stats is deprecated, use mcpl.collect_stats (after "import mcpl") instead
+  convert2ascii:
+    DeprecationWarning: mcpl.mcpl.convert2ascii is deprecated, use mcpl.convert2ascii (after "import mcpl") instead
+  dump_file:
+    DeprecationWarning: mcpl.mcpl.dump_file is deprecated, use mcpl.dump_file (after "import mcpl") instead
+  dump_stats:
+    DeprecationWarning: mcpl.mcpl.dump_stats is deprecated, use mcpl.dump_stats (after "import mcpl") instead
+  encode_stat_sum:
+    DeprecationWarning: mcpl.mcpl.encode_stat_sum is deprecated, use mcpl.encode_stat_sum (after "import mcpl") instead
+  is_valid_stat_sum_key:
+    DeprecationWarning: mcpl.mcpl.is_valid_stat_sum_key is deprecated, use mcpl.is_valid_stat_sum_key (after "import mcpl") instead
+  main:
+    (no warnings)
+  plot_stats:
+    DeprecationWarning: mcpl.mcpl.plot_stats is deprecated, use mcpl.plot_stats (after "import mcpl") instead
+Using them again:
+    DeprecationWarning: mcpl.mcpl.__version__ is deprecated, use mcpl.__version__ (after "import mcpl") instead
+Unknown name gives AttributeError: module 'mcpldev.mcpl' has no attribute 'nosuchname'

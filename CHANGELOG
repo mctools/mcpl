@@ -1,4 +1,11 @@
 v2.2.9  (work in progress)
+      * The mcpl Python package is now split into several internal modules.
+        Its public API is unchanged, and available after "import mcpl" as
+        before. The mcpl.mcpl module is kept for backwards compatibility, but
+        using names from it now gives a DeprecationWarning (e.g. use
+        mcpl.MCPLFile instead of mcpl.mcpl.MCPLFile). Running a copy of the
+        mcpl.py file on its own is no longer supported. Use the pymcpltool
+        command or "python -m mcpl" instead.
       * mcpltool --extract no longer leaves a broken output file behind when
         given an invalid -p argument.
       * ssw2mcpl and phits2mcpl no longer leave an unfinished output file behind

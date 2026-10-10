@@ -29,7 +29,7 @@ from MCPLTestUtils.dirs import test_data_dir
 
 
 def run_pymcpltool(*args):
-    from mcpldev.mcpl import app_pymcpltool
+    from mcpldev import app_pymcpltool
     ec = None
     try:
         app_pymcpltool(['pymcpltool']+[str(e) for e in args])
