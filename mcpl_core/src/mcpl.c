@@ -3368,6 +3368,8 @@ MCPL_LOCAL int mcpl_tool_usage( char** argv, const char * errmsg ) {
   mcpl_print("                    PDGCODE, one of the following names can be used: neutron,\n");
   mcpl_print("                    antineutron, proton, antiproton, electron, positron (or\n");
   mcpl_print("                    antielectron), muon, antimuon, gamma (or photon).\n");
+  mcpl_print("  --no-comment    : Do not add a comment to the header of FILE2 about how the\n");
+  mcpl_print("                    particles were extracted.\n");
   mcpl_print("\n");
   mcpl_print("Other options:\n");
   mcpl_print("  -r, --repair FILE\n");
@@ -3485,7 +3487,7 @@ int mcpl_tool(int argc,char** argv) {
   int opt_keepuserflags = 0;
   int opt_inplace = 0;
   int opt_extract = 0;
-  int opt_preventcomment = 0;//undocumented unoffical flag for mcpl unit tests
+  int opt_nocomment = 0;
   int opt_repair = 0;
   int opt_version = 0;
   int opt_text = 0;
@@ -3574,7 +3576,8 @@ int mcpl_tool(int argc,char** argv) {
       const char * lo_merge = "merge";
       const char * lo_inplace = "inplace";
       const char * lo_extract = "extract";
-      const char * lo_preventcomment = "preventcomment";
+      const char * lo_preventcomment = "preventcomment";//old name of --no-comment
+      const char * lo_nocomment = "no-comment";
       const char * lo_fakeversion = "fakeversion";
       const char * lo_repair = "repair";
       const char * lo_version = "version";
@@ -3593,7 +3596,8 @@ int mcpl_tool(int argc,char** argv) {
       else if (strstr(lo_extract,a)==lo_extract) opt_extract = 1;
       else if (strstr(lo_repair,a)==lo_repair) opt_repair = 1;
       else if (strstr(lo_version,a)==lo_version) opt_version = 1;
-      else if (strstr(lo_preventcomment,a)==lo_preventcomment) opt_preventcomment = 1;
+      else if (strstr(lo_preventcomment,a)==lo_preventcomment) opt_nocomment = 1;
+      else if (strcmp(lo_nocomment,a)==0) opt_nocomment = 1;
       else if (strstr(lo_fakeversion,a)==lo_fakeversion) opt_fakeversion = 1;
       else if (strstr(lo_text,a)==lo_text) opt_text = 1;
       else return free(filenames),mcpl_tool_usage(argv,"Unrecognised option");
@@ -3613,6 +3617,9 @@ int mcpl_tool(int argc,char** argv) {
 
   if ( opt_extract==0 && pdgcode_str )
     return free(filenames),mcpl_tool_usage(argv,"-p can only be used with --extract.");
+
+  if ( opt_extract==0 && opt_nocomment )
+    return free(filenames),mcpl_tool_usage(argv,"--no-comment can only be used with --extract.");
 
   if ( opt_merge==0 && opt_inplace!=0 )
     return free(filenames),mcpl_tool_usage(argv,"--inplace can only be used with --merge.");
@@ -3729,10 +3736,22 @@ int mcpl_tool(int argc,char** argv) {
     mcpl_transfer_metadata(fi, fo);
     uint64_t fi_nparticles = mcpl_hdr_nparticles(fi);
 
-    if (!opt_preventcomment) {
+    if (!opt_nocomment) {
+      //Describe which particles were extracted (but nothing specific to the
+      //input file, to keep files extracted in the same way mergeable):
       char comment[1024];
-      snprintf(comment, sizeof(comment), "mcpltool: extracted particles from"
-               " file with %" PRIu64 " particles",fi_nparticles);
+      int n = snprintf(comment, sizeof(comment), "mcpltool: extracted particles");
+      const char * sep = " with ";
+      if ( opt_num_limit > 0 ) {
+        n += snprintf(comment+n, sizeof(comment)-n, "%s-l%" PRId64, sep, opt_num_limit);
+        sep = " ";
+      }
+      if ( opt_num_skip > 0 ) {
+        n += snprintf(comment+n, sizeof(comment)-n, "%s-s%" PRId64, sep, opt_num_skip);
+        sep = " ";
+      }
+      if ( pdgcode_select && n < (int)sizeof(comment) )
+        snprintf(comment+n, sizeof(comment)-n, "%s-p%" PRId32, sep, pdgcode_select);
       mcpl_hdr_add_comment(fo,comment);
     }
 
