@@ -396,12 +396,14 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
       ssw_error("Problems extracting header from reference file");
   }
 
-  int32_t orig_np1 = * ((int32_t*)(&hdrbuf[ssw_np1pos]));
+  int32_t orig_np1;
+  memcpy( &orig_np1, hdrbuf + ssw_np1pos, sizeof(orig_np1) );
 
   //Clear |np1| and nrss in header to to indicate incomplete info (we will
   //update just before closing the file):
-  *((int32_t*)(&hdrbuf[ssw_np1pos])) = 0;
-  *((int32_t*)(&hdrbuf[ssw_nrsspos])) = 0;
+  const int32_t zero = 0;
+  memcpy( hdrbuf + ssw_np1pos, &zero, sizeof(zero) );
+  memcpy( hdrbuf + ssw_nrsspos, &zero, sizeof(zero) );
 
   printf("Creating (or overwriting) output SSW file.\n");
 

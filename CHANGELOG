@@ -10,6 +10,8 @@ v2.2.9  (work in progress)
         PATH (e.g. when running them from a virtual environment which is not
         activated). If the mcpl-core package does not provide the _mcpl_core
         module (as on conda-forge), mcpl-config is still used.
+      * Avoid misaligned memory access (undefined behaviour) when reading SSW
+        and PHITS files in mcpl-extra.
       * Fix mcpl_transfer_last_read_particle for transfers from files with
         double precision to files with single precision, which wrote wrong
         kinetic energies and directions. The transfers done by mcpltool were not
