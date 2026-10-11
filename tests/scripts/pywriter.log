@@ -169,6 +169,8 @@ Filename given as bytes: bytesname.mcpl
   Got expected error: Syntax error: could not properly decode comment starting with "stat:sum:" (value field holds forbidden value (+INFINITY)). Issue with comment "stat:sum:k:                   1e999"
   Got expected error: Syntax error: could not properly decode comment starting with "stat:sum:" (value field is not exactly 24 characters wide). Issue with comment "stat:sum:k:12"
   Got expected error: Syntax error: could not properly decode comment starting with "stat:sum:" (did not find colon separating key and value). Issue with comment "stat:sum:k"
+add_particle and add_particles gave the same results for 370 cases
+  Got expected error: pdgcode must be integers
 MCPL: Compressing file example_output.mcpl
 MCPL: Compressed file into example_output.mcpl.gz
 pyexample_writemcpl wrote 10001 particles from "my_cool_program_name" with comments ['Some comment.', 'Another comment.']

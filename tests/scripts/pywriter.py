@@ -306,6 +306,49 @@ def test_statsum_syntax():
                    'stat:sum:k:' + ' '*19 + '1e999', 'stat:sum:k:12', 'stat:sum:k' ):
             expect_error(o.hdr_add_comment, c)
 
+def test_single_vs_blocks():
+    #add_particle validates single particles without numpy (for speed), so
+    #check that it gives the same errors (or files) as add_particles:
+    big, huge = 3.4028234663852886e+38, float.fromhex('0x1.ffffffp+127')
+    specials = [ 0.0, -0.0, 1.0, -1.0, float('nan'), float('inf'), -float('inf'),
+                 big, huge, -huge, 1e300 ]
+    fieldvals = []
+    for f in ('x','ekin','time','weight','polx'):
+        fieldvals += [ ( f, v ) for v in specials ]
+    fieldvals += [ ( 'direction', d ) for d in ( (0,0,1), (0,0,-1), (0.6,0.8,0),
+                                                 (0,0,1.00001), (0,0,1.0000049),
+                                                 (float('nan'),0,1), (0,0,0) ) ]
+    fieldvals += [ ( 'pdgcode', v ) for v in ( 22, -11, 2112.0, 2112.5, 2**31, -2**31 ) ]
+    fieldvals += [ ( 'userflags', v ) for v in ( 0, 7, -1, 2**32, 3.0, 3.5 ) ]
+    settings = [ {}, {'opt_singleprec':False}, {'opt_polarisation':True},
+                 {'opt_universalweight':2.0}, {'opt_userflags':True} ]
+    n_same = 0
+    for sett in settings:
+        for field, value in fieldvals:
+            res = []
+            for single in (True, False):
+                fn = f'sb_{int(single)}'
+                fields = { 'direction' : (0,0,1), 'ekin' : 1.0, 'weight' : 1.0 }
+                if 'opt_universalweight' in sett:
+                    del fields['weight']
+                fields[field] = value
+                try:
+                    with mcpl.MCPLOutFile(fn, **sett) as o:
+                        if single:
+                            o.add_particle(**fields)
+                        else:
+                            o.add_particles(**{ k : [v]
+                                                for k,v in fields.items() })
+                    res.append( pathlib.Path(fn+'.mcpl').read_bytes() )
+                except mcpl.MCPLError as e:
+                    res.append( f'MCPLError: {e}' )
+                pathlib.Path(fn+'.mcpl').unlink(missing_ok=True)
+            assert res[0] == res[1], (sett, field, value, res)
+            n_same += 1
+    print(f'add_particle and add_particles gave the same results for {n_same} cases')
+    with mcpl.MCPLOutFile('sb') as o:
+        expect_error(o.add_particle, direction=(0,0,1), pdgcode=2112.5)
+
 def test_example():
     #Run examples/pyexample_writemcpl with the mcpl module being tested:
     import sys
@@ -324,4 +367,5 @@ test_transfers()
 test_api()
 test_api_more()
 test_statsum_syntax()
+test_single_vs_blocks()
 test_example()
