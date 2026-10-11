@@ -146,6 +146,7 @@ class MCPLParticleBlock:
     def _set_data(self,data,file_offset):
         #always present, but must unpack:
         self._ux,self._uy,self._uz,self._ekin = None,None,None,None
+        self._f64 = {}
         self._view_dir = None
 
         #reset non-constant columns:
@@ -318,16 +319,16 @@ class MCPLParticleBlock:
 
     @property
     def x(self):
-        return self._data['x']
+        return self._double('x')
     @property
     def y(self):
-        return self._data['y']
+        return self._double('y')
     @property
     def z(self):
-        return self._data['z']
+        return self._double('z')
     @property
     def time(self):
-        return self._data['t']
+        return self._double('t')
     @property
     def ux(self):
         if self._ux is None:
@@ -348,6 +349,15 @@ class MCPLParticleBlock:
         if self._ekin is None:
            self._ekin = abs(self._data['uve3']).astype(float)
         return self._ekin
+
+    def _double( self, field ):
+        """Values of a field of the packed data as native double precision
+        numbers (like in the C API, also for files storing single precision
+        numbers), cached for the block"""
+        v = self._f64.get(field)
+        if v is None:
+            v = self._f64[field] = np.asarray(self._data[field],dtype=np.float64)
+        return v
 
     def _unpack(self):
         #On demand unpacking of unit vector. We have to make a version of

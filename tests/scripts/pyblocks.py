@@ -118,7 +118,28 @@ def test_file_indices():
               f' {[p.file_index for p in s.particles]}')
         assert np.array_equal(s.file_indices, b.file_indices[b.pdgcode == 22][1:3])
 
+def test_double_precision():
+    #Like in the C API, all floating point fields are double precision numbers
+    #(native float64), also in files storing single precision numbers:
+    fields = ( 'x','y','z','ux','uy','uz','polx','poly','polz','ekin','time',
+               'weight','position','direction','polarisation' )
+    #(the numbered reference files, not the deliberately broken ones):
+    files = [ f for f in test_data_dir.joinpath('ref').glob('reffile_*.mcpl')
+              if f.stem.split('_')[1].isdigit() ]
+    for fn in sorted(files):
+        with mcpl.MCPLFile(fn) as f:
+            b = f.read_block()
+            if b is None:
+                continue
+            bad = [ fl for fl in fields if np.asarray(getattr(b,fl)).dtype != np.float64 ]
+            p = b.particles.__next__() if len(b) else None
+            bad += [ f'particle.{fl}' for fl in fields[:12]
+                     if p is not None and not isinstance(getattr(p,fl),float) ]
+            print(f'{fn.name}: singleprec={f.opt_singleprec}, all fields double: {not bad}')
+            assert not bad, (fn.name,bad)
+
 if __name__ == '__main__':
+    test_double_precision()
     test_block_indexing()
     test_file_indices()
     test_transfer_and_edit()

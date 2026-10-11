@@ -1,3 +1,19 @@
+reffile_1.mcpl: singleprec=False, all fields double: True
+reffile_10.mcpl: singleprec=False, all fields double: True
+reffile_11.mcpl: singleprec=True, all fields double: True
+reffile_12.mcpl: singleprec=True, all fields double: True
+reffile_13.mcpl: singleprec=False, all fields double: True
+reffile_14.mcpl: singleprec=False, all fields double: True
+reffile_15.mcpl: singleprec=True, all fields double: True
+reffile_16.mcpl: singleprec=True, all fields double: True
+reffile_2.mcpl: singleprec=False, all fields double: True
+reffile_3.mcpl: singleprec=True, all fields double: True
+reffile_4.mcpl: singleprec=True, all fields double: True
+reffile_5.mcpl: singleprec=False, all fields double: True
+reffile_6.mcpl: singleprec=False, all fields double: True
+reffile_7.mcpl: singleprec=True, all fields double: True
+reffile_8.mcpl: singleprec=True, all fields double: True
+reffile_9.mcpl: singleprec=False, all fields double: True
 second block: 300 particles at offset 300
   block[10:20]: 10 particles, offset 310, pdgcodes [2112]
   block[::2]: 150 particles, offset 9223372036854775807, pdgcodes [11, 22, 2112, 2212]
