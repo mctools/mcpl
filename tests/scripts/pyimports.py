@@ -22,13 +22,14 @@
 
 # NEEDS: numpy
 
-# Test that the optional parts of the mcpl package (statistics, histograms,
-# plotting, and the pymcpltool command), and the packages used for plotting
+# Test that the optional parts of the mcpl package (expressions, statistics,
+# histograms, plotting, and the pymcpltool command), and the packages used for plotting
 # (matplotlib, plotly, ...), are only imported when they are used, and not by
 # "import mcpl" or when using the other functionality of the Python API or of
 # pymcpltool. Each case runs in a new Python process, which reports the
 # modules it imported.
 
+import gzip
 import json
 import os
 import pathlib
@@ -46,6 +47,9 @@ shutil.copy(example_file, 'example2.mcpl')
 data = bytearray(example_file.read_bytes())
 data[8:16] = bytes(8)
 pathlib.Path('torepair.mcpl').write_bytes(data)
+pathlib.Path('torepair2.mcpl').write_bytes(data)
+
+pathlib.Path('example.mcpl.gz').write_bytes(gzip.compress(example_file.read_bytes()))
 
 #Modules which must not be imported unless plots are made:
 plot_modules = ( 'matplotlib', 'plotly', 'kaleido', 'PIL' )
@@ -66,7 +70,8 @@ print(json.dumps(mods))
 
 #Modules of the mcpl package with optional functionality, which must only be
 #imported when needed:
-optional_modules = ( '_stats', '_statsplot', '_histogram', '_clistats', '_cli',
+optional_modules = ( '_expressions', '_stats', '_statsplot', '_histogram',
+                     '_clistats', '_cli',
                      'plotting', '_plotbackend', '_plotbackend_mpl',
                      '_plotbackend_plotly', '_plotbackend_test' )
 
@@ -74,27 +79,53 @@ def tool(*args):
     return f"mcpl.app_pymcpltool(['pymcpltool',{','.join(repr(a) for a in args)}])"
 
 cases = [
+    #Core functionality, which must not import any of the optional modules:
     ( 'import mcpl', '', 'pass' ),
-    ( 'read with select and edit', '',
+    ( 'read blocks and single particles', '',
+      ( "f = mcpl.MCPLFile('example.mcpl'); [ b.ekin.sum() for b in f.particle_blocks ]\n"
+        "        [ p.ux for p in mcpl.MCPLFile('example.mcpl').particles ]" ) ),
+    ( 'read gzipped file', '',
+      "[ b.x for b in mcpl.MCPLFile('example.mcpl.gz').particle_blocks ]" ),
+    ( 'write blocks and single particles', '',
+      ( "f = mcpl.MCPLOutFile('w1.mcpl'); f.add_particles(direction=(0,0,1.))\n"
+        "        f.add_particle(direction=(0,1.,0), ekin=2.0, pdgcode=22); f.close()" ) ),
+    ( 'copy blocks with numpy mask', '',
+      ( "fin = mcpl.MCPLFile('example.mcpl'); fout = mcpl.MCPLOutFile('w2.mcpl')\n"
+        "        fout.transfer_metadata(fin)\n"
+        "        [ fout.add_particles(b[b.pdgcode == 2112]) for b in fin.particle_blocks ]\n"
+        "        fout.close()" ) ),
+    ( 'merge files', '',
+      ( "mcpl.merge_files('w3.mcpl', ['example.mcpl','example2.mcpl']).close()\n"
+        "        mcpl.forcemerge_files('w4.mcpl', ['w3.mcpl','example.mcpl']).close()\n"
+        "        mcpl.merge_inplace('w3.mcpl', 'example.mcpl')" ) ),
+    ( 'repair', '', "mcpl.repair('torepair.mcpl')" ),
+    #Optional functionality, which must only import what it needs:
+    ( 'read with select and edit', '_expressions',
       ( "for b in mcpl.MCPLFile('example.mcpl', select='pdgcode == neutron',"
         " edit='rotate_z(90deg)').particle_blocks: pass" ) ),
-    ( 'write and merge', '',
-      ( "f = mcpl.MCPLOutFile('w1.mcpl'); f.add_particles(direction=(0,0,1.)); f.close()\n"
-        "        mcpl.forcemerge_files('w2.mcpl', ['w1.mcpl','example.mcpl']).close()" ) ),
     ( 'statistics', '_stats', "mcpl.dump_stats(mcpl.collect_stats('example.mcpl'))" ),
-    ( 'histogram as text', '_histogram', "print(mcpl.histogram('example.mcpl','ekin/MeV',bins=4).to_text())" ),
+    ( 'statistics with selection', '_expressions _stats',
+      "mcpl.dump_stats(mcpl.collect_stats('example.mcpl', select='x > 0cm'))" ),
+    ( 'histogram as text', '_expressions _histogram',
+      "print(mcpl.histogram('example.mcpl','ekin/MeV',bins=4).to_text())" ),
     ( 'pymcpltool FILE', '_cli', tool('example.mcpl') ),
-    ( 'pymcpltool --select', '_cli', tool('-l3','--select','pdgcode == gamma','example.mcpl') ),
+    ( 'pymcpltool --select', '_cli _expressions',
+      tool('-l3','--select','pdgcode == gamma','example.mcpl') ),
     ( 'pymcpltool --stats', '_cli _clistats _stats', tool('--stats','example.mcpl') ),
-    ( 'pymcpltool --hist --print', '_cli _clistats _histogram', tool('--hist','ekin/MeV','--print','example.mcpl') ),
-    ( 'pymcpltool --extract', '_cli', tool('--extract','example.mcpl','e.mcpl','--edit','z += 1m') ),
+    ( 'pymcpltool --hist --print', '_cli _clistats _expressions _histogram',
+      tool('--hist','ekin/MeV','--print','example.mcpl') ),
+    ( 'pymcpltool --extract', '_cli', tool('--extract','example.mcpl','e1.mcpl') ),
+    ( 'pymcpltool --extract --edit', '_cli _expressions',
+      tool('--extract','example.mcpl','e2.mcpl','--edit','z += 1m') ),
     ( 'pymcpltool --merge', '_cli', tool('--merge','m.mcpl','example.mcpl','example2.mcpl') ),
-    ( 'pymcpltool --repair', '_cli', tool('--repair','torepair.mcpl') ),
+    ( 'pymcpltool --repair', '_cli', tool('--repair','torepair2.mcpl') ),
     ( 'pymcpltool --text', '_cli', tool('--text','example.mcpl','t.txt') ),
     #Plotting with the test backend loads only that backend:
-    ( 'plot with the test backend', '_histogram plotting _plotbackend _plotbackend_test',
+    ( 'plot with the test backend',
+      '_expressions _histogram plotting _plotbackend _plotbackend_test',
       "mcpl.histogram('example.mcpl','ekin/MeV',bins=4).plot(backend='test')" ),
-    ( 'pymcpltool --hist with the test backend', '_cli _clistats _histogram plotting _plotbackend _plotbackend_test',
+    ( 'pymcpltool --hist with the test backend',
+      '_cli _clistats _expressions _histogram plotting _plotbackend _plotbackend_test',
       tool('--hist','ekin/MeV','--backend','test','example.mcpl') ),
 ]
 

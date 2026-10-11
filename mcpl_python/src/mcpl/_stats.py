@@ -26,7 +26,6 @@ __all__ = ['collect_stats', 'dump_stats']
 import os
 
 from ._common import MCPLError
-from ._expressions import _as_filter
 from ._messages import _warning
 from ._numpy import np
 from ._physics import _pdg_database, wavelength_from_ekin
@@ -39,7 +38,10 @@ class _SelectedFile:
     opened with select or edit (in which case select can be None)."""
     def __init__(self,mcplfile,select):
         self._f = mcplfile
-        self._flt = _as_filter(select)
+        self._flt = None
+        if select is not None:
+            from ._expressions import _as_filter
+            self._flt = _as_filter(select)
         sels = [ e.expression for e in (getattr(mcplfile,'select',None),self._flt)
                  if e is not None ]
         self.selection = ' && '.join( f'({e})' if len(sels) > 1 else e for e in sels )

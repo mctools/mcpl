@@ -37,7 +37,6 @@ __all__ = [
 import os
 
 from ._common import MCPLError, _determine_version
-from ._expressions import _as_filter
 from ._messages import _info, _warning
 from ._reader import MCPLFile
 from ._statsum import _parse_statsum_comment, _statsum_syntax_error, encode_stat_sum
@@ -55,6 +54,7 @@ def dump_file(filename,header=True,particles=True,limit=10,skip=0,select=None,**
         f.dump_hdr()
     if particles:
         if select is not None:
+            from ._expressions import _as_filter
             print(f"Showing particles selected with: {_as_filter(select).expression}")
             print()
         f.dump_particles(limit=limit,skip=skip,select=select)

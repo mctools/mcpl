@@ -88,7 +88,6 @@ __version__ = '2.2.9'
 from . import constants
 from ._blocks import MCPLParticle, MCPLParticleBlock
 from ._common import MCPLError
-from ._expressions import ParticleEdit, ParticleFilter, ParticleValue
 from ._fileops import (
             can_merge,
             convert2ascii,
@@ -106,11 +105,14 @@ from ._reader import MCPLFile
 from ._statsum import encode_stat_sum, is_valid_stat_sum_key
 from ._writer import MCPLOutFile, gzip_file
 
-#The statistics, histograms, plotting and the pymcpltool command are only
-#imported when used (so the code for reading and writing files does not
+#Expressions, statistics, histograms, plotting and the pymcpltool command are
+#only imported when used (so the code for reading and writing files does not
 #depend on them in any way):
 _on_demand = {
     'Histogram' : '_histogram',
+    'ParticleEdit' : '_expressions',
+    'ParticleFilter' : '_expressions',
+    'ParticleValue' : '_expressions',
     'Histogram2D' : '_histogram',
     'app_pymcpltool' : '_cli',
     'collect_stats' : '_stats',
