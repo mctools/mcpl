@@ -138,6 +138,27 @@ class _StatCollector:
 _possible_std_stats = ['ekin','x','y','z','ux','uy','uz','time','weight','polx','poly','polz']
 _possible_freq_stats = ['pdgcode','userflags']
 
+def _bin_indices(v,edges,log=False):
+    """Bin indices of the values with the same results as numpy.histogram
+    (the last bin includes the upper edge), and -1 for values outside the
+    bins. The edges are equidistant (in log scale if log is True), so the
+    indices are calculated directly from the values (which is much faster
+    than the binary search used by numpy.histogram for logarithmic bins),
+    and then corrected against the actual edges for rounding errors. Only
+    values inside the bins are used in calculations, so no floating point
+    exceptions are triggered (e.g. by the logarithm of values <= 0)."""
+    nb = len(edges) - 1
+    lo, hi = edges[0], edges[-1]
+    res = np.full(len(v),-1,dtype=np.intp)
+    inside = ( v >= lo ) & ( v <= hi )
+    vi = v[inside]
+    t = ( np.log(vi/lo) / np.log(hi/lo) ) if log else ( (vi-lo)/(hi-lo) )
+    i = np.minimum( (t*nb).astype(np.intp), nb - 1 )
+    i -= ( vi < edges[i] ) & ( i > 0 )
+    i += ( vi >= edges[i+1] ) & ( i < nb - 1 )
+    res[inside] = i
+    return res
+
 class _Overview:
     """Collects histograms for the overview page of plot_stats: kinetic
     energies, wavelengths and polar angles (to the z axis) by particle type,
@@ -174,26 +195,42 @@ class _Overview:
         return pdg if ( pdg in self.ekin or len(self.ekin) < self.maxtypes ) else None
     def add(self,pb):
         w = pb.weight
-        self.time += np.histogram(pb.time,bins=self.time_bins,weights=w)[0]
-        self.xy += np.histogram2d(pb.x,pb.y,bins=80,range=self.xy_range,weights=w)[0]
-        pdgs = pb.pdgcode
+        #Histograms filled with bincount on bin indices (for several histograms
+        #at once, using combined indices):
+        def fill(idx_list,shape,weights):
+            ok = np.logical_and.reduce([ i >= 0 for i in idx_list ])
+            flat = np.ravel_multi_index([ i[ok] for i in idx_list ],shape)
+            return np.bincount(flat,weights=weights[ok],
+                               minlength=int(np.prod(shape))).reshape(shape)
+        self.time += fill([_bin_indices(pb.time,self.time_bins,self.time_log)],
+                          (len(self.time_bins)-1,),w)
+        xedges = np.linspace(*self.xy_range[0],81)
+        yedges = np.linspace(*self.xy_range[1],81)
+        self.xy += fill([_bin_indices(pb.x,xedges,False),
+                         _bin_indices(pb.y,yedges,False)],(80,80),w)
+        pdgs, itype = np.unique(pb.pdgcode,return_inverse=True)
+        itype = itype.reshape(-1)
+        ntypes = len(pdgs)
+        h_ekin = fill([itype,_bin_indices(pb.ekin,self.ekin_bins,self.ekin_log)],
+                      (ntypes,len(self.ekin_bins)-1),w)
         theta = np.degrees(np.arccos(np.clip(pb.uz,-1.0,1.0)))
-        ekin = pb.ekin
-        for pdg in np.unique(pdgs):
-            m = pdgs == pdg
+        h_theta = fill([itype,_bin_indices(theta,self.theta_bins,False)],
+                       (ntypes,len(self.theta_bins)-1),w)
+        sumw = np.bincount(itype,weights=w,minlength=ntypes)
+        for j,pdg in enumerate(pdgs):
             key = self._key(int(pdg))
             if key not in self.ekin:
                 self.ekin[key] = np.zeros(len(self.ekin_bins)-1)
                 self.theta[key] = np.zeros(len(self.theta_bins)-1)
                 self.sumw[key] = 0.0
-            wm = w[m]
-            self.sumw[key] += float(wm.sum())
-            self.ekin[key] += np.histogram(ekin[m],bins=self.ekin_bins,weights=wm)[0]
-            self.theta[key] += np.histogram(theta[m],bins=self.theta_bins,weights=wm)[0]
+            self.sumw[key] += float(sumw[j])
+            self.ekin[key] += h_ekin[j]
+            self.theta[key] += h_theta[j]
             if key in self.wl_bins:
-                h = np.histogram(wavelength_from_ekin(ekin[m],key),
-                                 bins=self.wl_bins[key],weights=wm)[0]
-                self.wl[key] = self.wl.get(key,0.0) + h
+                #The wavelength bins are the (sorted) wavelengths of the energy
+                #bin edges, and the wavelength decreases with the energy, so the
+                #wavelength histogram is the energy histogram reversed:
+                self.wl[key] = self.wl.get(key,0.0) + h_ekin[j][::-1]
     def result(self,ntypes=5):
         #Show the ntypes most common types, and merge the rest into 'other':
         keys = sorted(self.sumw,key=lambda k : (-self.sumw[k],str(k)))

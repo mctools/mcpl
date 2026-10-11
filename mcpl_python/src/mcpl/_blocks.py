@@ -462,6 +462,15 @@ class _ArrayBlock:
     def wavelength(self):
         return wavelength_checked(self.ekin,self.pdgcode)
 
+def _surely_finite( b ):
+    """Quick check that the raw data of a block read from a file has no NaN or
+    infinite values (False means that it might have some, which must then be
+    checked with _nonfinite_masks, which is much slower). This never triggers
+    floating point exceptions (unlike e.g. summing the values)."""
+    d = b._data
+    return all( np.isfinite(d[n]).all() for n in d.dtype.names
+                if d.dtype[n].kind == 'f' )
+
 def _nonfinite_masks( b, check_polarisation = True, check_weight = True ):
     """Masks of the particles in block b with NaN or infinite values, for each
     field (named as in error messages, in the order checked by the C library),
