@@ -85,9 +85,8 @@ __all__ = [
 
 __version__ = '2.2.9'
 
-from . import constants, plotting
+from . import constants
 from ._blocks import MCPLParticle, MCPLParticleBlock
-from ._cli import app_pymcpltool
 from ._common import MCPLError
 from ._expressions import ParticleEdit, ParticleFilter, ParticleValue
 from ._fileops import (
@@ -102,15 +101,37 @@ from ._fileops import (
             name_helper,
             repair,
 )
-from ._histogram import (
-            Histogram,
-            Histogram2D,
-            histogram,
-            histogram2d,
-            plot_histograms,
-)
 from ._messages import use_logging
 from ._reader import MCPLFile
-from ._stats import collect_stats, dump_stats, plot_stats, stats_figures
 from ._statsum import encode_stat_sum, is_valid_stat_sum_key
 from ._writer import MCPLOutFile, gzip_file
+
+#The statistics, histograms, plotting and the pymcpltool command are only
+#imported when used (so the code for reading and writing files does not
+#depend on them in any way):
+_on_demand = {
+    'Histogram' : '_histogram',
+    'Histogram2D' : '_histogram',
+    'app_pymcpltool' : '_cli',
+    'collect_stats' : '_stats',
+    'dump_stats' : '_stats',
+    'histogram' : '_histogram',
+    'histogram2d' : '_histogram',
+    'plot_histograms' : '_histogram',
+    'plot_stats' : '_statsplot',
+    'plotting' : 'plotting',
+    'stats_figures' : '_statsplot',
+}
+
+def __getattr__(name):
+    modname = _on_demand.get(name)
+    if modname is None:
+        raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
+    import importlib
+    mod = importlib.import_module(f'.{modname}',__name__)
+    obj = mod if name == modname else getattr(mod,name)
+    globals()[name] = obj
+    return obj
+
+def __dir__():
+    return sorted(set(globals()) | set(__all__))

@@ -39,12 +39,9 @@ from ._fileops import (
     merge_inplace,
     repair,
 )
-from ._histogram import histogram, histogram2d
 from ._messages import _ForcePrinting, _info, _warning
 from ._physics import _particle_names
-from ._plotbackend import _backend_name
 from ._reader import MCPLFile
-from ._stats import _SelectedFile, dump_stats, plot_stats
 from ._writer import MCPLOutFile
 
 
@@ -410,7 +407,8 @@ def _app_pymcpltool(argv):
         sys.exit(0)
 
     if opt_hist is not None:
-        _pymcpltool_hist(filelist,opt_hist,opt_select,vopts,hflags,bad)
+        from ._clistats import pymcpltool_hist
+        pymcpltool_hist(filelist,opt_hist,opt_select,vopts,hflags,bad)
         sys.exit(0)
 
     if opt_text:
@@ -443,24 +441,8 @@ def _app_pymcpltool(argv):
         sys.exit(0)
 
     if opt_stats:
-        f=MCPLFile(filelist[0])
-        if f.nparticles==0:
-            bad("Can not calculate statistics for an empty file")
-        if opt_select is not None:
-            f = _SelectedFile(f,opt_select)
-            if f.nparticles==0:
-                bad("Can not calculate statistics when no particles are selected")
-        outfn = vopts.get('--output') or ( 'mcpl.pdf' if opt_pdf else None )
-        if outfn or opt_gui or '--backend' in vopts:
-            try:
-                files = plot_stats(f,filename=outfn,backend=vopts.get('--backend'),
-                                   **_save_options(outfn,vopts.get('--backend')))
-            except MCPLError as e:
-                bad(str(e))
-            if files:
-                print('Created ' + ', '.join(files))
-        else:
-            dump_stats(f)
+        from ._clistats import pymcpltool_stats
+        pymcpltool_stats(filelist[0],opt_select,opt_pdf,opt_gui,vopts,bad)
         sys.exit(0)
 
     #Dump
@@ -489,67 +471,6 @@ def _app_pymcpltool(argv):
               limit=opt_limit,skip=opt_skip,select=opt_select)
     sys.exit(0)
 
-def _pymcpltool_hist(filelist,expr,select,vopts,hflags,bad):
-    if not filelist:
-        bad("No input file specified")
-    bins = vopts.get('--bins','100')
-    if not bins.isdigit() or not int(bins) > 0:
-        bad("--bins must be a positive integer")
-    exprs = expr.split(' : ')
-    rngs = [ None, None ]
-    if '--range' in vopts:
-        parts = vopts['--range'].split(',')
-        if len(parts) > len(exprs):
-            parts = []
-        for i,r in enumerate(parts):
-            try:
-                lo, hi = ( float(e) for e in r.split(':') )
-            except ValueError:
-                lo, hi = None, None
-            if lo is None or not lo < hi:
-                parts = []
-                break
-            rngs[i] = ( lo, hi )
-        if not parts:
-            bad("--range must be given as LOW:HIGH (or XLOW:XHIGH,YLOW:YHIGH for 2D"
-                " histograms), with numbers in the units of the expression")
-    rng = rngs[0]
-    if len(exprs) > 2 or not all(e.strip() for e in exprs):
-        bad('--hist takes an expression, or two expressions separated by'
-            ' " : " (with spaces) for 2D histograms')
-    try:
-        if len(exprs) == 2:
-            for o in ('--logx','--lethargy'):
-                if o in hflags:
-                    bad(f"{o} can not be used with 2D histograms")
-            if '--split' in vopts:
-                bad("--split can not be used with 2D histograms")
-            h = histogram2d(filelist,exprs[0].strip(),exprs[1].strip(),
-                            select=select,bins=int(bins),xrange=rng,yrange=rngs[1],
-                            weighted='--unweighted' not in hflags)
-        else:
-            h = histogram(filelist,expr,select=select,bins=int(bins),range=rng,
-                          logx='--logx' in hflags,
-                          weighted='--unweighted' not in hflags,
-                          split=vopts.get('--split'),
-                          lethargy='--lethargy' in hflags)
-    except MCPLError as e:
-        bad(str(e))
-    if '--print' in hflags:
-        print(h.to_text())
-        return
-    outfn = vopts.get('--output')
-    if outfn and os.path.exists(outfn):
-        bad("Requested output file already exists.")
-    kw = {} if len(exprs) == 2 else { 'logy' : '--logy' in hflags }
-    try:
-        files = h.plot(filename=outfn,backend=vopts.get('--backend'),**kw,
-                       **_save_options(outfn,vopts.get('--backend')))
-    except MCPLError as e:
-        bad(str(e))
-    if files:
-        print('Created ' + ', '.join(files))
-
 def _tool_pdgcode(pdgcode_str,bad):
     """Decode argument of -p like in mcpltool"""
     if pdgcode_str in _particle_names:
@@ -559,13 +480,6 @@ def _tool_pdgcode(pdgcode_str,bad):
          or not int(pdgcode_str) ):
         bad("Must specify non-zero 32bit integer or particle name as argument to -p.")
     return int(pdgcode_str)
-
-def _save_options(outfn, backend):
-    """Options for the plotting backend: when saving files with matplotlib, its
-    agg backend is used (which does not need a display)."""
-    if outfn and _backend_name(backend) == 'matplotlib':
-        return { 'matplotlib_backend' : 'agg' }
-    return {}
 
 def _tool_outfn(fn):
     """Output filename for --merge and --extract like in mcpltool (returns error
