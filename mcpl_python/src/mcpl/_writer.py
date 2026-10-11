@@ -38,7 +38,7 @@ from ._blocks import (
 from ._common import MCPLError, _native_endianness
 from ._expressions import _as_edit, _as_filter
 from ._messages import _error, _info, _warning
-from ._numpy import np, np_dtype
+from ._numpy import np
 from ._physics import ekin_from_wavelength
 from ._reader import MCPLFile
 from ._statsum import (
@@ -464,7 +464,7 @@ class MCPLOutFile:
                 fields += [('pdg','i4')]
             if self._opt_userflags:
                 fields += [('uf','u4')]
-            self._pdt = np_dtype(fields)
+            self._pdt = np.dtype(fields)
             assert self._pdt.itemsize == self.particlesize
         return self._pdt
 

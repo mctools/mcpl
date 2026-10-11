@@ -23,7 +23,7 @@
 
 __all__ = ['MCPLParticle', 'MCPLParticleBlock']
 
-from ._numpy import np, np_fma, np_stack
+from ._numpy import np, np_fma
 from ._physics import wavelength_checked
 
 
@@ -299,13 +299,13 @@ class MCPLParticleBlock:
     @property
     def position(self):
         if self._view_pos is None:
-            self._view_pos = np_stack((self.x,self.y,self.z),axis=1)
+            self._view_pos = np.stack((self.x,self.y,self.z),axis=1)
         return self._view_pos
 
     @property
     def polarisation(self):
         if self._view_pol is None or len(self._view_pol) != len(self._data):
-            self._view_pol = np_stack((self.polx,self.poly,self.polz),axis=1)
+            self._view_pol = np.stack((self.polx,self.poly,self.polz),axis=1)
         return self._view_pol
 
     @property
@@ -313,7 +313,7 @@ class MCPLParticleBlock:
         if self._view_dir is None:
             if self._ux is None:
                 self._unpack()
-            self._view_dir = np_stack((self._ux,self._uy,self._uz),axis=1)
+            self._view_dir = np.stack((self._ux,self._uy,self._uz),axis=1)
         return self._view_dir
 
     @property
@@ -492,11 +492,3 @@ def _nonfinite_masks( b, check_polarisation = True, check_weight = True ):
     if check_weight:
         add('weight',b.weight)
     return res
-
-def _first_nonfinite( masks ):
-    """(index,field) of the first particle with NaN or infinite values (and the
-    first such field of it), or None"""
-    if not masks:
-        return None
-    idx = min( int(np.argmax(m)) for m in masks.values() )
-    return idx, next( name for name, m in masks.items() if m[idx] )

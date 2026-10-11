@@ -34,7 +34,7 @@ from ._blocks import (
 from ._common import MCPLError, _output_bytearray_raw
 from ._expressions import _as_edit, _as_filter
 from ._messages import _warning
-from ._numpy import _numpy_oldfromfile, np, np_dtype
+from ._numpy import np
 from ._statsum import _parse_statsum, _parse_statsum_comment, encode_stat_sum
 
 
@@ -167,7 +167,7 @@ class MCPLFile:
         if self.opt_userflags:
             fields += [('uf','u4')]
         fields = [(str(f[0]),str(f[1])) for f in fields]#workaround for https://github.com/numpy/numpy/issues/2407
-        self._pdt = np_dtype(fields).newbyteorder(self.endianness)
+        self._pdt = np.dtype(fields).newbyteorder(self.endianness)
 
         #Init position and caches (don't read first block yet):
         self._ipos = 0
@@ -225,18 +225,16 @@ class MCPLFile:
             fh.seek(0)
 
         self._is_gz = is_gz
-        can_use_np_fromfile = not _numpy_oldfromfile
         if is_gz:
-            can_use_np_fromfile = False
             fh = gzip.GzipFile(fileobj=fh)
             if not fh:
                 raise MCPLError('failed to open compressed file')
 
-        if can_use_np_fromfile:
-            #modern numpy and not gzipped input - read bytes by passing filehandle to np.fromfile
-            self._fileread = lambda dtype,count : np.fromfile(fh,dtype=np_dtype(dtype),count=np.squeeze(count))
+        if not is_gz:
+            #not gzipped input - read bytes by passing filehandle to np.fromfile
+            self._fileread = lambda dtype,count : np.fromfile(fh,dtype=np.dtype(dtype),count=np.squeeze(count))
         else:
-            #old numpy or gzipped input - read bytes via filehandle and use np.frombuffer to decode
+            #gzipped input - read bytes via filehandle and use np.frombuffer to decode
 
             #list of exception types that might indicate read errors (TypeError
             #and struct.error are in the list due to bugs in the python 3.3 gzip
@@ -247,7 +245,7 @@ class MCPLFile:
                 read_errors += [struct.error]
             read_errors = tuple(read_errors)
             def fread_via_buffer(dtype,count):
-                dtype,count=np_dtype(dtype),np.squeeze(count)
+                dtype,count=np.dtype(dtype),np.squeeze(count)
                 assert count>0
                 n = dtype.itemsize * count
                 try:
@@ -565,7 +563,7 @@ class MCPLFile:
         if endianness not in ('L','B'):
             raise MCPLError('Unexpected value in endianness field!')
         h['endianness']=endianness
-        dt= np_dtype("u8,5u4,i4,2u4").newbyteorder(endianness)
+        dt= np.dtype("u8,5u4,i4,2u4").newbyteorder(endianness)
         y = self._fileread(dtype=dt,count=1)
         if len(y)!=1:
             raise MCPLError('Errors encountered while attempting to read header')
@@ -580,7 +578,7 @@ class MCPLFile:
         opt_userflags = bool(opt_userflags)
         opt_polarisation = bool(opt_polarisation)
         opt_singleprec = bool(opt_singleprec)
-        opt_universalweight = float(self._fileread(dtype=np_dtype('f8').newbyteorder(endianness),count=1)[0] if _tmp else 0.0)
+        opt_universalweight = float(self._fileread(dtype=np.dtype('f8').newbyteorder(endianness),count=1)[0] if _tmp else 0.0)
         h['nparticles']=nparticles
         h['particlesize']=particlesize
         h['opt_universalpdgcode']=opt_universalpdgcode
@@ -590,7 +588,7 @@ class MCPLFile:
         h['opt_universalweight'] = opt_universalweight
 
         def readarr():
-            ll = self._fileread(dtype=np_dtype('u4').newbyteorder(endianness),
+            ll = self._fileread(dtype=np.dtype('u4').newbyteorder(endianness),
                                count=1)
             if len(ll)!=1:
                 raise MCPLError('Errors encountered while attempting to read header')

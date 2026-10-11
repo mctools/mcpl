@@ -29,7 +29,7 @@ import warnings
 from ._common import MCPLError
 from ._expressions import _as_filter
 from ._messages import _warning
-from ._numpy import _np_add_at, np, np_dtype, np_unique
+from ._numpy import np
 from ._physics import _pdg_database, wavelength_from_ekin
 from ._plotbackend import _backend_name
 from ._reader import MCPLFile
@@ -68,9 +68,9 @@ class _SelectedFile:
 
 def _unique_count(a,weights=None):
     """returns (unique,count) where unique is an array of sorted unique values in a, and count is the corresponding frequency counts"""
-    unique, inverse = np_unique(a, return_inverse=True)
-    count = np.zeros(len(unique), int if weights is None else np_dtype(type(weights[0])))
-    _np_add_at(count, inverse, 1 if weights is None else weights)
+    unique, inverse = np.unique(a, return_inverse=True)
+    count = np.zeros(len(unique), int if weights is None else np.dtype(type(weights[0])))
+    np.add.at(count, inverse, 1 if weights is None else weights)
     return (unique, count)
 
 def _merge_unique_count(uc1,uc2):
@@ -78,9 +78,9 @@ def _merge_unique_count(uc1,uc2):
     u = np.append(uc1[0],uc2[0])
     c = np.append(uc1[1],uc2[1])
     restype=(uc1[1][0] if len(uc1[1]) else 0) +(uc2[1][0] if len(uc2[1]) else 0)
-    unique, inverse = np_unique(u, return_inverse=True)
-    count = np.zeros(len(unique), np_dtype(type(restype)))
-    _np_add_at(count, inverse, c)
+    unique, inverse = np.unique(u, return_inverse=True)
+    count = np.zeros(len(unique), np.dtype(type(restype)))
+    np.add.at(count, inverse, c)
     return (unique,count)
 
 class _StatCollector:
@@ -125,10 +125,6 @@ class _StatCollector:
             self.__rmsstate += new_T + (w2*self.__sumwx-w1*new_sumwx)**2/(w1*w2*(w1+w2))
         self.__sumw  += new_sumw
         self.__sumwx += new_sumwx
-
-    def dump(self):
-        for k in self.__dumporder:
-            print("{} : {}".format(k.ljust(8),f'{self.__statcalc[k]():g}' if self.__sumw>0.0 or k=='integral' else 'n/a'))
 
     def summarise(self):
         return ', '.join("{}={}".format(k,f'{self.__statcalc[k]():g}' if self.__sumw>0.0 or k=='integral' else 'n/a') for k in self.__dumporder)
