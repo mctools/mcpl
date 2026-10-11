@@ -576,7 +576,7 @@ MCPL_LOCAL void mcpl_internal_statsumparse( const char * comment,
                || b=='e' || b=='E' ) ) {
         res->errmsg = ( "value field holds forbidden characters, only"
                         " 0123456789.-+eE are allowed in addition to leading"
-                        " or trailing simply spaces)" );
+                        " or trailing spaces" );
         return;
       }
       ++bp;
@@ -594,7 +594,7 @@ MCPL_LOCAL void mcpl_internal_statsumparse( const char * comment,
     return;
   }
   if ( !( val>=0.0 || val == -1.0 ) ) {
-    res->errmsg = "value field must hold non-zero value or -1";
+    res->errmsg = "value field must hold a non-negative value or -1";
     return;
   }
   if ( isinf(val) ) {

@@ -202,18 +202,19 @@ class MCPLOutFile:
 
     @property
     def sourcename(self):
-        """Name of the generating application (None if not set)"""
-        return self._srcname
+        """Name of the generating application (None if not set). Like the other
+        header properties, it is decoded like by MCPLFile."""
+        return None if self._srcname is None else _decode(self._srcname)
 
     @property
     def comments(self):
-        """List of comments added so far (as bytes)"""
-        return list(self._comments)
+        """List of comments added so far (strings)"""
+        return [ _decode(c) for c in self._comments ]
 
     @property
     def blobs(self):
-        """Dictionary of binary blobs added so far (keys as bytes)"""
-        return dict(self._blobs)
+        """Dictionary of binary blobs added so far (with strings as keys)"""
+        return { _decode(k) : v for k,v in self._blobs.items() }
 
     @property
     def stat_sum(self):
@@ -919,6 +920,10 @@ class _Columns:
         return self._n
     def __getattr__( self, name ):
         return self._col(name)
+
+def _decode( b ):
+    """Decode bytes from the header like MCPLFile does"""
+    return b.decode('utf-8','replace')
 
 def _raise_first_failure( checks ):
     """Raise MCPLError for the first particle failing any of the checks (masks

@@ -87,7 +87,17 @@ def test_attributes():
             print(f'wavelength of neutrons with zero ekin: MCPLError: {e}')
         print(f'wavelength of the other neutron: {b[1:].wavelength[0]:.6g}Aa')
 
+def test_particle_names():
+    #Names of particle types (as shown by the statistics), including ions
+    #(PDG codes 10LZZZAAAI):
+    from mcpldev._physics import _pdg_database
+    for pdg in ( 2112, -2212, 22, 1000020040, 1000060120, 1000922350,
+                 1000060121, 1010060120, 1010060122, 1001190300, -1000060120,
+                 1000000000, 99 ):
+        print(f'pdgcode {pdg}: {_pdg_database(pdg)}')
+
 if __name__ == '__main__':
+    test_particle_names()
     test_constants()
     test_conversions()
     test_attributes()

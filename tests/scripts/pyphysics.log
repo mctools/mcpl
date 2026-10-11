@@ -1,3 +1,16 @@
+pdgcode 2112: n
+pdgcode -2212: p-bar
+pdgcode 22: gamma
+pdgcode 1000020040: alpha
+pdgcode 1000060120: C12
+pdgcode 1000922350: U235
+pdgcode 1000060121: ion(Z=6,A=12,I=1)
+pdgcode 1010060120: ion(Z=6,A=12,L=1)
+pdgcode 1010060122: ion(Z=6,A=12,L=1,I=2)
+pdgcode 1001190300: ion(Z=119,A=30)
+pdgcode -1000060120: None
+pdgcode 1000000000: None
+pdgcode 99: None
 mcpl.constants.c_light = 299792458.0
 mcpl.constants.e_charge = 1.602176634e-19
 mcpl.constants.h_planck = 6.62607015e-34

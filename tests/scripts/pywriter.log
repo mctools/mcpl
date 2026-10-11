@@ -131,6 +131,44 @@ Errors:
 MCPL: Compressing file gz2.mcpl
 MCPL: Compressed file into gz2.mcpl.gz
 gz2.mcpl.gz: 5 particles, ekin=[1.   1.25 1.5  1.75 2.  ]
+Properties of props.mcpl: sourcename='MySim' comments=['c1', 'c2'] blobs={'k': b'v'} opt_userflags=True opt_polarisation=False opt_singleprec=False opt_universalpdgcode=22 opt_universalweight=2.0
+  Got expected error: Do not specify both ekin and wavelength
+  Got expected error: userflags out of range
+  gamma with wavelength 1Aa: ekin=0.0123984 MeV, wavelength=1 Aa, userflags=7
+Filename given as bytes: bytesname.mcpl
+  Got expected error: Source name must not contain null characters.
+  Got expected error: wavelength can only be specified for neutrons (pdgcode 2112) and gammas (pdgcode 22)
+  Got expected error: pdgcode out of range
+  Got expected error: direction must have length 3
+  Got expected error: Do not specify both direction and any of ux, uy, uz
+  Got expected error: Do not specify particle fields together with a particle object
+  Got expected TypeError: Unknown particle field(s): energy
+  Got expected error: pdgcode must be integers
+  Got expected error: ekin must be a scalar or a 1D array
+  Got expected error: direction must have shape (3,) or (N,3)
+  Got expected error: Unsupported type of particles object (should be MCPLParticleBlock or MCPLParticle)
+  Got expected error: Output file has already been closed.
+  Got expected error: Unsupported type of filename object (should be path-like, a string or similar)
+  Got expected error: MCPLOutFile called with too long string.
+  Got expected error: blocklength must be at least 1
+  Got expected error: enable_universal_pdgcode must be called with a 32 bit integer.
+  Got expected error: create_outfile_mpi: nproc must be larger than 0
+  Got expected error: create_outfile_mpi: iproc must be less than nproc
+  Got expected error: create_outfile_mpi: nproc too large
+  Got expected error: merge_outfiles_mpi: nproc must be larger than 0
+  Got expected error: merge_outfiles_mpi: nproc too large
+  Got expected error: merge_outfiles_mpi: expected output file "<cwd>/missing.mcpl.gz" from iproc=0 not found.
+  Got expected error: Unable to open file!
+  Got expected error: Syntax error: could not properly decode comment starting with "stat:sum:" (empty key). Issue with comment "stat:sum::                       1"
+  Got expected error: Syntax error: could not properly decode comment starting with "stat:sum:" (key length exceeds 64 characters). Issue with comment "stat:sum:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:                       1"
+  Got expected error: Syntax error: could not properly decode comment starting with "stat:sum:" (key does not adhere to naming [a-zA-Z][a-zA-Z0-9_]*). Issue with comment "stat:sum:1abc:                       1"
+  Got expected error: Syntax error: could not properly decode comment starting with "stat:sum:" (value field missing actual value). Issue with comment "stat:sum:k:                        "
+  Got expected error: Syntax error: could not properly decode comment starting with "stat:sum:" (value field holds forbidden characters, only 0123456789.-+eE are allowed in addition to leading or trailing spaces). Issue with comment "stat:sum:k:                     abc"
+  Got expected error: Syntax error: could not properly decode comment starting with "stat:sum:" (could not decode contents of value field). Issue with comment "stat:sum:k:                     1-+"
+  Got expected error: Syntax error: could not properly decode comment starting with "stat:sum:" (value field must hold a non-negative value or -1). Issue with comment "stat:sum:k:                      -2"
+  Got expected error: Syntax error: could not properly decode comment starting with "stat:sum:" (value field holds forbidden value (+INFINITY)). Issue with comment "stat:sum:k:                   1e999"
+  Got expected error: Syntax error: could not properly decode comment starting with "stat:sum:" (value field is not exactly 24 characters wide). Issue with comment "stat:sum:k:12"
+  Got expected error: Syntax error: could not properly decode comment starting with "stat:sum:" (did not find colon separating key and value). Issue with comment "stat:sum:k"
 MCPL: Compressing file example_output.mcpl
 MCPL: Compressed file into example_output.mcpl.gz
 pyexample_writemcpl wrote 10001 particles from "my_cool_program_name" with comments ['Some comment.', 'Another comment.']

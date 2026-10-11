@@ -94,7 +94,7 @@ def _statsum_syntax_error( comment ):
         if not all( e in b'0123456789.-+eE' for e in v ):
             return ( 'value field holds forbidden characters, only'
                      ' 0123456789.-+eE are allowed in addition to leading'
-                     ' or trailing simply spaces)' )
+                     ' or trailing spaces' )
         try:
             val = float(v)
         except ValueError:
@@ -103,7 +103,7 @@ def _statsum_syntax_error( comment ):
         if math.isnan(val):
             return 'value field holds forbidden value (NaN)'
         if not ( val >= 0.0 or val == -1.0 ):
-            return 'value field must hold non-zero value or -1'
+            return 'value field must hold a non-negative value or -1'
         if math.isinf(val):
             return 'value field holds forbidden value (+INFINITY)'
         return 'unknown issue'

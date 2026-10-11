@@ -453,12 +453,12 @@ def _app_pymcpltool(argv):
         outfn = vopts.get('--output') or ( 'mcpl.pdf' if opt_pdf else None )
         if outfn or opt_gui or '--backend' in vopts:
             try:
-                plot_stats(f,filename=outfn,backend=vopts.get('--backend'),
-                           **_save_options(outfn,vopts.get('--backend')))
+                files = plot_stats(f,filename=outfn,backend=vopts.get('--backend'),
+                                   **_save_options(outfn,vopts.get('--backend')))
             except MCPLError as e:
                 bad(str(e))
-            if outfn:
-                print(f"Created {outfn}")
+            if files:
+                print('Created ' + ', '.join(files))
         else:
             dump_stats(f)
         sys.exit(0)
