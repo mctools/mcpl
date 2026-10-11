@@ -376,10 +376,10 @@ class MCPLFile:
 
           p = mcplfile.read()
           if p is not None:
-               print p.x,p.y,p.z
-               print p.ux,p.uy,p.uz
-               print p.polx,p.poly,p.polz
-               print p.ekin,p.time,p.weight,p.userflags
+               print(p.x,p.y,p.z)
+               print(p.ux,p.uy,p.uz)
+               print(p.polx,p.poly,p.polz)
+               print(p.ekin,p.time,p.weight,p.userflags)
 
         See also the particles property for an iterator-based access to
         particles. Furthermore, note that the read_blocks() function and
@@ -444,7 +444,7 @@ class MCPLFile:
         """Use to iterate over all particles in file:
 
            for p in thefile.particles:
-               print p.x,p.y,p.z
+               print(p.x,p.y,p.z)
         """
         self.rewind()
         while True:
@@ -456,10 +456,11 @@ class MCPLFile:
     @property
     def particle_blocks(self):
         """Use to iterate over all particles in file, returning a block of
-           particles each time for efficiency:
+        particles each time for efficiency:
 
            for p in thefile.particle_blocks:
-               print p.x,p.y,p.z #NB: the "values" here are actually arrays
+               #(NB: the "values" here are actually arrays)
+               print(p.x,p.y,p.z)
         """
         self.rewind()
         while True:

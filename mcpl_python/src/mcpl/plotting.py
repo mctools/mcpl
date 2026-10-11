@@ -32,10 +32,13 @@ MCPL_PLOT_BACKEND environment variable, or else the first available one.
 
 For instance:
 
-   from mcpl.plotting import Figure, Panel, StepHist, save
-   fig = Figure( panels = [ Panel( title = 'My histogram', xlabel = 'x [cm]',
-                                   items = [ StepHist(edges,values) ] ) ] )
-   save( fig, 'myplot.pdf' )
+   from mcpl.plotting import Figure, Panel, StepHist
+   from mcpl.plotting import save
+   hist = StepHist(edges,values)
+   panel = Panel( title = 'My histogram',
+                  xlabel = 'x [cm]',
+                  items = [ hist ] )
+   save( Figure( panels = [ panel ] ), 'myplot.pdf' )
 """
 
 __all__ = [ 'Backend', 'Bars', 'Figure', 'Hist2D', 'Panel', 'StepHist', 'Text',
@@ -89,6 +92,7 @@ class Panel:
         self.logx, self.logy, self.xlim, self.ylim = logx, logy, xlim, ylim
         self.items = list(items or [])
     def add( self, item ):
+        """Add an item (e.g. a StepHist) to the panel, and return it"""
         self.items.append(item)
         return item
 
@@ -99,6 +103,7 @@ class Figure:
         self.panels = list(panels or [])
         self.nrows, self.ncols = nrows, ncols
     def add( self, panel ):
+        """Add a panel to the figure, and return it"""
         self.panels.append(panel)
         return panel
 

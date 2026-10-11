@@ -419,7 +419,9 @@ class ParticleFilter:
     """Selection of particles based on an expression, which is evaluated with
     numpy on blocks of particles. For instance:
 
-       flt = ParticleFilter("pdgcode == neutron && ekin < 25meV && abs(x) <= 2mm")
+       flt = ParticleFilter("pdgcode == neutron"
+                            " && ekin < 25meV"
+                            " && abs(x) <= 2mm")
        for block in mcplfile.particle_blocks:
            selected = block[ flt(block) ]
 
@@ -461,6 +463,7 @@ class ParticleFilter:
         self(_EmptyBlock())#check units etc.
     @property
     def expression( self ):
+        """The expression (with normalised whitespace)"""
         return self._expr
     def __call__( self, block ):
         """Return boolean array selecting particles in the block"""
@@ -493,6 +496,7 @@ class ParticleValue:
         self(_EmptyBlock())#check units etc.
     @property
     def expression( self ):
+        """The expression (with normalised whitespace)"""
         return self._expr
     def __call__( self, block ):
         """Return array with the values for the particles in the block"""
@@ -518,7 +522,8 @@ class ParticleEdit:
     separated by commas, which are evaluated with numpy on blocks of particles.
     For instance:
 
-       edit = ParticleEdit("rotate_z(90deg), z += 10cm, wavelength = 1.8Aa")
+       edit = ParticleEdit("rotate_z(90deg), z += 10cm,"
+                           " wavelength = 1.8Aa")
        for block in mcplfile.particle_blocks:
            outfile.add_particles( block, **edit(block) )
 
@@ -657,6 +662,7 @@ class ParticleEdit:
 
     @property
     def expression( self ):
+        """The expression (with normalised whitespace)"""
         return self._expr
 
     @property
