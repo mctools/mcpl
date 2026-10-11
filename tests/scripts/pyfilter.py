@@ -215,12 +215,13 @@ def test_dump_and_stats():
 
 def test_exact_rotations():
     #Rotations by multiples of 90 degrees must be exact, i.e. give the same
-    #bits (also signed zeros) as swapping and negating the values:
+    #bits as swapping and negating the values (but without negative zeros):
     with mcpl.MCPLFile(example_file) as f:
         b = f.read_block()
     b = b[:50]
     def bits(a):
-        return np.ascontiguousarray(a,dtype=float).view(np.uint64)
+        #(adding 0.0 to the reference values, to change -0.0 to 0.0)
+        return np.ascontiguousarray(np.asarray(a,dtype=float)+0.0).view(np.uint64)
     x, y, ux, uy = b.x, b.y, b.ux, b.uy
     zero = np.zeros(len(b))
     for angle, (xx, yy) in ( ('90deg', (-y, x)), ('180deg', (-x, -y)),
@@ -231,11 +232,14 @@ def test_exact_rotations():
         assert np.array_equal(bits(r['x']), bits(xx)), angle
         assert np.array_equal(bits(r['y']), bits(yy)), angle
         print(f'rotate_z({angle}) is exact')
-    #Same as with assignments (also giving -0.0 for 0.0):
-    r1 = mcpl.ParticleEdit('x = 0cm, y = 0cm, rotate_z(90deg)')(b)
-    r2 = mcpl.ParticleEdit('x = 0cm, y = 0cm, tmp = x, x = -y, y = tmp')(b)
-    assert all( np.array_equal(bits(r1[k]),bits(r2[k])) for k in ('x','y') )
-    assert np.array_equal(bits(r1['x']), bits(-zero))
+    #No negative zeros, for any angle:
+    def raw_bits(a):
+        return np.ascontiguousarray(a,dtype=float).view(np.uint64)
+    for angle in ('90deg','180deg','270deg','-0deg','0deg','30deg','pi'):
+        r = mcpl.ParticleEdit(f'x = 0cm, y = 0cm, rotate_z({angle})')(b)
+        assert all( np.array_equal(raw_bits(r[k]),raw_bits(zero))
+                    for k in ('x','y') ), angle
+    print('rotations of zeros give 0.0 (not -0.0)')
     r = mcpl.ParticleEdit('rotate_x(90deg)')(b)
     assert np.array_equal(bits(r['y']), bits(-b.z))
     assert np.array_equal(bits(r['z']), bits(b.y))

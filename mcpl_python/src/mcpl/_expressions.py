@@ -514,8 +514,8 @@ class ParticleEdit:
         given axis (through the origin), e.g. "rotate_y(90deg)". The rotation
         is counter-clockwise when looking from the positive axis towards the
         origin. Rotations by multiples of 90 degrees are exact (e.g.
-        "rotate_z(90deg)" gives exactly the same as "tmp = x, x = -y,
-        y = tmp").
+        "rotate_z(90deg)" changes (x,y) to exactly (-y,x)), and rotations never
+        give negative zeros (-0.0).
     """
     _assignable = tuple( f for f in _expr_fields )
     def __init__( self, expression ):
@@ -685,7 +685,8 @@ class ParticleEdit:
                 #Rotations by multiples of 90 degrees are done exactly, by
                 #swapping and negating values, since the cos and sin of such
                 #angles in radians are not exactly 0 and +-1 (e.g. rotate_z(90deg)
-                #gives exactly the same as "x = -y, y = x"):
+                #gives exactly (x,y) -> (-y,x)). Adding 0.0 to the results
+                #avoids negative zeros (-0.0 + 0.0 is 0.0):
                 q = np.asarray(qa.v,dtype=float) / ( 0.5 * np.pi )
                 k = np.round(q)
                 quarter = ( np.abs( q - k ) <= 8 * np.finfo(float).eps
@@ -698,8 +699,8 @@ class ParticleEdit:
                         A, B = np.asarray(va.v), np.asarray(vb.v)
                         ra = np.where(quarter, np.choose(kq,(A,-B,-A,B)), ra)
                         rb = np.where(quarter, np.choose(kq,(B,A,-B,-A)), rb)
-                    state[a] = _Q(ra, va.d)
-                    state[b] = _Q(rb, vb.d)
+                    state[a] = _Q(ra + 0.0, va.d)
+                    state[b] = _Q(rb + 0.0, vb.d)
                     modified.update((a,b))
         res = {}
         for name in sorted(modified):
