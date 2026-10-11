@@ -1,15 +1,15 @@
-import mcpl                             : no plotting modules imported
-read with select and edit               : no plotting modules imported
-write and merge                         : no plotting modules imported
-statistics                              : no plotting modules imported
-histogram as text                       : no plotting modules imported
-pymcpltool FILE                         : no plotting modules imported
-pymcpltool --select                     : no plotting modules imported
-pymcpltool --stats                      : no plotting modules imported
-pymcpltool --hist --print               : no plotting modules imported
-pymcpltool --extract                    : no plotting modules imported
-pymcpltool --merge                      : no plotting modules imported
-pymcpltool --repair                     : no plotting modules imported
-pymcpltool --text                       : no plotting modules imported
-plot with the test backend              : mcpldev._plotbackend_test
-pymcpltool --hist with the test backend : mcpldev._plotbackend_test
+import mcpl                             : no optional modules
+read with select and edit               : no optional modules
+write and merge                         : no optional modules
+statistics                              : _stats
+histogram as text                       : _histogram
+pymcpltool FILE                         : _cli
+pymcpltool --select                     : _cli
+pymcpltool --stats                      : _cli _clistats _stats
+pymcpltool --hist --print               : _cli _clistats _histogram
+pymcpltool --extract                    : _cli
+pymcpltool --merge                      : _cli
+pymcpltool --repair                     : _cli
+pymcpltool --text                       : _cli
+plot with the test backend              : _histogram _plotbackend _plotbackend_test plotting
+pymcpltool --hist with the test backend : _cli _clistats _histogram _plotbackend _plotbackend_test plotting

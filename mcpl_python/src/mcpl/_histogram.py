@@ -32,7 +32,6 @@ from ._expressions import ParticleFilter, ParticleValue
 from ._numpy import np
 from ._physics import _pdg_database
 from ._reader import MCPLFile
-from .plotting import Figure, Hist2D, Panel, StepHist, save, show
 
 
 def _as_files( sources ):
@@ -118,6 +117,7 @@ class Histogram:
 
     def panel( self, logy = False ):
         """Panel (see mcpl.plotting) with the histogram."""
+        from .plotting import Panel, StepHist
         p = Panel( title = self.title, xlabel = self.expression,
                    ylabel = self.ylabel, logx = self.logx, logy = logy,
                    xlim = ( self.edges[0], self.edges[-1] ) )
@@ -136,6 +136,7 @@ class Histogram:
 
     def figure( self, logy = False ):
         """Figure (see mcpl.plotting) with the histogram."""
+        from .plotting import Figure
         return Figure( panels = [ self.panel(logy = logy) ] )
 
     def plot( self, filename = None, backend = None, logy = False, **options ):
@@ -177,6 +178,7 @@ class Histogram2D:
 
     def panel( self, logz = True ):
         """Panel (see mcpl.plotting) with the histogram."""
+        from .plotting import Hist2D, Panel
         p = Panel( title = self.title, xlabel = self.xexpression,
                    ylabel = self.yexpression )
         p.add(Hist2D(self.xedges,self.yedges,self.contents,logz = logz))
@@ -184,6 +186,7 @@ class Histogram2D:
 
     def figure( self, logz = True ):
         """Figure (see mcpl.plotting) with the histogram."""
+        from .plotting import Figure
         return Figure( panels = [ self.panel(logz = logz) ] )
 
     def plot( self, filename = None, backend = None, logz = True, **options ):
@@ -204,6 +207,7 @@ class Histogram2D:
         return '\n'.join(lines)
 
 def _show_or_save( figures, filename, backend, options ):
+    from .plotting import save, show
     if filename:
         return save(figures,filename,backend=backend,**options)
     show(figures,backend=backend,**options)
@@ -358,6 +362,7 @@ def plot_histograms( histograms, filename = None, backend = None, logy = False,
     legend shows the labels if given, and otherwise the titles (selections) or
     expressions of the histograms. Returns the list of created files when
     saving."""
+    from .plotting import Figure, Panel, StepHist
     histograms = list(histograms)
     if not overlay:
         figs = []

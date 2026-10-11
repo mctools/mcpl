@@ -22,8 +22,9 @@
 
 # NEEDS: numpy
 
-# Test that the plotting backends, and the packages they use (matplotlib,
-# plotly, ...), are only imported when plots are actually made, and not by
+# Test that the optional parts of the mcpl package (statistics, histograms,
+# plotting, and the pymcpltool command), and the packages used for plotting
+# (matplotlib, plotly, ...), are only imported when they are used, and not by
 # "import mcpl" or when using the other functionality of the Python API or of
 # pymcpltool. Each case runs in a new Python process, which reports the
 # modules it imported.
@@ -58,51 +59,60 @@ with open(os.devnull,'w') as devnull, contextlib.redirect_stdout(devnull):
     except SystemExit:
         pass
 mods = sorted( m for m in sys.modules
-               if m.split('.')[0] in %r or m.startswith('mcpldev._plotbackend_') )
+               if m.split('.')[0] in %r
+               or m.split('.',1)[-1] in %r )
 print(json.dumps(mods))
 """
+
+#Modules of the mcpl package with optional functionality, which must only be
+#imported when needed:
+optional_modules = ( '_stats', '_statsplot', '_histogram', '_clistats', '_cli',
+                     'plotting', '_plotbackend', '_plotbackend_mpl',
+                     '_plotbackend_plotly', '_plotbackend_test' )
 
 def tool(*args):
     return f"mcpl.app_pymcpltool(['pymcpltool',{','.join(repr(a) for a in args)}])"
 
 cases = [
-    ( 'import mcpl', 'pass' ),
-    ( 'read with select and edit',
+    ( 'import mcpl', '', 'pass' ),
+    ( 'read with select and edit', '',
       ( "for b in mcpl.MCPLFile('example.mcpl', select='pdgcode == neutron',"
         " edit='rotate_z(90deg)').particle_blocks: pass" ) ),
-    ( 'write and merge',
+    ( 'write and merge', '',
       ( "f = mcpl.MCPLOutFile('w1.mcpl'); f.add_particles(direction=(0,0,1.)); f.close()\n"
         "        mcpl.forcemerge_files('w2.mcpl', ['w1.mcpl','example.mcpl']).close()" ) ),
-    ( 'statistics', "mcpl.dump_stats(mcpl.collect_stats('example.mcpl'))" ),
-    ( 'histogram as text', "print(mcpl.histogram('example.mcpl','ekin/MeV',bins=4).to_text())" ),
-    ( 'pymcpltool FILE', tool('example.mcpl') ),
-    ( 'pymcpltool --select', tool('-l3','--select','pdgcode == gamma','example.mcpl') ),
-    ( 'pymcpltool --stats', tool('--stats','example.mcpl') ),
-    ( 'pymcpltool --hist --print', tool('--hist','ekin/MeV','--print','example.mcpl') ),
-    ( 'pymcpltool --extract', tool('--extract','example.mcpl','e.mcpl','--edit','z += 1m') ),
-    ( 'pymcpltool --merge', tool('--merge','m.mcpl','example.mcpl','example2.mcpl') ),
-    ( 'pymcpltool --repair', tool('--repair','torepair.mcpl') ),
-    ( 'pymcpltool --text', tool('--text','example.mcpl','t.txt') ),
+    ( 'statistics', '_stats', "mcpl.dump_stats(mcpl.collect_stats('example.mcpl'))" ),
+    ( 'histogram as text', '_histogram', "print(mcpl.histogram('example.mcpl','ekin/MeV',bins=4).to_text())" ),
+    ( 'pymcpltool FILE', '_cli', tool('example.mcpl') ),
+    ( 'pymcpltool --select', '_cli', tool('-l3','--select','pdgcode == gamma','example.mcpl') ),
+    ( 'pymcpltool --stats', '_cli _clistats _stats', tool('--stats','example.mcpl') ),
+    ( 'pymcpltool --hist --print', '_cli _clistats _histogram', tool('--hist','ekin/MeV','--print','example.mcpl') ),
+    ( 'pymcpltool --extract', '_cli', tool('--extract','example.mcpl','e.mcpl','--edit','z += 1m') ),
+    ( 'pymcpltool --merge', '_cli', tool('--merge','m.mcpl','example.mcpl','example2.mcpl') ),
+    ( 'pymcpltool --repair', '_cli', tool('--repair','torepair.mcpl') ),
+    ( 'pymcpltool --text', '_cli', tool('--text','example.mcpl','t.txt') ),
     #Plotting with the test backend loads only that backend:
-    ( 'plot with the test backend',
+    ( 'plot with the test backend', '_histogram plotting _plotbackend _plotbackend_test',
       "mcpl.histogram('example.mcpl','ekin/MeV',bins=4).plot(backend='test')" ),
-    ( 'pymcpltool --hist with the test backend',
+    ( 'pymcpltool --hist with the test backend', '_cli _clistats _histogram plotting _plotbackend _plotbackend_test',
       tool('--hist','ekin/MeV','--backend','test','example.mcpl') ),
 ]
 
 def main():
     env = dict(os.environ)
     env['PYTHONPATH'] = os.pathsep.join(p for p in sys.path if p)
-    for title, code in cases:
-        rv = subprocess.run([sys.executable,'-c',code_template%('        '+code,plot_modules)],
+    for title, expected, code in cases:
+        rv = subprocess.run([sys.executable,'-c',
+                             code_template%('        '+code,plot_modules,optional_modules)],
                             capture_output=True, text=True, env=env, check=False)
         assert rv.returncode == 0, f'{title} failed:\n{rv.stderr}'
         mods = json.loads(rv.stdout.strip().splitlines()[-1])
-        print(f'{title:<40}: {", ".join(mods) or "no plotting modules imported"}')
-        if 'test backend' in title:
-            assert mods == ['mcpldev._plotbackend_test'], mods
-        else:
-            assert not mods, mods
+        #Plotting packages must not be imported at all, and only the expected
+        #optional modules of the mcpl package:
+        assert not any( m.split('.')[0] in plot_modules for m in mods ), mods
+        got = sorted( m.split('.',1)[1] for m in mods )
+        print(f'{title:<40}: {" ".join(got) or "no optional modules"}')
+        assert got == sorted(expected.split()), (title, got)
 
 if __name__ == '__main__':
     main()

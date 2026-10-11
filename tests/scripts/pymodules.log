@@ -11,16 +11,18 @@ Modules of the mcpl package and their imports from the package:
   layer   4 : _writer              <- _blocks, _common, _expressions, _messages, _numpy, _physics, _reader, _statsum
   layer   5 : _fileops             <- _common, _expressions, _messages, _reader, _statsum, _writer
   layer   6 : _plotbackend         <- _common
+  layer   6 : _stats               <- _common, _expressions, _messages, _numpy, _physics, _reader
   layer   7 : plotting             <- _plotbackend
   layer   8 : _histogram           <- _common, _expressions, _numpy, _physics, _reader, plotting
   layer   8 : _plotbackend_mpl     <- _common, _numpy, _plotbackend, plotting
   layer   8 : _plotbackend_plotly  <- _common, _numpy, _plotbackend, plotting
   layer   8 : _plotbackend_test    <- _numpy, _plotbackend, plotting
-  layer   8 : _stats               <- _common, _expressions, _messages, _numpy, _physics, _plotbackend, _reader, plotting
-  layer   9 : _cli                 <- _common, _expressions, _fileops, _histogram, _messages, _physics, _plotbackend, _reader, _stats, _writer
-  layer top : __init__             <- _blocks, _cli, _common, _expressions, _fileops, _histogram, _messages, _reader, _stats, _statsum, _writer, constants, plotting
+  layer   9 : _statsplot           <- _common, _numpy, _physics, _plotbackend, _stats, plotting
+  layer  10 : _clistats            <- _common, _histogram, _plotbackend, _reader, _stats, _statsplot
+  layer  11 : _cli                 <- _clistats, _common, _expressions, _fileops, _messages, _physics, _reader, _writer
+  layer top : __init__             <- _blocks, _common, _expressions, _fileops, _messages, _reader, _statsum, _writer, constants
   layer top : __main__             <- _cli
-  layer top : mcpl                 <- _blocks, _cli, _common, _fileops, _reader, _stats, _statsum
+  layer top : mcpl                 <- _blocks, _cli, _common, _fileops, _reader, _stats, _statsplot, _statsum
 numpy is imported by: _numpy
 matplotlib is imported by: _plotbackend_mpl
 plotly is imported by: _plotbackend_plotly
@@ -34,6 +36,7 @@ mcpl.__all__ has 34 names, provided by:
   _reader              : MCPLFile
   _writer              : MCPLOutFile, gzip_file
   _fileops             : can_merge, convert2ascii, create_outfile_mpi, dump_file, forcemerge_files, merge_files, merge_inplace, merge_outfiles_mpi, name_helper, repair
+  _stats               : collect_stats, dump_stats
   _histogram           : Histogram, Histogram2D, histogram, histogram2d, plot_histograms
-  _stats               : collect_stats, dump_stats, plot_stats, stats_figures
+  _statsplot           : plot_stats, stats_figures
   _cli                 : app_pymcpltool
