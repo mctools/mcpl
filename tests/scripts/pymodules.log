@@ -24,6 +24,7 @@ Modules of the mcpl package and their imports from the package:
 numpy is imported by: _numpy
 matplotlib is imported by: _plotbackend_mpl
 plotly is imported by: _plotbackend_plotly
+matplotlib, plotly are only imported inside functions
 mcpl.__all__ has 34 names, provided by:
   _common              : MCPLError
   _messages            : use_logging
