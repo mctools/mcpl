@@ -72,8 +72,24 @@ _edit_statements = ( 'swap', 'rotate_x', 'rotate_y', 'rotate_z' )
 _rotation_planes = { 'rotate_x' : ( ('y','z'), ('uy','uz'), ('poly','polz') ),
                      'rotate_y' : ( ('z','x'), ('uz','ux'), ('polz','polx') ),
                      'rotate_z' : ( ('x','y'), ('ux','uy'), ('polx','poly') ) }
-_expr_functions = dict( sqrt = np.sqrt, atan2 = np.arctan2,
+_expr_functions = dict( sqrt = np.sqrt, atan2 = np.arctan2, angle_to = None,
                         **_expr_functions_nodim, **_expr_functions_samedim )
+
+def _angle_highres( a, b ):
+    """Angles between the vectors a and b (given as tuples of components),
+    precise also for small angles (unlike acos of the dot product of the
+    normalised vectors). Based on the formula on page 47 of "How Futile are
+    Mindless Assessments of Roundoff in Floating-Point Computation?" by W.
+    Kahan (2006), like NCrystal::Vector::angle_highres."""
+    a = [ np.asarray(c,dtype=np.float64) for c in a ]
+    b = [ np.asarray(c,dtype=np.float64) for c in b ]
+    na = np.sqrt( a[0]*a[0] + a[1]*a[1] + a[2]*a[2] )
+    nb = np.sqrt( b[0]*b[0] + b[1]*b[1] + b[2]*b[2] )
+    ua = [ c / na for c in a ]
+    ub = [ c / nb for c in b ]
+    dmag = np.sqrt( sum( ( x - y )**2 for x, y in zip(ua,ub) ) )
+    smag = np.sqrt( sum( ( x + y )**2 for x, y in zip(ua,ub) ) )
+    return 2.0 * np.arctan2(dmag,smag)
 
 def _expr_normalise( expr ):
     """Expression with all whitespace (including newlines, e.g. in long
@@ -347,6 +363,14 @@ class _ExprEvaluator:
                     self.error('atan2(..) takes two arguments')
                 y, x, _ = self.same(args[0],args[1],'atan2(..)')
                 return _Q(np.arctan2(y,x))
+            if fname == 'angle_to':
+                #Angle between the direction of the particles and a vector:
+                if len(args) != 3:
+                    self.error('angle_to(x,y,z) takes three arguments')
+                vx, vy, _ = self.same(args[0],args[1],'angle_to(..)')
+                _, vz, _ = self.same(args[0],args[2],'angle_to(..)')
+                u = tuple( self.name(c).v for c in ('ux','uy','uz') )
+                return _Q(_angle_highres(u,(vx,vy,vz)))
             #Functions keeping units:
             if fname == 'hypot':
                 if len(args) < 2:
@@ -408,7 +432,9 @@ class ParticleFilter:
     (&&, ||, ! or and, or, not), bitwise &, | and ~ on integers (e.g. on
     userflags, as in "userflags & 0x10", where like in C integers which are not
     0 are true), functions (sqrt, abs, floor, ceil, exp, log, log10,
-    sin, cos, tan, asin, acos, atan, atan2, hypot, min, max), the constant
+    sin, cos, tan, asin, acos, atan, atan2, hypot, min, max, and
+    angle_to(x,y,z) for the angle between the direction of the particles and
+    the vector (x,y,z), which is precise also for small angles), the constant
     pi, and the names neutron, antineutron, proton, antiproton, electron,
     positron (or antielectron), muon, antimuon, and gamma (or photon), which
     can be used for pdgcode values. The wavelength is only defined for

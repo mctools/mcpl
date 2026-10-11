@@ -75,6 +75,9 @@ def test_expressions():
               ('(~userflags & 0xff) == 0xff', ((~b.userflags) & 0xff) == 0xff),
               ('pdgcode == ~2111', b.pdgcode == -2112),
               ('atan2(uy,ux) > 90deg', np.arctan2(b.uy,b.ux) > np.pi/2),
+              ('angle_to(0,0,1) < 30deg', np.degrees(np.arccos(np.clip(b.uz,-1,1))) < 30),
+              #(the angle to -z is above 150 degrees when the angle to +z is below 30):
+              ('angle_to(0,0,-2cm) > 150deg', np.degrees(np.arccos(np.clip(b.uz,-1,1))) < 30),
               ('!(userflags & 1) && pdgcode != 0b0', ((b.userflags & 1) == 0)&(b.pdgcode!=0)),
               ('pdgcode == electron || pdgcode == positron', np.isin(b.pdgcode,(11,-11))),
               ('pdgcode == antielectron || pdgcode == photon', np.isin(b.pdgcode,(-11,22))),
@@ -284,7 +287,36 @@ def test_whitespace():
         except mcpl.MCPLError as e:
             print(f'ParticleFilter({bad!r}): {e}')
 
+def test_angle_to():
+    #angle_to(x,y,z) is the angle between the direction and the vector (x,y,z),
+    #precise also for small angles (unlike acos of a dot product):
+    with mcpl.MCPLFile(example_file) as f:
+        b = f.read_block()
+    v = mcpl.ParticleValue('angle_to(0,0,1)/deg')(b)
+    assert np.allclose(v, np.degrees(np.arccos(np.clip(b.uz,-1,1))), rtol=0, atol=1e-9)
+    #Angle to the position vector (with units, which must be the same):
+    v = mcpl.ParticleValue('angle_to(x,y,z)')(b)
+    #(compared with another formula which is precise for all angles):
+    pos, d = np.stack((b.x,b.y,b.z),axis=1), b.direction
+    ref = np.arctan2(np.linalg.norm(np.cross(pos,d),axis=1), np.sum(pos*d,axis=1))
+    assert np.allclose(v, ref, rtol=0, atol=1e-12)
+    print(f'angle_to(x,y,z)/deg of the first particles: {np.round(np.degrees(v[:3]),6)}')
+    #Small angles, where acos(dot product) gives 0:
+    from mcpldev._expressions import _angle_highres
+    for eps in (1e-6, 1e-9, 1e-12):
+        a = _angle_highres((np.array([1.0]),np.array([eps]),np.array([0.0])),(1.0,0.0,0.0))
+        print(f'angle between (1,{eps:g},0) and (1,0,0): {a[0]:.6g}'
+              f' (acos of dot product: {np.arccos(1/np.sqrt(1+eps**2)):.6g})')
+        assert abs(a[0]-np.arctan(eps)) <= 1e-15*eps
+    for bad in ( 'angle_to(0,0) > 0', 'angle_to(x,y,1) > 0', 'angle_to(0,0,0) > 1deg',
+                 'angle_to(0,0,1cm) > 1cm' ):
+        try:
+            mcpl.ParticleFilter(bad)(b)
+        except mcpl.MCPLError as e:
+            print(f'{bad}: {e}')
+
 if __name__ == '__main__':
+    test_angle_to()
     test_exact_rotations()
     test_whitespace()
     test_expressions()
