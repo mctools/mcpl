@@ -165,6 +165,7 @@ class MCPLParticleBlock:
             self._offset = file_offset
 
     def contains_ipos(self,ipos):
+        """Whether the particle at position ipos in the file is in the block"""
         d=ipos-self._offset
         return d>=0 and d<len(self._data)
 
@@ -204,7 +205,7 @@ class MCPLParticleBlock:
         """Use to iterate over all particles in block:
 
            for p in theblock.particles:
-               print p.x,p.y,p.z
+               print(p.x,p.y,p.z)
         """
         for i in range(len(self._data)):
             yield self[i]
@@ -233,6 +234,7 @@ class MCPLParticleBlock:
 
     @property
     def polx(self):
+        """X-coordinate of polarisation vector of each particle (array)"""
         x = self._polx
         if x[0]:
             if x[1] is None:
@@ -244,6 +246,7 @@ class MCPLParticleBlock:
 
     @property
     def poly(self):
+        """Y-coordinate of polarisation vector of each particle (array)"""
         x = self._poly
         if x[0]:
             if x[1] is None:
@@ -255,6 +258,7 @@ class MCPLParticleBlock:
 
     @property
     def polz(self):
+        """Z-coordinate of polarisation vector of each particle (array)"""
         x = self._polz
         if x[0]:
             if x[1] is None:
@@ -266,6 +270,7 @@ class MCPLParticleBlock:
 
     @property
     def pdgcode(self):
+        """MC particle number from the Particle Data Group (2112=neutron, 22=gamma, ...) of each particle (array)"""
         x = self._pdg
         if x[0]:
             if x[1] is None:
@@ -277,6 +282,7 @@ class MCPLParticleBlock:
 
     @property
     def weight(self):
+        """Weight or intensity of each particle (array)"""
         x = self._w
         if x[0]:
             if x[1] is None:
@@ -288,6 +294,7 @@ class MCPLParticleBlock:
 
     @property
     def userflags(self):
+        """Custom per-particle flags of each particle (array)"""
         x = self._uf
         if x[0]:
             if x[1] is None:
@@ -299,18 +306,21 @@ class MCPLParticleBlock:
 
     @property
     def position(self):
+        """Positions [cm] as array with shape (N,3)"""
         if self._view_pos is None:
             self._view_pos = np.stack((self.x,self.y,self.z),axis=1)
         return self._view_pos
 
     @property
     def polarisation(self):
+        """Polarisation vectors as array with shape (N,3)"""
         if self._view_pol is None or len(self._view_pol) != len(self._data):
             self._view_pol = np.stack((self.polx,self.poly,self.polz),axis=1)
         return self._view_pol
 
     @property
     def direction(self):
+        """Normalised momentum directions as array with shape (N,3)"""
         if self._view_dir is None:
             if self._ux is None:
                 self._unpack()
@@ -319,33 +329,41 @@ class MCPLParticleBlock:
 
     @property
     def x(self):
+        """X-coordinate of position [cm] of each particle (array)"""
         return self._double('x')
     @property
     def y(self):
+        """Y-coordinate of position [cm] of each particle (array)"""
         return self._double('y')
     @property
     def z(self):
+        """Z-coordinate of position [cm] of each particle (array)"""
         return self._double('z')
     @property
     def time(self):
+        """Time-stamp [millisecond] of each particle (array)"""
         return self._double('t')
     @property
     def ux(self):
+        """X-coordinate of normalised momentum direction of each particle (array)"""
         if self._ux is None:
             self._unpack()
         return self._ux
     @property
     def uy(self):
+        """Y-coordinate of normalised momentum direction of each particle (array)"""
         if self._uy is None:
             self._unpack()
         return self._uy
     @property
     def uz(self):
+        """Z-coordinate of normalised momentum direction of each particle (array)"""
         if self._uz is None:
             self._unpack()
         return self._uz
     @property
     def ekin(self):
+        """Kinetic energy [MeV] of each particle (array)"""
         if self._ekin is None:
            self._ekin = abs(self._data['uve3']).astype(float)
         return self._ekin

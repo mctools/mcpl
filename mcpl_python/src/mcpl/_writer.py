@@ -73,11 +73,14 @@ class MCPLOutFile:
     closeandgzip(), which happens automatically (with close()) at the end of
     a with-statement:
 
-       with MCPLOutFile('myfile.mcpl', sourcename='MySimulation',
+       with MCPLOutFile('myfile.mcpl',
+                        sourcename='MySimulation',
                         opt_universalpdgcode=2112) as f:
            f.hdr_add_comment('Some comment')
-           f.add_particles( position = pos, direction = dirs, ekin = ekin,
-                            time = t, weight = w )
+           f.add_particles( position = pos,
+                            direction = dirs,
+                            ekin = ekin, time = t,
+                            weight = w )
 
     Particles read from an existing file with MCPLFile (blocks or single
     particles) can be passed directly to add_particles(..) and
@@ -229,14 +232,18 @@ class MCPLOutFile:
 
     @property
     def opt_userflags(self):
+        """Whether userflags are stored for each particle"""
         return self._opt_userflags
 
     @property
     def opt_polarisation(self):
+        """Whether polarisation vectors are stored for each particle"""
         return self._opt_polarisation
 
     @property
     def opt_singleprec(self):
+        """Whether floating point numbers are stored in single precision
+        (rather than double precision)"""
         return self._opt_singleprec
 
     @property

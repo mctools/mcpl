@@ -110,6 +110,7 @@ class Histogram:
 
     @property
     def ylabel( self ):
+        """Label of the values (e.g. "weights per bin")"""
         what = 'weights' if self.weighted else 'particles'
         if self.lethargy:
             return f'{what} per unit lethargy'
@@ -195,6 +196,7 @@ class Histogram2D:
         return _show_or_save([self.figure(logz = logz)],filename,backend,options)
 
     def to_text( self ):
+        """Text table with the histogram contents."""
         lines = [ f'# 2D histogram of: {self.xexpression} : {self.yexpression}',
                   f'# values: {"weights" if self.weighted else "particles"} per bin',
                   '# x lower edge | x upper edge | y lower edge | y upper edge | value' ]
@@ -244,7 +246,8 @@ def histogram( files, expression, select = None, bins = 100, range = None,
     particles in one or more files. Values with units must be divided by a
     unit, e.g. "ekin/MeV". For instance:
 
-       h = mcpl.histogram( "myfile.mcpl", "ekin/eV", select = "pdgcode == neutron",
+       h = mcpl.histogram( "myfile.mcpl", "ekin/eV",
+                           select = "pdgcode == neutron",
                            logx = True, lethargy = True )
        h.plot()
 
@@ -330,7 +333,9 @@ def histogram2d( files, xexpression, yexpression, select = None, bins = 100,
     """2D histogram of the values of two expressions (see histogram()) for the
     particles in one or more files, for instance:
 
-       mcpl.histogram2d( "myfile.mcpl", "x/cm", "y/cm" ).plot()
+       h = mcpl.histogram2d( "myfile.mcpl",
+                             "x/cm", "y/cm" )
+       h.plot()
     """
     files = _as_files(files)
     flt = _as(ParticleFilter,select)
