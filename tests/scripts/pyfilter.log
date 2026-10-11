@@ -1,3 +1,17 @@
+rotate_z(90deg) is exact
+rotate_z(180deg) is exact
+rotate_z(270deg) is exact
+rotate_z(-90deg) is exact
+rotate_z(450deg) is exact
+rotate_z(0deg) is exact
+rotate_z(pi/2) is exact
+rotate_z(-pi) is exact
+rotations with other angles use cos and sin
+normalised selection: 'pdgcode == neutron && ekin < 1MeV && hypot(x,y) < 10 cm'
+normalised edit: 'z = 0cm, wavelength = 1.8Aa'
+normalised value: 'ekin / eV'
+ParticleFilter(42): Expressions must be strings (got int)
+ParticleFilter(None): Expressions must be strings (got NoneType)
 ParticleFilter('ekin > 25keV && x <= 2cm + y && pdgcode != 22'): selects 477
 ParticleFilter('pdgcode == neutron && ekin < 500keV'): selects 335
 ParticleFilter('!(pdgcode == gamma) || ekin > 1GeV'): selects 767

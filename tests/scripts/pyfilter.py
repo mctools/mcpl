@@ -213,7 +213,72 @@ def test_dump_and_stats():
     s = mcpl.collect_stats(example_file, select=mcpl.ParticleFilter('x > 1km'))
     print(f'stats for no selected particles: {s}')
 
+def test_exact_rotations():
+    #Rotations by multiples of 90 degrees must be exact, i.e. give the same
+    #bits (also signed zeros) as swapping and negating the values:
+    with mcpl.MCPLFile(example_file) as f:
+        b = f.read_block()
+    b = b[:50]
+    def bits(a):
+        return np.ascontiguousarray(a,dtype=float).view(np.uint64)
+    x, y, ux, uy = b.x, b.y, b.ux, b.uy
+    zero = np.zeros(len(b))
+    for angle, (xx, yy) in ( ('90deg', (-y, x)), ('180deg', (-x, -y)),
+                             ('270deg', (y, -x)), ('-90deg', (y, -x)),
+                             ('450deg', (-y, x)), ('0deg', (x, y)),
+                             ('pi/2', (-y, x)), ('-pi', (-x, -y)) ):
+        r = mcpl.ParticleEdit(f'rotate_z({angle})')(b)
+        assert np.array_equal(bits(r['x']), bits(xx)), angle
+        assert np.array_equal(bits(r['y']), bits(yy)), angle
+        print(f'rotate_z({angle}) is exact')
+    #Same as with assignments (also giving -0.0 for 0.0):
+    r1 = mcpl.ParticleEdit('x = 0cm, y = 0cm, rotate_z(90deg)')(b)
+    r2 = mcpl.ParticleEdit('x = 0cm, y = 0cm, tmp = x, x = -y, y = tmp')(b)
+    assert all( np.array_equal(bits(r1[k]),bits(r2[k])) for k in ('x','y') )
+    assert np.array_equal(bits(r1['x']), bits(-zero))
+    r = mcpl.ParticleEdit('rotate_x(90deg)')(b)
+    assert np.array_equal(bits(r['y']), bits(-b.z))
+    assert np.array_equal(bits(r['z']), bits(b.y))
+    r = mcpl.ParticleEdit('rotate_y(-90deg)')(b)
+    assert np.array_equal(bits(r['z']), bits(b.x))
+    assert np.array_equal(bits(r['ux']), bits(-b.uz))
+    #Angles differing per particle (exact only where they are multiples of
+    #90 degrees):
+    r = mcpl.ParticleEdit('rotate_z( (ux > 0) * 90deg + (ux <= 0) * 30deg )')(b)
+    q = ux > 0
+    assert np.array_equal(bits(r['ux'][q]), bits(-uy[q]))
+    c, s = np.cos(np.pi/6), np.sin(np.pi/6)
+    assert np.allclose(r['ux'][~q], c*ux[~q] - s*uy[~q])
+    #Other angles use cos and sin:
+    r = mcpl.ParticleEdit('rotate_z(45deg)')(b)
+    c = np.cos(np.pi/4)
+    assert np.allclose(r['x'], c*x - c*y) and np.allclose(r['y'], c*x + c*y)
+    print('rotations with other angles use cos and sin')
+
+def test_whitespace():
+    #Whitespace, including newlines, is normalised to single spaces:
+    with mcpl.MCPLFile(example_file) as f:
+        b = f.read_block()
+    flt = mcpl.ParticleFilter("""pdgcode == neutron
+                                 &&\tekin < 1MeV
+                                 && hypot(x,y) < 10 cm  """)
+    print(f'normalised selection: {flt.expression!r}')
+    ref = mcpl.ParticleFilter('pdgcode == neutron && ekin < 1MeV && hypot(x,y) < 10cm')
+    assert np.array_equal(flt(b), ref(b))
+    edit = mcpl.ParticleEdit('z = 0cm,\n  wavelength = 1.8Aa\n')
+    print(f'normalised edit: {edit.expression!r}')
+    val = mcpl.ParticleValue('  ekin /\n eV ')
+    print(f'normalised value: {val.expression!r}')
+    assert np.allclose(val(b), b.ekin*1e6)
+    for bad in ( 42, None ):
+        try:
+            mcpl.ParticleFilter(bad)
+        except mcpl.MCPLError as e:
+            print(f'ParticleFilter({bad!r}): {e}')
+
 if __name__ == '__main__':
+    test_exact_rotations()
+    test_whitespace()
     test_expressions()
     test_nonfinite()
     test_examples()
