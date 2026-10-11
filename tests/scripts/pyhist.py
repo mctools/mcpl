@@ -139,7 +139,24 @@ def test_cmdline():
                  ['--hist','x/cm'] ):
         tool(*bad)
 
+def test_cmdline_more():
+    #Plots of statistics, and saving files, with the test backend (which
+    #describes the figures), and argument errors:
+    ex = str(example_file)
+    tool('--stats','--gui','--backend','test','-pgamma',ex)
+    tool('--stats','--pdf','--backend','test',ex)
+    tool('--stats','--output','stats.txt','--backend','test',ex)
+    tool('--hist','x/cm','--bins','3','--output','hist.txt','--backend','test',ex)
+    for bad in ( ['-p2112','-p22',ex], ['-p'], ['-lX',ex], ['-l',ex],
+                 ['--edit','z += 1m',ex], ['--pdf',ex], ['--gui',ex],
+                 ['--stats','--pdf','--gui',ex], [ex,ex,ex],
+                 ['--text',ex], ['--text',ex,'hist.txt'],
+                 ['--hist','x/cm : y/cm','--split','pdgcode',ex],
+                 ['--hist','x/cm','--output','hist.txt','--backend','test',ex] ):
+        tool(*bad)
+
 test_histograms()
 test_stats_figures()
 test_overlay()
 test_cmdline()
+test_cmdline_more()

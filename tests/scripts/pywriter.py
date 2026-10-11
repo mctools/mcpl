@@ -27,6 +27,7 @@
 
 import gzip
 import itertools
+import os
 import pathlib
 
 import mcpldev as mcpl
@@ -235,6 +236,76 @@ def test_api():
         print(f'gz2.mcpl.gz: {f.nparticles} particles, ekin={f.read_block().ekin}')
     assert not pathlib.Path('gz2.mcpl').exists()
 
+def test_api_more():
+    #Properties describing the header and settings:
+    with mcpl.MCPLOutFile(pathlib.Path('props'), sourcename='MySim',
+                          comments=['c1','c2'], blobs={'k':b'v'},
+                          opt_userflags=True, opt_singleprec=False,
+                          opt_universalpdgcode=22, opt_universalweight=2.0) as o:
+        print(f'Properties of {o.filename}: sourcename={o.sourcename!r}'
+              f' comments={o.comments} blobs={o.blobs}'
+              f' opt_userflags={o.opt_userflags}'
+              f' opt_polarisation={o.opt_polarisation}'
+              f' opt_singleprec={o.opt_singleprec}'
+              f' opt_universalpdgcode={o.opt_universalpdgcode}'
+              f' opt_universalweight={o.opt_universalweight}')
+        #Single particles given by wavelength (gammas, from the universal
+        #pdgcode):
+        o.add_particle(direction=(0,0,1), wavelength=1.0, userflags=7)
+        expect_error(o.add_particle, direction=(0,0,1), wavelength=1.0, ekin=1.0)
+        expect_error(o.add_particle, direction=(0,0,1), userflags=-1)
+    with mcpl.MCPLFile('props.mcpl') as f:
+        p = f.read()
+        print(f'  gamma with wavelength 1Aa: ekin={p.ekin:.6g} MeV,'
+              f' wavelength={p.wavelength:.6g} Aa, userflags={p.userflags}')
+    with mcpl.MCPLOutFile(b'bytesname') as o:
+        print(f'Filename given as bytes: {o.filename}')
+        expect_error(o.hdr_set_srcname, 'with\0null')
+        o.add_particle(direction=(0,0,1), pdgcode=2112, wavelength=1.8)
+        expect_error(o.add_particle, direction=(0,0,1), pdgcode=2212, wavelength=1.8)
+        expect_error(o.add_particle, direction=(0,0,1), pdgcode=2**31)
+        expect_error(o.add_particle, direction=(0,0,1,0))
+        expect_error(o.add_particle, direction=(0,0,1), ux=1.0)
+        expect_error(o.add_particle, mcpl.MCPLFile('props.mcpl').read(), ekin=1.0)
+        try:
+            o.add_particle(direction=(0,0,1), energy=1.0)
+        except TypeError as e:
+            print(f'  Got expected TypeError: {e}')
+        expect_error(o.add_particles, direction=(0,0,1), pdgcode=2112.5)
+        expect_error(o.add_particles, direction=(0,0,1), ekin=[[1.0,2.0]])
+        expect_error(o.add_particles, direction=[[[0,0,1]]])
+        expect_error(o.add_particles, 'not a block')
+    expect_error(o.add_particle, direction=(0,0,1))#closed
+    expect_error(mcpl.MCPLOutFile, 42)
+    expect_error(mcpl.MCPLOutFile, 'x'*5000)
+    expect_error(mcpl.MCPLOutFile, 'blocks', blocklength=0)
+    with mcpl.MCPLOutFile('upc') as o:
+        expect_error(o.enable_universal_pdgcode, 2**31)
+    #Errors of the MPI helper functions:
+    for args in ( ('mpi', 0, 0), ('mpi', 2, 2), ('mpi', 0, 10**9) ):
+        expect_error(mcpl.create_outfile_mpi, *args)
+    for args in ( ('mpi', 0), ('mpi', 10**9), ('missing', 1), ('missing', 2) ):
+        try:
+            mcpl.merge_outfiles_mpi(*args)
+        except mcpl.MCPLError as e:
+            #(without the directory of the test, which differs between runs and
+            #platforms, as does the path separator):
+            msg = str(e).replace(str(pathlib.Path.cwd())+os.sep,'<cwd>/')
+            print(f'  Got expected error: {msg}')
+        else:
+            raise AssertionError('No error raised')
+
+def test_statsum_syntax():
+    #Error messages for comments starting with "stat:sum:" which do not follow
+    #the syntax of stat:sum entries (values must have 24 characters):
+    v = ' '*23 + '1'
+    with mcpl.MCPLOutFile('statsum') as o:
+        for c in ( f'stat:sum::{v}', f'stat:sum:{"a"*65}:{v}', f'stat:sum:1abc:{v}',
+                   'stat:sum:k:' + ' '*24, 'stat:sum:k:' + ' '*21 + 'abc',
+                   'stat:sum:k:' + ' '*21 + '1-+', 'stat:sum:k:' + ' '*22 + '-2',
+                   'stat:sum:k:' + ' '*19 + '1e999', 'stat:sum:k:12', 'stat:sum:k' ):
+            expect_error(o.hdr_add_comment, c)
+
 def test_example():
     #Run examples/pyexample_writemcpl with the mcpl module being tested:
     import sys
@@ -251,4 +322,6 @@ test_reference_files()
 test_raw_values()
 test_transfers()
 test_api()
+test_api_more()
+test_statsum_syntax()
 test_example()

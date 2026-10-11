@@ -206,6 +206,38 @@ mcpltool -j b_dp.mcpl: exit code 0
    |     Endianness         : little
    |     Storage            : 72 bytes/particle
    | 
+mcpltool --justhead a1.mcpl: exit code 0
+   | Opened MCPL file a1.mcpl:
+   | 
+   |   Basic info
+   |     Format             : MCPL-3
+   |     No. of particles   : 30
+   |     Header storage     : 133 bytes
+   |     Data storage       : 1080 bytes
+   | 
+   |   Custom meta data
+   |     Source             : "MySim"
+   |     Number of comments : 2
+   |           -> comment 0 : "a comment"
+   |           -> comment 1 : "stat:sum:nsim:                    1000"
+   |     Number of blobs    : 1
+   |           -> 9 bytes of data with key "key1"
+   | 
+   |   Particle data format
+   |     User flags         : no
+   |     Polarisation info  : no
+   |     Fixed part. type   : no
+   |     Fixed part. weight : no
+   |     FP precision       : single
+   |     Endianness         : little
+   |     Storage            : 36 bytes/particle
+   | 
+mcpltool --nohead -l2 a1.mcpl: exit code 0
+   | Opened MCPL file a1.mcpl:
+   | index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+   |     0        2112       0.001           0          -0           0        -0.8           0         0.6           0           1
+   |     1          22       0.002         1.5          -2         0.1         0.6           0         0.8        0.01         1.5
+mcpltool -bnosuchkey a1.mcpl: exit code 1
 mcpltool nan.mcpl: exit code 0
    | Opened MCPL file nan.mcpl:
    | 
@@ -559,4 +591,4 @@ pymcpltool --extract -l5: stat:sum:nsim = None
 pymcpltool --extract -s1 --select x > 0: stat:sum:nsim = None
    | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
    | MCPL: Successfully extracted 29 / 30 particles from a1.mcpl into out.mcpl
-Compared 67 command lines with mcpltool
+Compared 70 command lines with mcpltool

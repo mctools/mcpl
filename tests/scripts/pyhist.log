@@ -336,3 +336,117 @@ pymcpltool --hist x/cm: exit code 1
    | ERROR: No input file specified
    | 
    | Run with -h or --help for usage information
+pymcpltool --stats --gui --backend test -pgamma example.mcpl: exit code 0
+   | Figure 1 (2x3): 'example.mcpl: 239 particles, sum(weights) = 239\nselection: pdgcode == gamma'
+   |   Panel 'Kinetic energy (weighted)' xlabel='ekin [MeV]' ylabel=None logx logy xlim=[0.249474,182.253]
+   |     StepHist label='gamma (22)' color=0 bins=100 edges=[0.249474,182.253] sum=239 max=14 nonzero_bins=68
+   |   Panel 'Wavelength of neutrons and gammas (weighted)' xlabel='wavelength [Aa]' ylabel=None logx xlim=[6.80286e-05,0.0496982]
+   |     StepHist label='gamma (22)' color=0 bins=100 edges=[6.80286e-05,0.0496982] sum=239 max=14 nonzero_bins=68
+   |   Panel 'Direction (weighted)' xlabel='angle to z axis [degrees]' ylabel=None logy xlim=[0,180]
+   |     StepHist label='gamma (22)' color=0 bins=90 edges=[0,180] sum=239 max=14 nonzero_bins=44
+   |   Panel 'Position (weighted)' xlabel='x [cm]' ylabel='y [cm]' 
+   |     Hist2D shape=(80, 80) x=[-9.02114,7.92222] y=[-11.3175,12.2933] sum=221 logz=True
+   |   Panel 'Time (weighted)' xlabel='time [ms]' ylabel=None logy
+   |     StepHist label=None color=None bins=100 edges=[7.01658e-07,4.12855e-05] sum=239 max=203 nonzero_bins=13
+   |   Panel 'Particle types (weighted)' xlabel=None ylabel=None 
+   |     Bars 'gamma (22)'=239 (horizontal)
+   | Figure 2 (1x1): None
+   |   Panel 'pdgcode' xlabel=None ylabel=None 
+   |     Bars '22\n(gamma)\n100.00%'=239
+   | Figure 3 (1x1): None
+   |   Panel 'userflags' xlabel=None ylabel=None 
+   |     Bars '0\n(0x00000000)\n100.00%'=239
+   | Figure 4 (1x1): None
+   |   Panel 'ekin [MeV] (weighted)' xlabel='min=0.249474, max=182.253, mean=4.51913, rms=13.8526, integral=239\n(2.09% of weights outside plot range)' ylabel=None xlim=[0.249474,32.2243]
+   |     StepHist label=None color=None bins=101 edges=[0.249474,32.2243] sum=234 max=37 nonzero_bins=39
+   | Figure 5 (1x1): None
+   |   Panel 'x [cm] (weighted)' xlabel='min=-26.4199, max=24.6688, mean=-0.54946, rms=4.23584, integral=239\n(5.44% of weights outside plot range)' ylabel=None xlim=[-9.02114,7.92222]
+   |     StepHist label=None color=None bins=101 edges=[-9.02114,7.92222] sum=226 max=29 nonzero_bins=56
+   | Figure 6 (1x1): None
+   |   Panel 'y [cm] (weighted)' xlabel='min=-44.7764, max=30.7065, mean=0.487926, rms=5.9027, integral=239\n(5.02% of weights outside plot range)' ylabel=None xlim=[-11.3175,12.2933]
+   |     StepHist label=None color=None bins=101 edges=[-11.3175,12.2933] sum=227 max=41 nonzero_bins=47
+   | Figure 7 (1x1): None
+   |   Panel 'z [cm] (weighted)' xlabel='min=20, max=20, mean=20, rms=0, integral=239' ylabel=None xlim=[19,21]
+   |     StepHist label=None color=None bins=101 edges=[19,21] sum=239 max=239 nonzero_bins=1
+   | Figure 8 (1x1): None
+   |   Panel 'ux (weighted)' xlabel='min=-0.934464, max=0.995773, mean=0.0296413, rms=0.434669, integral=239\n(2.51% of weights outside plot range)' ylabel=None xlim=[-0.839697,0.898979]
+   |     StepHist label=None color=None bins=101 edges=[-0.839697,0.898979] sum=233 max=7 nonzero_bins=80
+   | Figure 9 (1x1): None
+   |   Panel 'uy (weighted)' xlabel='min=-0.943447, max=0.96159, mean=-0.0174447, rms=0.438477, integral=239\n(2.09% of weights outside plot range)' ylabel=None xlim=[-0.894399,0.85951]
+   |     StepHist label=None color=None bins=101 edges=[-0.894399,0.85951] sum=234 max=8 nonzero_bins=91
+   | Figure 10 (1x1): None
+   |   Panel 'uz (weighted)' xlabel='min=0.053197, max=0.999794, mean=0.751812, rms=0.228904, integral=239\n(5.86% of weights outside plot range)' ylabel=None xlim=[0.294004,0.999794]
+   |     StepHist label=None color=None bins=101 edges=[0.294004,0.999794] sum=225 max=17 nonzero_bins=80
+   | Figure 11 (1x1): None
+   |   Panel 'time [ms] (weighted)' xlabel='min=7.01658e-07, max=4.12855e-05, mean=1.37004e-06, rms=3.00726e-06, integral=239\n(2.09% of weights outside plot range)' ylabel=None xlim=[7.01658e-07,7.38455e-06]
+   |     StepHist label=None color=None bins=101 edges=[7.01658e-07,7.38455e-06] sum=234 max=145 nonzero_bins=24
+   | Figure 12 (1x1): None
+   |   Panel 'weight (unweighted)' xlabel='min=1, max=1, mean=1, rms=0, integral=239' ylabel=None xlim=[0,2]
+   |     StepHist label=None color=None bins=101 edges=[0,2] sum=239 max=239 nonzero_bins=1
+   | Figure 13 (1x1): None
+   |   Panel 'polx (weighted)' xlabel='min=0, max=0, mean=0, rms=0, integral=239' ylabel=None xlim=[-1,1]
+   |     StepHist label=None color=None bins=101 edges=[-1,1] sum=239 max=239 nonzero_bins=1
+   | Figure 14 (1x1): None
+   |   Panel 'poly (weighted)' xlabel='min=0, max=0, mean=0, rms=0, integral=239' ylabel=None xlim=[-1,1]
+   |     StepHist label=None color=None bins=101 edges=[-1,1] sum=239 max=239 nonzero_bins=1
+   | Figure 15 (1x1): None
+   |   Panel 'polz (weighted)' xlabel='min=0, max=0, mean=0, rms=0, integral=239' ylabel=None xlim=[-1,1]
+   |     StepHist label=None color=None bins=101 edges=[-1,1] sum=239 max=239 nonzero_bins=1
+pymcpltool --stats --pdf --backend test example.mcpl: exit code 0
+   | Created mcpl.pdf
+pymcpltool --stats --output stats.txt --backend test example.mcpl: exit code 0
+   | Created stats.txt
+pymcpltool --hist x/cm --bins 3 --output hist.txt --backend test example.mcpl: exit code 0
+   | Created hist.txt
+pymcpltool -p2112 -p22 example.mcpl: exit code 1
+   | ERROR: -p specified more than once
+   | 
+   | Run with -h or --help for usage information
+pymcpltool -p: exit code 1
+   | ERROR: Missing argument for -p
+   | 
+   | Run with -h or --help for usage information
+pymcpltool -lX example.mcpl: exit code 1
+   | ERROR: Bad option: expected number
+   | 
+   | Run with -h or --help for usage information
+pymcpltool -l example.mcpl: exit code 1
+   | ERROR: Bad option: missing number
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --edit z += 1m example.mcpl: exit code 1
+   | ERROR: --edit can only be used with --extract.
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --pdf example.mcpl: exit code 1
+   | ERROR: Do not specify --pdf without --stats
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --gui example.mcpl: exit code 1
+   | ERROR: Do not specify --gui without --stats
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --stats --pdf --gui example.mcpl: exit code 1
+   | ERROR: Do not specify both --pdf and --gui
+   | 
+   | Run with -h or --help for usage information
+pymcpltool example.mcpl example.mcpl example.mcpl: exit code 1
+   | ERROR: Too many arguments.
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --text example.mcpl: exit code 1
+   | ERROR: Must specify both input and output files with --text.
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --text example.mcpl hist.txt: exit code 1
+   | ERROR: Requested output file already exists.
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --hist x/cm : y/cm --split pdgcode example.mcpl: exit code 1
+   | ERROR: --split can not be used with 2D histograms
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --hist x/cm --output hist.txt --backend test example.mcpl: exit code 1
+   | ERROR: Requested output file already exists.
+   | 
+   | Run with -h or --help for usage information
