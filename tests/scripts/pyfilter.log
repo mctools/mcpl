@@ -6,6 +6,7 @@ rotate_z(450deg) is exact
 rotate_z(0deg) is exact
 rotate_z(pi/2) is exact
 rotate_z(-pi) is exact
+rotations of zeros give 0.0 (not -0.0)
 rotations with other angles use cos and sin
 normalised selection: 'pdgcode == neutron && ekin < 1MeV && hypot(x,y) < 10 cm'
 normalised edit: 'z = 0cm, wavelength = 1.8Aa'
