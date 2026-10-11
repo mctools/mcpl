@@ -94,6 +94,26 @@ def imports_of( path ):
                 internal.update(a.name for a in node.names)
     return internal, external
 
+#External modules which are slow to import, and which must therefore only be
+#imported inside functions (i.e. on demand, when plots are made):
+on_demand_external_imports = ['matplotlib', 'plotly']
+
+def import_time_externals( path ):
+    """External top level modules imported when the file is imported (i.e.
+    outside of functions)."""
+    external = set()
+    def visit( node ):
+        for child in ast.iter_child_nodes(node):
+            if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+                continue
+            if isinstance(child, ast.Import):
+                external.update(a.name.split('.')[0] for a in child.names)
+            elif isinstance(child, ast.ImportFrom) and child.level == 0:
+                external.add(child.module.split('.')[0])
+            visit(child)
+    visit(ast.parse(path.read_text()))
+    return external
+
 def literal_all( path ):
     for node in ast.parse(path.read_text()).body:
         if ( isinstance(node, ast.Assign)
@@ -133,6 +153,11 @@ def main():
         users = external_users.get(ext,set())
         assert users <= set(allowed), f'{ext} imported by {sorted(users-set(allowed))}'
         print(f'{ext} is imported by: {", ".join(sorted(users)) or "-"}')
+
+    for name in sorted(layers):
+        early = import_time_externals(files[name]) & set(on_demand_external_imports)
+        assert not early, f'{name} imports {sorted(early)} outside of functions'
+    print(f'{", ".join(on_demand_external_imports)} are only imported inside functions')
 
     public_names = {}
     for name in layers:
