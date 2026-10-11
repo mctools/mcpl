@@ -24,6 +24,7 @@
 
 __all__ = ['MCPLOutFile', 'gzip_file']
 
+import math
 import os
 import pathlib
 
@@ -654,6 +655,30 @@ class MCPLOutFile:
                                       ' large for single precision storage' ) ) )
         _raise_first_failure(checks)
 
+    def _validate_one(self, v, ekin, time, weight):
+        """Like _validate, for a single particle with values given as Python
+        floats (v being the position, direction and polarisation), which is
+        much faster than numpy for single values."""
+        x, y, z, ux, uy, uz, polx, poly, polz = v
+        groups = [ ('position',(x,y,z)), ('direction',(ux,uy,uz)) ]
+        if self._opt_polarisation:
+            groups.append( ('polarisation',(polx,poly,polz)) )
+        groups += [ ('kinetic energy',(ekin,)), ('time',(time,)) ]
+        if not self._opt_universalweight:
+            groups.append( ('weight',(weight,)) )
+        for name, vals in groups:
+            if not all( math.isfinite(e) for e in vals ):
+                raise MCPLError(f'attempting to add particle with NaN or infinite {name}')
+        if abs( ux * ux + uy * uy + uz * uz - 1.0 ) > 1.0e-5:
+            raise MCPLError('attempting to add particle with non-unit direction vector')
+        if ekin < 0.0:
+            raise MCPLError('attempting to add particle with negative kinetic energy')
+        if self._opt_singleprec:
+            for name, vals in groups:
+                if name != 'direction' and any( abs(e) >= _float32_overflow for e in vals ):
+                    raise MCPLError(f'attempting to add particle with {name} too'
+                                    ' large for single precision storage')
+
     def add_particles(self, particles = None, **fields):
         """Add block of particles. Particle data is specified with keyword
         arguments using the field names of MCPLParticleBlock: position (as
@@ -759,7 +784,8 @@ class MCPLOutFile:
                 vals += [ float(v[0]), float(v[1]), float(v[2]) ]
             else:
                 vals += [ float(fields.get(c,0.0)) for c in compnames ]
-        pdgcode = int(fields.get('pdgcode',0))
+        pdgcode = _int_field('pdgcode',fields.get('pdgcode',0),-2147483648,2147483647)
+        userflags = _int_field('userflags',fields.get('userflags',0),0,4294967295)
         if 'wavelength' in fields:
             cols = { 'wavelength' : float(fields['wavelength']) }
             if 'ekin' in fields:
@@ -768,17 +794,9 @@ class MCPLOutFile:
             ekin = float(cols['ekin'])
         else:
             ekin = float(fields.get('ekin',0.0))
-        values = dict( zip( ('x','y','z','ux','uy','uz','polx','poly','polz'), vals ) )
-        values.update( ekin = ekin, time = float(fields.get('time',0.0)),
-                       weight = float(fields.get('weight',0.0)) )
-        self._validate( 1, lambda name : np.array([ values[name] ]) )
-        userflags = int(fields.get('userflags',0))
-        if not ( -2147483648 <= pdgcode <= 2147483647 ):
-            raise MCPLError('pdgcode out of range')
-        if not ( 0 <= userflags <= 4294967295 ):
-            raise MCPLError('userflags out of range')
-        vals += [ ekin, float(fields.get('time',0.0)),
-                  float(fields.get('weight',0.0)), pdgcode, userflags ]
+        time, weight = float(fields.get('time',0.0)), float(fields.get('weight',0.0))
+        self._validate_one(vals,ekin,time,weight)
+        vals += [ ekin, time, weight, pdgcode, userflags ]
         self._pending.append(vals)
         if len(self._pending) >= self._blocklength:
             self._flush_pending()
@@ -924,6 +942,23 @@ class _Columns:
 def _decode( b ):
     """Decode bytes from the header like MCPLFile does"""
     return b.decode('utf-8','replace')
+
+#Doubles which become infinite when converted to single precision (they round
+#up to 2^128, since the largest single precision number has an odd mantissa):
+_float32_overflow = float.fromhex('0x1.ffffffp+127')
+
+def _int_field( name, v, lo, hi ):
+    """Integer value of a single particle field (like the checks of integer
+    arrays in _collect_fields)."""
+    if not isinstance(v,(int,np.integer)):
+        f = float(v)
+        if not f.is_integer():
+            raise MCPLError(f'{name} must be integers')
+        v = f
+    v = int(v)
+    if not ( lo <= v <= hi ):
+        raise MCPLError(f'{name} out of range')
+    return v
 
 def _raise_first_failure( checks ):
     """Raise MCPLError for the first particle failing any of the checks (masks
