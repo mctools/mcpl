@@ -1,3 +1,11 @@
+angle_to(x,y,z)/deg of the first particles: [14.360296 22.479602  5.704463]
+angle between (1,1e-06,0) and (1,0,0): 1e-06 (acos of dot product: 1.00004e-06)
+angle between (1,1e-09,0) and (1,0,0): 1e-09 (acos of dot product: 0)
+angle between (1,1e-12,0) and (1,0,0): 1e-12 (acos of dot product: 0)
+angle_to(0,0) > 0: angle_to(x,y,z) takes three arguments in expression "angle_to(0,0) > 0"
+angle_to(x,y,1) > 0: Incompatible units in angle_to(..): length and value without units (add units, e.g. 2cm) in expression "angle_to(x,y,1) > 0"
+angle_to(0,0,0) > 1deg: angle_to(..) gives NaN or infinite values in expression "angle_to(0,0,0) > 1deg"
+angle_to(0,0,1cm) > 1cm: Incompatible units in comparison: value without units and length (add units, e.g. 2cm) in expression "angle_to(0,0,1cm) > 1cm"
 rotate_z(90deg) is exact
 rotate_z(180deg) is exact
 rotate_z(270deg) is exact
@@ -46,6 +54,8 @@ ParticleFilter('userflags & 0x10'): selects 0
 ParticleFilter('(~userflags & 0xff) == 0xff'): selects 1006
 ParticleFilter('pdgcode == ~2111'): selects 0
 ParticleFilter('atan2(uy,ux) > 90deg'): selects 212
+ParticleFilter('angle_to(0,0,1) < 30deg'): selects 313
+ParticleFilter('angle_to(0,0,-2cm) > 150deg'): selects 313
 ParticleFilter('!(userflags & 1) && pdgcode != 0b0'): selects 1006
 ParticleFilter('pdgcode == electron || pdgcode == positron'): selects 23
 ParticleFilter('pdgcode == antielectron || pdgcode == photon'): selects 247
@@ -92,14 +102,14 @@ ParticleFilter('dirx > 0'): Unknown name "dirx" in expression "dirx > 0" (partic
 ParticleFilter('t < 1ms'): Unknown name "t" in expression "t < 1ms" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength)
 ParticleFilter('is_neutron'): Unknown name "is_neutron" in expression "is_neutron" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength)
 ParticleFilter('neutron_wl > 1Aa'): Unknown name "neutron_wl" in expression "neutron_wl > 1Aa" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength)
-ParticleFilter('degrees(acos(uz)) < 10'): Unsupported function call in expression "degrees(acos(uz)) < 10" (available functions are: abs, acos, asin, atan, atan2, ceil, clamp, cos, exp, floor, hypot, log, log10, max, min, sin, sqrt, tan)
+ParticleFilter('degrees(acos(uz)) < 10'): Unsupported function call in expression "degrees(acos(uz)) < 10" (available functions are: abs, acos, angle_to, asin, atan, atan2, ceil, clamp, cos, exp, floor, hypot, log, log10, max, min, sin, sqrt, tan)
 ParticleFilter('ekin = 1MeV'): Syntax error in expression "ekin = 1MeV" (use == for comparisons)
 ParticleFilter('ekin > 1MeV & x < 2cm'): The bitwise operator & requires integer operands (use && and || for logical and/or)
 ParticleFilter('foo > 1'): Unknown name "foo" in expression "foo > 1" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength)
-ParticleFilter("__import__('os').system('ls')"): Unsupported function call in expression "__import__('os').system('ls')" (available functions are: abs, acos, asin, atan, atan2, ceil, clamp, cos, exp, floor, hypot, log, log10, max, min, sin, sqrt, tan)
+ParticleFilter("__import__('os').system('ls')"): Unsupported function call in expression "__import__('os').system('ls')" (available functions are: abs, acos, angle_to, asin, atan, atan2, ceil, clamp, cos, exp, floor, hypot, log, log10, max, min, sin, sqrt, tan)
 ParticleFilter('ekin'): Expression "ekin" is not a condition (e.g. a comparison)
 ParticleFilter('lambda: 1'): Unsupported syntax in expression "lambda: 1"
-ParticleFilter('sin(x, y=1) > 0'): Unsupported function call in expression "sin(x, y=1) > 0" (available functions are: abs, acos, asin, atan, atan2, ceil, clamp, cos, exp, floor, hypot, log, log10, max, min, sin, sqrt, tan)
+ParticleFilter('sin(x, y=1) > 0'): Unsupported function call in expression "sin(x, y=1) > 0" (available functions are: abs, acos, angle_to, asin, atan, atan2, ceil, clamp, cos, exp, floor, hypot, log, log10, max, min, sin, sqrt, tan)
 ParticleFilter('x.real > 0'): Unsupported syntax in expression "x.real > 0"
 ParticleFilter('[x][0] > 0'): Unsupported syntax in expression "[x][0] > 0"
 ParticleFilter("x > 'a'"): Unsupported value in expression "x > 'a'"
