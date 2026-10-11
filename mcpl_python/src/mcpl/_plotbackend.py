@@ -87,9 +87,12 @@ def numbered_filenames( filename, n ):
     return [ str(p.with_name(f'{p.stem}_{i+1}{p.suffix}')) for i in range(n) ]
 
 #Registered backends in order of preference (by name), as names of the modules
-#implementing the built-in ones (loaded when needed), or classes:
+#implementing the built-in ones (loaded when needed, with the name of the class
+#after a colon if it is not Backend), or classes:
 _registry = { 'matplotlib' : '_plotbackend_mpl',
-              'plotly' : '_plotbackend_plotly' }
+              'plotly' : '_plotbackend_plotly',
+              'unicode' : '_plotbackend_text:UnicodeBackend',
+              'ascii' : '_plotbackend_text:AsciiBackend' }
 #Backend for unit tests (not listed by available_backends):
 _hidden = { 'test' : '_plotbackend_test' }
 #Default backend set with set_default_backend (name or PlotBackend object):
@@ -102,7 +105,9 @@ def _backend_class( name, source = None ):
         raise MCPLError(f'Unknown plotting backend "{name}"{_from(source)}. The'
                         ' plotting backends are: ' + ', '.join(_registry))
     if isinstance(entry,str):
-        entry = importlib.import_module(f'.{entry}',__package__).Backend
+        modname, _, clsname = entry.partition(':')
+        mod = importlib.import_module(f'.{modname}',__package__)
+        entry = getattr(mod,clsname or 'Backend')
     return entry
 
 def _from( source ):

@@ -73,7 +73,7 @@ print(json.dumps(mods))
 optional_modules = ( '_expressions', '_stats', '_statsplot', '_histogram',
                      '_clistats', '_cli',
                      'plotting', '_plotbackend', '_plotbackend_mpl',
-                     '_plotbackend_plotly', '_plotbackend_test' )
+                     '_plotbackend_plotly', '_plotbackend_test', '_plotbackend_text' )
 
 def tool(*args):
     return f"mcpl.app_pymcpltool(['pymcpltool',{','.join(repr(a) for a in args)}])"

@@ -155,7 +155,9 @@ Histogram options:
   --output FILE   : Save plot in FILE (e.g. .pdf, .png, or .html with plotly).
   --backend NAME  : Plotting backend (default is the one named by the
                     MCPL_PLOT_BACKEND environment variable, or else the first
-                    available of: matplotlib, plotly).
+                    available of: matplotlib, plotly, unicode, ascii). The
+                    unicode and ascii backends draw plots as text in the
+                    terminal (or in .txt files with --output).
 
 Stat options:
   --stats FILE    : Print statistics summary of particle state data from FILE.

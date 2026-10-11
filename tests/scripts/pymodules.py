@@ -57,6 +57,7 @@ layers = {
     '_plotbackend_mpl' : 8,
     '_plotbackend_plotly' : 8,
     '_plotbackend_test' : 8,
+    '_plotbackend_text' : 8,
     '_stats' : 6,
     '_histogram' : 8,
     '_statsplot' : 9,

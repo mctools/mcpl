@@ -22,8 +22,9 @@
 """Backend-independent description of plots, and functions to show or save
 them. Plots are described with the Figure, Panel and item classes below (which
 hold numbers, not graphics objects), and are drawn by one of the plotting
-backends: matplotlib or plotly (see available_backends()), or a custom backend
-(see Backend and register_backend()).
+backends: matplotlib or plotly (see available_backends()), unicode or ascii
+(which draw the plots as text, in the terminal or in .txt files), or a custom
+backend (see Backend and register_backend()).
 
 Unless a backend is specified when plotting, the default backend is used: the
 one set with set_default_backend(), or else the one named by the
@@ -141,8 +142,8 @@ def save( figures, filename, backend = None, **options ):
     backend of the given name (or a Backend object, default is the default
     backend).
     The format is given by the extension of the filename: .pdf, .png or .svg
-    with matplotlib, and .html with plotly (or .pdf, .png or .svg if the
-    kaleido package is installed). If the format can only hold one figure,
+    with matplotlib, .html with plotly (or .pdf, .png or .svg if the
+    kaleido package is installed), and .txt with unicode and ascii. If the format can only hold one figure,
     and there are more figures, the files get numbered names (e.g. plot_1.png,
     plot_2.png). Returns the list of created files. Further keyword arguments
     are options for the backend (see show())."""

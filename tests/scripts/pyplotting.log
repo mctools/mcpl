@@ -1,5 +1,5 @@
 available_backends() only lists known backends, and not the test backend
-save(...,'x.pdf',backend='nosuchbackend'): Unknown plotting backend "nosuchbackend". The plotting backends are: matplotlib, plotly
+save(...,'x.pdf',backend='nosuchbackend'): Unknown plotting backend "nosuchbackend". The plotting backends are: matplotlib, plotly, unicode, ascii
 save(...,'x.foo',backend='test'): The test plotting backend can not create .foo files (supported: .txt, .pdf, .png, .html)
 save(...,backend='test',matplotlib_backend='agg'): Unsupported option(s) for the test plotting backend: matplotlib_backend
 Figure 1 (2x2): 'Example'
