@@ -30,6 +30,7 @@ from ._blocks import (
     _concat_blocks,
     _EditedParticleBlock,
     _nonfinite_masks,
+    _surely_finite,
 )
 from ._common import MCPLError, _output_bytearray_raw
 from ._expressions import _as_edit, _as_filter
@@ -332,7 +333,8 @@ class MCPLFile:
         self._currentblock._set_data(x,self._iblock*self._blocklength)
         self._iblock += 1
         self._nonfinite_mask = None
-        if self._check_nonfinite and not self._warned_nonfinite:
+        if ( self._check_nonfinite and not self._warned_nonfinite
+             and not _surely_finite(self._currentblock) ):
             masks = _nonfinite_masks(self._currentblock,self.opt_polarisation)
             if masks:
                 self._nonfinite_mask = np.logical_or.reduce(list(masks.values()))
