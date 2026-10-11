@@ -33,7 +33,6 @@ from ._blocks import (
     _surely_finite,
 )
 from ._common import MCPLError, _output_bytearray_raw
-from ._expressions import _as_edit, _as_filter
 from ._messages import _warning
 from ._numpy import np
 from ._statsum import _parse_statsum, _parse_statsum_comment, encode_stat_sum
@@ -76,9 +75,12 @@ class MCPLFile:
         particles, in which case their unmodified fields are transferred
         exactly.
         """
-        #(only calling into the expressions module when needed):
-        self._flt = None if select is None else _as_filter(select)
-        self._edt = None if edit is None else _as_edit(edit)
+        #(only importing the expressions module when needed):
+        self._flt = self._edt = None
+        if select is not None or edit is not None:
+            from ._expressions import _as_edit, _as_filter
+            self._flt = None if select is None else _as_filter(select)
+            self._edt = None if edit is None else _as_edit(edit)
         self._fblocks, self._fparts = None, None
         #NaN or infinite values are not allowed, but files might have them, so
         #we warn when reading the first such particle (unless the check is
@@ -756,7 +758,10 @@ class MCPLFile:
 def _selected_particles(mcplfile,select,skip=0):
     """Iterate over selected particles in file, skipping the first skip of
     them."""
-    flt = None if select is None else _as_filter(select)
+    flt = None
+    if select is not None:
+        from ._expressions import _as_filter
+        flt = _as_filter(select)
     for b in mcplfile.particle_blocks:
         for i in ( np.flatnonzero(flt(b)) if flt is not None else range(len(b)) ):
             if skip > 0:

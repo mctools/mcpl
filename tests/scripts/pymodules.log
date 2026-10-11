@@ -20,7 +20,7 @@ Modules of the mcpl package and their imports from the package:
   layer   9 : _statsplot           <- _common, _numpy, _physics, _plotbackend, _stats, plotting
   layer  10 : _clistats            <- _common, _histogram, _plotbackend, _reader, _stats, _statsplot
   layer  11 : _cli                 <- _clistats, _common, _expressions, _fileops, _messages, _physics, _reader, _writer
-  layer top : __init__             <- _blocks, _common, _expressions, _fileops, _messages, _reader, _statsum, _writer, constants
+  layer top : __init__             <- _blocks, _common, _fileops, _messages, _reader, _statsum, _writer, constants
   layer top : __main__             <- _cli
   layer top : mcpl                 <- _blocks, _cli, _common, _fileops, _reader, _stats, _statsplot, _statsum
 numpy is imported by: _numpy

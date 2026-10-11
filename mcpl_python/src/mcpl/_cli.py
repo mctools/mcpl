@@ -29,7 +29,6 @@ import re
 import sys
 
 from ._common import MCPLError, _determine_version, _output_bytearray_raw
-from ._expressions import ParticleEdit, ParticleFilter
 from ._fileops import (
     can_merge,
     convert2ascii,
@@ -386,6 +385,7 @@ def _app_pymcpltool(argv):
         sel = f'pdgcode == {pdgcode_str if pdgcode_str in _particle_names else pdgcode}'
         opt_select = sel if opt_select is None else f'{sel} && ({opt_select})'
     if opt_select is not None and not opt_extract:
+        from ._expressions import ParticleFilter
         try:
             opt_select = ParticleFilter(opt_select)
         except MCPLError as e:
@@ -540,6 +540,8 @@ def _pymcpltool_extract(filelist, limit, skip, pdgcode_str, select, edit,
     err, outfn, attempt_gzip = _tool_outfn(filelist[1])
     if err:
         bad(err)
+    if select is not None or edit is not None:
+        from ._expressions import ParticleEdit, ParticleFilter
     try:
         flt = ParticleFilter(select) if select is not None else None
         edt = ParticleEdit(edit) if edit is not None else None

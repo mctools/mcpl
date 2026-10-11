@@ -37,7 +37,6 @@ from ._blocks import (
     _nonfinite_masks,
 )
 from ._common import MCPLError, _native_endianness
-from ._expressions import _as_edit, _as_filter
 from ._messages import _error, _info, _warning
 from ._numpy import np
 from ._physics import ekin_from_wavelength
@@ -122,9 +121,12 @@ class MCPLOutFile:
         are edited (see the guidelines for stat:sum entries).
         """
         self._fh = None
-        #(only calling into the expressions module when needed):
-        self._flt = None if select is None else _as_filter(select)
-        self._edt = None if edit is None else _as_edit(edit)
+        #(only importing the expressions module when needed):
+        self._flt = self._edt = None
+        if select is not None or edit is not None:
+            from ._expressions import _as_edit, _as_filter
+            self._flt = None if select is None else _as_filter(select)
+            self._edt = None if edit is None else _as_edit(edit)
         if hasattr(filename,'__fspath__'):
             filename = os.fspath(filename)
         if isinstance(filename,bytes):
