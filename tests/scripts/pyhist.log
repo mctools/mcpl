@@ -64,6 +64,18 @@ Figure 1 (1x1): None
 Figure 1 (1x1): None
   Panel 'selection: pdgcode == gamma' xlabel='x/cm' ylabel='y/cm' 
     Hist2D shape=(10, 10) x=[-26.4199,24.6688] y=[-44.7764,30.7065] sum=239 logz=True
+empty histogram with split='pdgcode': # histogram of: ekin/MeV
+# selection: x > 1km
+# values: weights per bin
+# lower edge | upper edge | value
+0 5 0
+5 10 0
+empty histogram with split='x > 0cm': # histogram of: ekin/MeV
+# selection: x > 1km
+# values: weights per bin
+# lower edge | upper edge | value
+0 5 0
+5 10 0
 histogram('ekin',) {}: Expression "ekin" has units (energy), so divide it by a unit, e.g. ekin/MeV
 histogram('ekin/MeV',) {'select': 'x > 1km'}: No values to histogram (no particles selected?)
 histogram('x/cm',) {'logx': True, 'range': (-1, 1)}: Logarithmic binning requires a positive range
@@ -265,6 +277,13 @@ pymcpltool --hist time/ms --logx --logy --unweighted --backend test example.mcpl
    | Figure 1 (1x1): None
    |   Panel None xlabel='time/ms' ylabel='particles per bin' logx logy xlim=[7.01658e-07,0.00166018]
    |     StepHist label=None color=0 bins=100 edges=[7.01658e-07,0.00166018] sum=1006 max=170 nonzero_bins=90
+pymcpltool --hist ekin/MeV --split pdgcode --range 0:10 --bins 2 --select x > 1km --print example.mcpl: exit code 0
+   | # histogram of: ekin/MeV
+   | # selection: x > 1km
+   | # values: weights per bin
+   | # lower edge | upper edge | value
+   | 0 5 0
+   | 5 10 0
 pymcpltool --hist ekin example.mcpl: exit code 1
    | ERROR: Expression "ekin" has units (energy), so divide it by a unit, e.g. ekin/MeV
    | 

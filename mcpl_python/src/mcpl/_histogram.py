@@ -62,7 +62,8 @@ def _as( cls, expr ):
     return cls(expr)
 
 def _split_label( split, key ):
-    if split is None:
+    if split is None or key is None:
+        #No split, or no particles (so no values of the split expression):
         return None
     if split.expression.strip() == 'pdgcode':
         descr = _pdg_database(int(key))

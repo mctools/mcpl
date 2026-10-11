@@ -71,6 +71,11 @@ def test_histograms():
                          select=mcpl.ParticleFilter('pdgcode == gamma'))
     show(h)
     assert np.isclose(h.contents.sum(), np.count_nonzero(b.pdgcode==22))
+    #No selected particles, but a range (so an empty histogram), with splits:
+    for split in ('pdgcode', 'x > 0cm'):
+        h = mcpl.histogram(example_file, 'ekin/MeV', select='x > 1km',
+                           range=(0,10), bins=2, split=split)
+        print(f'empty histogram with split={split!r}:', h.to_text())
     for args, kwargs in ( (('ekin',),{}), (('ekin/MeV',),{'select':'x > 1km'}),
                           (('x/cm',),{'logx':True,'range':(-1,1)}),
                           (('wavelength',),{}), (('x/cm',),{'split':'x'}) ):
@@ -123,6 +128,8 @@ def test_cmdline():
     tool('--hist','x/cm : y/cm','--bins','2','--range','-10:10,0:5','--print',ex)
     tool('--hist','x/cm','--range','-10:10','--bins','4','--backend','test',ex,str(ref1))
     tool('--hist','time/ms','--logx','--logy','--unweighted','--backend','test',ex)
+    tool('--hist','ekin/MeV','--split','pdgcode','--range','0:10','--bins','2',
+         '--select','x > 1km','--print',ex)
     for bad in ( ['--hist','ekin',ex], ['--hist','ekin/MeV','--bins','0',ex],
                  ['--hist','ekin/MeV','--range','1',ex], ['--hist','ekin/MeV','--range','2:1',ex],
                  ['--hist','ekin/MeV','--range','1:2,3:4',ex],
