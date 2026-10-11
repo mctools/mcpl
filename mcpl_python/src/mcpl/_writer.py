@@ -121,8 +121,9 @@ class MCPLOutFile:
         are edited (see the guidelines for stat:sum entries).
         """
         self._fh = None
-        self._flt = _as_filter(select)
-        self._edt = _as_edit(edit)
+        #(only calling into the expressions module when needed):
+        self._flt = None if select is None else _as_filter(select)
+        self._edt = None if edit is None else _as_edit(edit)
         if hasattr(filename,'__fspath__'):
             filename = os.fspath(filename)
         if isinstance(filename,bytes):

@@ -75,8 +75,9 @@ class MCPLFile:
         particles, in which case their unmodified fields are transferred
         exactly.
         """
-        self._flt = _as_filter(select)
-        self._edt = _as_edit(edit)
+        #(only calling into the expressions module when needed):
+        self._flt = None if select is None else _as_filter(select)
+        self._edt = None if edit is None else _as_edit(edit)
         self._fblocks, self._fparts = None, None
         #NaN or infinite values are not allowed, but files might have them, so
         #we warn when reading the first such particle (unless the check is
@@ -289,7 +290,8 @@ class MCPLFile:
         an iterator-based access to blocks."""
         if self._flt is None and self._edt is None:
             b = self._read_raw_block()
-            self._warn_nonfinite()
+            if self._nonfinite_mask is not None:
+                self._warn_nonfinite()
             return b
         if self._fblocks is None:
             self._fblocks = self._selected_blocks()
@@ -307,7 +309,8 @@ class MCPLFile:
             b = self._read_raw_block()
             if b is None:
                 break
-            self._warn_nonfinite()
+            if self._nonfinite_mask is not None:
+                self._warn_nonfinite()
             #NB: always index, since the block object is reused by the next read:
             b = b[self._flt(b)] if self._flt is not None else b[:]
             if len(b):
@@ -391,7 +394,8 @@ class MCPLFile:
             self._read_raw_block()
             p = self._currentblock.get_by_global(self._ipos)
         self._ipos += 1
-        self._warn_nonfinite(p._i)
+        if self._nonfinite_mask is not None:#(the check is cheaper than the call)
+            self._warn_nonfinite(p._i)
         return p
 
     def _selected_particles(self):
@@ -752,7 +756,7 @@ class MCPLFile:
 def _selected_particles(mcplfile,select,skip=0):
     """Iterate over selected particles in file, skipping the first skip of
     them."""
-    flt = _as_filter(select)
+    flt = None if select is None else _as_filter(select)
     for b in mcplfile.particle_blocks:
         for i in ( np.flatnonzero(flt(b)) if flt is not None else range(len(b)) ):
             if skip > 0:
