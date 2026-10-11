@@ -6,6 +6,10 @@ v2.2.9  (work in progress)
       * New function angle_to(x,y,z) in expressions, giving the angle between
         the direction of the particles and the vector (x,y,z), precise also for
         small angles (e.g. "angle_to(0,0,1) < 1deg").
+      * New plotting backends "unicode" and "ascii" in the Python API and
+        pymcpltool, which draw plots as text: in the terminal (e.g. with
+        pymcpltool --hist ... --backend unicode), or in .txt files. They need
+        no extra Python packages, so plots can always be made.
       * Clearer error messages for invalid values of stat:sum entries (which
         must be non-negative or -1, and may only be padded with spaces).
       * Plotting backends in the Python API: the default backend can be set

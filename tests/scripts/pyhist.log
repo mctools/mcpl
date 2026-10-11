@@ -313,7 +313,7 @@ pymcpltool --hist x/cm : y/cm : z/cm example.mcpl: exit code 1
    | 
    | Run with -h or --help for usage information
 pymcpltool --hist x/cm --backend foo example.mcpl: exit code 1
-   | ERROR: Unknown plotting backend "foo". The plotting backends are: matplotlib, plotly
+   | ERROR: Unknown plotting backend "foo". The plotting backends are: matplotlib, plotly, unicode, ascii
    | 
    | Run with -h or --help for usage information
 pymcpltool --logx example.mcpl: exit code 1
