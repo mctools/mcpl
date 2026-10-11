@@ -28,6 +28,9 @@ ParticleFilter('x > 0 && y <= -0'): selects 251
 ParticleFilter('0 < x < 2cm'): selects 195
 ParticleFilter('ekin > 0 and time > 0 or z == 0'): selects 1006
 ParticleFilter('userflags & 0x10'): selects 0
+ParticleFilter('(~userflags & 0xff) == 0xff'): selects 1006
+ParticleFilter('pdgcode == ~2111'): selects 0
+ParticleFilter('atan2(uy,ux) > 90deg'): selects 212
 ParticleFilter('!(userflags & 1) && pdgcode != 0b0'): selects 1006
 ParticleFilter('pdgcode == electron || pdgcode == positron'): selects 23
 ParticleFilter('pdgcode == antielectron || pdgcode == photon'): selects 247
@@ -93,6 +96,9 @@ ParticleFilter('x/cm % 0 > 1'): The modulo operation gives NaN or infinite value
 ParticleFilter('1e999 > x/cm'): A constant has NaN or infinite values in expression "1e999 > x/cm"
 ParticleFilter('(-1)^(x/cm) > 0'): Raising to a power gives NaN or infinite values in expression "(-1)^(x/cm) > 0"
 ParticleFilter('x != x && 1/(x/cm - x/cm) > 1'): no error
+ParticleFilter('~x > 0cm'): The bitwise operator ~ requires integer operands (use ! for logical not)
+ParticleFilter('~uz > 0'): The bitwise operator ~ requires integer operands (use ! for logical not)
+ParticleFilter('x > 0cm if ux > 0 else x < 0cm'): Unsupported syntax in expression "x > 0cm if ux > 0 else x < 0cm"
 ParticleEdit('x = 2*ux'): Can not assign value without units to x, which is a length (add units, e.g. 2cm), in expression "x = 2*ux"
 ParticleEdit('x = 2'): Can not assign value without units to x, which is a length (add units, e.g. 2cm), in expression "x = 2"
 ParticleEdit('ekin = 0.025'): Can not assign value without units to ekin, which is an energy (add units, e.g. 2MeV), in expression "ekin = 0.025"

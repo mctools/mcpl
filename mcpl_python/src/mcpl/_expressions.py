@@ -95,7 +95,10 @@ def _expr_check( node, expr, variables = () ):
                  ast.Sub, ast.Mult, ast.Div, ast.Pow, ast.Mod, ast.FloorDiv,
                  ast.BitAnd, ast.BitOr, ast.Compare, ast.Eq, ast.NotEq,
                  ast.Lt, ast.LtE, ast.Gt, ast.GtE, ast.Name, ast.Load,
-                 ast.Constant, ast.Call, ast.IfExp )
+                 ast.Constant, ast.Call )
+    #TODO: Consider supporting conditional expressions ("a if cond else b",
+    #e.g. evaluated with _ExprEvaluator._with_active for each branch, like the
+    #right side of && and ||), which were removed since nothing used them.
     for n in ast.walk(node):
         if not isinstance( n, ok_nodes ):
             raise MCPLError(f'Unsupported syntax in expression "{expr}"')
@@ -284,11 +287,6 @@ class _ExprEvaluator:
                 res = np.logical_and(res,fcts[type(op)](a,b))
                 left = right
             return _Q(res)
-        if isinstance(node,ast.IfExp):
-            test = np.asarray(self.boolval(ev(node.test)),dtype=bool)
-            a, b, d = self.same(self._with_active(test,node.body),
-                                self._with_active(~test,node.orelse),'if-else')
-            return _Q(np.where(test,a,b),d)
         if isinstance(node,ast.Call):
             return self.finite(self.call(node.func.id,[ev(a) for a in node.args]),
                                f'{node.func.id}(..) gives')
@@ -373,8 +371,10 @@ class _ExprEvaluator:
     def _int( q, op ):
         a = np.asarray(q.v)
         if a.dtype.kind not in 'iub':
+            hint = ( 'use ! for logical not' if op == '~'
+                     else 'use && and || for logical and/or' )
             raise MCPLError(f'The bitwise operator {op} requires integer operands'
-                            ' (use && and || for logical and/or)')
+                            f' ({hint})')
         return a
 
 class _EmptyBlock:
@@ -396,7 +396,7 @@ class ParticleFilter:
     uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, and
     wavelength), numbers, arithmetic (+, -, *, /, %, and ^ or ** for powers),
     comparisons (which can be chained, as in "0 < x < 2cm"), logical operations
-    (&&, ||, ! or and, or, not), bitwise & and | on integers (e.g. on
+    (&&, ||, ! or and, or, not), bitwise &, | and ~ on integers (e.g. on
     userflags, as in "userflags & 0x10", where like in C integers which are not
     0 are true), functions (sqrt, abs, floor, ceil, exp, log, log10,
     sin, cos, tan, asin, acos, atan, atan2, hypot, min, max), the constant

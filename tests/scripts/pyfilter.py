@@ -72,6 +72,9 @@ def test_expressions():
               ('0 < x < 2cm', (b.x>0)&(b.x<2)),
               ('ekin > 0 and time > 0 or z == 0', ((b.ekin>0)&(b.time>0))|(b.z==0)),
               ('userflags & 0x10', (b.userflags & 0x10) != 0),
+              ('(~userflags & 0xff) == 0xff', ((~b.userflags) & 0xff) == 0xff),
+              ('pdgcode == ~2111', b.pdgcode == -2112),
+              ('atan2(uy,ux) > 90deg', np.arctan2(b.uy,b.ux) > np.pi/2),
               ('!(userflags & 1) && pdgcode != 0b0', ((b.userflags & 1) == 0)&(b.pdgcode!=0)),
               ('pdgcode == electron || pdgcode == positron', np.isin(b.pdgcode,(11,-11))),
               ('pdgcode == antielectron || pdgcode == photon', np.isin(b.pdgcode,(-11,22))),
@@ -141,7 +144,8 @@ def test_expressions():
                 'sin(x, y=1) > 0', 'x.real > 0', '[x][0] > 0', "x > 'a'", '',
                 'sqrt(x/cm) > 1', '1/(x/cm - x/cm) > 1', 'log(ekin/MeV - ekin/MeV) > 0',
                 'x/cm % 0 > 1', '1e999 > x/cm', '(-1)^(x/cm) > 0',
-                'x != x && 1/(x/cm - x/cm) > 1'):
+                'x != x && 1/(x/cm - x/cm) > 1', '~x > 0cm', '~uz > 0',
+                'x > 0cm if ux > 0 else x < 0cm'):
         try:
             mcpl.ParticleFilter(bad)(b)
             print(f'ParticleFilter({bad!r}): no error')
