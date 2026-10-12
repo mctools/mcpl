@@ -98,7 +98,8 @@ def test_files_and_options():
              'bins=10).plot(backend="unicode",unicode_width=40,unicode_height=5)' )
     rv = subprocess.run([sys.executable,'-c',code], capture_output=True, env=env, check=True)
     print(f'unicode backend with PYTHONIOENCODING=ascii prints only ASCII: {rv.stdout.isascii()}')
-    print(rv.stdout.decode().rstrip())
+    #(splitlines, since the output has \r\n line endings on Windows):
+    print('\n'.join(rv.stdout.decode().splitlines()).rstrip())
 
 def test_tool():
     out = io.StringIO()
