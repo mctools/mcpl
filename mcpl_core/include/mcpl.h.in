@@ -64,7 +64,10 @@
 #  define MCPL_VERSION_STR "999.999.999"
 #endif
 
-#define MCPL_FORMATVERSION 3 /* Format version of written files */
+#define MCPL_FORMATVERSION 4 /* Latest supported format version (files  */
+                             /* are only written in version 4 if they   */
+                             /* have per-particle userdata, otherwise   */
+                             /* in version 3)                           */
 
 #ifdef mcpl_LIB_IS_STATIC
 #  define MCPL_API
@@ -102,10 +105,6 @@ extern "C" {
   /* polarisation and userflags must be explicitly enabled when writing .mcpl  */
   /* files, or they will simply contain zeroes when the file is read):         */
 
-  /* TODO typedef struct { */
-  /* TODO uint8_t * data; */
-  /* TODO unsigned data_size; */
-  /* TODO  } mcpl_particle_userdata_t; */
 
   typedef struct MCPL_API {
     double ekin;            /* kinetic energy [MeV]             */
@@ -116,8 +115,6 @@ extern "C" {
     double weight;          /* weight or intensity              */
     int32_t pdgcode;    /* MC particle number from the Particle Data Group (2112=neutron, 22=gamma, ...)        */
     uint32_t userflags; /* User flags (if used, the file header should probably contain information about how). */
-    /* TODO    mcpl_particle_userdata_t * userdata; *//* reserved for future usage (always NULL now) */
-    /* TODO    uint8_t * userdata; *//* reserved for future usage (always NULL now) */
   } mcpl_particle_t;
 
 #pragma pack (pop)
@@ -305,6 +302,83 @@ extern "C" {
   /* introduce tiny numerical uncertainties due to the internal unpacking and   */
   /* repacking of direction vectors involved):                                  */
   MCPL_API void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target);
+
+  /****************************/
+  /* Per-particle userdata    */
+  /****************************/
+
+  /* Particles can optionally carry a fixed number of bytes of custom data   */
+  /* ("userdata"), in addition to the 32 bit userflags. The contents are     */
+  /* described by a layout string, which is stored in the file header, and   */
+  /* which is a comma-separated list of fields "name:type" or "name:type[n]" */
+  /* (arrays of n values), like "temp:float32,origin:int32,tags:uint8[3]".   */
+  /* The types are int8, uint8, int16, uint16, int32, uint32, int64, uint64, */
+  /* float32 and float64. Names must start with a lowercase letter followed  */
+  /* by lowercase letters, digits or underscores (names are required, also  */
+  /* for plain bytes like "data:uint8[27]", to avoid mixing up different     */
+  /* data with the same types when merging files).                           */
+  /* Values are packed without any padding, in the byte order of the file   */
+  /* (which is the native one of the platform). At most 65535 bytes per      */
+  /* particle are allowed. Files with userdata are written in MCPL format    */
+  /* version 4 (which older MCPL releases can not read), while all other     */
+  /* files are still written in format version 3.                            */
+  /*                                                                         */
+  /* Files can only be merged if their userdata layouts are identical.       */
+  /* Forced merges of files with different layouts discard the userdata.     */
+
+  /* Enable userdata with the given layout when writing a file. Particles    */
+  /* added with mcpl_add_particle will get userdata with all bytes zero:     */
+  MCPL_API void mcpl_enable_userdata(mcpl_outfile_t, const char * layout);
+  /* Add particle with userdata (an array of mcpl_hdr_userdata_size bytes,   */
+  /* or NULL for all bytes zero):                                            */
+  MCPL_API void mcpl_add_particle_with_userdata(mcpl_outfile_t,
+                                                const mcpl_particle_t*,
+                                                const uint8_t * userdata);
+
+  /* Layout of the userdata in a file (NULL if the file has no userdata), */
+  /* and the number of bytes per particle (0 if no userdata):             */
+  MCPL_API const char * mcpl_hdr_userdata_layout(mcpl_file_t);
+  MCPL_API uint32_t mcpl_hdr_userdata_size(mcpl_file_t);
+  /* Like mcpl_read, but also provides the userdata of the particle (set to */
+  /* NULL if the file has no userdata or there is no particle):             */
+  MCPL_API const mcpl_particle_t* mcpl_read_with_userdata(mcpl_file_t,
+                                                         const uint8_t ** userdata);
+  /* Userdata of the particle returned by the last call to mcpl_read (or    */
+  /* mcpl_read_with_userdata). Returns NULL if the file has no userdata, or */
+  /* if there is no such particle (also after seeking, skipping or EOF):   */
+  MCPL_API const uint8_t * mcpl_last_read_userdata(mcpl_file_t);
+
+  /* Helpers for encoding and decoding fields. Number of bytes described by */
+  /* a layout (error if the layout is invalid):                             */
+  MCPL_API uint32_t mcpl_userdata_layout_size(const char * layout);
+  /* Offset in bytes of a field in the layout. The type must be the one in  */
+  /* the layout, including any array size (e.g. "float32" or "uint8[3]"),   */
+  /* and errors are raised in case of mismatches. Elements i of array       */
+  /* fields are at offset+i*sizeof(type):                                    */
+  MCPL_API uint32_t mcpl_userdata_offset(const char * layout,
+                                         const char * name,
+                                         const char * type);
+  /* Get or set values at an offset in the userdata: */
+  MCPL_API int8_t   mcpl_userdata_get_int8(const uint8_t *, uint32_t offset);
+  MCPL_API uint8_t  mcpl_userdata_get_uint8(const uint8_t *, uint32_t offset);
+  MCPL_API int16_t  mcpl_userdata_get_int16(const uint8_t *, uint32_t offset);
+  MCPL_API uint16_t mcpl_userdata_get_uint16(const uint8_t *, uint32_t offset);
+  MCPL_API int32_t  mcpl_userdata_get_int32(const uint8_t *, uint32_t offset);
+  MCPL_API uint32_t mcpl_userdata_get_uint32(const uint8_t *, uint32_t offset);
+  MCPL_API int64_t  mcpl_userdata_get_int64(const uint8_t *, uint32_t offset);
+  MCPL_API uint64_t mcpl_userdata_get_uint64(const uint8_t *, uint32_t offset);
+  MCPL_API float    mcpl_userdata_get_float32(const uint8_t *, uint32_t offset);
+  MCPL_API double   mcpl_userdata_get_float64(const uint8_t *, uint32_t offset);
+  MCPL_API void mcpl_userdata_set_int8(uint8_t *, uint32_t offset, int8_t);
+  MCPL_API void mcpl_userdata_set_uint8(uint8_t *, uint32_t offset, uint8_t);
+  MCPL_API void mcpl_userdata_set_int16(uint8_t *, uint32_t offset, int16_t);
+  MCPL_API void mcpl_userdata_set_uint16(uint8_t *, uint32_t offset, uint16_t);
+  MCPL_API void mcpl_userdata_set_int32(uint8_t *, uint32_t offset, int32_t);
+  MCPL_API void mcpl_userdata_set_uint32(uint8_t *, uint32_t offset, uint32_t);
+  MCPL_API void mcpl_userdata_set_int64(uint8_t *, uint32_t offset, int64_t);
+  MCPL_API void mcpl_userdata_set_uint64(uint8_t *, uint32_t offset, uint64_t);
+  MCPL_API void mcpl_userdata_set_float32(uint8_t *, uint32_t offset, float);
+  MCPL_API void mcpl_userdata_set_float64(uint8_t *, uint32_t offset, double);
 
   /******************/
   /* Error handling */

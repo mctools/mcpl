@@ -10,6 +10,23 @@ v2.2.9  (work in progress)
         pymcpltool, which draw plots as text: in the terminal (e.g. with
         pymcpltool --hist ... --backend unicode), or in .txt files. They need
         no extra Python packages, so plots can always be made.
+      * Particles can now carry custom per-particle data ("userdata"): a fixed
+        number of bytes per particle, described by a layout string stored in
+        the file header (like "temp:float32,origin:int32,tags:uint8[3]", or
+        "data:uint8[27]" for plain bytes). New C functions mcpl_enable_userdata,
+        mcpl_add_particle_with_userdata, mcpl_read_with_userdata,
+        mcpl_last_read_userdata, mcpl_hdr_userdata_layout and
+        mcpl_hdr_userdata_size, as well as helper functions for encoding and
+        decoding the fields (mcpl_userdata_offset, mcpl_userdata_get_float32,
+        mcpl_userdata_set_float32, etc.). The mcpl_particle_t struct and all
+        existing functions are unchanged. Files with userdata are written in
+        the new MCPL format version 4, while all other files are still written
+        in format version 3 (so they can still be read by older MCPL
+        releases). MCPL_FORMATVERSION is now 4, the latest supported format
+        version. Files can only be merged if their userdata layouts are
+        identical, while forced merges discard the userdata (with a warning)
+        unless all files have the same layout. The Python API can not yet read
+        or write files with userdata.
       * Clearer error messages for invalid values of stat:sum entries (which
         must be non-negative or -1, and may only be padded with spaces).
       * Plotting backends in the Python API: the default backend can be set

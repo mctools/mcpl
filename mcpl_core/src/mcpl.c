@@ -47,8 +47,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 //  MCPL_FORMATVERSION history:                                               //
 //                                                                            //
-//  3: Current version. Changed packing of unit vectors from octahedral to    //
-//     the better performing "Adaptive Projection Packing".                   //
+//  4: Current version. Like version 3, but with per-particle userdata: the   //
+//     header contains the userdata layout string (after the universal        //
+//     weight, if any), and the userdata bytes are at the end of each         //
+//     particle. Only used for files with userdata, all other files are       //
+//     still written as version 3.                                            //
+//  3: Changed packing of unit vectors from octahedral to the better          //
+//     performing "Adaptive Projection Packing".                              //
 //  2: First public release.                                                  //
 //  1: Format used during early development. No longer supported.             //
 ////////////////////////////////////////////////////////////////////////////////
@@ -282,6 +287,210 @@ typedef struct MCPL_LOCAL {
   uint64_t writtenpos;
 } mcpl_internal_statsuminfo_t;
 
+//Parsing of userdata layouts like "temp:float32,origin:int32,tags:uint8[3]"
+//(names are required, to avoid mixing up data with the same types):
+
+#define MCPLIMP_USERDATA_MAXSIZE 65535
+#define MCPLIMP_USERDATA_MAXNAMELENGTH 64
+
+typedef struct {
+  const char * name;//not null-terminated
+  size_t lname;
+  const char * typespec;//e.g. "float32[3]", not null-terminated
+  size_t ltypespec;
+  unsigned typesize;
+  uint32_t offset;
+} mcpl_internal_udfield_t;
+
+MCPL_LOCAL unsigned mcpl_internal_udtype_size( const char * t, size_t n )
+{
+  static const char * names[10] = { "int8", "uint8", "int16", "uint16",
+                                    "int32", "uint32", "int64", "uint64",
+                                    "float32", "float64" };
+  static const unsigned sizes[10] = { 1, 1, 2, 2, 4, 4, 8, 8, 4, 8 };
+  for ( unsigned i = 0; i < 10; ++i )
+    if ( strlen(names[i]) == n && strncmp( names[i], t, n ) == 0 )
+      return sizes[i];
+  return 0;
+}
+
+//Parses the layout, returning an error message (or NULL if valid). If fields
+//is not NULL, it must have room for one more entry than the number of commas
+//in the layout, and will be filled. The total size is returned in size.
+MCPL_LOCAL const char * mcpl_internal_udlayout_parse( const char * layout,
+                                                      mcpl_internal_udfield_t * fields,
+                                                      uint32_t * nfields,
+                                                      uint32_t * size )
+{
+  *nfields = 0;
+  *size = 0;
+  if ( !layout || !*layout )
+    return "empty layout";
+  uint64_t offset = 0;
+  const char * c = layout;
+  while ( 1 ) {
+    const char * fend = strchr( c, ',' );
+    if ( !fend )
+      fend = c + strlen(c);
+    mcpl_internal_udfield_t fld;
+    if ( fend == c )
+      return "empty field";
+    const char * colon = (const char*)memchr( c, ':', (size_t)(fend-c) );
+    if ( !colon )
+      return "fields must be given as name:type";
+    fld.name = c;
+    fld.lname = (size_t)(colon-c);
+    fld.typespec = colon + 1;
+    fld.ltypespec = (size_t)(fend - fld.typespec);
+    if ( fld.lname == 0 )
+      return "empty field name";
+    if ( fld.lname > MCPLIMP_USERDATA_MAXNAMELENGTH )
+      return "too long field name";
+    if ( !( *c >= 'a' && *c <= 'z' ) )
+      return "field names must start with a lowercase letter";
+    for ( size_t i = 1; i < fld.lname; ++i ) {
+      char ch = c[i];
+      if ( !( ( ch >= 'a' && ch <= 'z' ) || ( ch >= '0' && ch <= '9' )
+              || ch == '_' ) )
+        return ( "field names must only contain lowercase letters,"
+                 " digits and underscores" );
+    }
+    //type and optional array size:
+    const char * bracket = (const char*)memchr( fld.typespec, '[', fld.ltypespec );
+    size_t ltype = bracket ? (size_t)(bracket - fld.typespec) : fld.ltypespec;
+    fld.typesize = mcpl_internal_udtype_size( fld.typespec, ltype );
+    if ( !fld.typesize )
+      return ( "unknown type (must be one of int8, uint8, int16, uint16,"
+               " int32, uint32, int64, uint64, float32, float64)" );
+    uint64_t count = 1;
+    if ( bracket ) {
+      const char * d = bracket + 1;
+      if ( d >= fend || *d < '1' || *d > '9' || fend[-1] != ']' )
+        return "invalid array size (must be like [3])";
+      count = 0;
+      for ( ; d < fend - 1; ++d ) {
+        if ( *d < '0' || *d > '9' )
+          return "invalid array size (must be like [3])";
+        count = count * 10 + (uint64_t)(*d - '0');
+        if ( count > MCPLIMP_USERDATA_MAXSIZE )
+          return "too large userdata (at most 65535 bytes are allowed)";
+      }
+    }
+    //unique names:
+    if ( fields ) {
+      for ( uint32_t i = 0; i < *nfields; ++i )
+        if ( fields[i].lname == fld.lname
+             && strncmp( fields[i].name, fld.name, fld.lname ) == 0 )
+          return "duplicate field name";
+    }
+    fld.offset = (uint32_t)offset;
+    offset += count * fld.typesize;
+    if ( offset > MCPLIMP_USERDATA_MAXSIZE )
+      return "too large userdata (at most 65535 bytes are allowed)";
+    if ( fields )
+      fields[*nfields] = fld;
+    *nfields += 1;
+    if ( !*fend )
+      break;
+    c = fend + 1;
+  }
+  *size = (uint32_t)offset;
+  return NULL;
+}
+
+MCPL_LOCAL void mcpl_internal_udlayout_error( const char * layout,
+                                              const char * errmsg )
+{
+  char buf[512];
+  snprintf( buf, sizeof(buf), "Invalid userdata layout \"%.200s%s\": %s",
+            layout ? layout : "",
+            ( layout && strlen(layout) > 200 ) ? "..." : "", errmsg );
+  mcpl_error(buf);
+}
+
+//Validates the layout and returns the number of bytes (with an error in case
+//of invalid layouts):
+MCPL_LOCAL uint32_t mcpl_internal_udlayout_validate( const char * layout )
+{
+  uint32_t nfields, size;
+  //First pass for syntax and count, second pass also checks for duplicates:
+  const char * err = mcpl_internal_udlayout_parse( layout, NULL,
+                                                   &nfields, &size );
+  if ( !err ) {
+    mcpl_internal_udfield_t * fields = (mcpl_internal_udfield_t *)
+      mcpl_internal_malloc( nfields * sizeof(mcpl_internal_udfield_t) );
+    err = mcpl_internal_udlayout_parse( layout, fields, &nfields, &size );
+    free(fields);
+  }
+  if ( err )
+    mcpl_internal_udlayout_error( layout, err );
+  return size;
+}
+
+uint32_t mcpl_userdata_layout_size( const char * layout )
+{
+  return mcpl_internal_udlayout_validate( layout );
+}
+
+uint32_t mcpl_userdata_offset( const char * layout, const char * name,
+                               const char * type )
+{
+  uint32_t nfields, size;
+  mcpl_internal_udlayout_validate( layout );
+  mcpl_internal_udlayout_parse( layout, NULL, &nfields, &size );
+  mcpl_internal_udfield_t * fields = (mcpl_internal_udfield_t *)
+    mcpl_internal_malloc( nfields * sizeof(mcpl_internal_udfield_t) );
+  mcpl_internal_udlayout_parse( layout, fields, &nfields, &size );
+  size_t lname = name ? strlen(name) : 0;
+  const char * err = "no such field in the userdata layout";
+  uint32_t offset = 0;
+  for ( uint32_t i = 0; i < nfields; ++i ) {
+    if ( !name || fields[i].lname != lname
+         || strncmp( fields[i].name, name, lname ) != 0 )
+      continue;
+    if ( !type || strlen(type) != fields[i].ltypespec
+         || strncmp( fields[i].typespec, type, fields[i].ltypespec ) != 0 ) {
+      err = "field has a different type in the userdata layout";
+    } else {
+      err = NULL;
+      offset = fields[i].offset;
+    }
+    break;
+  }
+  free(fields);
+  if ( err ) {
+    char buf[512];
+    snprintf( buf, sizeof(buf), "mcpl_userdata_offset(\"%.200s\",\"%.70s\","
+              "\"%.20s\"): %s", layout, name ? name : "",
+              type ? type : "", err );
+    mcpl_error(buf);
+  }
+  return offset;
+}
+
+#define MCPLIMP_UD_GETSET(tname,ctype)                                      \
+  ctype mcpl_userdata_get_##tname( const uint8_t * ud, uint32_t offset )   \
+  {                                                                         \
+    ctype v;                                                                \
+    memcpy( &v, ud + offset, sizeof(v) );                                   \
+    return v;                                                               \
+  }                                                                         \
+  void mcpl_userdata_set_##tname( uint8_t * ud, uint32_t offset, ctype v ) \
+  {                                                                         \
+    memcpy( ud + offset, &v, sizeof(v) );                                   \
+  }
+
+MCPLIMP_UD_GETSET(int8,int8_t)
+MCPLIMP_UD_GETSET(uint8,uint8_t)
+MCPLIMP_UD_GETSET(int16,int16_t)
+MCPLIMP_UD_GETSET(uint16,uint16_t)
+MCPLIMP_UD_GETSET(int32,int32_t)
+MCPLIMP_UD_GETSET(uint32,uint32_t)
+MCPLIMP_UD_GETSET(int64,int64_t)
+MCPLIMP_UD_GETSET(uint64,uint64_t)
+MCPLIMP_UD_GETSET(float32,float)
+MCPLIMP_UD_GETSET(float64,double)
+
 typedef struct MCPL_LOCAL {
   char * filename;
   FILE * file;
@@ -302,7 +511,9 @@ typedef struct MCPL_LOCAL {
   unsigned particle_size;
   mcpl_particle_t* puser;
   unsigned opt_signature;
-  char particle_buffer[MCPLIMP_MAX_PARTICLE_SIZE];
+  char * userdata_layout;//NULL if no userdata
+  uint32_t userdata_size;//included in particle_size
+  char * particle_buffer;//particle_size bytes
   mcpl_internal_statsuminfo_t * statsuminfo;
   unsigned nstatsuminfo;
 } mcpl_outfileinternal_t;
@@ -324,12 +535,16 @@ MCPL_LOCAL void mcpl_recalc_psize(mcpl_outfile_t of)
     f->particle_size += sizeof(uint32_t);
   if ( ! (f->particle_size<=MCPLIMP_MAX_PARTICLE_SIZE) )
     mcpl_error("unexpected particle size");
+  f->particle_size += f->userdata_size;
+  f->particle_buffer = (char*)mcpl_internal_realloc( f->particle_buffer,
+                                                     f->particle_size );
   f->opt_signature = 0
     + 1 * f->opt_singleprec
     + 2 * f->opt_polarisation
     + 4 * (f->opt_universalpdgcode?1:0)
     + 8 * (f->opt_universalweight?1:0)
-    + 16 * f->opt_userflags;
+    + 16 * f->opt_userflags
+    + 32 * (f->userdata_size?1:0);
 }
 
 MCPL_LOCAL void mcpl_platform_compatibility_check(void) {
@@ -373,6 +588,14 @@ MCPL_LOCAL void mcpl_internal_cleanup_outfile(mcpl_outfileinternal_t * f)
   if ( f->puser ) {
     free(f->puser);
     f->puser = NULL;
+  }
+  if ( f->userdata_layout ) {
+    free(f->userdata_layout);
+    f->userdata_layout = NULL;
+  }
+  if ( f->particle_buffer ) {
+    free(f->particle_buffer);
+    f->particle_buffer = NULL;
   }
   if ( f->statsuminfo ) {
     free(f->statsuminfo);
@@ -430,6 +653,9 @@ mcpl_outfile_t mcpl_create_outfile(const char * filename)
   f->nparticles = 0;
 
   f->puser = NULL;
+  f->userdata_layout = NULL;
+  f->userdata_size = 0;
+  f->particle_buffer = NULL;
   f->statsuminfo = NULL;
   f->nstatsuminfo = 0;
   f->file = mcpl_internal_fopen(f->filename,"wb");
@@ -719,6 +945,23 @@ void mcpl_enable_userflags(mcpl_outfile_t of)
   mcpl_recalc_psize(of);
 }
 
+void mcpl_enable_userdata(mcpl_outfile_t of, const char * layout)
+{
+  MCPLIMP_OUTFILEDECODE;
+  uint32_t size = mcpl_internal_udlayout_validate( layout );
+  if ( f->userdata_layout ) {
+    if ( strcmp( f->userdata_layout, layout ) != 0 )
+      mcpl_error("mcpl_enable_userdata called multiple times with"
+                 " different layouts");
+    return;
+  }
+  if (!f->header_notwritten)
+    mcpl_error("mcpl_enable_userdata called too late.");
+  mcpl_store_string( &(f->userdata_layout), layout );
+  f->userdata_size = size;
+  mcpl_recalc_psize(of);
+}
+
 void mcpl_enable_polarisation(mcpl_outfile_t of)
 {
   MCPLIMP_OUTFILEDECODE;
@@ -896,10 +1139,13 @@ MCPL_LOCAL void mcpl_write_header(mcpl_outfileinternal_t * f)
   //Always start the file with an unsigned char-array (for endian agnosticity)
   //containing magic word (MCPL), file format version ('001'-'999') and
   //endianness used in the file ('L' or 'B'):
+  //(files with userdata are in format version 4, others still in 3):
   unsigned char start[8] = {'M','C','P','L','0','0','0','L'};
-  start[4] = (MCPL_FORMATVERSION/100)%10 + '0';
-  start[5] = (MCPL_FORMATVERSION/10)%10 + '0';
-  start[6] = MCPL_FORMATVERSION%10 + '0';
+  MCPL_STATIC_ASSERT(MCPL_FORMATVERSION==4);
+  const int version = f->userdata_layout ? 4 : 3;
+  start[4] = (unsigned char)((version/100)%10 + '0');
+  start[5] = (unsigned char)((version/10)%10 + '0');
+  start[6] = (unsigned char)(version%10 + '0');
   if (!mcpl_platform_is_little_endian())
     start[7] = 'B';
   size_t nb = fwrite(start, 1, sizeof(start), f->file);
@@ -936,6 +1182,10 @@ MCPL_LOCAL void mcpl_write_header(mcpl_outfileinternal_t * f)
     if (nb!=sizeof(f->opt_universalweight))
       mcpl_error(errmsg);
   }
+
+  //Userdata layout (only in version 4):
+  if (f->userdata_layout)
+    mcpl_write_string(f->file,f->userdata_layout,errmsg);
 
   //src progname:
   mcpl_write_string(f->file,f->hdr_srcprogname?f->hdr_srcprogname:"unknown",errmsg);
@@ -1158,10 +1408,12 @@ MCPL_LOCAL const char * mcpl_internal_nonfinite_field( const mcpl_particle_t* p,
 }
 
 MCPL_LOCAL void mcpl_internal_serialise_particle_to_buffer( const mcpl_particle_t* particle,
+                                                            const uint8_t * userdata,
                                                             mcpl_outfileinternal_t * f ) {
 
-  //Serialise the provided particle into the particle_buffer of the output file
-  //(according to the settings of the output file).
+  //Serialise the provided particle (and userdata, NULL meaning zeros) into the
+  //particle_buffer of the output file (according to the settings of the output
+  //file).
 
   double pack_ekindir[3];
 
@@ -1270,11 +1522,17 @@ MCPL_LOCAL void mcpl_internal_serialise_particle_to_buffer( const mcpl_particle_
   }
   if (f->opt_userflags) {
     mcpl_internal_wr_uint32( &pbuf[ibuf], particle->userflags );
-#ifndef NDEBUG
     ibuf += sizeof(uint32_t);
-#endif
+  }
+  if (f->userdata_size) {
+    if (userdata)
+      memcpy( &pbuf[ibuf], userdata, f->userdata_size );
+    else
+      memset( &pbuf[ibuf], 0, f->userdata_size );
+    ibuf += f->userdata_size;
   }
   assert(ibuf==f->particle_size);
+  (void)ibuf;
 }
 
 MCPL_LOCAL void mcpl_internal_write_particle_buffer_to_file(mcpl_outfileinternal_t * f ) {
@@ -1293,7 +1551,19 @@ MCPL_LOCAL void mcpl_internal_write_particle_buffer_to_file(mcpl_outfileinternal
 void mcpl_add_particle(mcpl_outfile_t of,const mcpl_particle_t* particle)
 {
   MCPLIMP_OUTFILEDECODE;
-  mcpl_internal_serialise_particle_to_buffer(particle,f);
+  mcpl_internal_serialise_particle_to_buffer(particle,NULL,f);
+  mcpl_internal_write_particle_buffer_to_file(f);
+}
+
+void mcpl_add_particle_with_userdata(mcpl_outfile_t of,
+                                     const mcpl_particle_t* particle,
+                                     const uint8_t * userdata)
+{
+  MCPLIMP_OUTFILEDECODE;
+  if ( userdata && !f->userdata_size )
+    mcpl_error("mcpl_add_particle_with_userdata called with userdata for a"
+               " file without userdata (see mcpl_enable_userdata)");
+  mcpl_internal_serialise_particle_to_buffer(particle,userdata,f);
   mcpl_internal_write_particle_buffer_to_file(f);
 }
 
@@ -1376,6 +1646,9 @@ void mcpl_transfer_metadata(mcpl_file_t source, mcpl_outfile_t target)
   double uw = mcpl_hdr_universal_weight(source);
   if (uw)
     mcpl_enable_universal_weight(target,uw);
+  const char * udlayout = mcpl_hdr_userdata_layout(source);
+  if (udlayout)
+    mcpl_enable_userdata(target,udlayout);
 }
 
 int mcpl_closeandgzip_outfile_rc(mcpl_outfile_t of)
@@ -1420,7 +1693,10 @@ typedef struct {
   uint64_t current_particle_idx;
   mcpl_particle_t* particle;
   unsigned opt_signature;
-  char particle_buffer[MCPLIMP_MAX_PARTICLE_SIZE];
+  char * userdata_layout;//NULL if no userdata
+  uint32_t userdata_size;//included in particle_size
+  int last_read_valid;//whether particle_buffer holds the last read particle
+  char * particle_buffer;//particle_size bytes
   uint64_t first_comment_pos;
   uint32_t * repaired_statsum_icomments;
   int warned_nonfinite;
@@ -1592,6 +1868,14 @@ MCPL_LOCAL void mcpl_internal_cleanup_file(mcpl_fileinternal_t * f)
     free(f->particle);
     f->particle = NULL;
   }
+  if ( f->userdata_layout ) {
+    free(f->userdata_layout);
+    f->userdata_layout = NULL;
+  }
+  if ( f->particle_buffer ) {
+    free(f->particle_buffer);
+    f->particle_buffer = NULL;
+  }
   if (f->filegz) {
     gzclose(f->filegz);
     f->filegz = NULL;
@@ -1649,7 +1933,7 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   if (nb!=sizeof(start))
     mcpl_error("Error while reading first bytes of file!");
   f->format_version = (start[4]-'0')*100 + (start[5]-'0')*10 + (start[6]-'0');
-  if (f->format_version!=2&&f->format_version!=3)
+  if (f->format_version<2||f->format_version>4)
     mcpl_error("File is in an unsupported MCPL version!");
   f->is_little_endian = mcpl_platform_is_little_endian();
   if (start[7]!=(f->is_little_endian?'L':'B')) {
@@ -1689,9 +1973,7 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   f->opt_polarisation = arr[3];
   f->opt_singleprec = arr[4];
   memcpy(&f->opt_universalpdgcode, &arr[5], sizeof(int32_t));
-  f->particle_size = arr[6];//We could check consistency here with the calculated value.
-  if ( ! (f->particle_size<=MCPLIMP_MAX_PARTICLE_SIZE) )
-    mcpl_error("unexpected particle size");
+  f->particle_size = arr[6];//Checked below.
 
   if (arr[7]) {
     //file has universal weight
@@ -1704,12 +1986,32 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
     current_pos += nb;
   }
 
+  if (f->format_version>=4) {
+    //Userdata layout (always present in version 4):
+    current_pos += mcpl_read_string(f,&f->userdata_layout,errmsg);
+    f->userdata_size = mcpl_internal_udlayout_validate( f->userdata_layout );
+    //Check consistency with the size of the other fields:
+    unsigned fp = f->opt_singleprec ? sizeof(float) : sizeof(double);
+    uint64_t expected = 7*fp + ( f->opt_polarisation ? 3*fp : 0 )
+      + ( f->opt_universalpdgcode ? 0 : sizeof(int32_t) )
+      + ( arr[7] ? 0 : fp )
+      + ( f->opt_userflags ? sizeof(uint32_t) : 0 )
+      + f->userdata_size;
+    if ( f->particle_size != expected )
+      mcpl_error("unexpected particle size");
+  } else if ( ! (f->particle_size<=MCPLIMP_MAX_PARTICLE_SIZE) ) {
+    mcpl_error("unexpected particle size");
+  }
+  f->particle_buffer = (char*)mcpl_internal_malloc( f->particle_size
+                                                    ? f->particle_size : 1 );
+
   f->opt_signature = 0
     + 1 * f->opt_singleprec
     + 2 * f->opt_polarisation
     + 4 * (f->opt_universalpdgcode?1:0)
     + 8 * (f->opt_universalweight?1:0)
-    + 16 * f->opt_userflags;
+    + 16 * f->opt_userflags
+    + 32 * (f->userdata_size?1:0);
 
   //Then some strings:
   current_pos += mcpl_read_string(f,&f->hdr_srcprogname,errmsg);
@@ -2140,6 +2442,7 @@ int mcpl_hdr_has_doubleprec(mcpl_file_t ff)
 const mcpl_particle_t* mcpl_read(mcpl_file_t ff)
 {
   MCPLIMP_FILEDECODE;
+  f->last_read_valid = 0;
   f->current_particle_idx += 1;
   if ( f->current_particle_idx > f->nparticles ) {
     f->current_particle_idx = f->nparticles;//overflow guard
@@ -2221,13 +2524,13 @@ const mcpl_particle_t* mcpl_read(mcpl_file_t ff)
   }
   if (f->opt_userflags) {
     p->userflags = mcpl_internal_rd_uint32( &pbuf[ibuf] );
-#ifndef NDEBUG
     ibuf += sizeof(uint32_t);
-#endif
   } else {
-    f->opt_userflags = 0;
+    p->userflags = 0;
   }
-  assert(ibuf==lbuf);
+  assert(ibuf+f->userdata_size==lbuf);
+  (void)ibuf;
+  f->last_read_valid = 1;
 
   //Unpack direction and ekin:
 
@@ -2260,9 +2563,40 @@ const mcpl_particle_t* mcpl_read(mcpl_file_t ff)
   return p;
 }
 
+const char * mcpl_hdr_userdata_layout(mcpl_file_t ff)
+{
+  MCPLIMP_FILEDECODE;
+  return f->userdata_layout;
+}
+
+uint32_t mcpl_hdr_userdata_size(mcpl_file_t ff)
+{
+  MCPLIMP_FILEDECODE;
+  return f->userdata_size;
+}
+
+const uint8_t * mcpl_last_read_userdata(mcpl_file_t ff)
+{
+  MCPLIMP_FILEDECODE;
+  if ( !f->userdata_size || !f->last_read_valid )
+    return NULL;
+  return (const uint8_t*)( f->particle_buffer
+                           + ( f->particle_size - f->userdata_size ) );
+}
+
+const mcpl_particle_t* mcpl_read_with_userdata(mcpl_file_t ff,
+                                               const uint8_t ** userdata)
+{
+  const mcpl_particle_t* p = mcpl_read(ff);
+  if (userdata)
+    *userdata = mcpl_last_read_userdata(ff);
+  return p;
+}
+
 int mcpl_skipforward(mcpl_file_t ff,uint64_t n)
 {
   MCPLIMP_FILEDECODE;
+  f->last_read_valid = 0;
   //increment, but guard against overflows:
   if ( n >= f->nparticles || f->current_particle_idx >= f->nparticles )
     f->current_particle_idx = f->nparticles;
@@ -2291,6 +2625,7 @@ int mcpl_skipforward(mcpl_file_t ff,uint64_t n)
 int mcpl_rewind(mcpl_file_t ff)
 {
   MCPLIMP_FILEDECODE;
+  f->last_read_valid = 0;
   int already_there = (f->current_particle_idx==0);
   f->current_particle_idx = 0;
   int notEOF = f->current_particle_idx<f->nparticles;
@@ -2310,6 +2645,7 @@ int mcpl_rewind(mcpl_file_t ff)
 int mcpl_seek(mcpl_file_t ff,uint64_t ipos)
 {
   MCPLIMP_FILEDECODE;
+  f->last_read_valid = 0;
   int already_there = (f->current_particle_idx==ipos);
   f->current_particle_idx = (ipos<f->nparticles?ipos:f->nparticles);
   int notEOF = f->current_particle_idx<f->nparticles;
@@ -2419,9 +2755,21 @@ void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
     mcpl_error(buf);
     return;
   }
-  //NB: We don't sanity check that polarisation/userflags are enabled if present
-  //in the input particle, since it is a valid use-case to use this function to
-  //discard such info.
+  //NB: We don't sanity check that polarisation/userflags/userdata are enabled
+  //if present in the input particle, since it is a valid use-case to use this
+  //function to discard such info.
+
+  //Userdata to transfer (NULL means zeros, used if the source has none):
+  const uint8_t * userdata = NULL;
+  if ( ft->userdata_size && fs->userdata_size ) {
+    if ( strcmp( ft->userdata_layout, fs->userdata_layout ) != 0 ) {
+      mcpl_error("mcpl_transfer_last_read_particle asked to transfer"
+                 " particle into a file with a different userdata layout");
+      return;
+    }
+    userdata = (const uint8_t*)( fs->particle_buffer
+                                 + ( fs->particle_size - fs->userdata_size ) );
+  }
 
   //NaN or infinite values are not allowed (the source file might have them,
   //and they might otherwise be transferred directly):
@@ -2441,7 +2789,8 @@ void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
     //floating point precision is increasing. In these scenarious we can not
     //reuse the 3 floats representing packed direction+ekin but must proceed via
     //a full unpacking+repacking.
-    mcpl_add_particle(target,fs->particle);
+    mcpl_add_particle_with_userdata(target,fs->particle,
+                                    ft->userdata_size ? userdata : NULL);
     return;
   }
 
@@ -2457,7 +2806,7 @@ void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
   }
 
   //The hard way - first serialise the source particle into the output buffer:
-  mcpl_internal_serialise_particle_to_buffer( fs->particle, ft );
+  mcpl_internal_serialise_particle_to_buffer( fs->particle, userdata, ft );
 
   //If possible, override the 3 FP representing packed ekin+dir from the packing
   //in the source, thus avoiding potentially lossy unpacking+packing:
@@ -2570,6 +2919,17 @@ void mcpl_dump_header(mcpl_file_t f)
            "    Polarisation info  : %s\n",
            (mcpl_hdr_has_polarisation(f)?"yes":"no"));
   mcpl_print(buf);
+  if (mcpl_hdr_userdata_size(f)) {
+    //(only shown for files with userdata, keeping the output for other files):
+    const char * udl = mcpl_hdr_userdata_layout(f);
+    size_t nudbuf = strlen(udl) + 128;
+    char * udbuf = mcpl_internal_malloc(nudbuf);
+    snprintf(udbuf,nudbuf,
+             "    User data          : %lu bytes (layout \"%s\")\n",
+             (unsigned long)mcpl_hdr_userdata_size(f), udl);
+    mcpl_print(udbuf);
+    free(udbuf);
+  }
   mcpl_print("    Fixed part. type   : ");
   int32_t updg = mcpl_hdr_universal_pdgcode(f);
   if (updg) {
@@ -2614,6 +2974,9 @@ void mcpl_dump_particles(mcpl_file_t f, uint64_t nskip, uint64_t nlimit,
     mcpl_print("       pol-x       pol-y       pol-z");
   if (has_uf)
     mcpl_print("  userflags");
+  uint32_t udsize = mcpl_hdr_userdata_size(f);
+  if (udsize)
+    mcpl_print("  userdata");
   mcpl_print("\n");
   mcpl_skipforward(f,nskip);
   //Writing the next loop in an annoying way to silence MSVC C4706 warning:
@@ -2648,6 +3011,17 @@ void mcpl_dump_particles(mcpl_file_t f, uint64_t nskip, uint64_t nlimit,
     if (has_uf) {
       snprintf(buf,sizeof(buf)," 0x%08x",p->userflags);
       mcpl_print(buf);
+    }
+    if (udsize) {
+      //Bytes in hex (at most the first 16):
+      const uint8_t * ud = mcpl_last_read_userdata(f);
+      mcpl_print("  ");
+      for ( uint32_t i = 0; i < udsize && i < 16; ++i ) {
+        snprintf(buf,sizeof(buf),"%02x",(unsigned)ud[i]);
+        mcpl_print(buf);
+      }
+      if ( udsize > 16 )
+        mcpl_print("...");
     }
     mcpl_print("\n");
   }
@@ -2696,6 +3070,9 @@ MCPL_LOCAL int mcpl_actual_can_merge(mcpl_file_t ff1, mcpl_file_t ff2)
   if (f1->opt_universalweight!=f2->opt_universalweight) return 0;
   if (f1->is_little_endian!=f2->is_little_endian) return 0;
   if (f1->particle_size!=f2->particle_size) return 0;
+  if ( (f1->userdata_layout!=NULL) != (f2->userdata_layout!=NULL) ) return 0;
+  if ( f1->userdata_layout
+       && strcmp(f1->userdata_layout,f2->userdata_layout)!=0 ) return 0;
   if (f1->ncomments!=f2->ncomments) return 0;
   if (f1->nblobs!=f2->nblobs) return 0;
   uint32_t i;
@@ -2867,6 +3244,10 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
   int disallow_universalpdg = 0;
   double lastseen_universalweight = 0;
   int disallow_universalweight = 0;
+  //Userdata is kept only if all files have the same layout:
+  char * udlayout = NULL;
+  int seen_file = 0;
+  int discard_userdata = 0;
 
   for (ifile = 0; ifile < nfiles; ++ifile) {
     mcpl_file_t f = mcpl_open_file(files[ifile]);
@@ -2874,6 +3255,16 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
       mcpl_close_file(f);
       continue;//won't affect anything
     }
+
+    const char * udl = mcpl_hdr_userdata_layout(f);
+    if (!seen_file) {
+      if (udl)
+        mcpl_store_string(&udlayout,udl);
+    } else if ( (udl!=NULL) != (udlayout!=NULL)
+                || ( udl && strcmp(udl,udlayout)!=0 ) ) {
+      discard_userdata = 1;
+    }
+    seen_file = 1;
 
     if (mcpl_hdr_has_userflags(f))
       opt_uf = 1;//enable if any
@@ -2902,6 +3293,14 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
   }
   if (!keep_userflags)
     opt_uf = 0;
+  if ( discard_userdata ) {
+    mcpl_print("MCPL WARNING: Discarding userdata in forced merge, since"
+               " not all files have the same userdata layout.\n");
+    if (udlayout) {
+      free(udlayout);
+      udlayout = NULL;
+    }
+  }
 
   mcpl_outfile_t out = mcpl_create_outfile(file_output);
 
@@ -2919,6 +3318,11 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
     mcpl_enable_universal_pdgcode(out,lastseen_universalpdg);
   if ( !disallow_universalweight && lastseen_universalweight )
     mcpl_enable_universal_weight(out,lastseen_universalweight);
+  if ( udlayout ) {
+    mcpl_enable_userdata(out,udlayout);
+    free(udlayout);
+    udlayout = NULL;
+  }
 
   //Figure out largest filename for print buffer:
   size_t nbuf = strlen(file_output);
@@ -3118,8 +3522,10 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
     }
 
     //Transfer particle contents:
-    if (mcpl_hdr_version(fi)==MCPL_FORMATVERSION) {
-      //Can transfer raw bytes:
+    if (mcpl_hdr_version(fi)>=3) {
+      //Can transfer raw bytes (particle data is encoded in the same way in
+      //format versions 3 and 4, and versions 2 and 4 can not be mixed since the
+      //userdata layouts must be the same):
       uint64_t npi = mcpl_hdr_nparticles(fi);
       mcpl_transfer_particle_contents(out_internal->file, fi, npi);
       out_internal->nparticles += npi;
@@ -3463,6 +3869,8 @@ MCPL_LOCAL int mcpl_tool_usage( char** argv, const char * errmsg ) {
   mcpl_print("               Like --merge but works with incompatible files as well, at the\n");
   mcpl_print("               heavy price of discarding most metadata like comments and blobs.\n");
   mcpl_print("               Userflags will be discarded unless --keepuserflags is specified.\n");
+  mcpl_print("               Userdata will be discarded unless all files have the same\n");
+  mcpl_print("               userdata layout.\n");
   mcpl_print("\n");
   mcpl_print("Extract options:\n");
   mcpl_print("  -e, --extract FILE1 FILE2\n");
@@ -3948,7 +4356,12 @@ int mcpl_tool(int argc,char** argv) {
       return mcpl_tool_usage(argv,"Could not open output file.");
     }
 
-    fprintf(fout,"#MCPL-ASCII\n#ASCII-FORMAT: v1\n#NPARTICLES: %" PRIu64 "\n#END-HEADER\n",mcpl_hdr_nparticles(fi));
+    fprintf(fout,"#MCPL-ASCII\n#ASCII-FORMAT: v1\n#NPARTICLES: %" PRIu64 "\n",mcpl_hdr_nparticles(fi));
+    //Userdata is not included in the output, which is noted in the header:
+    if (mcpl_hdr_userdata_size(fi))
+      fprintf(fout,"#WARNING: The userdata of the particles in the MCPL file is"
+              " not included\n");
+    fprintf(fout,"#END-HEADER\n");
     fprintf(fout,"index     pdgcode               ekin[MeV]                   x[cm]          "
             "         y[cm]                   z[cm]                      ux                  "
             "    uy                      uz                time[ms]                  weight  "
