@@ -95,6 +95,8 @@ Merge options:
                Like --merge but works with incompatible files as well, at the
                heavy price of discarding most metadata like comments and blobs.
                Userflags will be discarded unless --keepuserflags is specified.
+               Userdata will be discarded unless all files have the same
+               userdata layout.
 
 Extract options:
   -e, --extract FILE1 FILE2
