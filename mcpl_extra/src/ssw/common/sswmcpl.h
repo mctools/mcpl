@@ -32,7 +32,7 @@
 // permissions and licenses from third-parties, which is not within the       //
 // scope of the MCPL project itself.                                          //
 //                                                                            //
-// Written 2015-2025 by Thomas.Kittelmann@ess.eu                              //
+// Written 2015-2026 by Thomas.Kittelmann@ess.eu                              //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 

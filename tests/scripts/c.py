@@ -21,7 +21,8 @@
 
 # NEEDS: matplotlib numpy
 
-"""unit test which aims to cover as much code as possible in mcpl.py (as per coverage.py)"""
+"""unit test which aims to cover as much code as possible in the mcpl Python
+package (as per coverage.py)"""
 
 #coverage recipe:
 #
