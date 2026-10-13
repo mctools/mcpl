@@ -40,7 +40,7 @@
 // permissions and licenses from third-parties, which is not within the       //
 // scope of the MCPL project itself.                                          //
 //                                                                            //
-// Written 2015-2025, thomas.kittelmann@ess.eu (European Spallation Source).  //
+// Written 2015-2026, thomas.kittelmann@ess.eu (European Spallation Source).  //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
