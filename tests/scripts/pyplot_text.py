@@ -33,7 +33,8 @@ import subprocess
 import sys
 
 import mcpldev as mcpl
-from mcpldev.plotting import Figure, Panel, Text
+import numpy as np
+from mcpldev.plotting import Figure, Panel, StepHist, Text, resolution
 from MCPLTestUtils.dirs import test_data_dir
 
 example_file = test_data_dir.parent.parent.joinpath('examples','example.mcpl')
@@ -101,6 +102,29 @@ def test_files_and_options():
     #(splitlines, since the output has \r\n line endings on Windows):
     print('\n'.join(rv.stdout.decode().splitlines()).rstrip())
 
+def test_resolution():
+    #The text backends know their resolution (number of columns and rows)
+    #before seeing any data, so histograms can be made to match it:
+    from mcpldev._plotbackend_text import UnicodeBackend
+    print('resolution unicode (width 60):',resolution('unicode',unicode_width=60))
+    print('resolution ascii (width 50, height 6):',
+          resolution('ascii',ascii_width=50,ascii_height=6))
+    print('resolution test backend:',resolution('test'))
+    #A histogram with one bin per column is drawn without any resampling: a
+    #single filled bin fills exactly its column, in all rows:
+    ncols, nrows = resolution('unicode',unicode_width=60,unicode_height=5)
+    for ibin in (0, 17, ncols-1):
+        values = np.zeros(ncols)
+        values[ibin] = 1.0
+        fig = Figure(panels=[Panel(items=[StepHist(np.linspace(-3.0,7.0,ncols+1),values)])])
+        lines = UnicodeBackend(unicode_width=60,unicode_height=5).draw(fig)
+        lines = lines.splitlines() if isinstance(lines,str) else lines
+        filled = [ (i,j) for i,line in enumerate(lines[:nrows])
+                   for j,ch in enumerate(line) if ch == '\u2588' ]
+        cols = { j for _,j in filled }
+        print(f'bin {ibin} of {ncols}: filled in {len(filled)} rows,'
+              f' {len(cols)} column(s)')
+
 def test_tool():
     out = io.StringIO()
     with contextlib.redirect_stdout(out), contextlib.suppress(SystemExit):
@@ -110,8 +134,29 @@ def test_tool():
     print(f'pymcpltool --hist --backend ascii: {len(lines)} lines, first and last:')
     print(lines[0])
     print(lines[-1])
+    #Without --bins, the histogram is made at the resolution of the terminal
+    #(here 83 columns, so a plot with 72 columns, and 36 bins of 2 columns for
+    #the 1006 particles in the file):
+    env = { 'COLUMNS' : '83', 'LINES' : '24' }
+    old = { k : os.environ.get(k) for k in env }
+    os.environ.update(env)
+    try:
+        for args in ( ['--hist','x/cm'], ['--hist','x/cm : y/cm'] ):
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out), contextlib.suppress(SystemExit):
+                mcpl.app_pymcpltool(['pymcpltool',*args,'--backend','ascii',
+                                     str(example_file)])
+            print(f'pymcpltool {" ".join(args)} --backend ascii with 83 columns:')
+            print(out.getvalue())
+    finally:
+        for k,v in old.items():
+            if v is None:
+                del os.environ[k]
+            else:
+                os.environ[k] = v
 
 test_histograms()
 test_stats()
 test_files_and_options()
 test_tool()
+test_resolution()

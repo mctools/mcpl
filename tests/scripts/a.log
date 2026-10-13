@@ -93,7 +93,9 @@ Histogram options:
                     histogram, give two expressions separated by " : ".
   --select EXPR, -pPDGCODE
                   : Only include the selected particles (as above).
-  --bins N        : Number of bins (default 100).
+  --bins N        : Number of bins (by default chosen from the number of
+                    particles, and with the unicode and ascii backends at most
+                    the resolution of the plot).
   --range LOW:HIGH: Range of the histogram (default is all values). For 2D
                     histograms, use XLOW:XHIGH,YLOW:YHIGH (or XLOW:XHIGH).
   --logx, --logy  : Logarithmic binning and x axis, or logarithmic y axis.

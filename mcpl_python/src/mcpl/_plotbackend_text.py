@@ -67,6 +67,14 @@ _unicode = _Chars(
 def _fmt( v ):
     return f'{v:.4g}'
 
+#Width of the labels of the y axis (fixed, so the width of the plot area is
+#known before the data, see resolution()):
+_ylw = 8
+
+def _fmt_y( v ):
+    s = _fmt(v)
+    return s if len(s) <= _ylw else f'{v:.2g}'
+
 def _center( text, width ):
     return text.center(width).rstrip()
 
@@ -78,9 +86,23 @@ class _TextBackend(PlotBackend):
 
     def __init__( self, width = None, height = None ):
         if width is None:
-            width = min( 100, shutil.get_terminal_size((80,24)).columns )
+            width = min( 250, shutil.get_terminal_size((80,24)).columns )
         self._width = max( 40, int(width) )
         self._height = max( 5, int(height or 15) )
+
+    def resolution( self ):
+        return ( self._width - _ylw - 3, self._height )
+
+    def _fit_resolution( self, bins ):
+        """Reduce the size of the plots so histograms with the given number of
+        bins (or (nx,ny) for 2D histograms) are drawn with a whole number of
+        columns (and rows) per bin."""
+        ncols, nrows = self.resolution()
+        nx, ny = bins if isinstance(bins,(tuple,list)) else ( bins, None )
+        if nx and nx <= ncols:
+            self._width = ( ncols - ncols % nx ) + _ylw + 3
+        if ny and ny <= nrows:
+            self._height = nrows - nrows % ny
 
     def show( self, figures ):
         print('\n\n'.join( self.draw(f) for f in figures ))
@@ -140,20 +162,33 @@ class _TextBackend(PlotBackend):
             lo, hi = lo - 1.0, hi + 1.0
         return lo, hi
 
+    @staticmethod
+    def _overlap_matrix( edges, lo, hi, n ):
+        """Matrix (n x nbins) with the fraction of each of the n equal cells
+        between lo and hi which is covered by each bin. Multiplied with the
+        bin values, it gives the average of the values over each cell, i.e.
+        the step function of the histogram resampled to the cells (assuming
+        the contents of each bin to be uniformly distributed inside it). The
+        rows sum to the fraction of the cell covered by any bin (at most 1).
+        Bins can extend to +-infinity (e.g. in log scale)."""
+        edges = np.asarray(edges,dtype=float)
+        cellwidth = ( hi - lo ) / n
+        bounds = lo + np.arange(n+1) * cellwidth
+        with np.errstate(invalid='ignore'):
+            overlap = ( np.minimum( edges[None,1:], bounds[1:,None] )
+                        - np.maximum( edges[None,:-1], bounds[:-1,None] ) )
+            ok = ( edges[1:] > edges[:-1] )
+            frac = np.where( ok[None,:], overlap / cellwidth, 0.0 )
+        return np.clip( np.nan_to_num(frac,nan=0.0), 0.0, 1.0 )
+
     def _columns( self, edges, values, lo, hi, log, ncols ):
-        """Value of each column (the maximum of the bins in it, or NaN)"""
+        """Values of the columns, i.e. the average of the bin values over each
+        column (NaN for columns outside the range of the bins)"""
         d = self._to_display(edges,log)
         dlo, dhi = self._to_display([lo,hi],log)
-        scale = ncols / ( dhi - dlo )
-        res = np.full(ncols,np.nan)
-        for i,v in enumerate(values):
-            a, b = ( d[i] - dlo ) * scale, ( d[i+1] - dlo ) * scale
-            if not ( np.isfinite(a) and np.isfinite(b) ) or b <= 0 or a >= ncols:
-                continue
-            ca = max( 0, math.floor(a) )
-            cb = min( ncols, max( ca + 1, math.ceil(b) ) )
-            seg = res[ca:cb]
-            res[ca:cb] = np.where( np.isnan(seg), v, np.fmax(seg,v) )
+        m = self._overlap_matrix(d,dlo,dhi,ncols)
+        res = m @ np.asarray(values,dtype=float)
+        res[ m.sum(axis=1) <= 0.0 ] = np.nan
         return res
 
     def _yscale( self, panel, allvals ):
@@ -176,14 +211,14 @@ class _TextBackend(PlotBackend):
                 with np.errstate(divide='ignore',invalid='ignore'):
                     lx = np.log10(np.where(x > 0, x, vmin))
                 return np.where( x > 0, np.clip( ( lx - lmin ) / ( lmax - lmin ) * h, 0, h ), 0.0 )
-            return height, ( _fmt(10**lmax), _fmt(10**lmin) )
+            return height, ( _fmt_y(10**lmax), _fmt_y(10**lmin) )
         vmin, vmax = panel.ylim if panel.ylim else ( min(0.0,v.min()) if len(v) else 0.0,
                                                      v.max() if len(v) else 1.0 )
         if not vmax > vmin:
             vmax = vmin + 1.0
         def height( x ):
             return np.clip( ( np.asarray(x,dtype=float) - vmin ) / ( vmax - vmin ) * h, 0, h )
-        return height, ( _fmt(vmax), _fmt(vmin) )
+        return height, ( _fmt_y(vmax), _fmt_y(vmin) )
 
     #Drawing:
 
@@ -193,7 +228,7 @@ class _TextBackend(PlotBackend):
         area (top row first)"""
         c = self._chars
         top, bottom = ylabels
-        lw = max( len(top), len(bottom) )
+        lw = _ylw
         out = []
         for i,r in enumerate(rows):
             label = top if i == 0 else ( bottom if i == len(rows) - 1 else '' )
@@ -218,11 +253,11 @@ class _TextBackend(PlotBackend):
     def _draw_stephists( self, panel, steps ):
         c = self._chars
         lo, hi = self._xrange(panel, [ e for s in steps for e in ( s.edges[0], s.edges[-1] ) ])
-        allvals = np.concatenate([ np.asarray(s.values,dtype=float) for s in steps ])
-        height, ylabels = self._yscale(panel,allvals)
-        ylw = max( len(x) for x in ylabels )
-        ncols = self._width - ylw - 3
+        ncols = self.resolution()[0]
         cols = [ self._columns(s.edges,s.values,lo,hi,panel.logx,ncols) for s in steps ]
+        #(the vertical scale is for the values of the columns):
+        allvals = np.concatenate(cols)
+        height, ylabels = self._yscale(panel,allvals[np.isfinite(allvals)])
         h = self._height
         grid = [ [' '] * ncols for _ in range(h) ]
         if len(steps) == 1:
@@ -283,39 +318,17 @@ class _TextBackend(PlotBackend):
             out.append( f'{lab:>{lw}} {c.vline}{bar} {t}' )
         return out
 
-    @staticmethod
-    def _rebin( edges, lo, hi, ncells ):
-        """Matrix mapping bins to cells: summing the bins in each cell when
-        there are more bins than cells, otherwise taking the bin at the
-        centre of each cell"""
-        edges = np.asarray(edges,dtype=float)
-        nb = len(edges) - 1
-        m = np.zeros((ncells,nb))
-        if nb >= ncells:
-            centers = 0.5 * ( edges[1:] + edges[:-1] )
-            idx = np.floor( ( centers - lo ) / ( hi - lo ) * ncells ).astype(int)
-            ok = ( idx >= 0 ) & ( idx < ncells )
-            m[idx[ok],np.flatnonzero(ok)] = 1.0
-        else:
-            cc = lo + ( np.arange(ncells) + 0.5 ) * ( hi - lo ) / ncells
-            ib = np.searchsorted(edges,cc,side='right') - 1
-            ok = ( ib >= 0 ) & ( ib < nb )
-            m[np.flatnonzero(ok),ib[ok]] = 1.0
-        return m
-
     def _draw_hist2d( self, panel, item ):
         c = self._chars
         xlo, xhi = self._xrange(panel,item.xedges)
         ylo, yhi = ( panel.ylim if panel.ylim else ( item.yedges[0], item.yedges[-1] ) )
         if not yhi > ylo:
             ylo, yhi = ylo - 1.0, yhi + 1.0
-        ylabels = ( _fmt(yhi), _fmt(ylo) )
-        ylw = max( len(x) for x in ylabels )
-        ncols = self._width - ylw - 3
-        nrows = self._height
+        ylabels = ( _fmt_y(yhi), _fmt_y(ylo) )
+        ncols, nrows = self.resolution()
         v = np.asarray(item.values,dtype=float)
-        cells = ( self._rebin(item.xedges,xlo,xhi,ncols) @ v
-                  @ self._rebin(item.yedges,ylo,yhi,nrows).T )
+        cells = ( self._overlap_matrix(item.xedges,xlo,xhi,ncols) @ v
+                  @ self._overlap_matrix(item.yedges,ylo,yhi,nrows).T )
         pos = cells[cells>0]
         nlev = len(c.shades) - 1
         grid = [ [' '] * ncols for _ in range(nrows) ]
@@ -345,7 +358,7 @@ class UnicodeBackend(_TextBackend):
     drawing), for terminals (in terminals which can not show these characters,
     the ASCII characters are used instead). The unicode_width and unicode_height options set
     the size of the plots in characters (default is the width of the
-    terminal, up to 100, and a height of 15)."""
+    terminal, up to 250, and a height of 15)."""
     name = 'unicode'
     _chars = _unicode
 
@@ -370,7 +383,7 @@ class UnicodeBackend(_TextBackend):
 class AsciiBackend(_TextBackend):
     """Plots drawn as text with ASCII characters only, for any terminal. The
     ascii_width and ascii_height options set the size of the plots in
-    characters (default is the width of the terminal, up to 100, and a height
+    characters (default is the width of the terminal, up to 250, and a height
     of 15)."""
     name = 'ascii'
     _chars = _ascii

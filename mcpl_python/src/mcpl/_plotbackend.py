@@ -55,6 +55,15 @@ class PlotBackend:
         """File extensions which save() can create in this installation"""
         return tuple(cls.formats)
 
+    def resolution( self ):
+        """Number of bins which histograms should have to match the resolution
+        of the plots, as a tuple (nx,ny) for the two axes, or None if the
+        backend has no preference (like matplotlib and plotly, which draw
+        bins at any resolution). The text backends return the numbers of
+        columns and rows of their plots, so histograms with that many bins
+        are shown without any resampling."""
+        return
+
     def show( self, figures ):
         """Show the figures interactively."""
         raise NotImplementedError

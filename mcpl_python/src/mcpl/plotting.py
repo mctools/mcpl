@@ -42,8 +42,8 @@ For instance:
 """
 
 __all__ = [ 'Backend', 'Bars', 'Figure', 'Hist2D', 'Panel', 'StepHist', 'Text',
-            'available_backends', 'formats', 'register_backend', 'save',
-            'set_default_backend', 'show' ]
+            'available_backends', 'formats', 'register_backend', 'resolution',
+            'save', 'set_default_backend', 'show' ]
 
 from ._plotbackend import (
     PlotBackend,
@@ -130,6 +130,16 @@ def formats( backend = None ):
     """File extensions of the formats which the backend (name or Backend
     object, default is the default backend) can save in this installation."""
     return list(_formats(backend))
+
+def resolution( backend = None, **options ):
+    """Number of bins which histograms should have to match the resolution of
+    the plots of the backend (name or Backend object, default is the default
+    backend), as a tuple (nx,ny), or None if the backend has no preference.
+    The text backends have a resolution (their numbers of columns and rows),
+    so e.g. mcpl.histogram(..., bins = mcpl.plotting.resolution("unicode")[0])
+    makes a histogram which is shown without any resampling. Further keyword
+    arguments are options for the backend (see show())."""
+    return _create_backend(backend,**options).resolution()
 
 def _as_list( figures ):
     return [ figures ] if isinstance(figures,Figure) else list(figures)
