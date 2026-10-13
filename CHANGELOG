@@ -1,4 +1,11 @@
 v2.2.9  (work in progress)
+      * Optional dependencies (extras) for the plotting backends of the Python
+        API: pip install "mcpl[plot]" (or "mcpl-python[plot]") also installs
+        matplotlib (>=3.6), "[plotly]" installs plotly (>=5.11), and "[all]"
+        both. The kaleido package needed to save plotly plots as images is not
+        included, since it needs a Chrome installation.
+      * The minimum versions of the Python dependencies (numpy 1.22, and the
+        matplotlib 3.6 and plotly 5.11 of the extras) are now tested in CI.
       * The fields x, y, z and time of particles and blocks of particles read
         with the Python API are now always double precision numbers (like in
         the C API), also for files which store numbers in single precision

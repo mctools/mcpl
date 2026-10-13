@@ -122,9 +122,20 @@ def check_metadata():
     #assert ( projkeys_monolith - projkeys_core ) == set(['dependencies'])
     #assert ( projkeys_core - projkeys_monolith ) == set([])
     assert ( projkeys_core - projkeys_meta ) == {'scripts'}
-    assert ( projkeys_meta - projkeys_core ) == {'dependencies'}
+    assert ( projkeys_meta - projkeys_core ) == {'dependencies',
+                                                 'optional-dependencies'}
     assert ( projkeys_extra - projkeys_meta ) == {'scripts'}
-    assert ( projkeys_meta - projkeys_extra ) == set()
+    assert ( projkeys_meta - projkeys_extra ) == {'optional-dependencies'}
+
+    #The metapackage must forward all extras of mcpl-python:
+    extras_py = data_py['project'].get('optional-dependencies',{})
+    extras_meta = data_meta['project']['optional-dependencies']
+    assert set(extras_py) == set(extras_meta)
+    for k in extras_py:
+        assert extras_meta[k] == [f'mcpl-python[{k}]'], (k,extras_meta[k])
+    assert set(extras_py['all']) == set().union(*( extras_py[k]
+                                                    for k in extras_py
+                                                    if k != 'all' ))
     #assert ( projkeys_py - projkeys_monolith ) == set(['dynamic'])
     #assert ( projkeys_monolith - projkeys_py ) == set(['version'])
     assert ( projkeys_core - projkeys_meta ) == {'scripts'}
