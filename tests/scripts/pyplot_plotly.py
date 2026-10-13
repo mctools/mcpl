@@ -30,7 +30,7 @@ import pathlib
 import mcpldev as mcpl
 from MCPLTestUtils.dirs import test_data_dir
 
-example_file = test_data_dir.parent.parent.joinpath('examples','example.mcpl')
+example_file = test_data_dir.joinpath('example.mcpl')
 
 files = mcpl.plot_stats(mcpl.collect_stats(example_file), backend='plotly',
                         filename='stats.html')

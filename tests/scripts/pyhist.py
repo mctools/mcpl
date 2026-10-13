@@ -36,7 +36,7 @@ import numpy as np
 from MCPLTestUtils.dirs import test_data_dir
 
 #Use local copies of the files, for printouts without full paths:
-shutil.copy(test_data_dir.parent.parent.joinpath('examples','example.mcpl'),'example.mcpl')
+shutil.copy(test_data_dir.joinpath('example.mcpl'),'example.mcpl')
 shutil.copy(test_data_dir.joinpath('ref','reffile_1.mcpl'),'reffile_1.mcpl')
 example_file = pathlib.Path('example.mcpl')
 ref1 = pathlib.Path('reffile_1.mcpl')

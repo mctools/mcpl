@@ -1,0 +1,115 @@
+#!/usr/bin/env python3
+
+################################################################################
+##                                                                            ##
+##  This file is part of MCPL (see https://mctools.github.io/mcpl/)           ##
+##                                                                            ##
+##  Copyright 2015-2026 MCPL developers.                                      ##
+##                                                                            ##
+##  Licensed under the Apache License, Version 2.0 (the "License");           ##
+##  you may not use this file except in compliance with the License.          ##
+##  You may obtain a copy of the License at                                   ##
+##                                                                            ##
+##      http://www.apache.org/licenses/LICENSE-2.0                            ##
+##                                                                            ##
+##  Unless required by applicable law or agreed to in writing, software       ##
+##  distributed under the License is distributed on an "AS IS" BASIS,         ##
+##  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  ##
+##  See the License for the specific language governing permissions and       ##
+##  limitations under the License.                                            ##
+##                                                                            ##
+################################################################################
+
+#  Example of how to write and read custom per-particle data ("userdata") with
+#  the mcpl Python API. Files with userdata are written in the MCPL-4 format,
+#  which needs MCPL release 3.0.0 or later.
+
+import sys
+
+import mcpl
+import numpy as np
+
+#Get name of output file from command line:
+outputfile = sys.argv[1]
+
+################################################################################
+# Writing a file with userdata                                                 #
+################################################################################
+
+#The userdata of each particle is described by a layout: a list of named fields
+#with types int8, uint8, int16, uint16, int32, uint32, int64, uint64, float32
+#or float64, or arrays of them like "origin:float32[3]"). Here each particle
+#gets a temperature, the number of scatterings it underwent, the identifier of
+#the volume it was last in, and its initial position. The layout is stored in
+#the file header, so it is always known when reading the file. As usual, it is
+#a good idea to explain the fields in a comment:
+layout = 'temp:float32,nscat:uint32,volume:int32,origin:float32[3]'
+f = mcpl.MCPLOutFile( outputfile, sourcename = 'my_cool_program_name',
+                      opt_universalpdgcode = 2112,#all are neutrons
+                      userdata_layout = layout )
+f.hdr_add_comment('Userdata: temp is the temperature [K] at the last'
+                  ' scattering, nscat the number of scatterings, volume the'
+                  ' identifier of the last volume, and origin the initial'
+                  ' position [cm].')
+
+#In files with userdata, particles are added together with their userdata,
+#given as a dictionary with an array (or a single value) for each field of the
+#layout. Array fields are given with one row per particle, i.e. with shape
+#(n,3) here. Fields which are left out are zero (and userdata = {} gives
+#particles with all userdata zero):
+n = 1000
+i = np.arange(n)
+f.add_particles( x = 0.1 * i, y = 0.0, z = 0.0,
+                 direction = (0.0, 0.0, 1.0),
+                 ekin = 0.025e-6 * ( 1 + i % 10 ),#MeV
+                 weight = 1.0,
+                 userdata = { 'temp' : 293.15 + 0.5 * ( i % 7 ),
+                              'nscat' : i % 4,
+                              'volume' : np.where( i % 3, 17, -1 ),
+                              'origin' : np.outer( i, (0.0, 0.5, 1.0) ) } )
+
+#Single particles are added in the same way:
+f.add_particle( position = (0.0, 0.0, 0.0), direction = (0.0, 1.0, 0.0),
+                ekin = 0.025e-6, weight = 1.0,
+                userdata = { 'temp' : 300.0, 'nscat' : 2, 'volume' : 17,
+                             'origin' : (1.0, 2.0, 3.0) } )
+f.close()
+
+################################################################################
+# Reading the file again                                                       #
+################################################################################
+
+with mcpl.MCPLFile( outputfile ) as fin:
+    #The layout is in the header (None for files without userdata):
+    print( f'Userdata layout: {fin.userdata_layout}'
+           f' ({fin.userdata_size} bytes per particle)' )
+    #The userdata of a block of particles is a NumPy structured array with the
+    #fields of the layout (it is a view of the data read from the file, so it
+    #costs nothing unless used):
+    temp_sum, nscat_sum, n_escaped, max_dist = 0.0, 0, 0, 0.0
+    for block in fin.particle_blocks:
+        ud = block.userdata
+        temp_sum += ud['temp'].sum()
+        nscat_sum += ud['nscat'].sum()
+        n_escaped += np.count_nonzero( ud['volume'] == -1 )
+        #Array fields have shape (n,3), e.g. the distance travelled from the
+        #initial position:
+        dist = np.linalg.norm( block.position - ud['origin'], axis = 1 )
+        max_dist = max( max_dist, dist.max() )
+        #Selections with NumPy masks work on the userdata like on any field,
+        #e.g. the particles which scattered at least twice:
+        hot = block[ ud['nscat'] >= 2 ]
+        if block.file_offset == 0:
+            print( f'{len(hot)} of the first {len(block)} particles scattered'
+                   ' at least twice' )
+    #The userdata of single particles is a NumPy record (array fields are
+    #arrays, here of length 3):
+    p = fin.read()
+    print( f'First particle: ekin={p.ekin:g} MeV,'
+           f' temp={p.userdata["temp"]:g} K, nscat={p.userdata["nscat"]},'
+           f' volume={p.userdata["volume"]},'
+           f' origin={p.userdata["origin"].tolist()}' )
+    n = fin.nparticles
+    print( f'Read {n} particles: mean temp {temp_sum/n:g} K,'
+           f' mean nscat {nscat_sum/n:g}, {n_escaped} escaped,'
+           f' max distance from origin {max_dist:g} cm' )

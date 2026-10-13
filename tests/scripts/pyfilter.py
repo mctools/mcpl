@@ -34,7 +34,7 @@ import numpy as np
 from mcpldev._physics import wavelength_from_ekin
 from MCPLTestUtils.dirs import test_data_dir
 
-example_file = test_data_dir.parent.parent.joinpath('examples','example.mcpl')
+example_file = test_data_dir.joinpath('example.mcpl')
 
 def test_expressions():
     with mcpl.MCPLFile(example_file) as f:
@@ -196,7 +196,7 @@ def test_nonfinite():
             print(f'ParticleFilter({expr!r}) with zero ekin: {e}')
 
 def run_example(name, *args):
-    f = test_data_dir.parent.parent.joinpath('examples',name)
+    f = test_data_dir.joinpath('pyexamples',name)
     code = f.read_text().replace('\nimport mcpl\n','\nimport mcpldev as mcpl\n')
     assert 'import mcpldev as mcpl' in code
     sys.argv = [ str(f), *args ]

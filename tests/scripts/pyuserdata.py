@@ -310,10 +310,10 @@ def test_python_writing():
     expect_error('enable too late',late)
 
 def test_example():
-    print('=== examples/pyexample_userdatamcpl')
+    print('=== pyexample_userdatamcpl')
     #Run the example with the mcpl module being tested, and check the file it
     #wrote with the C API:
-    f = test_data_dir.parent.parent.joinpath('examples','pyexample_userdatamcpl')
+    f = test_data_dir.joinpath('pyexamples','pyexample_userdatamcpl')
     code = f.read_text().replace('\nimport mcpl\n','\nimport mcpldev as mcpl\n')
     assert 'import mcpldev as mcpl' in code
     sys.argv = [ str(f), 'pyexample.mcpl' ]

@@ -352,7 +352,7 @@ def test_single_vs_blocks():
 def test_example():
     #Run examples/pyexample_writemcpl with the mcpl module being tested:
     import sys
-    f = test_data_dir.parent.parent.joinpath('examples','pyexample_writemcpl')
+    f = test_data_dir.joinpath('pyexamples','pyexample_writemcpl')
     code = f.read_text().replace('\nimport mcpl\n','\nimport mcpldev as mcpl\n')
     assert 'import mcpldev as mcpl' in code
     sys.argv = [ str(f), 'example_output' ]

@@ -33,7 +33,7 @@ import numpy as np
 from mcpldev.plotting import Bars, Figure, Hist2D, Panel, StepHist, Text
 from MCPLTestUtils.dirs import test_data_dir
 
-example_file = test_data_dir.parent.parent.joinpath('examples','example.mcpl')
+example_file = test_data_dir.joinpath('example.mcpl')
 
 def test_backends():
     avail = mcpl.plotting.available_backends()

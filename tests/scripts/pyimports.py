@@ -39,7 +39,7 @@ import sys
 
 from MCPLTestUtils.dirs import test_data_dir
 
-example_file = test_data_dir.parent.parent.joinpath('examples','example.mcpl')
+example_file = test_data_dir.joinpath('example.mcpl')
 shutil.copy(example_file, 'example.mcpl')
 shutil.copy(example_file, 'example2.mcpl')
 #File which looks like it was not properly closed (number of particles in the

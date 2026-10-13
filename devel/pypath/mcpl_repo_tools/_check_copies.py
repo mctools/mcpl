@@ -24,7 +24,8 @@
 def get_content( relpath ):
     from .dirs import reporoot
     print(f'    {relpath}')
-    return reporoot.joinpath(relpath).read_text()
+    #(bytes, so binary files can be compared as well)
+    return reporoot.joinpath(relpath).read_bytes()
 
 def check_same( reffile, *otherfiles ):
     assert len(otherfiles) > 0
@@ -56,6 +57,14 @@ def main():
     for e in ['filter','read','userdata','write']:
         check_same(f'examples/example_{e}mcpl.c',
                    f'tests/src/app_examples/example_{e}mcpl.h')
+
+    #The tests only use files under tests/, so examples used by them are
+    #kept as copies there:
+    check_same( 'examples/example.mcpl',
+                'tests/data/example.mcpl' )
+    for e in ['edit','filter','read','userdata','write']:
+        check_same(f'examples/pyexample_{e}mcpl',
+                   f'tests/data/pyexamples/pyexample_{e}mcpl')
 
 if __name__=='__main__':
     main()

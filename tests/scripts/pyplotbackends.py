@@ -36,7 +36,7 @@ import mcpldev as mcpl
 from mcpldev.plotting import Backend, Figure, Panel, Text
 from MCPLTestUtils.dirs import test_data_dir
 
-example_file = test_data_dir.parent.parent.joinpath('examples','example.mcpl')
+example_file = test_data_dir.joinpath('example.mcpl')
 fig = Figure( title = 'A figure', panels = [ Panel( items = [ Text('Hello') ] ) ] )
 
 class PrintingBackend(Backend):

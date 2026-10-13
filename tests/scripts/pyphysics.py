@@ -30,7 +30,7 @@ import numpy as np
 from mcpldev._physics import ekin_from_wavelength, wavelength_from_ekin
 from MCPLTestUtils.dirs import test_data_dir
 
-example_file = test_data_dir.parent.parent.joinpath('examples','example.mcpl')
+example_file = test_data_dir.joinpath('example.mcpl')
 
 def test_constants():
     for n in mcpl.constants.__all__:

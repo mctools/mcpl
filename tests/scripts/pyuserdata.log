@@ -297,7 +297,7 @@ transfer without userdata: MCPLError: add_particles asked to transfer particles 
 invalid layout: MCPLError: Invalid userdata layout "uint8[27]": fields must be given as name:type
 different layouts: MCPLError: enable_userdata called multiple times with different layouts
 enable too late: MCPLError: enable_userdata called too late.
-=== examples/pyexample_userdatamcpl
+=== pyexample_userdatamcpl
 Userdata layout: temp:float32,nscat:uint32,volume:int32,origin:float32[3] (24 bytes per particle)
 501 of the first 1001 particles scattered at least twice
 First particle: ekin=2.5e-08 MeV, temp=293.15 K, nscat=0, volume=-1, origin=[0.0, 0.0, 0.0]

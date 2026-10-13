@@ -37,7 +37,7 @@ import numpy as np
 from mcpldev.plotting import Figure, Panel, StepHist, Text, resolution
 from MCPLTestUtils.dirs import test_data_dir
 
-example_file = test_data_dir.parent.parent.joinpath('examples','example.mcpl')
+example_file = test_data_dir.joinpath('example.mcpl')
 
 def show(figs, backend, width=72, height=8):
     opts = { f'{backend}_width' : width, f'{backend}_height' : height }
