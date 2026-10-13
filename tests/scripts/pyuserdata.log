@@ -145,11 +145,11 @@ c/out.mcpl: format version 4, userdata layout "temp:float32,origin:int32,tags:ui
   particle 3 x=1 ekin=0.5: temp=293.15 origin=0 tags=0,1,2 big=1e+300 id=18446744073709551615 s=-32768
   particle 4 x=2 ekin=1: temp=294.15 origin=-1000 tags=10,11,12 big=2e+300 id=18446744073709551614 s=-32767
 mcpltool --merge out.mcpl std.mcpl raw33.mcpl: exit code 1
-   | ERROR: Requested files are incompatible for merge as they have different header info.
+   | ERROR: Requested files are incompatible for merge as they have different header info (userdata layout: "temp:float32,origin:int32,tags:uint8[3],big:float64,id:uint64,s:int16" vs "data:uint8[33]").
    | 
    | Run with -h or --help for usage information
 mcpltool --merge out.mcpl std.mcpl none.mcpl: exit code 1
-   | ERROR: Requested files are incompatible for merge as they have different header info.
+   | ERROR: Requested files are incompatible for merge as they have different header info (userdata layout: "temp:float32,origin:int32,tags:uint8[3],big:float64,id:uint64,s:int16" vs none).
    | 
    | Run with -h or --help for usage information
 mcpltool --merge --inplace std2.mcpl std.mcpl: exit code 0
@@ -160,10 +160,12 @@ c/std2.mcpl: format version 4, userdata layout "temp:float32,origin:int32,tags:u
   particle 3 x=2 ekin=1: temp=294.15 origin=-1000 tags=10,11,12 big=2e+300 id=18446744073709551614 s=-32767
   particle 4 x=3 ekin=1.5: temp=295.15 origin=-2000 tags=20,21,22 big=3e+300 id=18446744073709551613 s=-32766
 mcpltool --merge --inplace std2.mcpl raw33.mcpl: exit code 1
-   | ERROR: Requested files are incompatible for merge as they have different header info.
+   | ERROR: Requested files are incompatible for merge as they have different header info (userdata layout: "temp:float32,origin:int32,tags:uint8[3],big:float64,id:uint64,s:int16" vs "data:uint8[33]").
    | 
    | Run with -h or --help for usage information
 mcpltool --forcemerge out.mcpl std.mcpl stddp.mcpl: exit code 0
+   | MCPL force-merge: Files have different FP precision (single and double), using double
+   | MCPL force-merge: Files have different polarisation info (no and yes), enabling it
    | MCPL force-merge: Transferring 3 particles from file std.mcpl
    | MCPL force-merge: Transferring 3 particles from file stddp.mcpl
    | MCPL force-merge: Transferred a total of 6 particles to new file out.mcpl

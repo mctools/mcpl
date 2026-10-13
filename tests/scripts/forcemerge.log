@@ -5,6 +5,11 @@
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/miscphys.mcpl.gz <TESTDATADIR>/ref/gammas_uw.mcpl.gz --keepuserflags
 Expect failure: no
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Files have different userflags (no and yes), enabling them (zero for particles without)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 195 particles from file <TESTDATADIR>/ref/miscphys.mcpl.gz
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/gammas_uw.mcpl.gz
 MCPL force-merge: Transferred a total of 210 particles to new file tmp.mcpl
@@ -60,6 +65,9 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/miscphys.mcpl.gz <TESTDATADIR>/ref/reffile_3.mcpl
 Expect failure: no
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 195 particles from file <TESTDATADIR>/ref/miscphys.mcpl.gz
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_3.mcpl
 MCPL force-merge: Transferred a total of 200 particles to new file tmp.mcpl
@@ -115,6 +123,10 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/miscphys.mcpl.gz <TESTDATADIR>/ref/reffile_10.mcpl
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 195 particles from file <TESTDATADIR>/ref/miscphys.mcpl.gz
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_10.mcpl
 MCPL force-merge: Transferred a total of 200 particles to new file tmp.mcpl
@@ -170,6 +182,8 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/miscphys.mcpl.gz <TESTDATADIR>/ref/reffile_13.mcpl --keepuserflags
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 195 particles from file <TESTDATADIR>/ref/miscphys.mcpl.gz
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_13.mcpl
 MCPL force-merge: Transferred a total of 200 particles to new file tmp.mcpl
@@ -225,6 +239,10 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/miscphys.mcpl.gz <TESTDATADIR>/ref/reffile_14.mcpl
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 195 particles from file <TESTDATADIR>/ref/miscphys.mcpl.gz
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
 MCPL force-merge: Transferred a total of 200 particles to new file tmp.mcpl
@@ -280,6 +298,10 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/miscphys.mcpl.gz <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz
 Expect failure: no
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 195 particles from file <TESTDATADIR>/ref/miscphys.mcpl.gz
 MCPL force-merge: Transferring 10 particles from file <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz
 MCPL force-merge: Transferred a total of 205 particles to new file tmp.mcpl
@@ -338,6 +360,10 @@ RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/miscphys.mcpl.gz <TEST
 Expect failure: no
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Files have different userflags (no and yes), enabling them (zero for particles without)
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 195 particles from file <TESTDATADIR>/ref/miscphys.mcpl.gz
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 MCPL force-merge: Transferring 4 particles from file <TESTDATADIR>/ref/reffile_crash.mcpl
@@ -393,6 +419,8 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/miscphys.mcpl.gz <TESTDATADIR>/ref/reffile_empty.mcpl.gz
 Expect failure: no
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 195 particles from file <TESTDATADIR>/ref/miscphys.mcpl.gz
 MCPL force-merge: Transferring 0 particles from file <TESTDATADIR>/ref/reffile_empty.mcpl.gz
 MCPL force-merge: Transferred a total of 195 particles to new file tmp.mcpl
@@ -443,6 +471,9 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/miscphys.mcpl.gz <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz
 Expect failure: no
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 195 particles from file <TESTDATADIR>/ref/miscphys.mcpl.gz
 MCPL force-merge: Transferring 100 particles from file <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz
 MCPL force-merge: Transferred a total of 295 particles to new file tmp.mcpl
@@ -498,6 +529,10 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/miscphys.mcpl.gz <TESTDATADIR>/ref/reffile_uw.mcpl.gz --keepuserflags
 Expect failure: no
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Files have different userflags (no and yes), enabling them (zero for particles without)
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 195 particles from file <TESTDATADIR>/ref/miscphys.mcpl.gz
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/reffile_uw.mcpl.gz
 MCPL force-merge: Transferred a total of 210 particles to new file tmp.mcpl
@@ -553,6 +588,10 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/miscphys.mcpl.gz <TESTDATADIR>/ref/reffile_14.mcpl
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 195 particles from file <TESTDATADIR>/ref/miscphys.mcpl.gz
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
 MCPL force-merge: Transferred a total of 200 particles to new file tmp.mcpl
@@ -608,6 +647,9 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/gammas_uw.mcpl.gz <TESTDATADIR>/ref/reffile_3.mcpl
 Expect failure: no
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/gammas_uw.mcpl.gz
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_3.mcpl
 MCPL force-merge: Transferred a total of 20 particles to new file tmp.mcpl
@@ -662,6 +704,11 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/gammas_uw.mcpl.gz <TESTDATADIR>/ref/reffile_10.mcpl --keepuserflags
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/gammas_uw.mcpl.gz
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_10.mcpl
 MCPL force-merge: Transferred a total of 20 particles to new file tmp.mcpl
@@ -716,6 +763,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/gammas_uw.mcpl.gz <TESTDATADIR>/ref/reffile_13.mcpl
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/gammas_uw.mcpl.gz
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_13.mcpl
 MCPL force-merge: Transferred a total of 20 particles to new file tmp.mcpl
@@ -770,6 +823,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/gammas_uw.mcpl.gz <TESTDATADIR>/ref/reffile_14.mcpl
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/gammas_uw.mcpl.gz
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
 MCPL force-merge: Transferred a total of 20 particles to new file tmp.mcpl
@@ -824,6 +883,9 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/gammas_uw.mcpl.gz <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz --keepuserflags
 Expect failure: no
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/gammas_uw.mcpl.gz
 MCPL force-merge: Transferring 10 particles from file <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz
 MCPL force-merge: Transferred a total of 25 particles to new file tmp.mcpl
@@ -886,6 +948,10 @@ RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/gammas_uw.mcpl.gz <TES
 Expect failure: no
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/gammas_uw.mcpl.gz
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 MCPL force-merge: Transferring 4 particles from file <TESTDATADIR>/ref/reffile_crash.mcpl
@@ -940,6 +1006,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/gammas_uw.mcpl.gz <TESTDATADIR>/ref/reffile_empty.mcpl.gz
 Expect failure: no
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/gammas_uw.mcpl.gz
 MCPL force-merge: Transferring 0 particles from file <TESTDATADIR>/ref/reffile_empty.mcpl.gz
 MCPL force-merge: Transferred a total of 15 particles to new file tmp.mcpl
@@ -989,6 +1056,10 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/gammas_uw.mcpl.gz <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz --keepuserflags
 Expect failure: no
+MCPL force-merge: Files have different userflags (no and yes), enabling them (zero for particles without)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/gammas_uw.mcpl.gz
 MCPL force-merge: Transferring 100 particles from file <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz
 MCPL force-merge: Transferred a total of 115 particles to new file tmp.mcpl
@@ -1044,6 +1115,9 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/gammas_uw.mcpl.gz <TESTDATADIR>/ref/reffile_uw.mcpl.gz
 Expect failure: no
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/gammas_uw.mcpl.gz
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/reffile_uw.mcpl.gz
 MCPL force-merge: Transferred a total of 30 particles to new file tmp.mcpl
@@ -1099,6 +1173,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/gammas_uw.mcpl.gz <TESTDATADIR>/ref/reffile_14.mcpl
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/gammas_uw.mcpl.gz
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
 MCPL force-merge: Transferred a total of 20 particles to new file tmp.mcpl
@@ -1153,6 +1233,10 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_3.mcpl <TESTDATADIR>/ref/reffile_10.mcpl --keepuserflags
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_3.mcpl
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_10.mcpl
 MCPL force-merge: Transferred a total of 10 particles to new file tmp.mcpl
@@ -1197,6 +1281,10 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_3.mcpl <TESTDATADIR>/ref/reffile_13.mcpl
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_3.mcpl
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_13.mcpl
 MCPL force-merge: Transferred a total of 10 particles to new file tmp.mcpl
@@ -1241,6 +1329,11 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_3.mcpl <TESTDATADIR>/ref/reffile_14.mcpl
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_3.mcpl
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
 MCPL force-merge: Transferred a total of 10 particles to new file tmp.mcpl
@@ -1285,6 +1378,8 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_3.mcpl <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz --keepuserflags
 Expect failure: no
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_3.mcpl
 MCPL force-merge: Transferring 10 particles from file <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz
 MCPL force-merge: Transferred a total of 15 particles to new file tmp.mcpl
@@ -1337,6 +1432,8 @@ RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_3.mcpl <TESTDA
 Expect failure: no
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_3.mcpl
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 MCPL force-merge: Transferring 4 particles from file <TESTDATADIR>/ref/reffile_crash.mcpl
@@ -1381,6 +1478,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_3.mcpl <TESTDATADIR>/ref/reffile_empty.mcpl.gz
 Expect failure: no
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_3.mcpl
 MCPL force-merge: Transferring 0 particles from file <TESTDATADIR>/ref/reffile_empty.mcpl.gz
 MCPL force-merge: Transferred a total of 5 particles to new file tmp.mcpl
@@ -1420,6 +1518,8 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_3.mcpl <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz --keepuserflags
 Expect failure: no
+MCPL force-merge: Files have different userflags (no and yes), enabling them (zero for particles without)
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_3.mcpl
 MCPL force-merge: Transferring 100 particles from file <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz
 MCPL force-merge: Transferred a total of 105 particles to new file tmp.mcpl
@@ -1475,6 +1575,8 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_3.mcpl <TESTDATADIR>/ref/reffile_uw.mcpl.gz
 Expect failure: no
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_3.mcpl
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/reffile_uw.mcpl.gz
 MCPL force-merge: Transferred a total of 20 particles to new file tmp.mcpl
@@ -1529,6 +1631,11 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_3.mcpl <TESTDATADIR>/ref/reffile_14.mcpl
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_3.mcpl
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
 MCPL force-merge: Transferred a total of 10 particles to new file tmp.mcpl
@@ -1573,6 +1680,8 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_10.mcpl <TESTDATADIR>/ref/reffile_13.mcpl --keepuserflags
 Expect failure: no
+MCPL force-merge: Files have different userflags (no and yes), enabling them (zero for particles without)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_10.mcpl
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_13.mcpl
 MCPL force-merge: Transferred a total of 10 particles to new file tmp.mcpl
@@ -1617,6 +1726,8 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_10.mcpl <TESTDATADIR>/ref/reffile_14.mcpl
 Expect failure: no
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_10.mcpl
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
 MCPL force-merge: Transferred a total of 10 particles to new file tmp.mcpl
@@ -1661,6 +1772,9 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_10.mcpl <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_10.mcpl
 MCPL force-merge: Transferring 10 particles from file <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz
 MCPL force-merge: Transferred a total of 15 particles to new file tmp.mcpl
@@ -1713,6 +1827,9 @@ RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_10.mcpl <TESTD
 Expect failure: no
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_10.mcpl
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 MCPL force-merge: Transferring 4 particles from file <TESTDATADIR>/ref/reffile_crash.mcpl
@@ -1796,6 +1913,11 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_10.mcpl <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_10.mcpl
 MCPL force-merge: Transferring 100 particles from file <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz
 MCPL force-merge: Transferred a total of 105 particles to new file tmp.mcpl
@@ -1851,6 +1973,11 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_10.mcpl <TESTDATADIR>/ref/reffile_uw.mcpl.gz --keepuserflags
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_10.mcpl
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/reffile_uw.mcpl.gz
 MCPL force-merge: Transferred a total of 20 particles to new file tmp.mcpl
@@ -1905,6 +2032,8 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_10.mcpl <TESTDATADIR>/ref/reffile_14.mcpl
 Expect failure: no
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_10.mcpl
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
 MCPL force-merge: Transferred a total of 10 particles to new file tmp.mcpl
@@ -1949,6 +2078,9 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_13.mcpl <TESTDATADIR>/ref/reffile_14.mcpl
 Expect failure: no
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_13.mcpl
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
 MCPL force-merge: Transferred a total of 10 particles to new file tmp.mcpl
@@ -1993,6 +2125,11 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_13.mcpl <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz --keepuserflags
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Files have different userflags (no and yes), enabling them (zero for particles without)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_13.mcpl
 MCPL force-merge: Transferring 10 particles from file <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz
 MCPL force-merge: Transferred a total of 15 particles to new file tmp.mcpl
@@ -2045,6 +2182,9 @@ RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_13.mcpl <TESTD
 Expect failure: no
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_13.mcpl
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 MCPL force-merge: Transferring 4 particles from file <TESTDATADIR>/ref/reffile_crash.mcpl
@@ -2089,6 +2229,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_13.mcpl <TESTDATADIR>/ref/reffile_empty.mcpl.gz
 Expect failure: no
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_13.mcpl
 MCPL force-merge: Transferring 0 particles from file <TESTDATADIR>/ref/reffile_empty.mcpl.gz
 MCPL force-merge: Transferred a total of 5 particles to new file tmp.mcpl
@@ -2128,6 +2269,9 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_13.mcpl <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz --keepuserflags
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_13.mcpl
 MCPL force-merge: Transferring 100 particles from file <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz
 MCPL force-merge: Transferred a total of 105 particles to new file tmp.mcpl
@@ -2183,6 +2327,11 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_13.mcpl <TESTDATADIR>/ref/reffile_uw.mcpl.gz
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_13.mcpl
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/reffile_uw.mcpl.gz
 MCPL force-merge: Transferred a total of 20 particles to new file tmp.mcpl
@@ -2237,6 +2386,9 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_13.mcpl <TESTDATADIR>/ref/reffile_14.mcpl
 Expect failure: no
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_13.mcpl
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
 MCPL force-merge: Transferred a total of 10 particles to new file tmp.mcpl
@@ -2281,6 +2433,10 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_14.mcpl <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz --keepuserflags
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Files have different userflags (no and yes), enabling them (zero for particles without)
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
 MCPL force-merge: Transferring 10 particles from file <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz
 MCPL force-merge: Transferred a total of 15 particles to new file tmp.mcpl
@@ -2333,6 +2489,10 @@ RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_14.mcpl <TESTD
 Expect failure: no
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 MCPL force-merge: Transferring 4 particles from file <TESTDATADIR>/ref/reffile_crash.mcpl
@@ -2377,6 +2537,8 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_14.mcpl <TESTDATADIR>/ref/reffile_empty.mcpl.gz
 Expect failure: no
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
 MCPL force-merge: Transferring 0 particles from file <TESTDATADIR>/ref/reffile_empty.mcpl.gz
 MCPL force-merge: Transferred a total of 5 particles to new file tmp.mcpl
@@ -2416,6 +2578,10 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_14.mcpl <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz --keepuserflags
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
 MCPL force-merge: Transferring 100 particles from file <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz
 MCPL force-merge: Transferred a total of 105 particles to new file tmp.mcpl
@@ -2471,6 +2637,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_14.mcpl <TESTDATADIR>/ref/reffile_uw.mcpl.gz
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/reffile_uw.mcpl.gz
 MCPL force-merge: Transferred a total of 20 particles to new file tmp.mcpl
@@ -2538,6 +2710,9 @@ RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/difficult_unitvector.m
 Expect failure: no
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 10 particles from file <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 MCPL force-merge: Transferring 4 particles from file <TESTDATADIR>/ref/reffile_crash.mcpl
@@ -2587,6 +2762,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz <TESTDATADIR>/ref/reffile_empty.mcpl.gz
 Expect failure: no
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 10 particles from file <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz
 MCPL force-merge: Transferring 0 particles from file <TESTDATADIR>/ref/reffile_empty.mcpl.gz
 MCPL force-merge: Transferred a total of 10 particles to new file tmp.mcpl
@@ -2631,6 +2807,9 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz
 Expect failure: no
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 10 particles from file <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz
 MCPL force-merge: Transferring 100 particles from file <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz
 MCPL force-merge: Transferred a total of 110 particles to new file tmp.mcpl
@@ -2686,6 +2865,9 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz <TESTDATADIR>/ref/reffile_uw.mcpl.gz --keepuserflags
 Expect failure: no
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 10 particles from file <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/reffile_uw.mcpl.gz
 MCPL force-merge: Transferred a total of 25 particles to new file tmp.mcpl
@@ -2745,6 +2927,10 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz <TESTDATADIR>/ref/reffile_14.mcpl
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 10 particles from file <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
 MCPL force-merge: Transferred a total of 15 particles to new file tmp.mcpl
@@ -2797,6 +2983,7 @@ RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_crash.mcpl <TE
 Expect failure: no
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 MCPL force-merge: Transferring 4 particles from file <TESTDATADIR>/ref/reffile_crash.mcpl
 MCPL force-merge: Transferring 0 particles from file <TESTDATADIR>/ref/reffile_empty.mcpl.gz
@@ -2839,6 +3026,9 @@ RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_crash.mcpl <TE
 Expect failure: no
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different userflags (no and yes), enabling them (zero for particles without)
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 MCPL force-merge: Transferring 4 particles from file <TESTDATADIR>/ref/reffile_crash.mcpl
 MCPL force-merge: Transferring 100 particles from file <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz
@@ -2898,6 +3088,9 @@ RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_crash.mcpl <TE
 Expect failure: no
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 MCPL force-merge: Transferring 4 particles from file <TESTDATADIR>/ref/reffile_crash.mcpl
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/reffile_uw.mcpl.gz
@@ -2955,6 +3148,10 @@ RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_crash.mcpl <TE
 Expect failure: no
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 MCPL force-merge: Transferring 4 particles from file <TESTDATADIR>/ref/reffile_crash.mcpl
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
@@ -2999,6 +3196,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_empty.mcpl.gz <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz --keepuserflags
 Expect failure: no
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 0 particles from file <TESTDATADIR>/ref/reffile_empty.mcpl.gz
 MCPL force-merge: Transferring 100 particles from file <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz
 MCPL force-merge: Transferred a total of 100 particles to new file tmp.mcpl
@@ -3054,6 +3252,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_empty.mcpl.gz <TESTDATADIR>/ref/reffile_uw.mcpl.gz
 Expect failure: no
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 0 particles from file <TESTDATADIR>/ref/reffile_empty.mcpl.gz
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/reffile_uw.mcpl.gz
 MCPL force-merge: Transferred a total of 15 particles to new file tmp.mcpl
@@ -3103,6 +3302,8 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_empty.mcpl.gz <TESTDATADIR>/ref/reffile_14.mcpl
 Expect failure: no
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 0 particles from file <TESTDATADIR>/ref/reffile_empty.mcpl.gz
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
 MCPL force-merge: Transferred a total of 5 particles to new file tmp.mcpl
@@ -3142,6 +3343,9 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz <TESTDATADIR>/ref/reffile_uw.mcpl.gz --keepuserflags
 Expect failure: no
+MCPL force-merge: Files have different userflags (no and yes), enabling them (zero for particles without)
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 100 particles from file <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/reffile_uw.mcpl.gz
 MCPL force-merge: Transferred a total of 115 particles to new file tmp.mcpl
@@ -3197,6 +3401,11 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz <TESTDATADIR>/ref/reffile_14.mcpl
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 100 particles from file <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
 MCPL force-merge: Transferred a total of 105 particles to new file tmp.mcpl
@@ -3252,6 +3461,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_uw.mcpl.gz <TESTDATADIR>/ref/reffile_14.mcpl
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/reffile_uw.mcpl.gz
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
 MCPL force-merge: Transferred a total of 20 particles to new file tmp.mcpl
@@ -3306,6 +3521,11 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/miscphys.mcpl.gz <TESTDATADIR>/ref/gammas_uw.mcpl.gz <TESTDATADIR>/ref/reffile_3.mcpl --keepuserflags
 Expect failure: no
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Files have different userflags (no and yes), enabling them (zero for particles without)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 195 particles from file <TESTDATADIR>/ref/miscphys.mcpl.gz
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/gammas_uw.mcpl.gz
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_3.mcpl
@@ -3373,6 +3593,10 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/miscphys.mcpl.gz <TESTDATADIR>/ref/reffile_3.mcpl <TESTDATADIR>/ref/reffile_uw.mcpl.gz
 Expect failure: no
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 195 particles from file <TESTDATADIR>/ref/miscphys.mcpl.gz
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_3.mcpl
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/reffile_uw.mcpl.gz
@@ -3440,6 +3664,11 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/miscphys.mcpl.gz <TESTDATADIR>/ref/reffile_14.mcpl <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 195 particles from file <TESTDATADIR>/ref/miscphys.mcpl.gz
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
 MCPL force-merge: Transferring 10 particles from file <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz
@@ -3507,6 +3736,9 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/miscphys.mcpl.gz <TESTDATADIR>/ref/reffile_empty.mcpl.gz <TESTDATADIR>/ref/reffile_14.mcpl --keepuserflags
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 195 particles from file <TESTDATADIR>/ref/miscphys.mcpl.gz
 MCPL force-merge: Transferring 0 particles from file <TESTDATADIR>/ref/reffile_empty.mcpl.gz
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
@@ -3574,6 +3806,11 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/gammas_uw.mcpl.gz <TESTDATADIR>/ref/reffile_10.mcpl <TESTDATADIR>/ref/reffile_empty.mcpl.gz
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/gammas_uw.mcpl.gz
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_10.mcpl
 MCPL force-merge: Transferring 0 particles from file <TESTDATADIR>/ref/reffile_empty.mcpl.gz
@@ -3631,6 +3868,10 @@ MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 p
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/gammas_uw.mcpl.gz <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz <TESTDATADIR>/ref/reffile_crash.mcpl
 Expect failure: no
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/gammas_uw.mcpl.gz
 MCPL force-merge: Transferring 10 particles from file <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
@@ -3696,6 +3937,10 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_3.mcpl <TESTDATADIR>/ref/reffile_10.mcpl <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz --keepuserflags
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_3.mcpl
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_10.mcpl
 MCPL force-merge: Transferring 10 particles from file <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz
@@ -3751,6 +3996,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_3.mcpl <TESTDATADIR>/ref/reffile_14.mcpl <TESTDATADIR>/ref/reffile_uw.mcpl.gz
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_3.mcpl
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
 MCPL force-merge: Transferring 15 particles from file <TESTDATADIR>/ref/reffile_uw.mcpl.gz
@@ -3811,6 +4062,9 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_10.mcpl <TESTDATADIR>/ref/reffile_13.mcpl <TESTDATADIR>/ref/reffile_14.mcpl
 Expect failure: no
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_10.mcpl
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_13.mcpl
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
@@ -3861,6 +4115,10 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_10.mcpl <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz <TESTDATADIR>/ref/reffile_14.mcpl --keepuserflags
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Files have different userflags (no and yes), enabling them (zero for particles without)
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_10.mcpl
 MCPL force-merge: Transferring 10 particles from file <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
@@ -3918,6 +4176,11 @@ MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 p
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_13.mcpl <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz <TESTDATADIR>/ref/reffile_crash.mcpl
 Expect failure: no
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_13.mcpl
 MCPL force-merge: Transferring 10 particles from file <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
@@ -3973,6 +4236,11 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/reffile_14.mcpl <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz
 Expect failure: no
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 5 particles from file <TESTDATADIR>/ref/reffile_14.mcpl
 MCPL force-merge: Transferring 10 particles from file <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz
 MCPL force-merge: Transferring 100 particles from file <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz
@@ -4040,6 +4308,9 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 RUNNING: mcpltool --forcemerge tmp.mcpl <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz <TESTDATADIR>/ref/reffile_empty.mcpl.gz <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz --keepuserflags
 Expect failure: no
+MCPL force-merge: Files have different userflags (no and yes), enabling them (zero for particles without)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 10 particles from file <TESTDATADIR>/ref/difficult_unitvector.mcpl.gz
 MCPL force-merge: Transferring 0 particles from file <TESTDATADIR>/ref/reffile_empty.mcpl.gz
 MCPL force-merge: Transferring 100 particles from file <TESTDATADIR>/ref/reffile_userflags_is_pos.mcpl.gz

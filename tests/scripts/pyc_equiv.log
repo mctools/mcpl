@@ -156,16 +156,16 @@ merge_files "a4.mcpl|a5.mcpl": ok
 merge_files "a1.mcpl|agz.mcpl.gz|a2.mcpl": ok
 merge_files "reffile_1.mcpl|fmt2_reffile_1.mcpl": ok
    | MCPL WARNING: Merging files from older MCPL format. Output will be in latest format.
-merge_files "fmt2_reffile_1.mcpl|fmt2_reffile_5.mcpl": error: Attempting to merge incompatible files.
+merge_files "fmt2_reffile_1.mcpl|fmt2_reffile_5.mcpl": error: Attempting to merge incompatible files (userflags: no vs yes).
 merge_files "reffile_crash.mcpl|reffile_crash.mcpl": error: Merging file with itself
 merge_files "a1.mcpl|a1.mcpl": error: Merging file with itself
 merge_files "a1.mcpl|./a1.mcpl": error: Merging file with itself
-merge_files "a1.mcpl|b_dp.mcpl": error: Attempting to merge incompatible files.
-merge_files "a1.mcpl|c_comment.mcpl": error: Attempting to merge incompatible files.
-merge_files "a1.mcpl|c_blob.mcpl": error: Attempting to merge incompatible files.
-merge_files "a1.mcpl|c_statkey.mcpl": error: Attempting to merge incompatible files.
+merge_files "a1.mcpl|b_dp.mcpl": error: Attempting to merge incompatible files (FP precision: single vs double).
+merge_files "a1.mcpl|c_comment.mcpl": error: Attempting to merge incompatible files (number of comments: 3 vs 4).
+merge_files "a1.mcpl|c_blob.mcpl": error: Attempting to merge incompatible files (blob 0 data differs).
+merge_files "a1.mcpl|c_statkey.mcpl": error: Attempting to merge incompatible files (comment 2 differs).
 merge_files "b_updg.mcpl|b_updg2.mcpl": ok
-merge_files "b_uw.mcpl|b_uw2.mcpl": error: Attempting to merge incompatible files.
+merge_files "b_uw.mcpl|b_uw2.mcpl": error: Attempting to merge incompatible files (FP precision: single vs double).
 merge_files "a1.mcpl|nonexistent.mcpl": error: Unable to open file!
 merge_files "reffile_truncated.mcpl|reffile_truncated.mcpl": error: Merging file with itself
 merge_files "ref_statsum_crash.mcpl|ref_statsum.mcpl.gz": ok
@@ -180,10 +180,14 @@ merge_files "n_ekin_inf.mcpl|a2.mcpl": ok
 merge_files "b_dp.mcpl|n_x_nan.mcpl": ok
 merge_files to existing file: error: requested output file of merge_files already exists
 forcemerge_files "a1.mcpl|b_dp.mcpl" keep_userflags=0: ok
+   | MCPL force-merge: Files have different FP precision (single and double), using double
+   | MCPL force-merge: Discarding comments and blobs of the input files
    | MCPL force-merge: Transferring 5 particles from file a1.mcpl
    | MCPL force-merge: Transferring 3 particles from file b_dp.mcpl
    | MCPL force-merge: Transferred a total of 8 particles to new file merged
 forcemerge_files "a1.mcpl|b_dp.mcpl" keep_userflags=1: ok
+   | MCPL force-merge: Files have different FP precision (single and double), using double
+   | MCPL force-merge: Discarding comments and blobs of the input files
    | MCPL force-merge: Transferring 5 particles from file a1.mcpl
    | MCPL force-merge: Transferring 3 particles from file b_dp.mcpl
    | MCPL force-merge: Transferred a total of 8 particles to new file merged
@@ -192,36 +196,52 @@ forcemerge_files "a1.mcpl|a2.mcpl" keep_userflags=0: ok
 forcemerge_files "a1.mcpl|a2.mcpl" keep_userflags=1: ok
    | MCPL forcemerge_files called with 2 files that are compatible for a standard merge => falling back to standard merge_files function
 forcemerge_files "b_pol.mcpl|b_uf.mcpl" keep_userflags=0: ok
+   | MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+   | MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
    | MCPL force-merge: Transferring 3 particles from file b_pol.mcpl
    | MCPL force-merge: Transferring 3 particles from file b_uf.mcpl
    | MCPL force-merge: Transferred a total of 6 particles to new file merged
 forcemerge_files "b_pol.mcpl|b_uf.mcpl" keep_userflags=1: ok
+   | MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+   | MCPL force-merge: Files have different userflags (no and yes), enabling them (zero for particles without)
    | MCPL force-merge: Transferring 3 particles from file b_pol.mcpl
    | MCPL force-merge: Transferring 3 particles from file b_uf.mcpl
    | MCPL force-merge: Transferred a total of 6 particles to new file merged
 forcemerge_files "b_uf.mcpl|b_pol.mcpl|a1.mcpl" keep_userflags=0: ok
+   | MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+   | MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+   | MCPL force-merge: Discarding comments and blobs of the input files
    | MCPL force-merge: Transferring 3 particles from file b_uf.mcpl
    | MCPL force-merge: Transferring 3 particles from file b_pol.mcpl
    | MCPL force-merge: Transferring 5 particles from file a1.mcpl
    | MCPL force-merge: Transferred a total of 11 particles to new file merged
 forcemerge_files "b_uf.mcpl|b_pol.mcpl|a1.mcpl" keep_userflags=1: ok
+   | MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+   | MCPL force-merge: Files have different userflags (no and yes), enabling them (zero for particles without)
+   | MCPL force-merge: Discarding comments and blobs of the input files
    | MCPL force-merge: Transferring 3 particles from file b_uf.mcpl
    | MCPL force-merge: Transferring 3 particles from file b_pol.mcpl
    | MCPL force-merge: Transferring 5 particles from file a1.mcpl
    | MCPL force-merge: Transferred a total of 11 particles to new file merged
 forcemerge_files "b_updg.mcpl|b_updg_g.mcpl" keep_userflags=0: ok
+   | MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
    | MCPL force-merge: Transferring 3 particles from file b_updg.mcpl
    | MCPL force-merge: Transferring 2 particles from file b_updg_g.mcpl
    | MCPL force-merge: Transferred a total of 5 particles to new file merged
 forcemerge_files "b_updg.mcpl|b_updg_g.mcpl" keep_userflags=1: ok
+   | MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
    | MCPL force-merge: Transferring 3 particles from file b_updg.mcpl
    | MCPL force-merge: Transferring 2 particles from file b_updg_g.mcpl
    | MCPL force-merge: Transferred a total of 5 particles to new file merged
 forcemerge_files "b_updg.mcpl|b_uw.mcpl" keep_userflags=0: ok
+   | MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+   | MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
    | MCPL force-merge: Transferring 3 particles from file b_updg.mcpl
    | MCPL force-merge: Transferring 3 particles from file b_uw.mcpl
    | MCPL force-merge: Transferred a total of 6 particles to new file merged
 forcemerge_files "b_updg.mcpl|b_uw.mcpl" keep_userflags=1: ok
+   | MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+   | MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
    | MCPL force-merge: Transferring 3 particles from file b_updg.mcpl
    | MCPL force-merge: Transferring 3 particles from file b_uw.mcpl
    | MCPL force-merge: Transferred a total of 6 particles to new file merged
@@ -236,62 +256,90 @@ forcemerge_files "b_updg.mcpl|b_updg2.mcpl|b_empty_pol.mcpl" keep_userflags=1: o
    | MCPL force-merge: Transferring 0 particles from file b_empty_pol.mcpl
    | MCPL force-merge: Transferred a total of 5 particles to new file merged
 forcemerge_files "b_uw.mcpl|b_uw2.mcpl" keep_userflags=0: ok
+   | MCPL force-merge: Files have different FP precision (single and double), using double
    | MCPL force-merge: Transferring 3 particles from file b_uw.mcpl
    | MCPL force-merge: Transferring 3 particles from file b_uw2.mcpl
    | MCPL force-merge: Transferred a total of 6 particles to new file merged
 forcemerge_files "b_uw.mcpl|b_uw2.mcpl" keep_userflags=1: ok
+   | MCPL force-merge: Files have different FP precision (single and double), using double
    | MCPL force-merge: Transferring 3 particles from file b_uw.mcpl
    | MCPL force-merge: Transferring 3 particles from file b_uw2.mcpl
    | MCPL force-merge: Transferred a total of 6 particles to new file merged
 forcemerge_files "b_dp.mcpl|b_pol.mcpl|agz.mcpl.gz" keep_userflags=0: ok
+   | MCPL force-merge: Files have different FP precision (single and double), using double
+   | MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+   | MCPL force-merge: Discarding comments and blobs of the input files
    | MCPL force-merge: Transferring 3 particles from file b_dp.mcpl
    | MCPL force-merge: Transferring 3 particles from file b_pol.mcpl
    | MCPL force-merge: Transferring 4 particles from file agz.mcpl.gz
    | MCPL force-merge: Transferred a total of 10 particles to new file merged
 forcemerge_files "b_dp.mcpl|b_pol.mcpl|agz.mcpl.gz" keep_userflags=1: ok
+   | MCPL force-merge: Files have different FP precision (single and double), using double
+   | MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+   | MCPL force-merge: Discarding comments and blobs of the input files
    | MCPL force-merge: Transferring 3 particles from file b_dp.mcpl
    | MCPL force-merge: Transferring 3 particles from file b_pol.mcpl
    | MCPL force-merge: Transferring 4 particles from file agz.mcpl.gz
    | MCPL force-merge: Transferred a total of 10 particles to new file merged
 forcemerge_files "fmt2_reffile_1.mcpl|reffile_1.mcpl|b_uf.mcpl" keep_userflags=0: ok
+   | MCPL force-merge: Files have different FP precision (single and double), using double
+   | MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
    | MCPL force-merge: Transferring 5 particles from file fmt2_reffile_1.mcpl
    | MCPL force-merge: Transferring 5 particles from file reffile_1.mcpl
    | MCPL force-merge: Transferring 3 particles from file b_uf.mcpl
    | MCPL force-merge: Transferred a total of 13 particles to new file merged
 forcemerge_files "fmt2_reffile_1.mcpl|reffile_1.mcpl|b_uf.mcpl" keep_userflags=1: ok
+   | MCPL force-merge: Files have different FP precision (single and double), using double
+   | MCPL force-merge: Files have different userflags (no and yes), enabling them (zero for particles without)
    | MCPL force-merge: Transferring 5 particles from file fmt2_reffile_1.mcpl
    | MCPL force-merge: Transferring 5 particles from file reffile_1.mcpl
    | MCPL force-merge: Transferring 3 particles from file b_uf.mcpl
    | MCPL force-merge: Transferred a total of 13 particles to new file merged
 forcemerge_files "reffile_skip123.mcpl|b_dp.mcpl" keep_userflags=0: ok
+   | MCPL force-merge: Discarding comments and blobs of the input files
    | MCPL force-merge: Transferring 123 particles from file reffile_skip123.mcpl
    | MCPL force-merge: Transferring 3 particles from file b_dp.mcpl
    | MCPL force-merge: Transferred a total of 126 particles to new file merged
 forcemerge_files "reffile_skip123.mcpl|b_dp.mcpl" keep_userflags=1: ok
+   | MCPL force-merge: Discarding comments and blobs of the input files
    | MCPL force-merge: Transferring 123 particles from file reffile_skip123.mcpl
    | MCPL force-merge: Transferring 3 particles from file b_dp.mcpl
    | MCPL force-merge: Transferred a total of 126 particles to new file merged
 forcemerge_files "a1.mcpl|a1.mcpl" keep_userflags=0: error: Merging file with itself
 forcemerge_files "a1.mcpl|a1.mcpl" keep_userflags=1: error: Merging file with itself
 forcemerge_files "a1.mcpl|n_x_nan.mcpl" keep_userflags=0: error: add_particles asked to transfer particle with NaN or infinite position
+   | MCPL force-merge: Files have different FP precision (single and double), using double
+   | MCPL force-merge: Discarding comments and blobs of the input files
    | MCPL force-merge: Transferring 5 particles from file a1.mcpl
    | MCPL force-merge: Transferring 3 particles from file n_x_nan.mcpl
    | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 1). They can not be added to other MCPL files.
 forcemerge_files "a1.mcpl|n_x_nan.mcpl" keep_userflags=1: error: add_particles asked to transfer particle with NaN or infinite position
+   | MCPL force-merge: Files have different FP precision (single and double), using double
+   | MCPL force-merge: Discarding comments and blobs of the input files
    | MCPL force-merge: Transferring 5 particles from file a1.mcpl
    | MCPL force-merge: Transferring 3 particles from file n_x_nan.mcpl
    | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 1). They can not be added to other MCPL files.
 forcemerge_files "n_pol_nan.mcpl|b_dp.mcpl" keep_userflags=0: error: add_particles asked to transfer particle with NaN or infinite polarisation
+   | MCPL force-merge: Files have different FP precision (single and double), using double
+   | MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+   | MCPL force-merge: Discarding comments and blobs of the input files
    | MCPL force-merge: Transferring 3 particles from file n_pol_nan.mcpl
    | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 1). They can not be added to other MCPL files.
 forcemerge_files "n_pol_nan.mcpl|b_dp.mcpl" keep_userflags=1: error: add_particles asked to transfer particle with NaN or infinite polarisation
+   | MCPL force-merge: Files have different FP precision (single and double), using double
+   | MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+   | MCPL force-merge: Discarding comments and blobs of the input files
    | MCPL force-merge: Transferring 3 particles from file n_pol_nan.mcpl
    | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 1). They can not be added to other MCPL files.
 forcemerge_files "b_pol.mcpl|n_dir_valid_inf.mcpl" keep_userflags=0: ok
+   | MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+   | MCPL force-merge: Discarding comments and blobs of the input files
    | MCPL force-merge: Transferring 3 particles from file b_pol.mcpl
    | MCPL force-merge: Transferring 5 particles from file n_dir_valid_inf.mcpl
    | MCPL force-merge: Transferred a total of 8 particles to new file merged
 forcemerge_files "b_pol.mcpl|n_dir_valid_inf.mcpl" keep_userflags=1: ok
+   | MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+   | MCPL force-merge: Discarding comments and blobs of the input files
    | MCPL force-merge: Transferring 3 particles from file b_pol.mcpl
    | MCPL force-merge: Transferring 5 particles from file n_dir_valid_inf.mcpl
    | MCPL force-merge: Transferred a total of 8 particles to new file merged
@@ -305,10 +353,10 @@ merge_inplace "a4.mcpl" "a5.mcpl": ok
 merge_inplace "a1.mcpl" "agz.mcpl.gz": ok
 merge_inplace "agz.mcpl.gz" "a1.mcpl": error: direct modification of gzipped files is not supported.
 merge_inplace "a1.mcpl" "a1.mcpl": error: Merging file with itself
-merge_inplace "a1.mcpl" "b_dp.mcpl": error: Attempting to merge incompatible files
+merge_inplace "a1.mcpl" "b_dp.mcpl": error: Attempting to merge incompatible files (FP precision: single vs double).
 merge_inplace "reffile_1.mcpl" "fmt2_reffile_1.mcpl": error: Attempting to merge incompatible files (can not mix MCPL format versions when merging inplace)
-merge_inplace "fmt2_reffile_1.mcpl" "fmt2_reffile_5.mcpl": error: Attempting to merge incompatible files
-merge_inplace "reffile_crash.mcpl" "reffile_1.mcpl": error: Attempting to merge incompatible files
+merge_inplace "fmt2_reffile_1.mcpl" "fmt2_reffile_5.mcpl": error: Attempting to merge incompatible files (userflags: no vs yes).
+merge_inplace "reffile_crash.mcpl" "reffile_1.mcpl": error: Attempting to merge incompatible files (number of comments: 4 vs 0).
    | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 merge_inplace "a1.mcpl" "nonexistent.mcpl": error: Unable to open file!
 merge_inplace "a2.mcpl" "n_w_nan.mcpl": ok

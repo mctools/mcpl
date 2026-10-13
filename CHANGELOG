@@ -1,4 +1,13 @@
 v2.2.9  (work in progress)
+      * Errors about files which can not be merged now say why, i.e. the first
+        difference found in the headers (e.g. "FP precision: single vs
+        double", "universal pdgcode: 2112 vs none", "comment 1 differs"), in
+        mcpl_merge_files, mcpl_merge_inplace, mcpltool and the Python API.
+      * Forced merges (mcpl_forcemerge_files, mcpltool --forcemerge and the
+        Python API) now report the settings which change relative to the
+        input files (e.g. "Files have different FP precision (single and
+        double), using double") and the data which is discarded (userflags
+        unless kept, comments and blobs).
       * Optional dependencies (extras) for the plotting backends of the Python
         API: pip install "mcpl[plot]" (or "mcpl-python[plot]") also installs
         matplotlib (>=3.6), "[plotly]" installs plotly (>=5.11), and "[all]"

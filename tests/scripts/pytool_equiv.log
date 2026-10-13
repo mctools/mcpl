@@ -9,7 +9,7 @@ mcpltool --merge --inplace a1.mcpl a2.mcpl a3.mcpl.gz: exit code 0
 mcpltool -m --inplace a3.mcpl.gz a1.mcpl: exit code 1
    | MCPL ERROR: direct modification of gzipped files is not supported.
 mcpltool --merge out.mcpl a1.mcpl b_dp.mcpl: exit code 1
-   | ERROR: Requested files are incompatible for merge as they have different header info.
+   | ERROR: Requested files are incompatible for merge as they have different header info (source name: "MySim" vs "Other").
    | 
    | Run with -h or --help for usage information
 mcpltool --merge out.mcpl a1.mcpl: exit code 0
@@ -24,11 +24,18 @@ mcpltool --merge out.gz a1.mcpl a2.mcpl: exit code 1
 mcpltool --merge out.mcpl a1.mcpl a1.mcpl: exit code 1
    | MCPL ERROR: Merging file with itself
 mcpltool --forcemerge out.mcpl a1.mcpl b_dp.mcpl b_pol.mcpl: exit code 0
+   | MCPL force-merge: Files have different FP precision (single and double), using double
+   | MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+   | MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+   | MCPL force-merge: Discarding comments and blobs of the input files
    | MCPL force-merge: Transferring 30 particles from file a1.mcpl
    | MCPL force-merge: Transferring 12 particles from file b_dp.mcpl
    | MCPL force-merge: Transferring 7 particles from file b_pol.mcpl
    | MCPL force-merge: Transferred a total of 49 particles to new file out.mcpl
 mcpltool --forcemerge --keepuserflags out.mcpl.gz b_dp.mcpl b_pol.mcpl: exit code 0
+   | MCPL force-merge: Files have different FP precision (single and double), using double
+   | MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+   | MCPL force-merge: Files have different userflags (no and yes), enabling them (zero for particles without)
    | MCPL force-merge: Transferring 12 particles from file b_dp.mcpl
    | MCPL force-merge: Transferring 7 particles from file b_pol.mcpl
    | MCPL force-merge: Transferred a total of 19 particles to new file out.mcpl
@@ -454,6 +461,9 @@ mcpltool --extract -p2112 inf.mcpl out.mcpl: exit code 1
 mcpltool --merge out.mcpl a1.mcpl nan.mcpl inf.mcpl: exit code 0
 mcpltool --merge --inplace a2.mcpl nan.mcpl: exit code 0
 mcpltool --forcemerge out.mcpl b_dp.mcpl nan.mcpl: exit code 1
+   | MCPL force-merge: Files have different FP precision (single and double), using double
+   | MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+   | MCPL force-merge: Discarding comments and blobs of the input files
    | MCPL force-merge: Transferring 12 particles from file b_dp.mcpl
    | MCPL force-merge: Transferring 30 particles from file nan.mcpl
    | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 12). They can not be added to other MCPL files.

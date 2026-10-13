@@ -114,37 +114,75 @@ def _statsum_entries(f):
             res.append((i, key, -1.0 if value is None else value))
     return res
 
-def _actual_can_merge(f1, f2):
-    #Very strict checking of everything except nparticles, like in mcpl.c:
-    if f1.headersize != f2.headersize:
-        return False
+def _merge_incompat_reason(f1, f2):
+    """Why two files (MCPLFile objects opened with raw strings) can not be
+    merged, i.e. the first difference found in their headers, or None if they
+    can be merged (like mcpl_internal_merge_compat in mcpl.c, with the same
+    messages)."""
+    #Very strict checking of everything except nparticles. Even order of blobs
+    #and comments must be preserved:
+    def trunc(b):
+        s = b.decode('utf-8','replace')
+        return s[:60] + ( '...' if len(s) > 60 else '' )
     if f1._hdr['sourcename'] != f2._hdr['sourcename']:
-        return False
-    if ( f1.opt_userflags != f2.opt_userflags
-         or f1.opt_polarisation != f2.opt_polarisation
-         or f1.opt_singleprec != f2.opt_singleprec
-         or f1.opt_universalpdgcode != f2.opt_universalpdgcode
-         or f1.opt_universalweight != f2.opt_universalweight
-         or f1.endianness != f2.endianness
-         or f1.particlesize != f2.particlesize
-         or f1.userdata_layout != f2.userdata_layout ):
-        return False
-    if ( len(f1._hdr['comments']) != len(f2._hdr['comments'])
-         or len(f1._hdr['blobkeys']) != len(f2._hdr['blobkeys']) ):
-        return False
-    for c1, c2 in zip(f1._hdr['comments'], f2._hdr['comments']):
+        return ( f'source name: "{trunc(f1._hdr["sourcename"])}" vs'
+                 f' "{trunc(f2._hdr["sourcename"])}"' )
+    yn = ( 'no', 'yes' )
+    if f1.opt_userflags != f2.opt_userflags:
+        return f'userflags: {yn[f1.opt_userflags]} vs {yn[f2.opt_userflags]}'
+    if f1.opt_polarisation != f2.opt_polarisation:
+        return ( f'polarisation info: {yn[f1.opt_polarisation]} vs'
+                 f' {yn[f2.opt_polarisation]}' )
+    if f1.opt_singleprec != f2.opt_singleprec:
+        sd = { True : 'single', False : 'double' }
+        return f'FP precision: {sd[f1.opt_singleprec]} vs {sd[f2.opt_singleprec]}'
+    if f1.opt_universalpdgcode != f2.opt_universalpdgcode:
+        return ( 'universal pdgcode: '
+                 f'{f1.opt_universalpdgcode or "none"} vs'
+                 f' {f2.opt_universalpdgcode or "none"}' )
+    if f1.opt_universalweight != f2.opt_universalweight:
+        def w(v):
+            return f'{v:g}' if v else 'none'
+        return ( 'universal weight: '
+                 f'{w(f1.opt_universalweight)} vs {w(f2.opt_universalweight)}' )
+    if f1.endianness != f2.endianness:
+        lb = { 'L' : 'little', 'B' : 'big' }
+        return f'endianness: {lb[f1.endianness]} vs {lb[f2.endianness]}'
+    if f1.userdata_layout != f2.userdata_layout:
+        def ud(v):
+            return f'"{v[:200]}"' if v is not None else 'none'
+        return ( 'userdata layout: '
+                 f'{ud(f1.userdata_layout)} vs {ud(f2.userdata_layout)}' )
+    c1s, c2s = f1._hdr['comments'], f2._hdr['comments']
+    if len(c1s) != len(c2s):
+        return f'number of comments: {len(c1s)} vs {len(c2s)}'
+    for i, (c1, c2) in enumerate(zip(c1s, c2s)):
         if c1 != c2:
             #incompatible, unless it represents the same stat:sum: entry.
-            if not ( c1.startswith(b'stat:sum:') and c2.startswith(b'stat:sum:') ):
-                return False
-            ok1, (k1, _) = _parse_statsum_comment(c1)
-            ok2, (k2, _) = _parse_statsum_comment(c2)
-            if not ( ok1 and ok2 ) or k1 != k2:
-                return False
-    if f1._hdr['blobkeys'] != f2._hdr['blobkeys']:
-        return False
-    return all( f1._hdr['blobs'][k] == f2._hdr['blobs'][k]
-                for k in f1._hdr['blobkeys'] )
+            same_statsum = False
+            if c1.startswith(b'stat:sum:') and c2.startswith(b'stat:sum:'):
+                ok1, (k1, _) = _parse_statsum_comment(c1)
+                ok2, (k2, _) = _parse_statsum_comment(c2)
+                same_statsum = ok1 and ok2 and k1 == k2
+            if not same_statsum:
+                return f'comment {i} differs'
+    k1s, k2s = f1._hdr['blobkeys'], f2._hdr['blobkeys']
+    if len(k1s) != len(k2s):
+        return f'number of blobs: {len(k1s)} vs {len(k2s)}'
+    for i, (k1, k2) in enumerate(zip(k1s, k2s)):
+        if k1 != k2:
+            return f'blob {i} key differs'
+        if f1._hdr['blobs'][k1] != f2._hdr['blobs'][k2]:
+            return f'blob {i} data differs'
+    #Should be unreachable given the checks above, but to be safe:
+    if f1.particlesize != f2.particlesize:
+        return f'particle size: {f1.particlesize} vs {f2.particlesize} bytes'
+    if f1.headersize != f2.headersize:
+        return 'header size differs'
+    return None
+
+def _actual_can_merge(f1, f2):
+    return _merge_incompat_reason(f1, f2) is None
 
 def can_merge(file1, file2):
     """Check if two MCPL files can be merged (like mcpl_can_merge in the C
@@ -195,8 +233,10 @@ def merge_files(file_output, files):
         raise MCPLError('merge_files must be called with at least one input file')
     _error_on_dups(files)
     for f in files[1:]:
-        if not can_merge(files[0], f):
-            raise MCPLError('Attempting to merge incompatible files.')
+        with _open_raw(files[0]) as f1, _open_raw(f) as f2:
+            reason = _merge_incompat_reason(f1, f2)
+        if reason is not None:
+            raise MCPLError(f'Attempting to merge incompatible files ({reason}).')
     if _file_certainly_exists(file_output):
         raise MCPLError('requested output file of merge_files already exists')
     out = MCPLOutFile(file_output)
@@ -287,6 +327,8 @@ def forcemerge_files(file_output, files, keep_userflags = False):
     lastseen_w, disallow_w = 0.0, False
     #Userdata is kept only if all files have the same layout:
     udlayouts = set()
+    #For reporting which settings change relative to the input files:
+    any_sp = any_nopol = any_nouf = any_updg = any_uw = any_metadata = False
     for fn in files:
         with _open_raw(fn) as f:
             if not f.nparticles:
@@ -295,6 +337,13 @@ def forcemerge_files(file_output, files, keep_userflags = False):
             opt_uf = opt_uf or bool(f.opt_userflags)
             opt_pol = opt_pol or bool(f.opt_polarisation)
             opt_dp = opt_dp or not f.opt_singleprec
+            any_nouf = any_nouf or not f.opt_userflags
+            any_nopol = any_nopol or not f.opt_polarisation
+            any_sp = any_sp or bool(f.opt_singleprec)
+            any_metadata = any_metadata or bool( f._hdr['comments']
+                                                 or f._hdr['blobkeys'] )
+            any_updg = any_updg or bool(f.opt_universalpdgcode)
+            any_uw = any_uw or bool(f.opt_universalweight)
             updg = f.opt_universalpdgcode
             if not updg or ( lastseen_pdg and lastseen_pdg != updg ):
                 disallow_pdg = True
@@ -305,6 +354,33 @@ def forcemerge_files(file_output, files, keep_userflags = False):
                 disallow_w = True
             else:
                 lastseen_w = uw
+    #Report the settings which change relative to the input files (and
+    #discarded data), like in mcpl.c:
+    fm = 'force-merge: '
+    if opt_dp and any_sp:
+        _info(fm + 'Files have different FP precision (single and double),'
+              ' using double', prefix = 'MCPL ')
+    if opt_pol and any_nopol:
+        _info(fm + 'Files have different polarisation info (no and yes),'
+              ' enabling it', prefix = 'MCPL ')
+    if opt_uf and not keep_userflags:
+        _info(fm + 'Discarding userflags of the input files (keep_userflags'
+              ' is not set)', prefix = 'MCPL ')
+    elif opt_uf and any_nouf:
+        _info(fm + 'Files have different userflags (no and yes), enabling'
+              ' them (zero for particles without)', prefix = 'MCPL ')
+    if any_updg and disallow_pdg:
+        _info(fm + 'Not all files have the same universal pdgcode, storing'
+              ' the pdgcode per particle', prefix = 'MCPL ')
+    if any_uw and disallow_w:
+        _info(fm + 'Not all files have the same universal weight, storing'
+              ' the weight per particle', prefix = 'MCPL ')
+    if any_metadata:
+        _info(fm + 'Discarding comments and blobs of the input files',
+              prefix = 'MCPL ')
+    if len(udlayouts) > 1:
+        _warning('Discarding userdata in forced merge, since not all files have'
+                 ' the same userdata layout.')
     out = MCPLOutFile( file_output,
                        sourcename = ( 'mcpl_forcemerge_files (from MCPL v'
                                       f'{_determine_version()})' ),
@@ -313,10 +389,7 @@ def forcemerge_files(file_output, files, keep_userflags = False):
                        opt_singleprec = not opt_dp,
                        opt_universalpdgcode = 0 if disallow_pdg else lastseen_pdg,
                        opt_universalweight = 0.0 if disallow_w else lastseen_w )
-    if len(udlayouts) > 1:
-        _warning('Discarding userdata in forced merge, since not all files have'
-                 ' the same userdata layout.')
-    elif udlayouts and None not in udlayouts:
+    if len(udlayouts) == 1 and None not in udlayouts:
         out.enable_userdata(udlayouts.pop())
     try:
         for fn in files:
@@ -344,8 +417,9 @@ def merge_inplace(file1, file2):
     if _is_same_file(file1, file2):
         raise MCPLError('Merging file with itself')
     with _open_raw(file1) as f1, _open_raw(file2) as f2:
-        if not _actual_can_merge(f1, f2):
-            raise MCPLError('Attempting to merge incompatible files')
+        reason = _merge_incompat_reason(f1, f2)
+        if reason is not None:
+            raise MCPLError(f'Attempting to merge incompatible files ({reason}).')
         if f1.version != f2.version:
             raise MCPLError('Attempting to merge incompatible files (can not'
                             ' mix MCPL format versions when merging inplace)')
