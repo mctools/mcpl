@@ -72,7 +72,12 @@ def convert2ascii(mcplfile,outfile):
 
     fout = outfile
     fin = mcplfile
-    fout.write(f"#MCPL-ASCII\n#ASCII-FORMAT: v1\n#NPARTICLES: {fin.nparticles}\n#END-HEADER\n")
+    fout.write(f"#MCPL-ASCII\n#ASCII-FORMAT: v1\n#NPARTICLES: {fin.nparticles}\n")
+    #Userdata is not included in the output, which is noted in the header:
+    if fin.userdata_size:
+        fout.write("#WARNING: The userdata of the particles in the MCPL file is"
+                   " not included\n")
+    fout.write("#END-HEADER\n")
     fout.write("index     pdgcode               ekin[MeV]                   x[cm]          "
                +"         y[cm]                   z[cm]                      ux                  "
                +"    uy                      uz                time[ms]                  weight  "
@@ -121,7 +126,8 @@ def _actual_can_merge(f1, f2):
          or f1.opt_universalpdgcode != f2.opt_universalpdgcode
          or f1.opt_universalweight != f2.opt_universalweight
          or f1.endianness != f2.endianness
-         or f1.particlesize != f2.particlesize ):
+         or f1.particlesize != f2.particlesize
+         or f1.userdata_layout != f2.userdata_layout ):
         return False
     if ( len(f1._hdr['comments']) != len(f2._hdr['comments'])
          or len(f1._hdr['blobkeys']) != len(f2._hdr['blobkeys']) ):
@@ -220,9 +226,12 @@ def merge_files(file_output, files):
                             s[0], s[1] = -1.0, 0.0
                         else:
                             _stablesum_add(s, value)
-                if fi.version == 3:
+                if fi.version >= 3:
                     #Can transfer raw bytes (like in C, without checking the
-                    #values of the particles):
+                    #values of the particles). Particles are encoded in the
+                    #same way in format versions 3 and 4, and versions 2 and 4
+                    #can not be mixed, since the userdata layouts must be the
+                    #same:
                     fi._check_nonfinite = False
                     for b in fi.particle_blocks:
                         out._write_records(b._data)
@@ -276,10 +285,13 @@ def forcemerge_files(file_output, files, keep_userflags = False):
     opt_dp = opt_pol = opt_uf = False
     lastseen_pdg, disallow_pdg = 0, False
     lastseen_w, disallow_w = 0.0, False
+    #Userdata is kept only if all files have the same layout:
+    udlayouts = set()
     for fn in files:
         with _open_raw(fn) as f:
             if not f.nparticles:
                 continue
+            udlayouts.add(f.userdata_layout)
             opt_uf = opt_uf or bool(f.opt_userflags)
             opt_pol = opt_pol or bool(f.opt_polarisation)
             opt_dp = opt_dp or not f.opt_singleprec
@@ -301,6 +313,11 @@ def forcemerge_files(file_output, files, keep_userflags = False):
                        opt_singleprec = not opt_dp,
                        opt_universalpdgcode = 0 if disallow_pdg else lastseen_pdg,
                        opt_universalweight = 0.0 if disallow_w else lastseen_w )
+    if len(udlayouts) > 1:
+        _warning('Discarding userdata in forced merge, since not all files have'
+                 ' the same userdata layout.')
+    elif udlayouts and None not in udlayouts:
+        out.enable_userdata(udlayouts.pop())
     try:
         for fn in files:
             with _open_raw(fn) as f:

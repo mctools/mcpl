@@ -1,0 +1,153 @@
+
+################################################################################
+##                                                                            ##
+##  This file is part of MCPL (see https://mctools.github.io/mcpl/)           ##
+##                                                                            ##
+##  Copyright 2015-2026 MCPL developers.                                      ##
+##                                                                            ##
+##  Licensed under the Apache License, Version 2.0 (the "License");           ##
+##  you may not use this file except in compliance with the License.          ##
+##  You may obtain a copy of the License at                                   ##
+##                                                                            ##
+##      http://www.apache.org/licenses/LICENSE-2.0                            ##
+##                                                                            ##
+##  Unless required by applicable law or agreed to in writing, software       ##
+##  distributed under the License is distributed on an "AS IS" BASIS,         ##
+##  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  ##
+##  See the License for the specific language governing permissions and       ##
+##  limitations under the License.                                            ##
+##                                                                            ##
+################################################################################
+
+"""Per-particle userdata (MCPL format version 4): parsing of layouts like
+"temp:float32,origin:int32,tags:uint8[3]" (with the same rules and error
+messages as the C library), and the corresponding numpy dtypes."""
+
+__all__ = []
+
+from ._common import MCPLError
+from ._numpy import np
+
+_maxsize = 65535
+_maxnamelength = 64
+_types = { 'int8' : 'i1', 'uint8' : 'u1', 'int16' : 'i2', 'uint16' : 'u2',
+           'int32' : 'i4', 'uint32' : 'u4', 'int64' : 'i8', 'uint64' : 'u8',
+           'float32' : 'f4', 'float64' : 'f8' }
+_cache = {}
+
+def _parse_error( layout ):
+    """Reason for a layout being invalid (or None if it is valid)"""
+    if not layout:
+        return 'empty layout'
+    names = set()
+    size = 0
+    for fld in layout.split(','):
+        if not fld:
+            return 'empty field'
+        name, colon, typespec = fld.partition(':')
+        if not colon:
+            return 'fields must be given as name:type'
+        if not name:
+            return 'empty field name'
+        if len(name) > _maxnamelength:
+            return 'too long field name'
+        if not ( 'a' <= name[0] <= 'z' ):
+            return 'field names must start with a lowercase letter'
+        if not all( c == '_' or 'a' <= c <= 'z' or '0' <= c <= '9'
+                    for c in name[1:] ):
+            return ( 'field names must only contain lowercase letters,'
+                     ' digits and underscores' )
+        tname, bracket, arr = typespec.partition('[')
+        if tname not in _types:
+            return ( 'unknown type (must be one of int8, uint8, int16, uint16,'
+                     ' int32, uint32, int64, uint64, float32, float64)' )
+        count = 1
+        if bracket:
+            digits = arr[:-1]
+            if ( not arr.endswith(']') or not digits or digits[0] == '0'
+                 or not all( '0' <= c <= '9' for c in digits ) ):
+                return 'invalid array size (must be like [3])'
+            count = int(digits)
+            if count > _maxsize:
+                return 'too large userdata (at most 65535 bytes are allowed)'
+        if name in names:
+            return 'duplicate field name'
+        names.add(name)
+        size += count * int(_types[tname][1])
+        if size > _maxsize:
+            return 'too large userdata (at most 65535 bytes are allowed)'
+    return None
+
+def userdata_dtype( layout ):
+    """Numpy dtype (in native byte order) for the userdata of one particle,
+    with a field for each field of the layout. An MCPLError is raised for
+    invalid layouts."""
+    dt = _cache.get(layout)
+    if dt is None:
+        err = _parse_error( layout ) if isinstance(layout,str) else 'not a string'
+        if err:
+            s = layout if isinstance(layout,str) else repr(layout)
+            raise MCPLError(f'Invalid userdata layout "{s[:200]}'
+                            f'{"..." if len(s) > 200 else ""}": {err}')
+        fields = []
+        for fld in layout.split(','):
+            name, _, typespec = fld.partition(':')
+            tname, bracket, arr = typespec.partition('[')
+            if bracket:
+                fields.append( ( name, _types[tname], ( int(arr[:-1]), ) ) )
+            else:
+                fields.append( ( name, _types[tname] ) )
+        dt = _cache[layout] = np.dtype(fields)
+    return dt
+
+def userdata_array( value, layout, what = 'userdata' ):
+    """Convert userdata given as a dict of field values (e.g. {'temp':temps})
+    or a numpy structured array (or record) with fields of the layout into a
+    structured array of the dtype of the layout, with missing fields being
+    zero. Values can be given for all particles (arrays with the particles
+    as first dimension), or for a single one (which then applies to all
+    particles). Returns the array and the number of particles (1 if all
+    values are for a single particle)."""
+    dt = userdata_dtype(layout)
+    if isinstance(value,(np.ndarray,np.void)) and value.dtype.names:
+        fields = { k : value[k] for k in value.dtype.names }
+    elif hasattr(value,'items'):
+        fields = dict(value.items())
+    else:
+        raise MCPLError(f'{what} must be a dict of field values or a numpy'
+                        ' structured array')
+    unknown = set(fields) - set(dt.names)
+    if unknown:
+        raise MCPLError(f'Unknown {what} field(s): ' + ', '.join(sorted(unknown))
+                        + f' (the userdata layout is "{layout}")')
+    conv, lengths = {}, set()
+    for name, v in fields.items():
+        sub, base = dt[name].shape, dt[name].base
+        v = np.asarray(v)
+        if v.dtype.kind not in 'biuf':
+            raise MCPLError(f'{what} field {name} must be numbers')
+        if v.shape == sub:
+            v = v.reshape((1,)+sub)
+        elif v.ndim != 1+len(sub) or v.shape[1:] != sub:
+            shape = '(N,)' if not sub else f'(N,{sub[0]})'
+            single = 'a single number' if not sub else f'shape {sub}'
+            raise MCPLError(f'{what} field {name} must have {single}'
+                            f' or shape {shape}')
+        if base.kind in 'iu':
+            if v.dtype.kind == 'f' and ( not np.all(np.isfinite(v))
+                                         or not np.array_equal(np.floor(v),v) ):
+                raise MCPLError(f'{what} field {name} must be integers')
+            info = np.iinfo(base)
+            if v.size and ( int(v.min()) < info.min or int(v.max()) > info.max ):
+                raise MCPLError(f'{what} field {name} out of range for'
+                                f' {dt[name].base.name}')
+        conv[name] = v
+        lengths.add(len(v))
+    lengths.discard(1)
+    if len(lengths) > 1:
+        raise MCPLError(f'Inconsistent lengths of {what} field arrays')
+    n = lengths.pop() if lengths else 1
+    arr = np.zeros(n,dtype=dt)
+    for name, v in conv.items():
+        arr[name] = v
+    return arr, n

@@ -171,6 +171,13 @@ class MCPLFile:
         if self.opt_userflags:
             fields += [('uf','u4')]
         fields = [(str(f[0]),str(f[1])) for f in fields]#workaround for https://github.com/numpy/numpy/issues/2407
+        udinfo = None
+        if self.userdata_layout is not None:
+            #(userdata is a structured field, which is not unpacked until used):
+            from ._userdata import userdata_dtype
+            fields += [('ud',userdata_dtype(self.userdata_layout))]
+            udinfo = ( self.userdata_layout,
+                       userdata_dtype(self.userdata_layout).newbyteorder(self.endianness) )
         self._pdt = np.dtype(fields).newbyteorder(self.endianness)
 
         #Init position and caches (don't read first block yet):
@@ -181,7 +188,8 @@ class MCPLFile:
         self._nblocks = self.nparticles // self._blocklength + (1 if self.nparticles%self._blocklength else 0)
         #reuse same block object for whole file (to reuse fixed columns and internal caches)
         self._currentblock = MCPLParticleBlock(self.opt_polarisation,self.opt_userflags,
-                                               self.opt_universalweight,self.opt_universalpdgcode,self.version)
+                                               self.opt_universalweight,self.opt_universalpdgcode,self.version,
+                                               udinfo)
 
     @property
     def blocklength(self):
@@ -503,6 +511,15 @@ class MCPLFile:
         """Whether or not userflags are enabled in file"""
         return self._hdr['opt_userflags']
     @property
+    def userdata_layout(self):
+        """Layout of the per-particle userdata in the file (e.g.
+        "temp:float32,origin:int32"), or None if the file has no userdata"""
+        return self._hdr['userdata_layout']
+    @property
+    def userdata_size(self):
+        """Bytes of userdata per particle (0 if the file has no userdata)"""
+        return self._hdr['userdata_size']
+    @property
     def opt_universalpdgcode(self):
         """Global PDG code for all particles in file (a value of 0 means that
         PDG codes are stored per-particle)"""
@@ -565,7 +582,7 @@ class MCPLFile:
             raise MCPLError('File is not an MCPL file!')
         x=list(map(chr,x[4:]))
         version = int(''.join(x[0:3]))
-        if version not in (2,3):
+        if version not in (2,3,4):
             raise MCPLError('File is in an unsupported MCPL version!')
         h['version']=version
         endianness = x[3]
@@ -595,6 +612,8 @@ class MCPLFile:
         h['opt_polarisation'] = opt_polarisation
         h['opt_singleprec'] = opt_singleprec
         h['opt_universalweight'] = opt_universalweight
+        h['userdata_layout'] = None
+        h['userdata_size'] = 0
 
         def readarr():
             ll = self._fileread(dtype=np.dtype('u4').newbyteorder(endianness),
@@ -608,6 +627,20 @@ class MCPLFile:
                 raise MCPLError('Errors encountered while attempting to read header')
             return cont.tobytes() if hasattr(cont,'tobytes') else cont.tostring()
 
+        if version >= 4:
+            #Userdata layout (always present in version 4):
+            from ._userdata import userdata_dtype
+            layout = readarr().decode('ascii','replace')
+            udsize = userdata_dtype(layout).itemsize
+            fp = 4 if opt_singleprec else 8
+            expected = ( 7*fp + ( 3*fp if opt_polarisation else 0 )
+                         + ( 0 if opt_universalpdgcode else 4 )
+                         + ( 0 if _tmp else fp )
+                         + ( 4 if opt_userflags else 0 ) + udsize )
+            if particlesize != expected:
+                raise MCPLError('unexpected particle size')
+            h['userdata_layout'] = layout
+            h['userdata_size'] = udsize
         sourcename = readarr()
         comments=[]
         for i in range(ncomments):
@@ -621,6 +654,8 @@ class MCPLFile:
             blobs[bk] = readarr()
         headersize = ( 48 + 4 + len(sourcename)
                        + (8 if opt_universalweight else 0)
+                       + ( 4 + len(h['userdata_layout'])
+                           if h['userdata_layout'] is not None else 0 )
                        + sum(4+len(c) for c in comments)
                        + sum(8+len(bk)+len(bv) for bk,bv in blobs.items()) )
         h['headersize'] = headersize
@@ -695,6 +730,9 @@ class MCPLFile:
         print("\n  Particle data format")
         print("    User flags         : %s"%("yes" if h['opt_userflags'] else "no"))
         print("    Polarisation info  : %s"%("yes" if h['opt_polarisation'] else "no"))
+        if h['userdata_layout'] is not None:
+            print(f"    User data          : {h['userdata_size']} bytes"
+                  f" (layout \"{h['userdata_layout']}\")")
         s = "    Fixed part. type   : "
         if h['opt_universalpdgcode']:
             s += f"yes (pdgcode {h['opt_universalpdgcode']})"
@@ -737,6 +775,9 @@ class MCPLFile:
             s += "       pol-x       pol-y       pol-z"
         if opt_uf:
             s += "  userflags"
+        udsize = self.userdata_size
+        if udsize:
+            s += "  userdata"
         print(s)
 
         #3) loop and print
@@ -754,6 +795,10 @@ class MCPLFile:
                 s+=fmt2%( p.polx, p.poly, p.polz )
             if opt_uf:
                 s+=f" 0x{p.userflags:08x}"
+            if udsize:
+                #Bytes in hex (at most the first 16):
+                raw = p.userdata.tobytes()
+                s += '  ' + raw[:16].hex() + ( '...' if udsize > 16 else '' )
             print(s)
 
 def _selected_particles(mcplfile,select,skip=0):

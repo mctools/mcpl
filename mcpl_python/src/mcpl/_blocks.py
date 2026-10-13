@@ -99,6 +99,13 @@ class MCPLParticle:
         """custom per-particle flags"""
         return self._b.userflags[self._i]
     @property
+    def userdata(self):
+        """custom per-particle data (numpy record with the fields of the
+        userdata layout of the file, e.g. p.userdata['temp']), or None if the
+        file has no userdata"""
+        ud = self._b.userdata
+        return None if ud is None else ud[self._i]
+    @property
     def wavelength(self):
         """wavelength [Aa] (only for neutrons and gammas with non-zero kinetic
         energy, otherwise MCPLError is raised)"""
@@ -118,9 +125,13 @@ class MCPLParticleBlock:
     """Object representing a block of particle. Fields are arrays rather than single
     numbers, but otherwise have the same meaning as on the MCPLParticle class."""
 
-    def __init__(self,opt_polarisation,opt_userflags,opt_globalw,opt_globalpdg,fmtversion):
+    def __init__(self,opt_polarisation,opt_userflags,opt_globalw,opt_globalpdg,fmtversion,
+                 udinfo = None):
         """For internal use only - users should not normally create MCPLParticle objects themselves"""
-        self._ctor_args = (opt_polarisation,opt_userflags,opt_globalw,opt_globalpdg,fmtversion)
+        self._ctor_args = (opt_polarisation,opt_userflags,opt_globalw,opt_globalpdg,fmtversion,
+                           udinfo)
+        #(userdata layout and dtype, or None):
+        self._udinfo = udinfo
         #empty block (set offset to max int to ensure d<0 in contains_ipos and get_by_global:
         self._offset = 9223372036854775807
         #non-constant columns (never the same in all blocks):
@@ -291,6 +302,19 @@ class MCPLParticleBlock:
         if x[1] is None or len(x[1]) != len(self._data):
             x[1] = self._opt_globalw * np.ones(len(self._data),dtype=float)
         return x[1]
+
+    @property
+    def userdata(self):
+        """Custom per-particle data of each particle (numpy structured array
+        with the fields of the userdata layout of the file, e.g.
+        block.userdata['temp']), or None if the file has no userdata. This is
+        a view of the data read from the file, which is not unpacked or copied
+        until used."""
+        if self._udinfo is None:
+            return None
+        if not len(self._data):
+            return np.zeros(0,dtype=self._udinfo[1])
+        return self._data['ud']
 
     @property
     def userflags(self):

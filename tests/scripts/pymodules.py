@@ -47,6 +47,7 @@ layers = {
     '_messages' : 0,
     '_physics' : 1,
     '_statsum' : 1,
+    '_userdata' : 1,
     '_blocks' : 2,
     '_expressions' : 2,
     '_reader' : 3,
