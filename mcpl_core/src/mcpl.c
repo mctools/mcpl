@@ -3057,56 +3057,154 @@ void mcpl_dump(const char * filename, int parts, uint64_t nskip, uint64_t nlimit
   mcpl_close_file(f);
 }
 
-MCPL_LOCAL int mcpl_actual_can_merge(mcpl_file_t ff1, mcpl_file_t ff2)
+//Checks whether two files can be merged, and if not, writes the reason (the
+//first difference found) into reason (of size nreason). Returns 1 if they can
+//be merged.
+MCPL_LOCAL int mcpl_internal_merge_compat( mcpl_file_t ff1, mcpl_file_t ff2,
+                                           char * reason, size_t nreason )
 {
   mcpl_fileinternal_t * f1 = (mcpl_fileinternal_t *)ff1.internal;
   mcpl_fileinternal_t * f2 = (mcpl_fileinternal_t *)ff2.internal;
   assert(f1);
   assert(f2);
-  if (f1->first_particle_pos!=f2->first_particle_pos)
-    return 0;//different header
+  reason[0] = '\0';
 
   //Note, we do not check the format_version field here, since mcpl_merge_files
   //can actually work on files with different versions.
 
   //Very strict checking of everything except nparticles. Even order of blobs
   //and comments must be preserved (could possibly be relaxed a bit):
-  if (strcmp(f1->hdr_srcprogname,f2->hdr_srcprogname)!=0) return 0;
-  if (f1->opt_userflags!=f2->opt_userflags) return 0;
-  if (f1->opt_polarisation!=f2->opt_polarisation) return 0;
-  if (f1->opt_singleprec!=f2->opt_singleprec) return 0;
-  if (f1->opt_universalpdgcode!=f2->opt_universalpdgcode) return 0;
-  if (f1->opt_universalweight!=f2->opt_universalweight) return 0;
-  if (f1->is_little_endian!=f2->is_little_endian) return 0;
-  if (f1->particle_size!=f2->particle_size) return 0;
-  if ( (f1->userdata_layout!=NULL) != (f2->userdata_layout!=NULL) ) return 0;
-  if ( f1->userdata_layout
-       && strcmp(f1->userdata_layout,f2->userdata_layout)!=0 ) return 0;
-  if (f1->ncomments!=f2->ncomments) return 0;
-  if (f1->nblobs!=f2->nblobs) return 0;
+  if (strcmp(f1->hdr_srcprogname,f2->hdr_srcprogname)!=0) {
+    snprintf(reason,nreason,"source name: \"%.60s%s\" vs \"%.60s%s\"",
+             f1->hdr_srcprogname, strlen(f1->hdr_srcprogname)>60 ? "..." : "",
+             f2->hdr_srcprogname, strlen(f2->hdr_srcprogname)>60 ? "..." : "");
+    return 0;
+  }
+  if (f1->opt_userflags!=f2->opt_userflags) {
+    snprintf(reason,nreason,"userflags: %s vs %s",
+             f1->opt_userflags?"yes":"no", f2->opt_userflags?"yes":"no");
+    return 0;
+  }
+  if (f1->opt_polarisation!=f2->opt_polarisation) {
+    snprintf(reason,nreason,"polarisation info: %s vs %s",
+             f1->opt_polarisation?"yes":"no", f2->opt_polarisation?"yes":"no");
+    return 0;
+  }
+  if (f1->opt_singleprec!=f2->opt_singleprec) {
+    snprintf(reason,nreason,"FP precision: %s vs %s",
+             f1->opt_singleprec?"single":"double",
+             f2->opt_singleprec?"single":"double");
+    return 0;
+  }
+  if (f1->opt_universalpdgcode!=f2->opt_universalpdgcode) {
+    char b1[32], b2[32];
+    if (f1->opt_universalpdgcode)
+      snprintf(b1,sizeof(b1),"%li",(long)f1->opt_universalpdgcode);
+    if (f2->opt_universalpdgcode)
+      snprintf(b2,sizeof(b2),"%li",(long)f2->opt_universalpdgcode);
+    snprintf(reason,nreason,"universal pdgcode: %s vs %s",
+             f1->opt_universalpdgcode?b1:"none",
+             f2->opt_universalpdgcode?b2:"none");
+    return 0;
+  }
+  if (f1->opt_universalweight!=f2->opt_universalweight) {
+    char b1[64], b2[64];
+    if (f1->opt_universalweight)
+      snprintf(b1,sizeof(b1),"%g",f1->opt_universalweight);
+    if (f2->opt_universalweight)
+      snprintf(b2,sizeof(b2),"%g",f2->opt_universalweight);
+    snprintf(reason,nreason,"universal weight: %s vs %s",
+             f1->opt_universalweight?b1:"none",
+             f2->opt_universalweight?b2:"none");
+    return 0;
+  }
+  if (f1->is_little_endian!=f2->is_little_endian) {
+    snprintf(reason,nreason,"endianness: %s vs %s",
+             f1->is_little_endian?"little":"big",
+             f2->is_little_endian?"little":"big");
+    return 0;
+  }
+  if ( (f1->userdata_layout!=NULL) != (f2->userdata_layout!=NULL)
+       || ( f1->userdata_layout
+            && strcmp(f1->userdata_layout,f2->userdata_layout)!=0 ) ) {
+    snprintf(reason,nreason,"userdata layout: %s%.200s%s vs %s%.200s%s",
+             f1->userdata_layout?"\"":"", f1->userdata_layout?f1->userdata_layout:"none",
+             f1->userdata_layout?"\"":"",
+             f2->userdata_layout?"\"":"", f2->userdata_layout?f2->userdata_layout:"none",
+             f2->userdata_layout?"\"":"");
+    return 0;
+  }
+  if (f1->ncomments!=f2->ncomments) {
+    snprintf(reason,nreason,"number of comments: %lu vs %lu",
+             (unsigned long)f1->ncomments,(unsigned long)f2->ncomments);
+    return 0;
+  }
   uint32_t i;
   for (i = 0; i<f1->ncomments; ++i) {
     const char * c1 = f1->comments[i];
     const char * c2 = f2->comments[i];
     if (strcmp(c1,c2)!=0) {
       //incompatible, unless it represents the same stat:sum: entry.
-      if ( !MCPL_COMMENT_IS_STATSUM(c1) || !MCPL_COMMENT_IS_STATSUM(c2) )
+      int same_statsum = 0;
+      if ( MCPL_COMMENT_IS_STATSUM(c1) && MCPL_COMMENT_IS_STATSUM(c2) ) {
+        mcpl_internal_statsum_t sc1, sc2;
+        mcpl_internal_statsum_parse_or_emit_err( c1, &sc1 );
+        mcpl_internal_statsum_parse_or_emit_err( c2, &sc2 );
+        same_statsum = ( sc1.key[0] && sc2.key[0]
+                         && strcmp( sc1.key, sc2.key ) == 0 );
+      }
+      if ( !same_statsum ) {
+        snprintf(reason,nreason,"comment %lu differs",(unsigned long)i);
         return 0;
-      mcpl_internal_statsum_t sc1, sc2;
-      mcpl_internal_statsum_parse_or_emit_err( c1, &sc1 );
-      mcpl_internal_statsum_parse_or_emit_err( c2, &sc2 );
-      if ( !sc1.key[0] || !sc2.key[0])
-        return 0;
-      if ( strcmp( sc1.key, sc2.key ) != 0 )
-        return 0;
+      }
     }
   }
+  if (f1->nblobs!=f2->nblobs) {
+    snprintf(reason,nreason,"number of blobs: %lu vs %lu",
+             (unsigned long)f1->nblobs,(unsigned long)f2->nblobs);
+    return 0;
+  }
   for (i = 0; i<f1->nblobs; ++i) {
-    if (f1->bloblengths[i]!=f2->bloblengths[i]) return 0;
-    if (strcmp(f1->blobkeys[i],f2->blobkeys[i])!=0) return 0;
-    if (memcmp(f1->blobs[i],f2->blobs[i],f1->bloblengths[i])!=0) return 0;
+    if (strcmp(f1->blobkeys[i],f2->blobkeys[i])!=0) {
+      snprintf(reason,nreason,"blob %lu key differs",(unsigned long)i);
+      return 0;
+    }
+    if ( f1->bloblengths[i]!=f2->bloblengths[i]
+         || memcmp(f1->blobs[i],f2->blobs[i],f1->bloblengths[i])!=0 ) {
+      snprintf(reason,nreason,"blob %lu data differs",(unsigned long)i);
+      return 0;
+    }
+  }
+  //Should be unreachable given the checks above, but to be safe:
+  if (f1->particle_size!=f2->particle_size) {
+    snprintf(reason,nreason,"particle size: %lu vs %lu bytes",
+             (unsigned long)f1->particle_size,(unsigned long)f2->particle_size);
+    return 0;
+  }
+  if (f1->first_particle_pos!=f2->first_particle_pos) {
+    snprintf(reason,nreason,"header size differs");
+    return 0;
   }
   return 1;
+}
+
+MCPL_LOCAL int mcpl_actual_can_merge(mcpl_file_t ff1, mcpl_file_t ff2)
+{
+  char reason[512];
+  return mcpl_internal_merge_compat(ff1,ff2,reason,sizeof(reason));
+}
+
+//Like mcpl_actual_can_merge, but raising an error with the given message
+//prefix and the reason (like "<prefix> (<reason>).") if incompatible:
+MCPL_LOCAL void mcpl_internal_require_mergeable( mcpl_file_t ff1, mcpl_file_t ff2,
+                                                 const char * msgprefix )
+{
+  char reason[512];
+  if ( mcpl_internal_merge_compat(ff1,ff2,reason,sizeof(reason)) )
+    return;
+  char buf[1024];
+  snprintf(buf,sizeof(buf),"%s (%s).",msgprefix,reason);
+  mcpl_error(buf);
 }
 
 
@@ -3257,6 +3355,9 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
   char * udlayout = NULL;
   int seen_file = 0;
   int discard_userdata = 0;
+  //For reporting which settings change relative to the input files:
+  int any_sp = 0, any_nopol = 0, any_nouf = 0, any_updg = 0, any_uw = 0;
+  int any_metadata = 0;
 
   for (ifile = 0; ifile < nfiles; ++ifile) {
     mcpl_file_t f = mcpl_open_file(files[ifile]);
@@ -3277,12 +3378,25 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
 
     if (mcpl_hdr_has_userflags(f))
       opt_uf = 1;//enable if any
+    else
+      any_nouf = 1;
 
     if (mcpl_hdr_has_polarisation(f))
       opt_pol = 1;//enable if any
+    else
+      any_nopol = 1;
 
     if (mcpl_hdr_has_doubleprec(f))
       opt_dp = 1;
+    else
+      any_sp = 1;
+
+    if ( mcpl_hdr_ncomments(f) || mcpl_hdr_nblobs(f) )
+      any_metadata = 1;
+    if ( mcpl_hdr_universal_pdgcode(f) )
+      any_updg = 1;
+    if ( mcpl_hdr_universal_weight(f) )
+      any_uw = 1;
 
     int32_t updg = mcpl_hdr_universal_pdgcode(f);
     if ( !updg
@@ -3300,8 +3414,31 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
     }
     mcpl_close_file(f);
   }
-  if (!keep_userflags)
+  //Report the settings which change relative to the input files (and
+  //discarded data):
+  if ( opt_dp && any_sp )
+    mcpl_print("MCPL force-merge: Files have different FP precision (single"
+               " and double), using double\n");
+  if ( opt_pol && any_nopol )
+    mcpl_print("MCPL force-merge: Files have different polarisation info (no"
+               " and yes), enabling it\n");
+  if ( opt_uf && !keep_userflags ) {
+    mcpl_print("MCPL force-merge: Discarding userflags of the input files"
+               " (keep_userflags is not set)\n");
     opt_uf = 0;
+  } else if ( opt_uf && any_nouf ) {
+    mcpl_print("MCPL force-merge: Files have different userflags (no and"
+               " yes), enabling them (zero for particles without)\n");
+  }
+  if ( any_updg && disallow_universalpdg )
+    mcpl_print("MCPL force-merge: Not all files have the same universal"
+               " pdgcode, storing the pdgcode per particle\n");
+  if ( any_uw && disallow_universalweight )
+    mcpl_print("MCPL force-merge: Not all files have the same universal"
+               " weight, storing the weight per particle\n");
+  if ( any_metadata )
+    mcpl_print("MCPL force-merge: Discarding comments and blobs of the input"
+               " files\n");
   if ( discard_userdata ) {
     mcpl_print("MCPL WARNING: Discarding userdata in forced merge, since"
                " not all files have the same userdata layout.\n");
@@ -3406,8 +3543,11 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
   mcpl_error_on_dups(nfiles,files);
   unsigned ifile;
   for (ifile = 1; ifile < nfiles; ++ifile) {
-    if (!mcpl_can_merge(files[0],files[ifile]))
-      mcpl_error("Attempting to merge incompatible files.");
+    mcpl_file_t f1 = mcpl_open_file(files[0]);
+    mcpl_file_t f2 = mcpl_open_file(files[ifile]);
+    mcpl_internal_require_mergeable(f1,f2,"Attempting to merge incompatible files");
+    mcpl_close_file(f1);
+    mcpl_close_file(f2);
   }
 
   //Create new file:
@@ -3613,11 +3753,15 @@ void mcpl_merge_inplace(const char * file1, const char* file2)
 
   mcpl_file_t ff1 = mcpl_open_file(file1);
   mcpl_file_t ff2 = mcpl_open_file(file2);
-  int can_merge = mcpl_actual_can_merge(ff1,ff2);
-  if (!can_merge) {
-    mcpl_close_file(ff1);
-    mcpl_close_file(ff2);
-    mcpl_error("Attempting to merge incompatible files");
+  {
+    char reason[512];
+    if ( !mcpl_internal_merge_compat(ff1,ff2,reason,sizeof(reason)) ) {
+      mcpl_close_file(ff1);
+      mcpl_close_file(ff2);
+      char buf[1024];
+      snprintf(buf,sizeof(buf),"Attempting to merge incompatible files (%s).",reason);
+      mcpl_error(buf);
+    }
   }
 
   //Access internals:
@@ -4185,9 +4329,21 @@ int mcpl_tool(int argc,char** argv) {
 
     int ifirstinfile = (opt_inplace ? 0 : 1);
     if (!opt_forcemerge) {
-      for (i = ifirstinfile+1; i < nfilenames; ++i)
-        if (!mcpl_can_merge(filenames[ifirstinfile],filenames[i]))
-          return free(filenames),mcpl_tool_usage(argv,"Requested files are incompatible for merge as they have different header info.");
+      for (i = ifirstinfile+1; i < nfilenames; ++i) {
+        mcpl_file_t f1 = mcpl_open_file(filenames[ifirstinfile]);
+        mcpl_file_t f2 = mcpl_open_file(filenames[i]);
+        char reason[512];
+        int ok = mcpl_internal_merge_compat(f1,f2,reason,sizeof(reason));
+        mcpl_close_file(f1);
+        mcpl_close_file(f2);
+        if (!ok) {
+          char buf[1024];
+          snprintf(buf,sizeof(buf),"Requested files are incompatible for merge"
+                   " as they have different header info (%s).",reason);
+          free(filenames);
+          return mcpl_tool_usage(argv,buf);
+        }
+      }
     }
 
     if (opt_inplace) {

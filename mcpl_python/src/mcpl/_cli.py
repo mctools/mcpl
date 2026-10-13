@@ -30,7 +30,6 @@ import sys
 
 from ._common import MCPLError, _determine_version, _output_bytearray_raw
 from ._fileops import (
-    can_merge,
     convert2ascii,
     dump_file,
     forcemerge_files,
@@ -518,10 +517,13 @@ def _pymcpltool_merge(filelist, opt_forcemerge, opt_inplace, opt_keepuserflags, 
             else "Too few arguments for --merge.")
     ifirst = 0 if opt_inplace else 1
     if not opt_forcemerge:
+        from ._fileops import _merge_incompat_reason, _open_raw
         for f in filelist[ifirst+1:]:
-            if not can_merge(filelist[ifirst],f):
+            with _open_raw(filelist[ifirst]) as f1, _open_raw(f) as f2:
+                reason = _merge_incompat_reason(f1, f2)
+            if reason is not None:
                 bad("Requested files are incompatible for merge as they have"
-                    " different header info.")
+                    f" different header info ({reason}).")
     if opt_inplace:
         for f in filelist[ifirst+1:]:
             merge_inplace(filelist[ifirst],f)

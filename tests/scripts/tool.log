@@ -2192,7 +2192,7 @@ MCPL: Successfully extracted 15 / 195 particles from miscphys.mcpl.gz into extra
 ----------------------------------------------
 Running mcpltool --merge merged_comment_1.mcpl extracted_comment_1.mcpl extracted_comment_5.mcpl
 ----------------------------------------------
-ERROR: Requested files are incompatible for merge as they have different header info.
+ERROR: Requested files are incompatible for merge as they have different header info (comment 1 differs).
 
 Run with -h or --help for usage information
 
@@ -2200,7 +2200,7 @@ Run with -h or --help for usage information
 ----------------------------------------------
 Running mcpltool --merge merged_comment_2.mcpl extracted_comment_7.mcpl extracted_comment_6.mcpl
 ----------------------------------------------
-ERROR: Requested files are incompatible for merge as they have different header info.
+ERROR: Requested files are incompatible for merge as they have different header info (comment 1 differs).
 
 Run with -h or --help for usage information
 
