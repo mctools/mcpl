@@ -92,12 +92,9 @@ def test_write_read():
     run('dump','std.mcpl')
     run('dump','raw.mcpl')
     run('dump','big.mcpl')
-    #Old readers can not read format version 4 (here the Python module, until
-    #it gets support for userdata):
-    try:
-        mcpl.MCPLFile('std.mcpl')
-    except mcpl.MCPLError as e:
-        print('Python module:',e)
+    #(reading with the Python module is tested in pyuserdata.py):
+    with mcpl.MCPLFile('std.mcpl') as f:
+        print('Python module:',f.version,f.userdata_layout)
 
 def test_text():
     print('=== Text export')

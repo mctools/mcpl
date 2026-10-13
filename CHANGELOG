@@ -32,8 +32,25 @@ v2.2.9  (work in progress)
         releases). MCPL_FORMATVERSION is now 4, the latest supported format
         version. Files can only be merged if their userdata layouts are
         identical, while forced merges discard the userdata (with a warning)
-        unless all files have the same layout. The Python API can not yet read
-        or write files with userdata.
+        unless all files have the same layout.
+      * The Python API can read files with userdata: MCPLFile.userdata_layout
+        and userdata_size, and block.userdata (and particle.userdata), which
+        is a numpy structured array with the fields of the layout (e.g.
+        block.userdata['temp']). The userdata is a view of the data read from
+        the file, so it costs nothing until used. Userdata is kept when
+        transferring particles to files with the same layout (e.g. after
+        transfer_metadata), and when merging, extracting or force-merging
+        files with the Python API or pymcpltool, which give the same results
+        as the C API and mcpltool.
+      * The Python API can also write files with userdata: enable it with
+        MCPLOutFile(..., userdata_layout = "temp:float32,tags:uint8[3]") or
+        enable_userdata(layout), and give the userdata of the particles with
+        the userdata argument of add_particles and add_particle, as a dict of
+        field values (e.g. userdata = { 'temp' : temps, 'tags' : tags }) or a
+        numpy structured array (like block.userdata). Missing fields and
+        particles added without userdata get zeros, and integer fields must
+        be given integers within the range of their type. The files are
+        identical to those written with the C API.
       * Clearer error messages for invalid values of stat:sum entries (which
         must be non-negative or -1, and may only be padded with spaces).
       * Plotting backends in the Python API: the default backend can be set

@@ -102,15 +102,17 @@ class MCPLOutFile:
                   blobs = None, stat_sum = None, opt_userflags = False,
                   opt_polarisation = False, opt_singleprec = True,
                   opt_universalpdgcode = 0, opt_universalweight = 0.0,
-                  blocklength = 10000, select = None, edit = None ):
+                  blocklength = 10000, select = None, edit = None,
+                  userdata_layout = None ):
         """Create new file (overwriting any existing file). Like in the C API,
         ".mcpl" is appended to the filename if it does not already end with
         it. The keyword arguments correspond to calling the methods
         hdr_set_srcname, hdr_add_comment (for each comment), hdr_add_data (for
         each key,value in blobs), hdr_add_stat_sum (for each key,value in
         stat_sum), enable_userflags, enable_polarisation, enable_doubleprec
-        (if opt_singleprec is False), enable_universal_pdgcode and
-        enable_universal_weight. The blocklength parameter controls how many
+        (if opt_singleprec is False), enable_universal_pdgcode,
+        enable_universal_weight and enable_userdata (with the given
+        userdata_layout). The blocklength parameter controls how many
         particles added with add_particle(..) are buffered before being
         written.
 
@@ -161,6 +163,7 @@ class MCPLOutFile:
         self._opt_singleprec = True
         self._opt_universalpdgcode = 0
         self._opt_universalweight = 0.0
+        self._udlayout = None
         self._nparticles = 0
         self._statsuminfo = {}#key -> [position of comment data in file, value]
         self._pending = []
@@ -184,6 +187,8 @@ class MCPLOutFile:
             self.enable_universal_pdgcode(opt_universalpdgcode)
         if opt_universalweight:
             self.enable_universal_weight(opt_universalweight)
+        if userdata_layout is not None:
+            self.enable_userdata(userdata_layout)
 
     def __enter__(self):
         return self
@@ -257,6 +262,53 @@ class MCPLOutFile:
         return self._opt_universalweight
 
     @property
+    def userdata_layout(self):
+        """Layout of the per-particle userdata (None if the file has no
+        userdata), see enable_userdata."""
+        return self._udlayout
+
+    @property
+    def userdata_size(self):
+        """Bytes of userdata per particle (0 if the file has no userdata)"""
+        return self._userdata_dtype().itemsize if self._udlayout else 0
+
+    def _userdata_dtype(self):
+        from ._userdata import userdata_dtype
+        return userdata_dtype(self._udlayout)
+
+    def _userdata_arg(self, value, fctname):
+        """Userdata given to add_particles or add_particle, as a structured
+        array (and the number of particles)"""
+        if self._udlayout is None:
+            raise MCPLError(f'{fctname} called with userdata for a file without'
+                            ' userdata (see enable_userdata)')
+        from ._userdata import userdata_array
+        return userdata_array(value,self._udlayout)
+
+    def enable_userdata(self, layout):
+        """Enable per-particle userdata with the given layout, which is a
+        comma-separated list of fields "name:type" or "name:type[n]" (arrays
+        of n values), like "temp:float32,origin:int32,tags:uint8[3]". The
+        types are int8, uint8, int16, uint16, int32, uint32, int64, uint64,
+        float32 and float64. Names must start with a lowercase letter followed
+        by lowercase letters, digits or underscores (names are required, also
+        for plain bytes like "data:uint8[27]", to avoid mixing up different
+        data with the same types when merging files). At most 65535 bytes per
+        particle are allowed. The userdata of the particles is given with the
+        userdata argument of add_particles and add_particle (and is zero for
+        particles added without it). Files with userdata are written in MCPL
+        format version 4 (which older MCPL releases can not read)."""
+        from ._userdata import userdata_dtype
+        userdata_dtype(layout)#validate
+        if self._udlayout is not None:
+            if self._udlayout != layout:
+                raise MCPLError('enable_userdata called multiple times with'
+                                ' different layouts')
+            return
+        self._check_hdr_notwritten('enable_userdata')
+        self._udlayout = layout
+
+    @property
     def particlesize(self):
         """Bytes per particle in the file"""
         fp = 4 if self._opt_singleprec else 8
@@ -269,7 +321,7 @@ class MCPLOutFile:
             n += fp
         if self._opt_userflags:
             n += 4
-        return n
+        return n + self.userdata_size
 
     @staticmethod
     def _to_bytes(s, what):
@@ -460,6 +512,8 @@ class MCPLOutFile:
             self.enable_universal_pdgcode(source.opt_universalpdgcode)
         if source.opt_universalweight:
             self.enable_universal_weight(source.opt_universalweight)
+        if source.userdata_layout is not None:
+            self.enable_userdata(source.userdata_layout)
 
     def _particle_dtype(self):
         if self._pdt is None:
@@ -476,6 +530,8 @@ class MCPLOutFile:
                 fields += [('pdg','i4')]
             if self._opt_userflags:
                 fields += [('uf','u4')]
+            if self._udlayout is not None:
+                fields += [('ud',self._userdata_dtype())]
             self._pdt = np.dtype(fields)
             assert self._pdt.itemsize == self.particlesize
         return self._pdt
@@ -484,7 +540,9 @@ class MCPLOutFile:
         import struct
         assert self._hdr_notwritten
         out = bytearray()
-        out += b'MCPL003' + _native_endianness().encode('ascii')
+        #(files with userdata are in format version 4, others still in 3):
+        version = b'004' if self._udlayout is not None else b'003'
+        out += b'MCPL' + version + _native_endianness().encode('ascii')
         out += struct.pack('=Q',0)
         out += struct.pack('=8I',
                            len(self._comments),
@@ -503,6 +561,8 @@ class MCPLOutFile:
             pos = len(out)
             out += b
             return pos
+        if self._udlayout is not None:
+            add_buffer(self._udlayout.encode('ascii'))
         add_buffer(self._srcname if self._srcname is not None else b'unknown')
         statsuminfo = {}
         for c in self._comments:
@@ -632,6 +692,12 @@ class MCPLOutFile:
         if self._opt_userflags:
             v = cols.get('userflags')
             arr['uf'] = 0 if v is None else np.broadcast_to(v,(n,))
+        if self._udlayout is not None:
+            #(zeros unless given, e.g. when transferring from a file with the
+            #same userdata layout):
+            v = cols.get('userdata')
+            arr['ud'] = ( np.zeros(n,dtype=self._userdata_dtype())
+                          if v is None else v )
         return arr
 
     def _validate(self, n, col):
@@ -702,6 +768,16 @@ class MCPLOutFile:
         Instead of ekin, the wavelength [Aa] can be specified for neutrons and
         gammas.
 
+        In files with userdata (see enable_userdata), the userdata of the
+        particles is given with the userdata argument, as a dict of values for
+        the fields of the layout (e.g. userdata = { 'temp' : temps, 'tags' :
+        tags }, with temps of shape (N,) and tags of shape (N,3) for the layout
+        "temp:float32,tags:uint8[3]"), or as a numpy structured array with
+        those fields (e.g. the userdata of a block read from another file).
+        Missing fields are zero, and values for a single particle apply to all
+        particles. Integer fields must be given integers within the range of
+        their type.
+
         Alternatively, an MCPLParticleBlock (or an MCPLParticle) read with
         MCPLFile can be passed, in which case its packed data is transferred
         exactly whenever possible. Combined with keyword arguments, the given
@@ -710,6 +786,10 @@ class MCPLOutFile:
         block.weight ).
         """
         self._check_open()
+        udarr = None
+        if 'userdata' in fields:
+            fields = dict(fields)
+            udarr, _ = self._userdata_arg(fields.pop('userdata'),'add_particles')
         if particles is not None:
             if isinstance(particles,MCPLParticle):
                 b, sel = particles._b, slice(particles._i,particles._i+1)
@@ -719,20 +799,32 @@ class MCPLOutFile:
                 raise MCPLError('Unsupported type of particles object (should'
                                 ' be MCPLParticleBlock or MCPLParticle)')
             if self._flt is None and self._edt is None:
+                if udarr is not None:
+                    fields = dict(fields, userdata = udarr)
                 self._transfer(b,sel,fields)
                 return
             b = b[sel]
+            if udarr is not None:
+                udarr = _broadcast_userdata(udarr,len(b))
             if fields:
                 ocols, _ = self._collect_fields(fields)
                 self._resolve_wavelength(ocols, ocols.get('pdgcode', b.pdgcode))
                 b = _EditedParticleBlock(b,ocols)
             if self._flt is not None:
-                b = b[self._flt(b)]
+                keep = self._flt(b)
+                b = b[keep]
+                if udarr is not None:
+                    udarr = udarr[keep]
             if self._edt is not None and len(b):
                 b = _EditedParticleBlock(b,self._edt(b))
-            self._transfer(b,slice(None))
+            self._transfer(b,slice(None),
+                           None if udarr is None else { 'userdata' : udarr })
             return
         cols, n = self._collect_fields(fields)
+        if udarr is not None:
+            if n == 1:
+                n = len(udarr)
+            udarr = _broadcast_userdata(udarr,n)
         self._resolve_wavelength(cols, cols.get('pdgcode'))
         if self._flt is not None or self._edt is not None:
             defaults = { 'pdgcode' : self._opt_universalpdgcode,
@@ -745,10 +837,14 @@ class MCPLOutFile:
                 n = len(keep)
                 blk = _ArrayBlock({ f : getattr(blk,f)[keep] for f in _block_fields },
                                   n,defaults)
+                if udarr is not None:
+                    udarr = udarr[keep]
             cols = { f : getattr(blk,f) for f in _block_fields if f in cols }
             if self._edt is not None:
                 cols.update(self._edt(blk))
                 self._resolve_wavelength(cols, cols.get('pdgcode'))
+        if udarr is not None:
+            cols['userdata'] = udarr
         if self._hdr_notwritten:
             self._write_header()
         arr = self._pack(n,cols)
@@ -759,8 +855,28 @@ class MCPLOutFile:
         """Add single particle. Takes the same arguments as add_particles(..),
         but with scalar values (or vectors of length 3), or a single
         MCPLParticle read with MCPLFile. Particles are internally buffered and
-        written in blocks for efficiency."""
+        written in blocks for efficiency. Userdata (see add_particles) is given
+        for the single particle, e.g. userdata = { 'temp' : 293.0, 'tags' :
+        [1,2,3] }."""
         self._check_open()
+        if 'userdata' in fields:
+            #(particles with userdata are added via add_particles):
+            fields = dict(fields)
+            udarr, nud = self._userdata_arg(fields.pop('userdata'),'add_particle')
+            if nud != 1:
+                raise MCPLError('add_particle must be called with userdata for'
+                                ' a single particle')
+            if particle is not None:
+                if fields:
+                    raise MCPLError('Do not specify particle fields together'
+                                    ' with a particle object')
+                self.add_particles(particle,userdata=udarr)
+                return
+            vecs = ('position','direction','polarisation')
+            self.add_particles(userdata=udarr,
+                               **{ k : ( [v] if k in vecs else np.atleast_1d(v) )
+                                   for k,v in fields.items() })
+            return
         if ( self._flt is not None or self._edt is not None ) and particle is None:
             vecs = ('position','direction','polarisation')
             self.add_particles(**{ k : ( [v] if k in vecs else np.atleast_1d(v) )
@@ -823,6 +939,12 @@ class MCPLOutFile:
         cols['ekin'] = ekin_from_wavelength( cols.pop('wavelength'), pdgcode )
 
     def _transfer(self, block, sel, overrides = None):
+        udarr = None
+        if overrides and 'userdata' in overrides:
+            overrides = dict(overrides)
+            udarr = overrides.pop('userdata')
+            if not isinstance(udarr,np.ndarray) or udarr.dtype != self._userdata_dtype():
+                udarr, _ = self._userdata_arg(udarr,'add_particles')
         edits = getattr(block,'_edits',None)
         if edits:
             #Edited block: transfer packed data, with edited fields as overrides
@@ -833,12 +955,23 @@ class MCPLOutFile:
         n = len(data)
         if not n:
             return
+        #Userdata is transferred if the layouts are the same, discarded if
+        #the target has no userdata, and zeros if the source has none:
+        src_udlayout = block._udinfo[0] if block._udinfo else None
+        if udarr is not None:
+            udarr = _broadcast_userdata(udarr,n)
+        elif ( self._udlayout is not None and src_udlayout is not None
+               and src_udlayout != self._udlayout ):
+            raise MCPLError('add_particles asked to transfer particles into a'
+                            ' file with a different userdata layout')
         ocols = {}
         if overrides:
             ocols, no = self._collect_fields(overrides)
             if no not in (1,n):
                 raise MCPLError('Inconsistent lengths of particle field arrays')
             ocols = { k : np.broadcast_to(v,(n,)) for k,v in ocols.items() }
+        if udarr is not None:
+            ocols['userdata'] = udarr
         if self._hdr_notwritten:
             self._write_header()
         pdgcode = ocols['pdgcode'] if 'pdgcode' in ocols else block.pdgcode[sel]
@@ -879,6 +1012,9 @@ class MCPLOutFile:
                      'polz' : block.polz[sel], 'ekin' : block.ekin[sel],
                      'time' : block.time[sel], 'weight' : weight,
                      'pdgcode' : pdgcode, 'userflags' : block.userflags[sel] }
+            if ( self._udlayout is not None and src_udlayout is not None
+                 and udarr is None ):
+                cols['userdata'] = data['ud']
             cols.update(ocols)
             packed = None
             if ( block._fmtversion != 2 and ( self._opt_singleprec or not src_singleprec )
@@ -947,6 +1083,13 @@ class _Columns:
         return self._n
     def __getattr__( self, name ):
         return self._col(name)
+
+def _broadcast_userdata( udarr, n ):
+    if len(udarr) == n:
+        return udarr
+    if len(udarr) != 1:
+        raise MCPLError('Inconsistent lengths of userdata and particle field arrays')
+    return np.broadcast_to(udarr,(n,))
 
 def _decode( b ):
     """Decode bytes from the header like MCPLFile does"""

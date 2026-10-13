@@ -150,7 +150,7 @@ Opened MCPL file big.mcpl:
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userdata
     0        2112         0.5           1           0           0           0           0           1           0           1  000102030405060708090a0b0c0d0e0f...
     1        2112           1           2           0           0           0           0           1           0           1  0708090a0b0c0d0e0f10111213141516...
-Python module: File is in an unsupported MCPL version!
+Python module: 4 temp:float32,origin:int32,tags:uint8[3],big:float64,id:uint64,s:int16
 === Text export
 #MCPL-ASCII
 #ASCII-FORMAT: v1
