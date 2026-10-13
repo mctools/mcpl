@@ -32,7 +32,7 @@ import subprocess
 import sys
 
 import mcpldev as mcpl
-from MCPLTestUtils.dirs import mcpltool_cmd
+from MCPLTestUtils.dirs import mcpltool_cmd, test_data_dir
 from MCPLTestUtils.loadlib import getlib
 
 lib = getlib('userdata')
@@ -309,6 +309,19 @@ def test_python_writing():
             o.enable_userdata('a:int8')
     expect_error('enable too late',late)
 
+def test_example():
+    print('=== examples/pyexample_userdatamcpl')
+    #Run the example with the mcpl module being tested, and check the file it
+    #wrote with the C API:
+    f = test_data_dir.parent.parent.joinpath('examples','pyexample_userdatamcpl')
+    code = f.read_text().replace('\nimport mcpl\n','\nimport mcpldev as mcpl\n')
+    assert 'import mcpldev as mcpl' in code
+    sys.argv = [ str(f), 'pyexample.mcpl' ]
+    print(flush=True,end='')
+    exec(compile(code,str(f),'exec'),{'__name__':'__main__'})  # noqa: S102
+    print(flush=True,end='')
+    cprint(lib.mcpltest_ud_read,'pyexample.mcpl')
+
 def test_layouts():
     print('=== Invalid layouts (same errors as in the C API)')
     from mcpldev._userdata import userdata_dtype
@@ -328,6 +341,7 @@ def main():
     ok = test_compare_with_mcpltool()
     test_python_api()
     test_python_writing()
+    test_example()
     test_layouts()
     if not ok:
         raise SystemExit('Problems found')

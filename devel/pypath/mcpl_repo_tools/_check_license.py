@@ -70,6 +70,7 @@ def main():
 
     def ignore_c_headers(frel):
         return frel in [ 'tests/src/app_examples/example_filtermcpl.h',
+                         'tests/src/app_examples/example_userdatamcpl.h',
                          'tests/src/app_examples/example_writemcpl.h',
                          'tests/src/app_examples/example_readmcpl.h' ]
 
