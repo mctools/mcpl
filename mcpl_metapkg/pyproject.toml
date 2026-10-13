@@ -39,6 +39,13 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
 ]
 
+[project.optional-dependencies]
+#Forwarding the extras of mcpl-python (the version is fixed by the dependency
+#above):
+plot = [ 'mcpl-python[plot]' ]
+plotly = [ 'mcpl-python[plotly]' ]
+all = [ 'mcpl-python[all]' ]
+
 [project.urls]
 "Homepage" = "https://mctools.github.io/mcpl/"
 "Bug Tracker" = "https://github.com/mctools/mcpl/issues"
