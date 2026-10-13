@@ -1,13 +1,13 @@
 Figure 1 (1x1): None
   Panel None xlabel='ekin/MeV' ylabel='weights per bin' logx xlim=[0.00139345,9724.96]
-    StepHist label='n (2112)' color=0 bins=100 edges=[0.00139345,9724.96] sum=726 max=38 nonzero_bins=73
-    StepHist label='gamma (22)' color=1 bins=100 edges=[0.00139345,9724.96] sum=239 max=17 nonzero_bins=34
-    StepHist label='e- (11)' color=2 bins=100 edges=[0.00139345,9724.96] sum=15 max=2 nonzero_bins=13
-    StepHist label='p (2212)' color=3 bins=100 edges=[0.00139345,9724.96] sum=10 max=3 nonzero_bins=7
-    StepHist label='e+ (-11)' color=4 bins=100 edges=[0.00139345,9724.96] sum=8 max=2 nonzero_bins=7
-    StepHist label='pi+ (211)' color=5 bins=100 edges=[0.00139345,9724.96] sum=5 max=1 nonzero_bins=5
-    StepHist label='pi- (-211)' color=6 bins=100 edges=[0.00139345,9724.96] sum=2 max=1 nonzero_bins=2
-    StepHist label='nu_mu (14)' color=7 bins=100 edges=[0.00139345,9724.96] sum=1 max=1 nonzero_bins=1
+    StepHist label='n (2112)' color=0 bins=30 edges=[0.00139345,9724.96] sum=726 max=106 nonzero_bins=26
+    StepHist label='gamma (22)' color=1 bins=30 edges=[0.00139345,9724.96] sum=239 max=46 nonzero_bins=13
+    StepHist label='e- (11)' color=2 bins=30 edges=[0.00139345,9724.96] sum=15 max=3 nonzero_bins=10
+    StepHist label='p (2212)' color=3 bins=30 edges=[0.00139345,9724.96] sum=10 max=3 nonzero_bins=4
+    StepHist label='e+ (-11)' color=4 bins=30 edges=[0.00139345,9724.96] sum=8 max=2 nonzero_bins=5
+    StepHist label='pi+ (211)' color=5 bins=30 edges=[0.00139345,9724.96] sum=5 max=1 nonzero_bins=5
+    StepHist label='pi- (-211)' color=6 bins=30 edges=[0.00139345,9724.96] sum=2 max=1 nonzero_bins=2
+    StepHist label='nu_mu (14)' color=7 bins=30 edges=[0.00139345,9724.96] sum=1 max=1 nonzero_bins=1
 Figure 1 (1x1): None
   Panel 'selection: pdgcode == neutron' xlabel='ekin/eV' ylabel='weights per unit lethargy' logx xlim=[1393.45,2.40978e+09]
     StepHist label=None color=0 bins=20 edges=[1393.45,2.40978e+09] sum=1010.91 max=197.727 nonzero_bins=19
@@ -222,14 +222,14 @@ plot_histograms(overlay=True) with 2 histograms {'labels': ['a']}: The number of
 pymcpltool --hist ekin/MeV --logx --split pdgcode --backend test example.mcpl: exit code 0
    | Figure 1 (1x1): None
    |   Panel None xlabel='ekin/MeV' ylabel='weights per bin' logx xlim=[0.00139345,9724.96]
-   |     StepHist label='n (2112)' color=0 bins=100 edges=[0.00139345,9724.96] sum=726 max=38 nonzero_bins=73
-   |     StepHist label='gamma (22)' color=1 bins=100 edges=[0.00139345,9724.96] sum=239 max=17 nonzero_bins=34
-   |     StepHist label='e- (11)' color=2 bins=100 edges=[0.00139345,9724.96] sum=15 max=2 nonzero_bins=13
-   |     StepHist label='p (2212)' color=3 bins=100 edges=[0.00139345,9724.96] sum=10 max=3 nonzero_bins=7
-   |     StepHist label='e+ (-11)' color=4 bins=100 edges=[0.00139345,9724.96] sum=8 max=2 nonzero_bins=7
-   |     StepHist label='pi+ (211)' color=5 bins=100 edges=[0.00139345,9724.96] sum=5 max=1 nonzero_bins=5
-   |     StepHist label='pi- (-211)' color=6 bins=100 edges=[0.00139345,9724.96] sum=2 max=1 nonzero_bins=2
-   |     StepHist label='nu_mu (14)' color=7 bins=100 edges=[0.00139345,9724.96] sum=1 max=1 nonzero_bins=1
+   |     StepHist label='n (2112)' color=0 bins=30 edges=[0.00139345,9724.96] sum=726 max=106 nonzero_bins=26
+   |     StepHist label='gamma (22)' color=1 bins=30 edges=[0.00139345,9724.96] sum=239 max=46 nonzero_bins=13
+   |     StepHist label='e- (11)' color=2 bins=30 edges=[0.00139345,9724.96] sum=15 max=3 nonzero_bins=10
+   |     StepHist label='p (2212)' color=3 bins=30 edges=[0.00139345,9724.96] sum=10 max=3 nonzero_bins=4
+   |     StepHist label='e+ (-11)' color=4 bins=30 edges=[0.00139345,9724.96] sum=8 max=2 nonzero_bins=5
+   |     StepHist label='pi+ (211)' color=5 bins=30 edges=[0.00139345,9724.96] sum=5 max=1 nonzero_bins=5
+   |     StepHist label='pi- (-211)' color=6 bins=30 edges=[0.00139345,9724.96] sum=2 max=1 nonzero_bins=2
+   |     StepHist label='nu_mu (14)' color=7 bins=30 edges=[0.00139345,9724.96] sum=1 max=1 nonzero_bins=1
 pymcpltool --hist ekin/eV --lethargy -pneutron --bins 5 --print example.mcpl: exit code 0
    | # histogram of: ekin/eV
    | # selection: pdgcode == neutron
@@ -276,7 +276,7 @@ pymcpltool --hist x/cm --range -10:10 --bins 4 --backend test example.mcpl reffi
 pymcpltool --hist time/ms --logx --logy --unweighted --backend test example.mcpl: exit code 0
    | Figure 1 (1x1): None
    |   Panel None xlabel='time/ms' ylabel='particles per bin' logx logy xlim=[7.01658e-07,0.00166018]
-   |     StepHist label=None color=0 bins=100 edges=[7.01658e-07,0.00166018] sum=1006 max=170 nonzero_bins=90
+   |     StepHist label=None color=0 bins=30 edges=[7.01658e-07,0.00166018] sum=1006 max=247 nonzero_bins=29
 pymcpltool --hist ekin/MeV --split pdgcode --range 0:10 --bins 2 --select x > 1km --print example.mcpl: exit code 0
    | # histogram of: ekin/MeV
    | # selection: x > 1km
@@ -450,3 +450,17 @@ pymcpltool --hist x/cm --output hist.txt --backend test example.mcpl: exit code 
    | ERROR: Requested output file already exists.
    | 
    | Run with -h or --help for usage information
+nice numbers of bins: [(1200, 1080), (400, 360), (239, 216), (83, 72), (37, 36), (15, 15), (8, 8)]
+neff=1: bins of 1080 -> 10, of 216 -> 9, 2D of 216 -> 9
+neff=100: bins of 1080 -> 10, of 216 -> 9, 2D of 216 -> 9
+neff=1000: bins of 1080 -> 30, of 216 -> 36, 2D of 216 -> 9
+neff=10000: bins of 1080 -> 108, of 216 -> 108, 2D of 216 -> 9
+neff=100000: bins of 1080 -> 360, of 216 -> 216, 2D of 216 -> 18
+neff=1e+06: bins of 1080 -> 360, of 216 -> 216, 2D of 216 -> 36
+2756 (ncols,neff) cases, 0 bad, ratio to target 0.72..1.25 when not capped, 1035 capped by narrow plots, at most 15% unused columns
+auto: 30 bins, sum 1006 (1080 bins: 1006), merged exactly: True, same edges: True, for display: 1080
+auto with few particles: 10 bins, sum 10
+auto with at most 83 bins: 36 bins, for display: 72
+auto 2D: (10, 10) bins, sum 1006, for display: (360, 360)
+auto 2D with at most (69,15) bins: (10, 15) bins, sum 1006, for display: (60, 15)
+2D with bins=(8,4): (8, 4) bins, for display: None

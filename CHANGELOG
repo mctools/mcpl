@@ -34,7 +34,16 @@ v2.2.9  (work in progress)
       * New plotting backends "unicode" and "ascii" in the Python API and
         pymcpltool, which draw plots as text: in the terminal (e.g. with
         pymcpltool --hist ... --backend unicode), or in .txt files. They need
-        no extra Python packages, so plots can always be made.
+        no extra Python packages, so plots can always be made. Histograms
+        with more bins than the columns (or cells) of such plots are shown
+        with the average of the bin values over each column, and histograms
+        from pymcpltool --hist without --bins are made at the resolution of
+        the plot, with a whole number of columns per bin (the number of
+        columns is given by mcpl.plotting.resolution(..)).
+      * Unless the number of bins is given, mcpl.histogram, mcpl.histogram2d
+        and pymcpltool --hist now choose it from the effective number of
+        entries N: sqrt(N) bins (the fourth root per axis for 2D histograms),
+        between 10 and 400, rather than always 100.
       * Particles can now carry custom per-particle data ("userdata"): a fixed
         number of bytes per particle, described by a layout string stored in
         the file header (like "temp:float32,origin:int32,tags:uint8[3]", or

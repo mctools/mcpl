@@ -239,9 +239,47 @@ def _make_edges( rng, bins, logx ):
         return np.geomspace(lo,hi,bins+1)
     return np.linspace(lo,hi,bins+1)
 
-def histogram( files, expression, select = None, bins = 100, range = None,
+def _nice_nbins( maxbins ):
+    """A number of bins which is at most maxbins and has many divisors (the
+    largest number of divisors among the numbers of the form 2^a*3^b*5^c
+    between 85% of maxbins and maxbins), so a histogram with that many bins
+    can later be merged into fewer bins in many ways. Below 10 bins, maxbins
+    itself is returned."""
+    maxbins = int(maxbins)
+    if maxbins < 10:
+        return max(1,maxbins)
+    best = None
+    for a in _range(0,8):
+        for b in _range(0,6):
+            for c in _range(0,5):
+                n = 2**a * 3**b * 5**c
+                if 0.85 * maxbins < n <= maxbins:
+                    ndiv = (a+1)*(b+1)*(c+1)
+                    if best is None or (ndiv,n) > best:
+                        best = (ndiv,n)
+    return best[1] if best else maxbins
+
+def _auto_nbins( neff, nbins, ndim = 1 ):
+    """Number of bins for showing a histogram made with nbins bins of data with
+    an effective number of entries neff: the square-root rule (per axis for
+    ndim=2), clamped to [10,400], and then the closest divisor of nbins (in
+    log distance, so the bins can be merged exactly)."""
+    import math
+    target = max( 1.0, neff ) ** ( 0.5 / ndim )
+    target = max( 10, min( 400, round(target) ) )
+    divs = [ d for d in _range(1,nbins+1) if nbins % d == 0 ]
+    return min( divs, key = lambda d : abs(math.log(d/target)) )
+
+def _neff( sumw, sumw2 ):
+    """Effective number of entries (sum of weights squared over sum of squared
+    weights, which is the number of entries for unit weights)"""
+    return sumw * sumw / sumw2 if sumw2 > 0.0 else 0.0
+
+_range = range#(the name range is shadowed by arguments below)
+
+def histogram( files, expression, select = None, bins = 'auto', range = None,
                logx = False, weighted = True, split = None, lethargy = False,
-               max_curves = 8 ):
+               max_curves = 8, _maxbins = None ):
     """Histogram of the values of an expression (see ParticleValue) for the
     particles in one or more files. Values with units must be divided by a
     unit, e.g. "ekin/MeV". For instance:
@@ -253,8 +291,10 @@ def histogram( files, expression, select = None, bins = 100, range = None,
 
     Particles can be selected with the select expression (see
     ParticleFilter). The number of bins and their range (a tuple (low,high))
-    can be given, otherwise the range covers all values. With logx, the bins
-    are logarithmic. Unless weighted is False, the histogram contains the sum
+    can be given, otherwise the range covers all values, and the number of
+    bins is chosen from the effective number of entries N (the square root
+    of N, between 10 and 400; the data is histogrammed once with many bins,
+    which are then merged). With logx, the bins are logarithmic. Unless weighted is False, the histogram contains the sum
     of weights in each bin rather than the number of particles. With lethargy
     (which implies logx), the plotted values are divided by the bin widths in
     lethargy (ln(E2/E1)), as is common for energy spectra.
@@ -275,9 +315,10 @@ def histogram( files, expression, select = None, bins = 100, range = None,
         range = _find_range(files,flt,vals,logx)
         if range is None:
             raise MCPLError('No values to histogram (no particles selected?)')
-    edges = _make_edges(range,int(bins),logx)
+    auto = ( bins == 'auto' )
+    nbins = _nice_nbins(_maxbins or 1200) if auto else int(bins)
+    edges = _make_edges(range,nbins,logx)
     title = f'selection: {flt.expression}' if flt is not None else None
-    h = Histogram(vals.expression,edges,logx,weighted,lethargy,title)
     acc = {}#(file label,split key) -> [contents,sumw2,underflow,overflow]
     for flabel,src in files:
         for b in _blocks(src,flt):
@@ -302,6 +343,21 @@ def histogram( files, expression, select = None, bins = 100, range = None,
                 a[1] += np.histogram(vk,bins=edges,weights=wk*wk)[0]
                 a[2] += float(wk[vk<edges[0]].sum())
                 a[3] += float(wk[vk>edges[-1]].sum())
+    #With automatic binning, merge the bins according to the effective number
+    #of entries:
+    k = 1
+    if auto:
+        sumw = sum( a[0].sum() for a in acc.values() )
+        sumw2 = sum( a[1].sum() for a in acc.values() )
+        k = nbins // _auto_nbins(_neff(sumw,sumw2),nbins)
+        if k > 1:
+            edges = edges[::k]
+            for a in acc.values():
+                a[0] = a[0].reshape(-1,k).sum(axis=1)
+                a[1] = a[1].reshape(-1,k).sum(axis=1)
+    h = Histogram(vals.expression,edges,logx,weighted,lethargy,title)
+    #(number of columns needed to draw the bins exactly, see pymcpltool):
+    h._display_bins = nbins if auto else None
     #Order curves by total weight (per file), and combine the smallest ones:
     multifile = len(files) > 1
     for flabel,_ in files:
@@ -328,14 +384,18 @@ def histogram( files, expression, select = None, bins = 100, range = None,
             h.underflow[lbl], h.overflow[lbl] = a[2], a[3]
     return h
 
-def histogram2d( files, xexpression, yexpression, select = None, bins = 100,
-                 xrange = None, yrange = None, weighted = True ):
+def histogram2d( files, xexpression, yexpression, select = None, bins = 'auto',
+                 xrange = None, yrange = None, weighted = True, _maxbins = None ):
     """2D histogram of the values of two expressions (see histogram()) for the
     particles in one or more files, for instance:
 
        h = mcpl.histogram2d( "myfile.mcpl",
                              "x/cm", "y/cm" )
        h.plot()
+
+    The number of bins can be given for both axes, or as a tuple (nx,ny), and
+    is otherwise chosen from the effective number of entries N (the fourth
+    root of N per axis, between 10 and 400).
     """
     files = _as_files(files)
     flt = _as(ParticleFilter,select)
@@ -346,15 +406,35 @@ def histogram2d( files, xexpression, yexpression, select = None, bins = 100,
         yrange = _find_range(files,flt,yv,False)
     if xrange is None or yrange is None:
         raise MCPLError('No values to histogram (no particles selected?)')
-    xe, ye = _make_edges(xrange,int(bins),False), _make_edges(yrange,int(bins),False)
+    auto = ( isinstance(bins,str) and bins == 'auto' )
+    if auto:
+        mx, my = _maxbins if _maxbins else ( 400, 400 )
+        bx, by = _nice_nbins(mx), _nice_nbins(my)
+    else:
+        bx, by = bins if isinstance(bins,(tuple,list)) else ( bins, bins )
+        bx, by = int(bx), int(by)
+    xe, ye = _make_edges(xrange,bx,False), _make_edges(yrange,by,False)
     title = f'selection: {flt.expression}' if flt is not None else None
-    h = Histogram2D(xv.expression,yv.expression,xe,ye,weighted,title)
+    contents = np.zeros((bx,by))
+    sumw, sumw2 = 0.0, 0.0
     for _,src in files:
         for b in _blocks(src,flt):
             w = b.weight if weighted else None
-            h.contents += np.histogram2d(np.asarray(xv(b),dtype=float),
-                                         np.asarray(yv(b),dtype=float),
-                                         bins=(xe,ye),weights=w)[0]
+            x, y = np.asarray(xv(b),dtype=float), np.asarray(yv(b),dtype=float)
+            contents += np.histogram2d(x,y,bins=(xe,ye),weights=w)[0]
+            inside = ( x >= xe[0] ) & ( x <= xe[-1] ) & ( y >= ye[0] ) & ( y <= ye[-1] )
+            wi = np.ones(len(x))[inside] if w is None else np.asarray(w)[inside]
+            sumw += float(wi.sum())
+            sumw2 += float((wi*wi).sum())
+    if auto:
+        neff = _neff(sumw,sumw2)
+        kx, ky = bx // _auto_nbins(neff,bx,2), by // _auto_nbins(neff,by,2)
+        if kx > 1 or ky > 1:
+            xe, ye = xe[::kx], ye[::ky]
+            contents = contents.reshape(bx//kx,kx,by//ky,ky).sum(axis=(1,3))
+    h = Histogram2D(xv.expression,yv.expression,xe,ye,weighted,title)
+    h.contents += contents
+    h._display_bins = ( bx, by ) if auto else None
     return h
 
 def plot_histograms( histograms, filename = None, backend = None, logy = False,

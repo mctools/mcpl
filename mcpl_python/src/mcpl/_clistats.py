@@ -56,10 +56,29 @@ def pymcpltool_hist(filelist,expr,select,vopts,hflags,bad):
     from ._histogram import histogram, histogram2d
     if not filelist:
         bad("No input file specified")
-    bins = vopts.get('--bins','100')
-    if not bins.isdigit() or not int(bins) > 0:
+    bins = vopts.get('--bins')
+    if bins is not None and ( not bins.isdigit() or not int(bins) > 0 ):
         bad("--bins must be a positive integer")
     exprs = expr.split(' : ')
+    outfn = vopts.get('--output')
+    #Unless the number of bins is given, it is chosen automatically, with at
+    #most the resolution of the plot (if the backend has one, like the text
+    #backends, whose plots are then fitted to the bins):
+    backend, maxbins = None, None
+    if bins is not None:
+        bins = int(bins)
+    else:
+        bins = 'auto'
+        if '--print' not in hflags:
+            from ._plotbackend import _create_backend
+            try:
+                backend = _create_backend(vopts.get('--backend'),
+                                          **_save_options(outfn,vopts.get('--backend')))
+            except MCPLError as e:
+                bad(str(e))
+            res = backend.resolution()
+            if res is not None:
+                maxbins = tuple(res) if len(exprs) == 2 else res[0]
     rngs = [ None, None ]
     if '--range' in vopts:
         parts = vopts['--range'].split(',')
@@ -89,10 +108,12 @@ def pymcpltool_hist(filelist,expr,select,vopts,hflags,bad):
             if '--split' in vopts:
                 bad("--split can not be used with 2D histograms")
             h = histogram2d(filelist,exprs[0].strip(),exprs[1].strip(),
-                            select=select,bins=int(bins),xrange=rng,yrange=rngs[1],
-                            weighted='--unweighted' not in hflags)
+                            select=select,bins=bins,xrange=rng,yrange=rngs[1],
+                            weighted='--unweighted' not in hflags,
+                            _maxbins=maxbins)
         else:
-            h = histogram(filelist,expr,select=select,bins=int(bins),range=rng,
+            h = histogram(filelist,expr,select=select,bins=bins,range=rng,
+                          _maxbins=maxbins,
                           logx='--logx' in hflags,
                           weighted='--unweighted' not in hflags,
                           split=vopts.get('--split'),
@@ -102,13 +123,18 @@ def pymcpltool_hist(filelist,expr,select,vopts,hflags,bad):
     if '--print' in hflags:
         print(h.to_text())
         return
-    outfn = vopts.get('--output')
     if outfn and os.path.exists(outfn):
         bad("Requested output file already exists.")
     kw = {} if len(exprs) == 2 else { 'logy' : '--logy' in hflags }
     try:
-        files = h.plot(filename=outfn,backend=vopts.get('--backend'),**kw,
-                       **_save_options(outfn,vopts.get('--backend')))
+        if backend is not None:
+            if maxbins is not None and hasattr(backend,'_fit_resolution'):
+                #(draw the bins exactly, with a whole number of columns each):
+                backend._fit_resolution(h._display_bins)
+            files = h.plot(filename=outfn,backend=backend,**kw)
+        else:
+            files = h.plot(filename=outfn,backend=vopts.get('--backend'),**kw,
+                           **_save_options(outfn,vopts.get('--backend')))
     except MCPLError as e:
         bad(str(e))
     if files:

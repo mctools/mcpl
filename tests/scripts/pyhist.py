@@ -108,6 +108,56 @@ def test_overlay():
         except mcpl.MCPLError as e:
             print(f'plot_histograms(overlay=True) with {len(args)} histograms {kwargs}: {e}')
 
+def test_autobins():
+    #Without bins, the number of bins follows from the effective number of
+    #entries (square root, clamped to [10,400]), after histogramming with many
+    #bins which are then merged exactly:
+    from mcpldev._histogram import _auto_nbins, _nice_nbins
+    print('nice numbers of bins:',[ (m,_nice_nbins(m)) for m in (1200,400,239,83,37,15,8) ])
+    for neff in (1, 100, 1000, 1e4, 1e5, 1e6):
+        print(f'neff={neff:g}: bins of 1080 -> {_auto_nbins(neff,1080)},'
+              f' of 216 -> {_auto_nbins(neff,216)}, 2D of 216 -> {_auto_nbins(neff,216,2)}')
+    #Sanity of the choices for all plot widths and a range of statistics: the
+    #bins merge exactly, few columns are unused, and the number of bins is
+    #close to the target unless the plot is too narrow for it:
+    import math
+    stats, nbad = [], 0
+    for ncols in [None] + list(range(29,240)):
+        nb = _nice_nbins(1200 if ncols is None else ncols)
+        for neff in (1,3,10,30,100,300,1e3,3e3,1e4,3e4,1e5,1e6,1e8):
+            n = _auto_nbins(neff,nb)
+            target = max(10,min(400,round(math.sqrt(neff))))
+            unused = 0.0 if ncols is None else ( ncols - nb ) / ncols
+            capped = ( n == nb )#(every column used, narrow plot)
+            ratio = n / target
+            ok = ( nb % n == 0 and ( ncols is None or nb <= ncols ) and unused <= 0.15
+                   and ( capped or 0.6 <= ratio <= 1.5 ) )
+            nbad += ( not ok )
+            stats.append((ratio,unused,capped))
+    print(f'{len(stats)} (ncols,neff) cases, {nbad} bad, ratio to target'
+          f' {min(r for r,_,c in stats if not c):.2f}..{max(r for r,_,c in stats if not c):.2f}'
+          f' when not capped, {sum(c for _,_,c in stats)} capped by narrow plots,'
+          f' at most {100*max(u for _,u,_ in stats):.0f}% unused columns')
+    h = mcpl.histogram(example_file, 'x/cm')
+    hf = mcpl.histogram(example_file, 'x/cm', bins=1080)
+    v, vf = h.values(), hf.values()
+    print(f'auto: {len(h.edges)-1} bins, sum {v.sum():g} (1080 bins: {vf.sum():g}),'
+          f' merged exactly: {np.allclose(v,vf.reshape(len(v),-1).sum(axis=1))},'
+          f' same edges: {np.allclose(h.edges,hf.edges[::1080//len(v)])},'
+          f' for display: {h._display_bins}')
+    h = mcpl.histogram(example_file, 'x/cm', select='pdgcode == 2212')
+    print(f'auto with few particles: {len(h.edges)-1} bins, sum {h.values().sum():g}')
+    h = mcpl.histogram(example_file, 'x/cm', _maxbins=83)
+    print(f'auto with at most 83 bins: {len(h.edges)-1} bins, for display: {h._display_bins}')
+    h = mcpl.histogram2d(example_file, 'x/cm', 'y/cm')
+    print(f'auto 2D: {h.contents.shape} bins, sum {h.contents.sum():g},'
+          f' for display: {h._display_bins}')
+    h = mcpl.histogram2d(example_file, 'x/cm', 'y/cm', _maxbins=(69,15))
+    print(f'auto 2D with at most (69,15) bins: {h.contents.shape} bins,'
+          f' sum {h.contents.sum():g}, for display: {h._display_bins}')
+    h = mcpl.histogram2d(example_file, 'x/cm', 'y/cm', bins=(8,4))
+    print(f'2D with bins=(8,4): {h.contents.shape} bins, for display: {h._display_bins}')
+
 def tool(*args):
     out = io.StringIO()
     rc = 0
@@ -160,3 +210,4 @@ test_stats_figures()
 test_overlay()
 test_cmdline()
 test_cmdline_more()
+test_autobins()
