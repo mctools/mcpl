@@ -32,7 +32,7 @@ import mcpldev as mcpl
 import numpy as np
 from MCPLTestUtils.dirs import test_data_dir
 
-shutil.copy(test_data_dir.parent.parent.joinpath('examples','example.mcpl'),'example.mcpl')
+shutil.copy(test_data_dir.joinpath('example.mcpl'),'example.mcpl')
 ex = 'example.mcpl'
 
 def same_file(f1, f2):

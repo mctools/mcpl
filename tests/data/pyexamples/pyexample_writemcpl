@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+
+################################################################################
+##                                                                            ##
+##  This file is part of MCPL (see https://mctools.github.io/mcpl/)           ##
+##                                                                            ##
+##  Copyright 2015-2026 MCPL developers.                                      ##
+##                                                                            ##
+##  Licensed under the Apache License, Version 2.0 (the "License");           ##
+##  you may not use this file except in compliance with the License.          ##
+##  You may obtain a copy of the License at                                   ##
+##                                                                            ##
+##      http://www.apache.org/licenses/LICENSE-2.0                            ##
+##                                                                            ##
+##  Unless required by applicable law or agreed to in writing, software       ##
+##  distributed under the License is distributed on an "AS IS" BASIS,         ##
+##  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  ##
+##  See the License for the specific language governing permissions and       ##
+##  limitations under the License.                                            ##
+##                                                                            ##
+################################################################################
+
+#  Simple example with comments, showing how one can use the mcpl Python API to
+#  create MCPL files. Particles are added in blocks of numpy arrays, which is
+#  efficient even for very large numbers of particles.
+
+import sys
+
+import mcpl
+import numpy as np
+
+#Get name of output file from command line. Note that an ".mcpl" extension will
+#be added to the filename if it doesn't have it already:
+outputfile = sys.argv[1]
+
+#Create output file and embed name of source application in the header. Header
+#settings can be given as keyword arguments here (like this sourcename), and/or
+#by calling methods named like the functions of the C API (like the
+#hdr_add_comment calls below), in any combination:
+f = mcpl.MCPLOutFile( outputfile, sourcename = 'my_cool_program_name' )
+
+#By default, floating point numbers will be stored in single precision and
+#neither polarisation nor user-flags will be stored in the file. These defaults
+#can be modified by one or more of the following calls (or keyword arguments
+#opt_userflags=True, opt_polarisation=True, opt_singleprec=False):
+#
+#    f.enable_userflags()
+#    f.enable_polarisation()
+#    f.enable_doubleprec()
+
+#If all particles will be of the same type, optimise the file a bit by:
+#
+#    f.enable_universal_pdgcode(2112)#all particles are neutrons
+
+#We can add comments (strings) to the header. It is always a good idea to add
+#comments explaining things like coordinate system, contents of user-flags (if
+#any), and what the values in the "weight" field means exactly:
+f.hdr_add_comment('Some comment.')
+f.hdr_add_comment('Another comment.')
+
+#It is also possible to add binary data with f.hdr_add_data(key,data), if
+#desired. So for instance, custom persistified configuration meta-data could be
+#added (or perhaps just a text file used by your programme, if appropriate).
+
+#Add particles in blocks (here everything will simply be filled with some
+#random numbers). Each field can be given as an array or as a single value
+#used for all particles in the block:
+rng = np.random.default_rng()
+for i in range(10):
+    n = 1000
+    f.add_particles(
+        pdgcode = rng.choice([2112,22],size=n),#50% neutrons, 50% gammas
+        position = rng.uniform(-100.0,100.0,size=(n,3)),#centimeters
+        ekin = rng.uniform(0.001,10.0,size=n),#kinetic energy in MeV
+        direction = (0.0,0.0,1.0),#momentum direction (unit vector)
+        time = rng.uniform(0.0,100.0,size=n),#milliseconds
+        weight = rng.uniform(0.01,10.0,size=n),#unspecified units
+    )
+
+#Single particles can also be added with f.add_particle(..), which takes the
+#same arguments as single values:
+f.add_particle( pdgcode = 2112, position = (0.0,0.0,0.0), ekin = 0.025,
+                direction = (0.0,1.0,0.0), time = 0.0, weight = 1.0 )
+
+#At the end, remember to properly close the output file. By calling
+#closeandgzip() rather than close(), the output file will end up being gzipped,
+#resulting in a smaller file. Such files can also be read directly by MCPL. It
+#will also gain the extension ".mcpl.gz" rather than ".mcpl":
+f.closeandgzip()
+
+#Note that the file can also be created in a with-statement, in which case
+#close() will be called automatically at the end:
+#
+#   with mcpl.MCPLOutFile( outputfile ) as f:
+#       f.add_particles(...)
