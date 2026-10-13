@@ -289,6 +289,9 @@ not a dict: MCPLError: userdata must be a dict of field values or a numpy struct
 inconsistent lengths: MCPLError: Inconsistent lengths of userdata and particle field arrays
 no userdata in file: MCPLError: add_particles called with userdata for a file without userdata (see enable_userdata)
 several for add_particle: MCPLError: add_particle must be called with userdata for a single particle
+add_particles without userdata: MCPLError: add_particles called without userdata for a file with userdata (use userdata = {} for userdata with all bytes zero)
+add_particle without userdata: MCPLError: add_particle called without userdata for a file with userdata (use userdata = {} for userdata with all bytes zero)
+transfer without userdata: MCPLError: add_particles asked to transfer particles without userdata into a file with userdata (use userdata = {} for userdata with all bytes zero)
 invalid layout: MCPLError: Invalid userdata layout "uint8[27]": fields must be given as name:type
 different layouts: MCPLError: enable_userdata called multiple times with different layouts
 enable too late: MCPLError: enable_userdata called too late.

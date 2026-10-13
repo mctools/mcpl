@@ -73,7 +73,7 @@ static int mcpltest_ud_is_std( const char * layout )
 //Write file with nparticles particles. Layout "<NONE>" means no userdata,
 //"<STD>" the standard layout above, and otherwise the bytes are set to
 //(i*7+j)%256. Options: bit 0 for double precision, bit 1 for polarisation,
-//bit 2 to add every other particle with mcpl_add_particle (i.e. zeros):
+//bit 2 to add every other particle with NULL userdata (i.e. zeros):
 MCPLTEST_CTYPES void mcpltest_ud_write( const char * filename,
                                         const char * layout,
                                         unsigned nparticles,
@@ -120,10 +120,10 @@ MCPLTEST_CTYPES void mcpltest_ud_write( const char * filename,
       for ( uint32_t j = 0; j < udsize; ++j )
         ud[j] = (uint8_t)((i*7+j)%256);
     }
-    if ( ( options & 4 ) && i % 2 )
+    if ( !udsize )
       mcpl_add_particle(f,p);
     else
-      mcpl_add_particle_with_userdata(f,p,udsize?ud:NULL);
+      mcpl_add_particle_with_userdata(f,p,( ( options & 4 ) && i % 2 ) ? NULL : ud);
   }
   free(ud);
   mcpl_close_outfile(f);
@@ -277,6 +277,10 @@ MCPLTEST_CTYPES void mcpltest_ud_misuse( unsigned icase )
   } else if ( icase == 3 ) {
     //NULL layout:
     mcpl_enable_userdata(f,NULL);
+  } else if ( icase == 4 ) {
+    //mcpl_add_particle for a file with userdata:
+    mcpl_enable_userdata(f,"x:int32");
+    mcpl_add_particle(f,p);
   } else {
     //NULL userdata is allowed (zeros):
     mcpl_enable_userdata(f,"x:int32");

@@ -30,9 +30,12 @@ v2.2.9  (work in progress)
         the new MCPL format version 4, while all other files are still written
         in format version 3 (so they can still be read by older MCPL
         releases). MCPL_FORMATVERSION is now 4, the latest supported format
-        version. Files can only be merged if their userdata layouts are
-        identical, while forced merges discard the userdata (with a warning)
-        unless all files have the same layout.
+        version. In files with userdata, particles must be added with
+        mcpl_add_particle_with_userdata (with NULL for userdata with all bytes
+        zero), and mcpl_add_particle is an error, as is transferring particles
+        without userdata into such files. Files can only be merged if their
+        userdata layouts are identical, while forced merges discard the
+        userdata (with a warning) unless all files have the same layout.
       * The Python API can read files with userdata: MCPLFile.userdata_layout
         and userdata_size, and block.userdata (and particle.userdata), which
         is a numpy structured array with the fields of the layout (e.g.
@@ -47,10 +50,12 @@ v2.2.9  (work in progress)
         enable_userdata(layout), and give the userdata of the particles with
         the userdata argument of add_particles and add_particle, as a dict of
         field values (e.g. userdata = { 'temp' : temps, 'tags' : tags }) or a
-        numpy structured array (like block.userdata). Missing fields and
-        particles added without userdata get zeros, and integer fields must
-        be given integers within the range of their type. The files are
-        identical to those written with the C API.
+        numpy structured array (like block.userdata). The userdata argument is
+        required in files with userdata (except when transferring particles
+        from files with the same layout), missing fields get zeros (so
+        userdata = {} gives all bytes zero), and integer fields must be given
+        integers within the range of their type. The files are identical to
+        those written with the C API.
       * Clearer error messages for invalid values of stat:sum entries (which
         must be non-negative or -1, and may only be padded with spaces).
       * Plotting backends in the Python API: the default backend can be set

@@ -1551,6 +1551,10 @@ MCPL_LOCAL void mcpl_internal_write_particle_buffer_to_file(mcpl_outfileinternal
 void mcpl_add_particle(mcpl_outfile_t of,const mcpl_particle_t* particle)
 {
   MCPLIMP_OUTFILEDECODE;
+  if ( f->userdata_size )
+    mcpl_error("mcpl_add_particle called for a file with userdata (use"
+               " mcpl_add_particle_with_userdata, with NULL for userdata"
+               " with all bytes zero)");
   mcpl_internal_serialise_particle_to_buffer(particle,NULL,f);
   mcpl_internal_write_particle_buffer_to_file(f);
 }
@@ -2759,9 +2763,15 @@ void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
   //if present in the input particle, since it is a valid use-case to use this
   //function to discard such info.
 
-  //Userdata to transfer (NULL means zeros, used if the source has none):
+  //Userdata to transfer (the target can only have userdata if the source has
+  //the same layout):
   const uint8_t * userdata = NULL;
-  if ( ft->userdata_size && fs->userdata_size ) {
+  if ( ft->userdata_size && !fs->userdata_size ) {
+    mcpl_error("mcpl_transfer_last_read_particle asked to transfer"
+               " particle without userdata into a file with userdata");
+    return;
+  }
+  if ( ft->userdata_size ) {
     if ( strcmp( ft->userdata_layout, fs->userdata_layout ) != 0 ) {
       mcpl_error("mcpl_transfer_last_read_particle asked to transfer"
                  " particle into a file with a different userdata layout");
@@ -2789,8 +2799,7 @@ void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
     //floating point precision is increasing. In these scenarious we can not
     //reuse the 3 floats representing packed direction+ekin but must proceed via
     //a full unpacking+repacking.
-    mcpl_add_particle_with_userdata(target,fs->particle,
-                                    ft->userdata_size ? userdata : NULL);
+    mcpl_add_particle_with_userdata(target,fs->particle,userdata);
     return;
   }
 

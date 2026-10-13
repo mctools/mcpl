@@ -276,6 +276,12 @@ class MCPLOutFile:
         from ._userdata import userdata_dtype
         return userdata_dtype(self._udlayout)
 
+    def _check_userdata_given(self, fctname):
+        if self._udlayout is not None:
+            raise MCPLError(f'{fctname} called without userdata for a file with'
+                            ' userdata (use userdata = {} for userdata with all'
+                            ' bytes zero)')
+
     def _userdata_arg(self, value, fctname):
         """Userdata given to add_particles or add_particle, as a structured
         array (and the number of particles)"""
@@ -295,8 +301,9 @@ class MCPLOutFile:
         for plain bytes like "data:uint8[27]", to avoid mixing up different
         data with the same types when merging files). At most 65535 bytes per
         particle are allowed. The userdata of the particles is given with the
-        userdata argument of add_particles and add_particle (and is zero for
-        particles added without it). Files with userdata are written in MCPL
+        userdata argument of add_particles and add_particle, which is required
+        for files with userdata (userdata = {} gives userdata with all bytes
+        zero). Files with userdata are written in MCPL
         format version 4 (which older MCPL releases can not read)."""
         from ._userdata import userdata_dtype
         userdata_dtype(layout)#validate
@@ -693,8 +700,7 @@ class MCPLOutFile:
             v = cols.get('userflags')
             arr['uf'] = 0 if v is None else np.broadcast_to(v,(n,))
         if self._udlayout is not None:
-            #(zeros unless given, e.g. when transferring from a file with the
-            #same userdata layout):
+            #(the callers always give the userdata for files with userdata):
             v = cols.get('userdata')
             arr['ud'] = ( np.zeros(n,dtype=self._userdata_dtype())
                           if v is None else v )
@@ -774,9 +780,12 @@ class MCPLOutFile:
         tags }, with temps of shape (N,) and tags of shape (N,3) for the layout
         "temp:float32,tags:uint8[3]"), or as a numpy structured array with
         those fields (e.g. the userdata of a block read from another file).
-        Missing fields are zero, and values for a single particle apply to all
-        particles. Integer fields must be given integers within the range of
-        their type.
+        Missing fields are zero (so userdata = {} gives userdata with all bytes
+        zero), and values for a single particle apply to all particles.
+        Integer fields must be given integers within the range of their type.
+        In files with userdata, the userdata argument is required, unless the
+        particles are passed as a block from a file with the same userdata
+        layout (whose userdata is then used).
 
         Alternatively, an MCPLParticleBlock (or an MCPLParticle) read with
         MCPLFile can be passed, in which case its packed data is transferred
@@ -820,6 +829,8 @@ class MCPLOutFile:
             self._transfer(b,slice(None),
                            None if udarr is None else { 'userdata' : udarr })
             return
+        if udarr is None:
+            self._check_userdata_given('add_particles')
         cols, n = self._collect_fields(fields)
         if udarr is not None:
             if n == 1:
@@ -877,6 +888,8 @@ class MCPLOutFile:
                                **{ k : ( [v] if k in vecs else np.atleast_1d(v) )
                                    for k,v in fields.items() })
             return
+        if particle is None:
+            self._check_userdata_given('add_particle')
         if ( self._flt is not None or self._edt is not None ) and particle is None:
             vecs = ('position','direction','polarisation')
             self.add_particles(**{ k : ( [v] if k in vecs else np.atleast_1d(v) )
@@ -955,11 +968,16 @@ class MCPLOutFile:
         n = len(data)
         if not n:
             return
-        #Userdata is transferred if the layouts are the same, discarded if
-        #the target has no userdata, and zeros if the source has none:
+        #Userdata is transferred if the layouts are the same and discarded if
+        #the target has no userdata (other cases are errors, unless the
+        #userdata is given):
         src_udlayout = block._udinfo[0] if block._udinfo else None
         if udarr is not None:
             udarr = _broadcast_userdata(udarr,n)
+        elif self._udlayout is not None and src_udlayout is None:
+            raise MCPLError('add_particles asked to transfer particles without'
+                            ' userdata into a file with userdata (use userdata'
+                            ' = {} for userdata with all bytes zero)')
         elif ( self._udlayout is not None and src_udlayout is not None
                and src_udlayout != self._udlayout ):
             raise MCPLError('add_particles asked to transfer particles into a'

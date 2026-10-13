@@ -114,10 +114,9 @@ def test_transfer():
     #dropping the userdata:
     run('transfer','std.mcpl','t4.mcpl','<NONE>',0)
     run('read','t4.mcpl')
-    #source without userdata gives zeros:
-    run('transfer','none.mcpl','t5.mcpl','x:int16[2]',0)
-    run('read','t5.mcpl')
-    #different layouts are errors:
+    #sources without userdata (or with different layouts) are errors for
+    #targets with userdata:
+    fail('transfer','none.mcpl','t5.mcpl','x:int16[2]',0)
     fail('transfer','std.mcpl','t6.mcpl','data:uint8[27]',0)
 
 def test_merge():
@@ -151,9 +150,9 @@ def test_merge():
 
 def test_misuse():
     print('=== Misuse')
-    for icase in range(4):
+    for icase in range(5):
         fail('misuse',icase)
-    run('misuse',4)
+    run('misuse',5)
 
 if __name__ == '__main__':
     test_layouts()
