@@ -1,0 +1,61 @@
+name: debian
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '30 12 * * 1'  # 12:30 every Monday
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, ubuntu-24.04-arm ]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        path: src
+
+    - name: Install build dependencies
+      run: sudo apt-get update && sudo apt-get install -y cmake zlib1g-dev dpkg-dev lintian
+
+    - name: Build mcpl deb
+      run: |
+        set -euo pipefail
+        cmake -S src/mcpl_core -B bld_core -DCMAKE_INSTALL_PREFIX=/usr -DMCPL_ENABLE_CPACK=ON
+        cmake --build bld_core
+        (cd bld_core && cpack -G DEB)
+
+    - name: Build python3-mcpl deb
+      run: |
+        set -euo pipefail
+        cmake -S src/mcpl_python -B bld_py -DCMAKE_INSTALL_PREFIX=/usr -DMCPL_ENABLE_CPACK=ON
+        (cd bld_py && cpack -G DEB)
+
+    - name: Inspect
+      run: |
+        set -euo pipefail
+        mkdir debs && mv bld_core/*.deb bld_py/*.deb debs/
+        for f in debs/*.deb; do dpkg-deb --info "$f"; dpkg-deb --contents "$f"; done
+        lintian --no-tag-display-limit debs/*.deb || true
+
+    - name: Install and test
+      run: |
+        set -euo pipefail
+        sudo apt-get install -y ./debs/*.deb
+        mcpltool --version
+        mcpl-config --show libpath
+        /usr/bin/python3 -c 'import mcpl; print(mcpl.__file__, mcpl.__version__)'
+        pymcpltool --version
+        pymcpltool --help
+        test -n "$(find /usr/lib/python3/dist-packages/mcpl -name '*.pyc')"
+        sudo apt-get remove -y python3-mcpl mcpl
+        test ! -e /usr/lib/python3/dist-packages/mcpl
+
+    - name: Upload debs
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+      with:
+        name: debs-${{ matrix.os }}
+        path: debs/*.deb

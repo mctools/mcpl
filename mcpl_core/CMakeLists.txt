@@ -107,10 +107,29 @@ if ( DEFINED SKBUILD_PROJECT_NAME )
 endif()
 
 if ( MCPL_ENABLE_CPACK )
-  set( CPACK_PACKAGE_CONTACT "MCPL developers" )
+  set( CPACK_PACKAGE_CONTACT "MCPL developers <mcpl-developers@cern.ch>" )
   set( CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/mctools/mcpl" )
   set( CPACK_NSIS_PACKAGE_NAME "${PROJECT_NAME} ${PROJECT_VERSION}" )
   set( CPACK_NSIS_DISPLAY_NAME "${PROJECT_NAME} ${PROJECT_VERSION}" )
+  #Debian: proper arch-specific file name, deps resolved via dpkg-shlibdeps,
+  #and take over files from the libmcpl-dev package of Debian-proper:
+  set( CPACK_DEBIAN_FILE_NAME DEB-DEFAULT )
+  set( CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON )
+  set( CPACK_DEBIAN_PACKAGE_SECTION "science" )
+  set( CPACK_DEBIAN_PACKAGE_CONFLICTS "libmcpl-dev" )
+  set( CPACK_DEBIAN_PACKAGE_REPLACES "libmcpl-dev" )
+  set( CPACK_DEBIAN_PACKAGE_DESCRIPTION "Library, header files and command-line tools (mcpltool, mcpl-config) for\nthe MCPL (.mcpl) particle list file format." )
+  set( CPACK_STRIP_FILES ON )
+  file( WRITE "${PROJECT_BINARY_DIR}/debian/copyright"
+    "Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/\n"
+    "Upstream-Name: MCPL\nSource: https://github.com/mctools/mcpl\n\n"
+    "Files: *\nCopyright: 2015-2026 MCPL developers\nLicense: Apache-2.0\n"
+    " On Debian systems, the full text of the Apache License, Version 2.0\n"
+    " can be found in /usr/share/common-licenses/Apache-2.0.\n" )
+  install( FILES "${PROJECT_BINARY_DIR}/debian/copyright"
+    DESTINATION "share/doc/mcpl" )
+  include( mcpl_debchangelog )
+  mcpl_install_debian_changelog( "mcpl" "${CPACK_PACKAGE_CONTACT}" )
   include(CPack)
 endif()
 
