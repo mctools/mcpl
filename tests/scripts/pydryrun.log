@@ -1,0 +1,351 @@
+MCPL: Compressing file a3.mcpl
+MCPL: Compressed file into a3.mcpl.gz
+=== pymcpltool --dry-run
+pymcpltool --dry-run --extract a1.mcpl out.mcpl: exit code 0, real run changed files
+   | MCPL: Would extract 30 / 30 particles from a1.mcpl into out.mcpl
+   | MCPL: dry run, nothing was written
+pymcpltool --dry-run --extract a1.mcpl out.mcpl.gz: exit code 0, real run changed files
+   | MCPL: Would extract 30 / 30 particles from a1.mcpl into out.mcpl.gz
+   | MCPL: dry run, nothing was written
+pymcpltool --dry-run --extract -l5 -s3 a1.mcpl out.mcpl: exit code 0, real run changed files
+   | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
+   | MCPL: Would extract 5 / 30 particles from a1.mcpl into out.mcpl
+   | MCPL: dry run, nothing was written
+pymcpltool --dry-run --extract -p2112 --select ekin > 5keV a3.mcpl.gz out.mcpl: exit code 0, real run changed files
+   | MCPL: Would extract 0 / 5 particles from a3.mcpl.gz into out.mcpl
+   | MCPL: dry run, nothing was written
+pymcpltool --dry-run --extract --edit weight *= 2 a1.mcpl out.mcpl: exit code 0, real run changed files
+   | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when editing particle weights (use --keep-statsum to keep them)
+   | MCPL: Would extract 30 / 30 particles from a1.mcpl into out.mcpl
+   | MCPL: dry run, nothing was written
+pymcpltool --dry-run --extract --edit weight *= 2 --keep-statsum a1.mcpl out.mcpl: exit code 0, real run changed files
+   | MCPL: Would extract 30 / 30 particles from a1.mcpl into out.mcpl
+   | MCPL: dry run, nothing was written
+pymcpltool --dry-run --extract --select ekin < 1 meV + a1.mcpl out.mcpl: exit code 1, real run did not change files
+   | ERROR: Syntax error in expression "ekin < 1 meV +"
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --dry-run --extract a1.mcpl a2.mcpl: exit code 1, real run did not change files
+   | ERROR: Requested output file already exists.
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --dry-run --extract nosuch.mcpl out.mcpl: exit code 1, real run did not change files
+   | MCPL ERROR: Unable to open file!
+pymcpltool --dry-run --merge out.mcpl a1.mcpl a2.mcpl a3.mcpl.gz: exit code 0, real run changed files
+   | MCPL: dry run, nothing was written
+pymcpltool --dry-run --merge out.mcpl.gz a1.mcpl a2.mcpl: exit code 0, real run changed files
+   | MCPL: dry run, nothing was written
+pymcpltool --dry-run --merge out.mcpl a1.mcpl b_dp.mcpl: exit code 1, real run did not change files
+   | ERROR: Requested files are incompatible for merge as they have different header info (source name: "MySim" vs "Other").
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --dry-run --merge a2.mcpl a1.mcpl a3.mcpl.gz: exit code 1, real run did not change files
+   | ERROR: Requested output file already exists.
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --dry-run --merge --inplace a1.mcpl a2.mcpl a3.mcpl.gz: exit code 0, real run changed files
+   | MCPL: dry run, nothing was written
+pymcpltool --dry-run --merge --inplace a3.mcpl.gz a1.mcpl: exit code 1, real run did not change files
+   | MCPL ERROR: direct modification of gzipped files is not supported.
+pymcpltool --dry-run --forcemerge out.mcpl a1.mcpl b_dp.mcpl b_pol.mcpl: exit code 0, real run changed files
+   | MCPL force-merge: Files have different FP precision (single and double), using double
+   | MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+   | MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+   | MCPL force-merge: Discarding comments and blobs of the input files
+   | MCPL force-merge: Transferring 30 particles from file a1.mcpl
+   | MCPL force-merge: Transferring 12 particles from file b_dp.mcpl
+   | MCPL force-merge: Transferring 7 particles from file b_pol.mcpl
+   | MCPL force-merge: Would transfer a total of 49 particles to new file out.mcpl
+   | MCPL: dry run, nothing was written
+pymcpltool --dry-run --forcemerge --keepuserflags out.mcpl.gz b_dp.mcpl b_pol.mcpl: exit code 0, real run changed files
+   | MCPL force-merge: Files have different FP precision (single and double), using double
+   | MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+   | MCPL force-merge: Files have different userflags (no and yes), enabling them (zero for particles without)
+   | MCPL force-merge: Transferring 12 particles from file b_dp.mcpl
+   | MCPL force-merge: Transferring 7 particles from file b_pol.mcpl
+   | MCPL force-merge: Would transfer a total of 19 particles to new file out.mcpl
+   | MCPL: dry run, nothing was written
+pymcpltool --dry-run --forcemerge out.mcpl a1.mcpl a2.mcpl: exit code 0, real run changed files
+   | MCPL forcemerge_files called with 2 files that are compatible for a standard merge => falling back to standard merge_files function
+   | MCPL: dry run, nothing was written
+pymcpltool --dry-run --repair trunc.mcpl: exit code 0, real run changed files
+   | MCPL WARNING: Marking stat:sum:nsim entry as not available (-1) since file not closed properly.
+   | MCPL: Would repair file with 29 particles.
+   | MCPL: dry run, nothing was written
+pymcpltool --dry-run --repair crash.mcpl: exit code 0, real run changed files
+   | MCPL: Would repair file with 4 particles.
+   | MCPL: dry run, nothing was written
+pymcpltool --dry-run --repair a1.mcpl: exit code 1, real run did not change files
+   | MCPL ERROR: File does not appear to be broken.
+pymcpltool --dry-run --repair a3.mcpl.gz: exit code 1, real run did not change files
+   | MCPL ERROR: File must be gunzipped before it can be checked and possibly repaired.
+pymcpltool --dry-run --text a1.mcpl out.txt: exit code 0, real run changed files
+   | MCPL: dry run, nothing was written
+pymcpltool --dry-run --text a1.mcpl a2.mcpl: exit code 1, real run did not change files
+   | ERROR: Requested output file already exists.
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --dry-run a1.mcpl: exit code 0, real run did not change files
+   | Opened MCPL file a1.mcpl:
+   | 
+   |   Basic info
+   |     Format             : MCPL-3
+   |     No. of particles   : 30
+   |     Header storage     : 133 bytes
+   |     Data storage       : 1080 bytes
+   | 
+   |   Custom meta data
+   |     Source             : "MySim"
+   |     Number of comments : 2
+   |           -> comment 0 : "a comment"
+   |           -> comment 1 : "stat:sum:nsim:                    1000"
+   |     Number of blobs    : 1
+   |           -> 9 bytes of data with key "key1"
+   | 
+   |   Particle data format
+   |     User flags         : no
+   |     Polarisation info  : no
+   |     Fixed part. type   : no
+   |     Fixed part. weight : no
+   |     FP precision       : single
+   |     Endianness         : little
+   |     Storage            : 36 bytes/particle
+   | 
+   | index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+   |     0        2112       0.001           0          -0           0        -0.8           0         0.6           0           1
+   |     1          22       0.002         1.5          -2         0.1         0.6           0         0.8        0.01         1.5
+   |     2          11       0.003           3          -4         0.2        -0.8           0         0.6        0.02           2
+   |     3        2112       0.004         4.5          -6         0.3         0.6           0         0.8        0.03         2.5
+   |     4          22       0.005           6          -8         0.4        -0.8           0         0.6        0.04           3
+   |     5          11       0.006         7.5         -10         0.5         0.6           0         0.8        0.05         3.5
+   |     6        2112       0.007           9         -12         0.6        -0.8           0         0.6        0.06           4
+   |     7          22       0.008        10.5         -14         0.7         0.6           0         0.8        0.07         4.5
+   |     8          11       0.009          12         -16         0.8        -0.8           0         0.6        0.08           5
+   |     9        2112        0.01        13.5         -18         0.9         0.6           0         0.8        0.09         5.5
+pymcpltool --dry-run -j a1.mcpl: exit code 0, real run did not change files
+   | Opened MCPL file a1.mcpl:
+   | 
+   |   Basic info
+   |     Format             : MCPL-3
+   |     No. of particles   : 30
+   |     Header storage     : 133 bytes
+   |     Data storage       : 1080 bytes
+   | 
+   |   Custom meta data
+   |     Source             : "MySim"
+   |     Number of comments : 2
+   |           -> comment 0 : "a comment"
+   |           -> comment 1 : "stat:sum:nsim:                    1000"
+   |     Number of blobs    : 1
+   |           -> 9 bytes of data with key "key1"
+   | 
+   |   Particle data format
+   |     User flags         : no
+   |     Polarisation info  : no
+   |     Fixed part. type   : no
+   |     Fixed part. weight : no
+   |     FP precision       : single
+   |     Endianness         : little
+   |     Storage            : 36 bytes/particle
+   | 
+pymcpltool --dry-run -n -l3 -s2 a1.mcpl: exit code 0, real run did not change files
+   | Opened MCPL file a1.mcpl:
+   | index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+   |     2          11       0.003           3          -4         0.2        -0.8           0         0.6        0.02           2
+   |     3        2112       0.004         4.5          -6         0.3         0.6           0         0.8        0.03         2.5
+   |     4          22       0.005           6          -8         0.4        -0.8           0         0.6        0.04           3
+pymcpltool --dry-run --stats a1.mcpl: exit code 0, real run did not change files
+   | ------------------------------------------------------------------------------
+   | nparticles   : 30
+   | sum(weights) : 247.5
+   | stat:sum:nsim : 1000
+   | ------------------------------------------------------------------------------
+   |              :            mean             rms             min             max
+   | ------------------------------------------------------------------------------
+   | ekin   [MeV] :       0.0200404       0.0073689           0.001            0.03
+   | x       [cm] :         28.5606          11.053               0            43.5
+   | y       [cm] :        -38.0808          14.738             -58              -0
+   | z       [cm] :         1.90404         0.73689               0             2.9
+   | ux           :      -0.0787879         0.69968            -0.8             0.6
+   | uy           :               0               0               0               0
+   | uz           :         0.70303        0.099954             0.6             0.8
+   | time    [ms] :        0.190404        0.073689               0            0.29
+   | weight       :            8.25          4.3277               1            15.5
+   | polx         :               0               0               0               0
+   | poly         :               0               0               0               0
+   | polz         :               0               0               0               0
+   | ------------------------------------------------------------------------------
+   | pdgcode      :          11 (e-)                 87.5 (35.35%)
+   |                         22 (gamma)              82.5 (33.33%)
+   |                       2112 (n)                  77.5 (31.31%)
+   |                      [ values ]             [ weighted counts ]
+   | ------------------------------------------------------------------------------
+   | userflags    :           0 (0x00000000)        247.5 (100.00%)
+   |                      [ values ]             [ weighted counts ]
+   | ------------------------------------------------------------------------------
+pymcpltool --dry-run --hist ekin/MeV --print a1.mcpl: exit code 0, real run did not change files
+   | # histogram of: ekin/MeV
+   | # values: weights per bin
+   | # lower edge | upper edge | value
+   | 0.001 0.00129 1
+   | 0.00129 0.00158 0
+   | 0.00158 0.00187 0
+   | 0.00187 0.00216 1.5
+   | 0.00216 0.00245 0
+   | 0.00245 0.00274 0
+   | 0.00274 0.00303 2
+   | 0.00303 0.00332 0
+   | 0.00332 0.00361 0
+   | 0.00361 0.0039 0
+   | 0.0039 0.00419 2.5
+   | 0.00419 0.00448 0
+   | 0.00448 0.00477 0
+   | 0.00477 0.0050599999 3
+   | 0.0050599999 0.0053499999 0
+   | 0.0053499999 0.0056399999 0
+   | 0.0056399999 0.0059299999 0
+   | 0.0059299999 0.0062199999 3.5
+   | 0.0062199999 0.0065099999 0
+   | 0.0065099999 0.0067999999 0
+   | 0.0067999999 0.0070899999 4
+   | 0.0070899999 0.0073799999 0
+   | 0.0073799999 0.0076699999 0
+   | 0.0076699999 0.0079599999 0
+   | 0.0079599999 0.0082499999 4.5
+   | 0.0082499999 0.0085399999 0
+   | 0.0085399999 0.0088299999 0
+   | 0.0088299999 0.0091199998 5
+   | 0.0091199998 0.0094099998 0
+   | 0.0094099998 0.0096999998 0
+   | 0.0096999998 0.0099899998 0
+   | 0.0099899998 0.01028 5.5
+   | 0.01028 0.01057 0
+   | 0.01057 0.01086 0
+   | 0.01086 0.01115 6
+   | 0.01115 0.01144 0
+   | 0.01144 0.01173 0
+   | 0.01173 0.01202 6.5
+   | 0.01202 0.01231 0
+   | 0.01231 0.0126 0
+   | 0.0126 0.01289 0
+   | 0.01289 0.01318 7
+   | 0.01318 0.01347 0
+   | 0.01347 0.01376 0
+   | 0.01376 0.01405 7.5
+   | 0.01405 0.01434 0
+   | 0.01434 0.01463 0
+   | 0.01463 0.01492 0
+   | 0.01492 0.01521 8
+   | 0.01521 0.0155 0
+   | 0.0155 0.01579 0
+   | 0.01579 0.01608 8.5
+   | 0.01608 0.01637 0
+   | 0.01637 0.01666 0
+   | 0.01666 0.01695 0
+   | 0.01695 0.01724 9
+   | 0.01724 0.01753 0
+   | 0.01753 0.01782 0
+   | 0.01782 0.01811 9.5
+   | 0.01811 0.0184 0
+   | 0.0184 0.01869 0
+   | 0.01869 0.01898 0
+   | 0.01898 0.01927 10
+   | 0.01927 0.01956 0
+   | 0.01956 0.01985 0
+   | 0.01985 0.02014 10.5
+   | 0.02014 0.02043 0
+   | 0.02043 0.02072 0
+   | 0.02072 0.02101 11
+   | 0.02101 0.0213 0
+   | 0.0213 0.02159 0
+   | 0.02159 0.02188 0
+   | 0.02188 0.02217 11.5
+   | 0.02217 0.02246 0
+   | 0.02246 0.02275 0
+   | 0.02275 0.02304 12
+   | 0.02304 0.023329999 0
+   | 0.023329999 0.023619999 0
+   | 0.023619999 0.023909999 0
+   | 0.023909999 0.024199999 12.5
+   | 0.024199999 0.024489999 0
+   | 0.024489999 0.024779999 0
+   | 0.024779999 0.025069999 13
+   | 0.025069999 0.025359999 0
+   | 0.025359999 0.025649999 0
+   | 0.025649999 0.025939999 0
+   | 0.025939999 0.026229999 13.5
+   | 0.026229999 0.026519999 0
+   | 0.026519999 0.026809999 0
+   | 0.026809999 0.027099999 14
+   | 0.027099999 0.027389999 0
+   | 0.027389999 0.027679999 0
+   | 0.027679999 0.027969999 0
+   | 0.027969999 0.028259999 14.5
+   | 0.028259999 0.028549999 0
+   | 0.028549999 0.028839999 0
+   | 0.028839999 0.029129999 15
+   | 0.029129999 0.029419999 0
+   | 0.029419999 0.029709999 0
+   | 0.029709999 0.029999999 15.5
+pymcpltool --dry-run --version: exit code 0, real run did not change files
+   | MCPL version 2.2.9
+pymcpltool --dry-run --bkey1 a1.mcpl: exit code 1, real run did not change files
+   | ERROR: Unrecognised option : --bkey1
+   | 
+   | Run with -h or --help for usage information
+pymcpltool -d --extract -l2 a1.mcpl out.mcpl: exit code 0
+   | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
+   | MCPL: Would extract 2 / 30 particles from a1.mcpl into out.mcpl
+   | MCPL: dry run, nothing was written
+pymcpltool -jd a1.mcpl: exit code 0
+   | Opened MCPL file a1.mcpl:
+   | 
+   |   Basic info
+   |     Format             : MCPL-3
+   |     No. of particles   : 30
+   |     Header storage     : 133 bytes
+   |     Data storage       : 1080 bytes
+   | 
+   |   Custom meta data
+   |     Source             : "MySim"
+   |     Number of comments : 2
+   |           -> comment 0 : "a comment"
+   |           -> comment 1 : "stat:sum:nsim:                    1000"
+   |     Number of blobs    : 1
+   |           -> 9 bytes of data with key "key1"
+   | 
+   |   Particle data format
+   |     User flags         : no
+   |     Polarisation info  : no
+   |     Fixed part. type   : no
+   |     Fixed part. weight : no
+   |     FP precision       : single
+   |     Endianness         : little
+   |     Storage            : 36 bytes/particle
+   | 
+pymcpltool -d --stats --pdf a1.mcpl: exit code 1
+   | ERROR: --dry-run can not be used with --pdf or --output (which save plots in files).
+   | 
+   | Run with -h or --help for usage information
+pymcpltool --dry-run --hist ekin/MeV --output h.txt a1.mcpl: exit code 1
+   | ERROR: --dry-run can not be used with --pdf or --output (which save plots in files).
+   | 
+   | Run with -h or --help for usage information
+=== Python API dry_run
+merge_files: None
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Discarding comments and blobs of the input files
+MCPL force-merge: Transferring 30 particles from file api/a1.mcpl
+MCPL force-merge: Transferring 20 particles from file api/a2.mcpl
+MCPL force-merge: Transferring 12 particles from file api/b_dp.mcpl
+MCPL force-merge: Would transfer a total of 62 particles to new file api/out.mcpl
+forcemerge_files: None
+merge_inplace: None
+MCPL WARNING: Marking stat:sum:nsim entry as not available (-1) since file not closed properly.
+MCPL: Would repair file with 29 particles.
+repair: None
+merge_files: MCPLError: Attempting to merge incompatible files (source name: "MySim" vs "Other").
+merge_inplace: MCPLError: direct modification of gzipped files is not supported.
+repair: MCPLError: File does not appear to be broken.
+files unchanged: True

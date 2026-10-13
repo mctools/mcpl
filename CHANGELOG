@@ -1,4 +1,13 @@
 v2.2.9  (work in progress)
+      * New pymcpltool option --dry-run (-d), which does everything except
+        writing files: the same checks, warnings, errors and messages as the
+        real run (with "Would ..." instead of "Successfully ..."), followed
+        by a note that nothing was written. It applies to --merge,
+        --forcemerge, --extract, --repair and --text, and is ignored with
+        commands which do not write files (so it can always be added to be
+        sure that nothing is written). The Python API gets a corresponding
+        dry_run argument for merge_files, forcemerge_files, merge_inplace and
+        repair.
       * Errors about files which can not be merged now say why, i.e. the first
         difference found in the headers (e.g. "FP precision: single vs
         double", "universal pdgcode: 2112 vs none", "comment 1 differs"), in

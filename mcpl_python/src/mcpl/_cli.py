@@ -182,6 +182,11 @@ Other options:
   -t, --text MCPLFILE OUTFILE
                     Read particle contents of MCPLFILE and write into OUTFILE
                     using a simple ASCII-based format.
+  -d, --dry-run   : Do everything except writing files (e.g. to check for
+                    errors or see what would happen before doing it), with
+                    --merge, --forcemerge, --extract, --repair and --text. It
+                    is ignored with commands which do not write files, so it
+                    can always be added to be sure that nothing is written.
   -v, --version   : Display version of MCPL installation.
   -h, --help      : Display this usage information (ignores all other options).
   --traceback     : Show the Python traceback for errors (for debugging).
@@ -227,6 +232,7 @@ def _app_pymcpltool(argv):
     opt_preventcomment = False
     opt_repair = False
     opt_keepstatsum = False
+    opt_dryrun = False
     pdgcode_str = None
     #Options with values (--name VALUE or --name=VALUE) and histogram flags:
     vopts = {}
@@ -268,6 +274,8 @@ def _app_pymcpltool(argv):
                 opt_keepstatsum=True
             elif a=='--repair':
                 opt_repair=True
+            elif a=='--dry-run':
+                opt_dryrun=True
             elif a=='--justhead':
                 opt_justhead=True
             elif a=='--nohead':
@@ -310,6 +318,8 @@ def _app_pymcpltool(argv):
                     opt_extract=True
                 elif f=='r':
                     opt_repair=True
+                elif f=='d':
+                    opt_dryrun=True
                 elif f=='l' or f=='s':
                     if not a:
                         bad("Bad option: missing number")
@@ -365,6 +375,11 @@ def _app_pymcpltool(argv):
         number_dumpopts += sum(1 for e in (opt_limit is not None,opt_skip is not None) if e)
     numper_statopts = sum(1 for e in (opt_stats,opt_pdf,opt_gui) if e)
     any_mergeopts = opt_merge or opt_forcemerge
+    #(--dry-run is ignored with commands which do not write files, so it can
+    #always be added to be safe, but plots can not be saved in a dry run):
+    if opt_dryrun and ( opt_pdf or '--output' in vopts ):
+        bad("--dry-run can not be used with --pdf or --output (which save"
+            " plots in files).")
     if sum(1 for e in (opt_version,opt_text,number_dumpopts,numper_statopts,
                        any_mergeopts,opt_extract,opt_repair,
                        opt_hist is not None) if e)>1:
@@ -401,12 +416,16 @@ def _app_pymcpltool(argv):
         sys.exit(0)
 
     if any_mergeopts:
-        _pymcpltool_merge(filelist,opt_forcemerge,opt_inplace,opt_keepuserflags,bad)
+        _pymcpltool_merge(filelist,opt_forcemerge,opt_inplace,opt_keepuserflags,
+                          opt_dryrun,bad)
+        _pymcpltool_dryrun_note(opt_dryrun)
         sys.exit(0)
 
     if opt_extract:
         _pymcpltool_extract(filelist,opt_limit,opt_skip,pdgcode_str,opt_select,
-                            opt_edit,opt_preventcomment,opt_keepstatsum,bad)
+                            opt_edit,opt_preventcomment,opt_keepstatsum,
+                            opt_dryrun,bad)
+        _pymcpltool_dryrun_note(opt_dryrun)
         sys.exit(0)
 
     if opt_hist is not None:
@@ -421,6 +440,12 @@ def _app_pymcpltool(argv):
             bad("Must specify both input and output files with --text.")
         if (os.path.exists(filelist[1])):
             bad("Requested output file already exists.")
+        if opt_dryrun:
+            #(still read and convert everything, for the same errors):
+            import io
+            convert2ascii(filelist[0],io.StringIO())
+            _pymcpltool_dryrun_note(opt_dryrun)
+            sys.exit(0)
         try:
             fout = open(filelist[1],'w')  # noqa: SIM115
         except OSError:
@@ -440,7 +465,8 @@ def _app_pymcpltool(argv):
         bad("No input file specified")
 
     if opt_repair:
-        repair(filelist[0])
+        repair(filelist[0], dry_run = opt_dryrun)
+        _pymcpltool_dryrun_note(opt_dryrun)
         sys.exit(0)
 
     if opt_stats:
@@ -511,7 +537,12 @@ def _pymcpltool_close(outfile, attempt_gzip):
     outfile.close()
     return outfile.filename
 
-def _pymcpltool_merge(filelist, opt_forcemerge, opt_inplace, opt_keepuserflags, bad):
+def _pymcpltool_dryrun_note(dry_run):
+    if dry_run:
+        _info('dry run, nothing was written')
+
+def _pymcpltool_merge(filelist, opt_forcemerge, opt_inplace, opt_keepuserflags,
+                      dry_run, bad):
     if len(filelist) < 2:
         bad("Too few arguments for --forcemerge." if opt_forcemerge
             else "Too few arguments for --merge.")
@@ -526,19 +557,20 @@ def _pymcpltool_merge(filelist, opt_forcemerge, opt_inplace, opt_keepuserflags, 
                     f" different header info ({reason}).")
     if opt_inplace:
         for f in filelist[ifirst+1:]:
-            merge_inplace(filelist[ifirst],f)
+            merge_inplace(filelist[ifirst],f,dry_run=dry_run)
         return
     err, outfn, attempt_gzip = _tool_outfn(filelist[0])
     if err:
         bad(err)
     if opt_forcemerge:
-        out = forcemerge_files(outfn,filelist[1:],opt_keepuserflags)
+        out = forcemerge_files(outfn,filelist[1:],opt_keepuserflags,dry_run=dry_run)
     else:
-        out = merge_files(outfn,filelist[1:])
-    _pymcpltool_close(out,attempt_gzip)
+        out = merge_files(outfn,filelist[1:],dry_run=dry_run)
+    if out is not None:
+        _pymcpltool_close(out,attempt_gzip)
 
 def _pymcpltool_extract(filelist, limit, skip, pdgcode_str, select, edit,
-                        preventcomment, keepstatsum, bad):
+                        preventcomment, keepstatsum, dry_run, bad):
     if len(filelist) > 2:
         bad("Too many arguments.")
     if len(filelist) != 2:
@@ -562,7 +594,7 @@ def _pymcpltool_extract(filelist, limit, skip, pdgcode_str, select, edit,
         #Like mcpltool, only warn about NaN or infinite values in the
         #particles in the range given by -s and -l:
         fi._check_nonfinite = False
-        fo = MCPLOutFile(outfn)
+        fo = MCPLOutFile(outfn, _dry_run = dry_run)
         fo.transfer_metadata(fi)
         n_in = fi.nparticles
         if not preventcomment:
@@ -616,8 +648,8 @@ def _pymcpltool_extract(filelist, limit, skip, pdgcode_str, select, edit,
             raise
         n_added = fo.nparticles
         outname = _pymcpltool_close(fo,attempt_gzip)
-    _info(f"Successfully extracted {n_added} / {n_in} particles from"
-          f" {filelist[0]} into {outname}")
+    _info(f"{'Would extract' if dry_run else 'Successfully extracted'}"
+          f" {n_added} / {n_in} particles from {filelist[0]} into {outname}")
 
 def main():
     """This function simply calls app_pymcpltool(), but any raised MCPLError

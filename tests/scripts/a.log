@@ -131,6 +131,11 @@ Other options:
   -t, --text MCPLFILE OUTFILE
                     Read particle contents of MCPLFILE and write into OUTFILE
                     using a simple ASCII-based format.
+  -d, --dry-run   : Do everything except writing files (e.g. to check for
+                    errors or see what would happen before doing it), with
+                    --merge, --forcemerge, --extract, --repair and --text. It
+                    is ignored with commands which do not write files, so it
+                    can always be added to be sure that nothing is written.
   -v, --version   : Display version of MCPL installation.
   -h, --help      : Display this usage information (ignores all other options).
   --traceback     : Show the Python traceback for errors (for debugging).
