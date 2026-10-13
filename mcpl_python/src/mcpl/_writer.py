@@ -103,7 +103,7 @@ class MCPLOutFile:
                   opt_polarisation = False, opt_singleprec = True,
                   opt_universalpdgcode = 0, opt_universalweight = 0.0,
                   blocklength = 10000, select = None, edit = None,
-                  userdata_layout = None ):
+                  userdata_layout = None, _dry_run = False ):
         """Create new file (overwriting any existing file). Like in the C API,
         ".mcpl" is appended to the filename if it does not already end with
         it. The keyword arguments correspond to calling the methods
@@ -126,6 +126,9 @@ class MCPLOutFile:
         are edited (see the guidelines for stat:sum entries).
         """
         self._fh = None
+        #(in dry-run mode, used by the dry_run options of the file operations
+        #and pymcpltool, everything is done except writing):
+        self._dry_run = bool(_dry_run)
         #(only importing the expressions module when needed):
         self._flt = self._edt = None
         if select is not None or edit is not None:
@@ -168,7 +171,7 @@ class MCPLOutFile:
         self._statsuminfo = {}#key -> [position of comment data in file, value]
         self._pending = []
         self._pdt = None
-        self._fh = open(filename,'wb')  # noqa: SIM115
+        self._fh = _DryRunHandle() if self._dry_run else open(filename,'wb')  # noqa: SIM115
         if sourcename is not None:
             self.hdr_set_srcname(sourcename)
         for c in (comments or []):
@@ -600,7 +603,8 @@ class MCPLOutFile:
         if self._hdr_notwritten:
             self._write_header()
         if len(arr):
-            self._fh.write(arr.tobytes())
+            if not self._dry_run:
+                self._fh.write(arr.tobytes())
             self._nparticles += len(arr)
 
     def _flush_pending(self):
@@ -1049,7 +1053,8 @@ class MCPLOutFile:
         if self._fh is not None:
             fh, self._fh = self._fh, None
             fh.close()
-        pathlib.Path(self._filename).unlink(missing_ok=True)
+        if not self._dry_run:
+            pathlib.Path(self._filename).unlink(missing_ok=True)
 
     def close(self):
         """Close the file (writing all pending particles and updating the
@@ -1072,7 +1077,21 @@ class MCPLOutFile:
         """Close the file and gzip it (which will append .gz to the filename).
         Returns True if gzipping was successful."""
         self.close()
-        return gzip_file(self._filename)
+        return True if self._dry_run else gzip_file(self._filename)
+
+class _DryRunHandle:
+    """Stands in for the file handle of an MCPLOutFile in dry-run mode,
+    discarding everything written to it."""
+    def write(self, data):
+        pass
+    def flush(self):
+        pass
+    def seek(self, pos):
+        pass
+    def tell(self):
+        return 0
+    def close(self):
+        pass
 
 def gzip_file(filename):
     """Compress file with gzip, replacing it with a file with .gz appended to its

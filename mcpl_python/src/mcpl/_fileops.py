@@ -221,11 +221,13 @@ def _stablesum_add(s, x):
     s[1] += (s[0] - t) + x if abs(s[0]) >= abs(x) else (x - t) + s[0]
     s[0] = t
 
-def merge_files(file_output, files):
+def merge_files(file_output, files, dry_run = False):
     """Merge the particle contents of a list of compatible files into a new file
     (like mcpl_merge_files in the C API). Values of stat:sum entries are
     added up. Returns the new file as an open MCPLOutFile object, which must
-    be closed with close() or closeandgzip()."""
+    be closed with close() or closeandgzip(). With dry_run=True, everything
+    is done except writing (nothing is created or modified), and None is
+    returned."""
     import math
     files = [ os.fspath(f) for f in files ]
     file_output = os.fspath(file_output)
@@ -239,7 +241,7 @@ def merge_files(file_output, files):
             raise MCPLError(f'Attempting to merge incompatible files ({reason}).')
     if _file_certainly_exists(file_output):
         raise MCPLError('requested output file of merge_files already exists')
-    out = MCPLOutFile(file_output)
+    out = MCPLOutFile(file_output, _dry_run = dry_run)
     try:
         warned_oldversion = False
         scinfo = None
@@ -302,14 +304,19 @@ def merge_files(file_output, files):
                          ' to indicate that a precise result is not available.')
             continue
         out.hdr_add_stat_sum(key, val)
+    if dry_run:
+        out.close()
+        return None
     return out
 
-def forcemerge_files(file_output, files, keep_userflags = False):
+def forcemerge_files(file_output, files, keep_userflags = False, dry_run = False):
     """Merge particle contents of a list of files, even if they are not
     compatible, at the price of discarding most meta-data like comments and
     blobs (like mcpl_forcemerge_files in the C API). Userflags are discarded
     unless keep_userflags is set. Returns the new file as an open MCPLOutFile
-    object, which must be closed with close() or closeandgzip()."""
+    object, which must be closed with close() or closeandgzip(). With
+    dry_run=True, everything is done except writing (nothing is created or
+    modified), and None is returned."""
     files = [ os.fspath(f) for f in files ]
     file_output = os.fspath(file_output)
     if not files:
@@ -321,7 +328,7 @@ def forcemerge_files(file_output, files, keep_userflags = False):
         _info(f'forcemerge_files called with {len(files)} files that are'
               ' compatible for a standard merge => falling back to'
               ' standard merge_files function', prefix = 'MCPL ')
-        return merge_files(file_output, files)
+        return merge_files(file_output, files, dry_run = dry_run)
     opt_dp = opt_pol = opt_uf = False
     lastseen_pdg, disallow_pdg = 0, False
     lastseen_w, disallow_w = 0.0, False
@@ -381,7 +388,7 @@ def forcemerge_files(file_output, files, keep_userflags = False):
     if len(udlayouts) > 1:
         _warning('Discarding userdata in forced merge, since not all files have'
                  ' the same userdata layout.')
-    out = MCPLOutFile( file_output,
+    out = MCPLOutFile( file_output, _dry_run = dry_run,
                        sourcename = ( 'mcpl_forcemerge_files (from MCPL v'
                                       f'{_determine_version()})' ),
                        opt_userflags = opt_uf and keep_userflags,
@@ -403,14 +410,19 @@ def forcemerge_files(file_output, files, keep_userflags = False):
         out._abort()
         raise
     np_ = out.nparticles
-    _info(f'force-merge: Transferred a total of {np_} particle'
-          f'{"" if np_==1 else "s"} to new file {file_output}', prefix = 'MCPL ')
+    _info(f'force-merge: {"Would transfer" if dry_run else "Transferred"} a'
+          f' total of {np_} particle{"" if np_==1 else "s"} to new file'
+          f' {file_output}', prefix = 'MCPL ')
+    if dry_run:
+        out.close()
+        return None
     return out
 
-def merge_inplace(file1, file2):
+def merge_inplace(file1, file2, dry_run = False):
     """Append the particle contents of file2 to file1 (like mcpl_merge_inplace in
     the C API). The files must be compatible, and file1 must not be
-    gzipped. Values of stat:sum entries are added up."""
+    gzipped. Values of stat:sum entries are added up. With dry_run=True,
+    everything is done except writing (nothing is modified)."""
     import math
     import struct
     file1, file2 = os.fspath(file1), os.fspath(file2)
@@ -443,6 +455,8 @@ def merge_inplace(file1, file2):
                              ' to indicate that a precise result is not available.')
                     newval = -1.0
             updates.append((positions[i], key, newval))
+        if dry_run:
+            return
         try:
             fh = open(file1,'r+b')  # noqa: SIM115
         except OSError:
@@ -463,10 +477,12 @@ def merge_inplace(file1, file2):
                     write_at(pos, encode_stat_sum(key, newval).encode('ascii'))
             write_at(8, struct.pack('=Q', np1 + np2))
 
-def repair(filename):
+def repair(filename, dry_run = False):
     """Repair a file which was not properly closed, or which was truncated, by
     updating the number of particles in the header and removing any
-    incomplete particle data at the end (like mcpl_repair in the C API)."""
+    incomplete particle data at the end (like mcpl_repair in the C API).
+    With dry_run=True, everything is done except writing (nothing is
+    modified)."""
     import pathlib
     import struct
     filename = os.fspath(filename)
@@ -495,6 +511,9 @@ def repair(filename):
     for _, key in statsums:
         _warning(f'Marking stat:sum:{key} entry as not available'
                  ' (-1) since file not closed properly.')
+    if dry_run:
+        _info(f'Would repair file with {np_} particles.')
+        return
     with open(filename,'r+b') as fh:
         for pos, key in statsums:
             fh.seek(pos)
