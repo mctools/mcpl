@@ -39,7 +39,8 @@ lib = getlib('userdata')
 input_dir = pathlib.Path('inputs').absolute()
 
 def cprint(fct, *args):
-    #(for output of the C test module, in order with the Python output):
+    #(for output of the C test module, in order with the Python output; paths
+    #are given with forward slashes, so the output is the same on Windows):
     print(flush=True,end='')
     fct(*args)
     print(flush=True,end='')
@@ -103,7 +104,7 @@ def compare(*args):
         orig = input_dir/name
         if ( name.endswith('.mcpl') and args[0] != '--repair'
              and ( not orig.exists() or orig.read_bytes() != data ) ):
-            cprint(lib.mcpltest_ud_read,str(pathlib.Path('c',name)))
+            cprint(lib.mcpltest_ud_read,pathlib.Path('c',name).as_posix())
     return not problems
 
 def test_compare_with_mcpltool():
@@ -169,7 +170,7 @@ def test_python_api():
         print('out:',o.userdata_layout,o.userdata_size,o.particlesize)
         for b in f.particle_blocks:
             o.add_particles(b[::-1])
-    cprint(lib.mcpltest_ud_read,str(d/'w1.mcpl'))
+    cprint(lib.mcpltest_ud_read,(d/'w1.mcpl').as_posix())
     #...into single precision without polarisation (repacking particles):
     with mcpl.MCPLFile(d/'stddp.mcpl') as f, mcpl.MCPLOutFile(d/'w2.mcpl') as o:
         o.transfer_metadata(f)
@@ -182,14 +183,14 @@ def test_python_api():
         o.add_particles(b,z=5.0)#edited fields
         o.add_particle(b[1])#single particle
         o.add_particle(x=1.0,uz=1.0,ekin=1.0,pdgcode=22)#no userdata: zeros
-    cprint(lib.mcpltest_ud_read,str(d/'w2.mcpl'))
-    cprint(lib.mcpltest_ud_read,str(d/'w3.mcpl'))
+    cprint(lib.mcpltest_ud_read,(d/'w2.mcpl').as_posix())
+    cprint(lib.mcpltest_ud_read,(d/'w3.mcpl').as_posix())
     #Edits and selections when extracting:
     rc = subprocess.run([sys.executable,'-m','mcpldev','--extract','--select',
                          'x > 1.5cm','--edit','z += 1cm',str(d/'std.mcpl'),
                          str(d/'w4.mcpl')],capture_output=True,check=False).returncode
     print('pymcpltool --extract --select --edit:',rc)
-    cprint(lib.mcpltest_ud_read,str(d/'w4.mcpl'))
+    cprint(lib.mcpltest_ud_read,(d/'w4.mcpl').as_posix())
     #Different layouts:
     try:
         with mcpl.MCPLFile(d/'std.mcpl') as f, mcpl.MCPLFile(d/'raw33.mcpl') as f2:
@@ -242,7 +243,7 @@ def test_python_writing():
         o.add_particle(x=5.0,uz=1.0,ekin=2.5,pdgcode=22,weight=1.0)
         o.add_particles(x=[6.0,7.0],uz=1.0,ekin=1.0,pdgcode=11,weight=1.0,
                         userdata={'s':5})
-    cprint(lib.mcpltest_ud_read,str(d/'mixed.mcpl'))
+    cprint(lib.mcpltest_ud_read,(d/'mixed.mcpl').as_posix())
 
     #Replacing the userdata of particles read from a file, with selections and
     #edits (of particles given as blocks and as arrays):
@@ -254,12 +255,12 @@ def test_python_writing():
                           select='x > 1.5cm',edit='z += 1cm') as o:
         o.add_particles(b,userdata=ud)
         o.add_particles(x=b.x,uz=1.0,ekin=1.0,pdgcode=22,weight=1.0,userdata=ud)
-    cprint(lib.mcpltest_ud_read,str(d/'sel1.mcpl'))
+    cprint(lib.mcpltest_ud_read,(d/'sel1.mcpl').as_posix())
     with mcpl.MCPLOutFile(d/'sel2.mcpl') as o:
         o.transfer_metadata(input_dir/'std.mcpl')
         o.add_particles(b[1:],userdata={'origin':[7,8]},weight=2.0)
         o.add_particle(b[0],userdata={'origin':9})
-    cprint(lib.mcpltest_ud_read,str(d/'sel2.mcpl'))
+    cprint(lib.mcpltest_ud_read,(d/'sel2.mcpl').as_posix())
 
     #Errors:
     def expect_error(title, fct):
