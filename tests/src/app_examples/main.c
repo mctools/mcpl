@@ -46,6 +46,9 @@ int fakerandfct(void);
 #define main main_filtermcpl
 #include "example_filtermcpl.h"
 #undef main
+#define main main_userdatamcpl
+#include "example_userdatamcpl.h"
+#undef main
 
 #include <string.h>
 
@@ -100,6 +103,19 @@ void do_filtermcpl( const char * filename, const char * outfilename )
     exit(1);
 }
 
+void do_userdatamcpl( const char * filename )
+{
+  printf("do_userdatamcpl( \"%s\" )\n", filename );
+  char * argv[2];
+  setstr(&argv[0],"appuserdatamcpl");
+  setstr(&argv[1],filename);
+  int ec = main_userdatamcpl(2,(char**)argv);
+  free(argv[0]);
+  free(argv[1]);
+  if ( ec != 0 )
+    exit(1);
+}
+
 int main( int argc, char ** argv )
 {
   (void)argc;
@@ -111,6 +127,8 @@ int main( int argc, char ** argv )
   do_filtermcpl("dummy.mcpl.gz","dummyfiltered");
   mcpl_dump("dummyfiltered.mcpl.gz", 0, 0, 10);
   do_readmcpl("dummyfiltered.mcpl.gz");
+  do_userdatamcpl("dummyuserdata.mcpl");
+  mcpl_dump("dummyuserdata.mcpl", 0, 0, 3);
 
   return 0;
 }

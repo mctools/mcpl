@@ -53,7 +53,7 @@ def main():
     check_same( 'mcpl_core/cmake/modules/mctools_utils.cmake',
                 'mcpl_extra/cmake/modules/mctools_utils.cmake' )
 
-    for e in ['filter','read','write']:
+    for e in ['filter','read','userdata','write']:
         check_same(f'examples/example_{e}mcpl.c',
                    f'tests/src/app_examples/example_{e}mcpl.h')
 

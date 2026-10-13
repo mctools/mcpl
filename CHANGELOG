@@ -56,6 +56,9 @@ v2.2.9  (work in progress)
         userdata = {} gives all bytes zero), and integer fields must be given
         integers within the range of their type. The files are identical to
         those written with the C API.
+      * New examples of writing and reading userdata: examples/
+        example_userdatamcpl.c (C) and examples/pyexample_userdatamcpl
+        (Python).
       * Clearer error messages for invalid values of stat:sum entries (which
         must be non-negative or -1, and may only be padded with spaces).
       * Plotting backends in the Python API: the default backend can be set
