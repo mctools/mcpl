@@ -188,9 +188,7 @@ t4.mcpl: format version 3, userdata layout NULL, size 0, particle size 36
   particle 0 x=1 ekin=0.5: no userdata
   particle 1 x=2 ekin=1: no userdata
   particle 2 x=3 ekin=1.5: no userdata
-t5.mcpl: format version 4, userdata layout "x:int16[2]", size 4, particle size 40
-  particle 0 x=1 ekin=0.5: 00000000
-  particle 1 x=2 ekin=1: 00000000
+Got expected MCPL ERROR: mcpl_transfer_last_read_particle asked to transfer particle without userdata into a file with userdata
 Got expected MCPL ERROR: mcpl_transfer_last_read_particle asked to transfer particle into a file with a different userdata layout
 === Merging
 can_merge(std.mcpl,std2.mcpl) = 1
@@ -256,4 +254,5 @@ Got expected MCPL ERROR: mcpl_add_particle_with_userdata called with userdata fo
 Got expected MCPL ERROR: mcpl_enable_userdata called too late.
 Got expected MCPL ERROR: mcpl_enable_userdata called multiple times with different layouts
 Got expected MCPL ERROR: Invalid userdata layout "": empty layout
+Got expected MCPL ERROR: mcpl_add_particle called for a file with userdata (use mcpl_add_particle_with_userdata, with NULL for userdata with all bytes zero)
 NULL userdata gives x=0

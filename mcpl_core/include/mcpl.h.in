@@ -327,10 +327,12 @@ extern "C" {
   /* Forced merges of files with different layouts discard the userdata.     */
 
   /* Enable userdata with the given layout when writing a file. Particles    */
-  /* added with mcpl_add_particle will get userdata with all bytes zero:     */
+  /* must then be added with mcpl_add_particle_with_userdata (and it is an   */
+  /* error to use mcpl_add_particle):                                        */
   MCPL_API void mcpl_enable_userdata(mcpl_outfile_t, const char * layout);
   /* Add particle with userdata (an array of mcpl_hdr_userdata_size bytes,   */
-  /* or NULL for all bytes zero):                                            */
+  /* or NULL for explicitly giving the particle userdata with all bytes      */
+  /* zero):                                                                  */
   MCPL_API void mcpl_add_particle_with_userdata(mcpl_outfile_t,
                                                 const mcpl_particle_t*,
                                                 const uint8_t * userdata);

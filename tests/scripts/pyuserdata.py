@@ -182,7 +182,7 @@ def test_python_api():
         b = f.read_block()
         o.add_particles(b,z=5.0)#edited fields
         o.add_particle(b[1])#single particle
-        o.add_particle(x=1.0,uz=1.0,ekin=1.0,pdgcode=22)#no userdata: zeros
+        o.add_particle(x=1.0,uz=1.0,ekin=1.0,pdgcode=22,userdata={})#zeros
     cprint(lib.mcpltest_ud_read,(d/'w2.mcpl').as_posix())
     cprint(lib.mcpltest_ud_read,(d/'w3.mcpl').as_posix())
     #Edits and selections when extracting:
@@ -234,13 +234,13 @@ def test_python_writing():
     write('array.mcpl','array')
     write('single.mcpl','single')
 
-    #Missing fields and particles without userdata give zeros, and values for
-    #a single particle apply to all:
+    #Missing fields give zeros (also all of them, with userdata={}), and
+    #values for a single particle apply to all:
     with mcpl.MCPLOutFile(d/'mixed.mcpl') as o:
         o.enable_userdata(stdlayout)
         o.add_particle(x=4.0,uz=1.0,ekin=2.0,pdgcode=22,weight=1.0,
                        userdata={'temp':300.0,'tags':[7,8,9]})
-        o.add_particle(x=5.0,uz=1.0,ekin=2.5,pdgcode=22,weight=1.0)
+        o.add_particle(x=5.0,uz=1.0,ekin=2.5,pdgcode=22,weight=1.0,userdata={})
         o.add_particles(x=[6.0,7.0],uz=1.0,ekin=1.0,pdgcode=11,weight=1.0,
                         userdata={'s':5})
     cprint(lib.mcpltest_ud_read,(d/'mixed.mcpl').as_posix())
@@ -288,6 +288,16 @@ def test_python_writing():
     expect_error('inconsistent lengths',add(x=[1,2],userdata={'temp':[1,2,3]}))
     expect_error('no userdata in file',add(layout=None,userdata={'a':1}))
     expect_error('several for add_particle',add(single=True,userdata={'s':[1,2]}))
+    expect_error('add_particles without userdata',add())
+    expect_error('add_particle without userdata',add(single=True))
+    def transfer_none():
+        with mcpl.MCPLFile(input_dir/'none.mcpl') as f:
+            o = mcpl.MCPLOutFile(d/'bad.mcpl',userdata_layout=stdlayout)
+            try:
+                o.add_particles(f.read_block())
+            finally:
+                o.close()
+    expect_error('transfer without userdata',transfer_none)
     expect_error('invalid layout',add(layout='uint8[27]'))
     def twice():
         with mcpl.MCPLOutFile(d/'bad.mcpl',userdata_layout='a:int8') as o:
