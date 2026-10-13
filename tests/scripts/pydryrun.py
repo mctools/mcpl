@@ -181,14 +181,18 @@ def test_api():
     fresh('api')
     d = pathlib.Path('api')
     before = dir_contents(d)
-    inputs = [ str(d/'a1.mcpl'), str(d/'a2.mcpl') ]
-    print('merge_files:', mcpl.merge_files(d/'out.mcpl', inputs, dry_run=True))
-    print('forcemerge_files:', mcpl.forcemerge_files(d/'out.mcpl',
-                                                     [*inputs, str(d/'b_dp.mcpl')],
+    #(paths as strings with forward slashes, since they are echoed in messages
+    #and the output must be the same on Windows):
+    def fn(name):
+        return (d/name).as_posix()
+    inputs = [ fn('a1.mcpl'), fn('a2.mcpl') ]
+    print('merge_files:', mcpl.merge_files(fn('out.mcpl'), inputs, dry_run=True))
+    print('forcemerge_files:', mcpl.forcemerge_files(fn('out.mcpl'),
+                                                     [*inputs, fn('b_dp.mcpl')],
                                                      dry_run=True))
     print('merge_inplace:', mcpl.merge_inplace(d/'a1.mcpl', d/'a2.mcpl', dry_run=True))
     print('repair:', mcpl.repair(d/'trunc.mcpl', dry_run=True))
-    for fct, args in [ (mcpl.merge_files, (d/'out.mcpl', [*inputs, str(d/'b_dp.mcpl')])),
+    for fct, args in [ (mcpl.merge_files, (fn('out.mcpl'), [*inputs, fn('b_dp.mcpl')])),
                        (mcpl.merge_inplace, (d/'a3.mcpl.gz', d/'a1.mcpl')),
                        (mcpl.repair, (d/'a1.mcpl',)) ]:
         try:
