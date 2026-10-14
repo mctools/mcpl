@@ -1,4 +1,26 @@
 v2.2.9  (work in progress)
+      * Error-state (_es) variants of the C functions for writing files:
+        mcpl_create_outfile_es, mcpl_hdr_set_srcname_es,
+        mcpl_hdr_add_comment_es, mcpl_hdr_add_data_es, the mcpl_enable_*_es
+        functions, mcpl_hdr_add_stat_sum_es, mcpl_hdr_scale_stat_sums_es,
+        mcpl_get_empty_particle_es, mcpl_add_particle_es,
+        mcpl_add_particle_with_userdata_es, mcpl_close_outfile_es,
+        mcpl_closeandgzip_outfile_es, mcpl_transfer_metadata_es and
+        mcpl_transfer_last_read_particle_es. Invalid arguments leave files
+        unchanged, while errors when writing data leave output files
+        unusable: they can then only be closed, which leaves the file
+        unfinished (so it can often be recovered with mcpl_repair).
+      * Write errors which are only detected when buffered data is actually
+        written (e.g. with full disks) are now reported when writing the
+        header and when closing files, instead of silently producing broken
+        files. When closing, all data is written before the number of
+        particles is updated in the header, so files with such errors look
+        unfinished and can be recovered.
+      * Comments and blobs which would make the header of a file need more
+        than 5 GB of memory when reading it can not be added (with a margin
+        of 10 MB, so files written can always be read).
+      * Error messages of mcpl_transfer_last_read_particle about universal
+        pdgcodes and weights no longer end with a newline.
       * New variants of the C functions for reading files, which report
         errors to the caller instead of ending the program: mcpl_open_file_es,
         mcpl_read_es, mcpl_read_with_userdata_es, mcpl_skipforward_es,

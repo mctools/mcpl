@@ -414,15 +414,22 @@ extern "C" {
   /* error state, and return. Each call sets the code of the error state: 0 if */
   /* the call succeeded, otherwise an error code (and then the message is set  */
   /* as well). In case of errors, the values returned by the functions are     */
-  /* unspecified (except that a file object returned by mcpl_open_file_es can  */
-  /* always be passed to mcpl_close_file, and that userdata pointers are set   */
-  /* to NULL). Passing NULL as the error state gives the behaviour of the      */
-  /* functions without _es (and the error handler is only used in that case).  */
+  /* unspecified (except that file objects returned by mcpl_open_file_es and   */
+  /* mcpl_create_outfile_es can always be passed to mcpl_close_file and        */
+  /* mcpl_close_outfile, and that userdata pointers are set to NULL). Passing  */
+  /* NULL as the error state gives the behaviour of the functions without _es  */
+  /* (and the error handler is only used in that case).                        */
   /*                                                                           */
   /* After an error in mcpl_read_es (or the skip or seek functions), the file  */
   /* can only be closed, and further calls of these functions fail with the    */
-  /* same error. Other errors (like invalid arguments) leave the file usable.  */
-  /* Closing a file which failed to open (with internal NULL) does nothing.    */
+  /* same error. Likewise, after an error while writing to an output file (or  */
+  /* in mcpl_transfer_metadata_es), the output file can only be closed, and    */
+  /* other functions fail with the same error. Closing it then frees all       */
+  /* resources but leaves the file unfinished (it can often be recovered with  */
+  /* mcpl_repair). Other errors (like invalid arguments) leave files usable.   */
+  /* Closing files which failed to open (with internal NULL) does nothing.     */
+  /* The functions closing output files always free the file object, also in   */
+  /* case of errors.                                                           */
   /*                                                                           */
   /* The functions can be used concurrently from different threads, as long as */
   /* each file object is only used by one thread at a time.                    */
@@ -445,6 +452,47 @@ extern "C" {
                                             const char * name,
                                             const char * type,
                                             mcpl_errstate_t*);
+
+  MCPL_API mcpl_outfile_t mcpl_create_outfile_es(const char * filename,
+                                                 mcpl_errstate_t*);
+  MCPL_API void mcpl_hdr_set_srcname_es(mcpl_outfile_t, const char *,
+                                        mcpl_errstate_t*);
+  MCPL_API void mcpl_hdr_add_comment_es(mcpl_outfile_t, const char *,
+                                        mcpl_errstate_t*);
+  MCPL_API void mcpl_hdr_add_data_es(mcpl_outfile_t, const char * key,
+                                     uint32_t ldata, const char * data,
+                                     mcpl_errstate_t*);
+  MCPL_API void mcpl_enable_userflags_es(mcpl_outfile_t, mcpl_errstate_t*);
+  MCPL_API void mcpl_enable_polarisation_es(mcpl_outfile_t, mcpl_errstate_t*);
+  MCPL_API void mcpl_enable_doubleprec_es(mcpl_outfile_t, mcpl_errstate_t*);
+  MCPL_API void mcpl_enable_universal_pdgcode_es(mcpl_outfile_t, int32_t pdgcode,
+                                                 mcpl_errstate_t*);
+  MCPL_API void mcpl_enable_universal_weight_es(mcpl_outfile_t, double w,
+                                                mcpl_errstate_t*);
+  MCPL_API void mcpl_enable_userdata_es(mcpl_outfile_t, const char * layout,
+                                        mcpl_errstate_t*);
+  MCPL_API void mcpl_hdr_add_stat_sum_es(mcpl_outfile_t, const char * key,
+                                         double value, mcpl_errstate_t*);
+  MCPL_API void mcpl_hdr_scale_stat_sums_es(mcpl_outfile_t, double scale,
+                                            mcpl_errstate_t*);
+  MCPL_API mcpl_particle_t* mcpl_get_empty_particle_es(mcpl_outfile_t,
+                                                       mcpl_errstate_t*);
+  MCPL_API void mcpl_add_particle_es(mcpl_outfile_t, const mcpl_particle_t*,
+                                     mcpl_errstate_t*);
+  MCPL_API void mcpl_add_particle_with_userdata_es(mcpl_outfile_t,
+                                                   const mcpl_particle_t*,
+                                                   const uint8_t * userdata,
+                                                   mcpl_errstate_t*);
+  MCPL_API void mcpl_close_outfile_es(mcpl_outfile_t, mcpl_errstate_t*);
+  /* If compressing the file fails, the error message notes that the file was */
+  /* closed properly (so the uncompressed file might be fine):               */
+  MCPL_API int mcpl_closeandgzip_outfile_es(mcpl_outfile_t, mcpl_errstate_t*);
+  MCPL_API void mcpl_transfer_metadata_es(mcpl_file_t source,
+                                          mcpl_outfile_t target,
+                                          mcpl_errstate_t*);
+  MCPL_API void mcpl_transfer_last_read_particle_es(mcpl_file_t source,
+                                                    mcpl_outfile_t target,
+                                                    mcpl_errstate_t*);
 
   /*******/
   /* I/O */

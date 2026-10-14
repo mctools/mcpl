@@ -118,7 +118,15 @@
 #define MCPLIMP_MAX_HEADER_MEMORY 5000000000
 #define MCPLIMP_HEADER_TOO_LARGE_MSG                                    \
   "File header is too large (it would need more than 5GB of memory)"
+#define MCPLIMP_HEADER_TOO_LARGE_WRITE_MSG                              \
+  "File header would become too large (it would need more than 5GB of"   \
+  " memory when reading the file)"
 #define MCPLIMP_HEADER_ENTRY_OVERHEAD 64
+//When writing files, comments and blobs are only accepted up to a smaller
+//limit, so the files can always be read. The margin covers the parts of the
+//header which are not counted when writing (the fixed part, and the source
+//name and userdata layout strings, which are at most 65534 chars each):
+#define MCPLIMP_HEADER_WRITE_MARGIN 10000000
 #define MCPLIMP_MAX_PARTICLE_SIZE 96
 #define MCPL_STATIC_ASSERT0(COND,MSG) { typedef char mcpl_##MSG[(COND)?1:-1]; mcpl_##MSG dummy; (void)dummy; }
 #define MCPL_STATIC_ASSERT3(expr,x) MCPL_STATIC_ASSERT0(expr,fail_at_line_##x)
@@ -332,41 +340,55 @@ MCPL_LOCAL int mcpl_platform_is_little_endian(void) {
   return (*((uint8_t*)(&i))) == 0x67;
 }
 
-MCPL_LOCAL void mcpl_store_string(char** dest, const char * src)
+//Replaces *dest with a copy of src, returning 0 in case of errors (in which
+//case *dest is unchanged):
+MCPL_LOCAL int mcpl_store_string_es( char** dest, const char * src,
+                                     mcpl_errstate_t * es )
 {
+  if (!src)
+    return mcpl_internal_raise_runtime( es, "string is NULL" );
   size_t n = strlen(src);
-  if (n>65534) {
-    n = 65534;
-    mcpl_error("string length out of range");
-  }
-  if (*dest)
-    free(*dest);
-  *dest = mcpl_internal_malloc(n+1);
-
+  if (n>65534)
+    return mcpl_internal_raise_runtime( es, "string length out of range" );
+  char * newstr = mcpl_internal_malloc_es(n+1,es);
+  if (!newstr)
+    return 0;
   //Usage of strncpy cause compiler warning on newer gcc, so we use memcpy
   //instead (should be safe, we just checked strlen above!):
-  //strncpy( *dest,src,n );
-  memcpy( *dest,src,n );
-  (*dest)[n] = '\0';
-  return;
+  memcpy( newstr,src,n );
+  newstr[n] = '\0';
+  if (*dest)
+    free(*dest);
+  *dest = newstr;
+  return 1;
 }
 
-MCPL_LOCAL void mcpl_write_buffer(FILE* f, uint32_t n, const char * data, const char * errmsg)
+MCPL_LOCAL void mcpl_store_string(char** dest, const char * src)
+{
+  mcpl_store_string_es( dest, src, NULL );
+}
+
+MCPL_LOCAL int mcpl_write_buffer_es( FILE* f, uint32_t n, const char * data,
+                                     const char * errmsg, mcpl_errstate_t * es )
 {
   size_t nb = fwrite(&n, 1, sizeof(n), f);
   if (nb!=sizeof(n))
-    mcpl_error(errmsg);
+    return mcpl_internal_raise_io( es, errmsg );
   nb = fwrite(data, 1, n, f);
   if (nb!=n)
-    mcpl_error(errmsg);
+    return mcpl_internal_raise_io( es, errmsg );
+  return 1;
 }
 
-MCPL_LOCAL void mcpl_write_string(FILE* f, const char * str, const char * errmsg)
+MCPL_LOCAL int mcpl_write_string_es( FILE* f, const char * str,
+                                     const char * errmsg,
+                                     mcpl_errstate_t * es )
 {
   size_t n = strlen(str);
   if ( n >= 4294967295 )
-    mcpl_error("too large string encountered");
-  mcpl_write_buffer(f,(uint32_t)n,str,errmsg);//nb: we don't write the terminating null-char
+    return mcpl_internal_raise_runtime( es, "too large string encountered" );
+  //nb: we don't write the terminating null-char
+  return mcpl_write_buffer_es( f, (uint32_t)n, str, errmsg, es );
 }
 
 MCPL_LOCAL int mcpl_internal_fakeconstantversion( int enable )
@@ -649,28 +671,65 @@ typedef struct MCPL_LOCAL {
   char * particle_buffer;//particle_size bytes
   mcpl_internal_statsuminfo_t * statsuminfo;
   unsigned nstatsuminfo;
+  uint64_t hdr_memory;//estimated memory needed for the header when reading
+  //After errors while writing to the file, the file can only be closed (which
+  //leaves it unfinished), and all other functions fail with the same error:
+  int failed;
+  mcpl_errstate_t failure;
 } mcpl_outfileinternal_t;
 
 #define MCPLIMP_OUTFILEDECODE mcpl_outfileinternal_t * f = (mcpl_outfileinternal_t *)of.internal; assert(f)
 
-MCPL_LOCAL void mcpl_recalc_psize(mcpl_outfile_t of)
+//For functions with an error state, also give an error (and return, with
+//the return statement given) for invalid handles, and for files which are
+//unusable after earlier errors:
+#define MCPLIMP_OUTFILEDECODE_ES_IMPL(returnstatement)                  \
+  mcpl_outfileinternal_t * f = (mcpl_outfileinternal_t *)of.internal;   \
+  if (!f) {                                                             \
+    mcpl_internal_raise_runtime( es, "invalid output file handle (NULL)" ); \
+    returnstatement;                                                    \
+  }                                                                     \
+  if ( f->failed ) {                                                    \
+    mcpl_internal_raise( es, f->failure.code, f->failure.msg );         \
+    returnstatement;                                                    \
+  }
+#define MCPLIMP_OUTFILEDECODE_ES(retval) MCPLIMP_OUTFILEDECODE_ES_IMPL(return retval)
+//(for functions returning void, since MSVC warns about empty macro arguments):
+#define MCPLIMP_OUTFILEDECODE_ES_VOID MCPLIMP_OUTFILEDECODE_ES_IMPL(return)
+
+//Remember error (which was just raised in es) to make the file unusable:
+MCPL_LOCAL void mcpl_internal_outfile_failed( mcpl_outfileinternal_t * f,
+                                              const mcpl_errstate_t * es )
 {
-  MCPLIMP_OUTFILEDECODE;
+  if ( !es )
+    return;//not reached (errors without error state end the program)
+  f->failed = 1;
+  f->failure = *es;
+}
+
+//Recalculate particle size after changing options (returns 0 in case of
+//errors, in which case nothing was changed):
+MCPL_LOCAL int mcpl_recalc_psize_es( mcpl_outfileinternal_t * f,
+                                     mcpl_errstate_t * es )
+{
   unsigned fp = f->opt_singleprec ? sizeof(float) : sizeof(double);
-  f->particle_size = 7*fp;
+  unsigned psize = 7*fp;
   if (f->opt_polarisation)
-    f->particle_size += 3*fp;
+    psize += 3*fp;
   if (!f->opt_universalpdgcode)
-    f->particle_size += sizeof(int32_t);
+    psize += sizeof(int32_t);
   if (!f->opt_universalweight)
-    f->particle_size += fp;
+    psize += fp;
   if (f->opt_userflags)
-    f->particle_size += sizeof(uint32_t);
-  if ( ! (f->particle_size<=MCPLIMP_MAX_PARTICLE_SIZE) )
-    mcpl_error("unexpected particle size");
-  f->particle_size += f->userdata_size;
-  f->particle_buffer = (char*)mcpl_internal_realloc( f->particle_buffer,
-                                                     f->particle_size );
+    psize += sizeof(uint32_t);
+  if ( ! (psize<=MCPLIMP_MAX_PARTICLE_SIZE) )
+    return mcpl_internal_raise_runtime( es, "unexpected particle size" );
+  psize += f->userdata_size;
+  void * newbuf = mcpl_internal_realloc_es( f->particle_buffer, psize, es );
+  if ( !newbuf )
+    return 0;
+  f->particle_buffer = (char*)newbuf;
+  f->particle_size = psize;
   f->opt_signature = 0
     + 1 * f->opt_singleprec
     + 2 * f->opt_polarisation
@@ -678,6 +737,7 @@ MCPL_LOCAL void mcpl_recalc_psize(mcpl_outfile_t of)
     + 8 * (f->opt_universalweight?1:0)
     + 16 * f->opt_userflags
     + 32 * (f->userdata_size?1:0);
+  return 1;
 }
 
 MCPL_LOCAL int mcpl_platform_compatibility_check_es( mcpl_errstate_t * es ) {
@@ -739,39 +799,91 @@ MCPL_LOCAL void mcpl_internal_cleanup_outfile(mcpl_outfileinternal_t * f)
     free(f->statsuminfo);
     f->statsuminfo = NULL;
   }
+  //Header data (normally already freed when the header was written):
+  if ( f->hdr_srcprogname ) {
+    free(f->hdr_srcprogname);
+    f->hdr_srcprogname = NULL;
+  }
+  if ( f->comments ) {
+    for ( uint32_t i = 0; i < f->ncomments; ++i )
+      free(f->comments[i]);
+    free(f->comments);
+    f->comments = NULL;
+  }
+  if ( f->blobkeys ) {
+    for ( uint32_t i = 0; i < f->nblobs; ++i )
+      free(f->blobkeys[i]);
+    free(f->blobkeys);
+    f->blobkeys = NULL;
+  }
+  if ( f->blobs ) {
+    for ( uint32_t i = 0; i < f->nblobs; ++i )
+      free(f->blobs[i]);
+    free(f->blobs);
+    f->blobs = NULL;
+  }
+  if ( f->bloblengths ) {
+    free(f->bloblengths);
+    f->bloblengths = NULL;
+  }
   free(f);
 }
 
-mcpl_outfile_t mcpl_create_outfile(const char * filename)
+mcpl_outfile_t mcpl_create_outfile_es( const char * filename,
+                                       mcpl_errstate_t * es )
 {
-  //Sanity check chosen filename and append ".mcpl" if missing to help people
-  //who forgot to add the extension (in the hope of higher consistency).
-  if (!filename)
-    mcpl_error("mcpl_create_outfile called with null string.");
-  size_t n = strlen(filename);
-  if (!n)
-    mcpl_error("mcpl_create_outfile called with empty string.");
-  if (n>4096)
-    mcpl_error("mcpl_create_outfile called with too long string.");
-  const char * lastdot = strrchr(filename, '.');
-  if (lastdot==filename && n==5)
-    mcpl_error("mcpl_create_outfile called with string with no basename part (\".mcpl\").");
-
-  //Initialise data structures and open file:
-  mcpl_platform_compatibility_check();
-
+  MCPLIMP_ES_RESET;
   mcpl_outfile_t out;
   out.internal = NULL;
 
+  //Sanity check chosen filename and append ".mcpl" if missing to help people
+  //who forgot to add the extension (in the hope of higher consistency).
+  if (!filename) {
+    mcpl_internal_raise_runtime( es, "mcpl_create_outfile called with null"
+                                 " string." );
+    return out;
+  }
+  size_t n = strlen(filename);
+  if (!n) {
+    mcpl_internal_raise_runtime( es, "mcpl_create_outfile called with empty"
+                                 " string." );
+    return out;
+  }
+  if (n>4096) {
+    mcpl_internal_raise_runtime( es, "mcpl_create_outfile called with too"
+                                 " long string." );
+    return out;
+  }
+  const char * lastdot = strrchr(filename, '.');
+  if (lastdot==filename && n==5) {
+    mcpl_internal_raise_runtime( es, "mcpl_create_outfile called with string"
+                                 " with no basename part (\".mcpl\")." );
+    return out;
+  }
+
+  //Initialise data structures and open file:
+  if ( !mcpl_platform_compatibility_check_es( es ) )
+    return out;
+
   mcpl_outfileinternal_t * f
-    = (mcpl_outfileinternal_t*)mcpl_internal_calloc( 1, sizeof(mcpl_outfileinternal_t) );
+    = (mcpl_outfileinternal_t*)mcpl_internal_calloc_es( 1, sizeof(mcpl_outfileinternal_t), es );
+  if (!f)
+    return out;
 
   if (!lastdot || strcmp(lastdot, ".mcpl") != 0) {
-    f->filename = mcpl_internal_malloc(n+6);
+    f->filename = mcpl_internal_malloc_es(n+6,es);
+    if (!f->filename) {
+      mcpl_internal_cleanup_outfile(f);
+      return out;
+    }
     memcpy(f->filename,filename,n);
     memcpy(f->filename+n,".mcpl",6);
   } else {
-    f->filename = mcpl_internal_malloc(n+1);
+    f->filename = mcpl_internal_malloc_es(n+1,es);
+    if (!f->filename) {
+      mcpl_internal_cleanup_outfile(f);
+      return out;
+    }
     memcpy(f->filename,filename,n+1);
   }
 
@@ -796,14 +908,25 @@ mcpl_outfile_t mcpl_create_outfile(const char * filename)
   f->particle_buffer = NULL;
   f->statsuminfo = NULL;
   f->nstatsuminfo = 0;
+  f->hdr_memory = 0;
+  f->failed = 0;
+  if ( !mcpl_recalc_psize_es( f, es ) ) {
+    mcpl_internal_cleanup_outfile(f);
+    return out;
+  }
   f->file = mcpl_internal_fopen(f->filename,"wb");
   if (!f->file) {
     mcpl_internal_cleanup_outfile(f);
-    mcpl_error("Unable to open output file!");
+    mcpl_internal_raise_io( es, "Unable to open output file!" );
+    return out;
   }
   out.internal = f;
-  mcpl_recalc_psize(out);
   return out;
+}
+
+mcpl_outfile_t mcpl_create_outfile(const char * filename)
+{
+  return mcpl_create_outfile_es( filename, NULL );
 }
 
 const char * mcpl_outfile_filename(mcpl_outfile_t of) {
@@ -811,12 +934,21 @@ const char * mcpl_outfile_filename(mcpl_outfile_t of) {
   return f->filename;
 }
 
+void mcpl_hdr_set_srcname_es( mcpl_outfile_t of, const char * spn,
+                              mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  MCPLIMP_OUTFILEDECODE_ES_VOID;
+  if (!f->header_notwritten) {
+    mcpl_internal_raise_runtime( es, "mcpl_hdr_set_srcname called too late." );
+    return;
+  }
+  mcpl_store_string_es( &(f->hdr_srcprogname), spn, es );
+}
+
 void mcpl_hdr_set_srcname(mcpl_outfile_t of,const char * spn)
 {
-  MCPLIMP_OUTFILEDECODE;
-  if (!f->header_notwritten)
-    mcpl_error("mcpl_hdr_set_srcname called too late.");
-  mcpl_store_string(&(f->hdr_srcprogname),spn);
+  mcpl_hdr_set_srcname_es( of, spn, NULL );
 }
 
 MCPL_LOCAL int mcpl_check_char( const char * c, int allow_extra )
@@ -999,208 +1131,353 @@ MCPL_LOCAL void mcpl_internal_statsum_parse_or_emit_err( const char * comment,
   mcpl_internal_statsum_parse_or_emit_err_es( comment, res, NULL );
 }
 
-void mcpl_hdr_add_comment(mcpl_outfile_t of,const char *comment)
+//Check that a header entry with the given number of bytes can be added
+//(returns 0 in case of errors):
+MCPL_LOCAL int mcpl_internal_check_hdr_memory( mcpl_outfileinternal_t * f,
+                                               uint64_t nbytes,
+                                               mcpl_errstate_t * es )
 {
-  MCPLIMP_OUTFILEDECODE;
-  if (!f->header_notwritten)
-    mcpl_error("mcpl_hdr_add_comment called too late.");
+  MCPL_STATIC_ASSERT( MCPLIMP_HEADER_WRITE_MARGIN
+                      >= 8 + 8 + 32 + 8 + 2 * ( 4 + 65534 ) );
+  if ( f->hdr_memory + nbytes + MCPLIMP_HEADER_ENTRY_OVERHEAD
+       > (uint64_t)MCPLIMP_MAX_HEADER_MEMORY - MCPLIMP_HEADER_WRITE_MARGIN )
+    return mcpl_internal_raise_runtime( es, MCPLIMP_HEADER_TOO_LARGE_WRITE_MSG );
+  return 1;
+}
+
+void mcpl_hdr_add_comment_es( mcpl_outfile_t of, const char * comment,
+                              mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  MCPLIMP_OUTFILEDECODE_ES_VOID;
+  if (!f->header_notwritten) {
+    mcpl_internal_raise_runtime( es, "mcpl_hdr_add_comment called too late." );
+    return;
+  }
+  if (!comment) {
+    mcpl_internal_raise_runtime( es, "mcpl_hdr_add_comment called with null"
+                                 " string." );
+    return;
+  }
   if ( MCPL_COMMENT_IS_STATSUM(comment) ) {
     //comment starts with "stat:sum:". Let us require it to live up to the
     //syntax by decoding it, to trigger any issues:
     mcpl_internal_statsum_t sc;
-    mcpl_internal_statsum_parse_or_emit_err( comment, &sc );
+    if ( !mcpl_internal_statsum_parse_or_emit_err_es( comment, &sc, es ) )
+      return;
     //Files with duplicate keys can not be read:
     for ( uint32_t i = 0; i < f->ncomments; ++i ) {
       if ( !MCPL_COMMENT_IS_STATSUM(f->comments[i]) )
         continue;
       mcpl_internal_statsum_t sc_other;
-      mcpl_internal_statsum_parse_or_emit_err( f->comments[i], &sc_other );
+      if ( !mcpl_internal_statsum_parse_or_emit_err_es( f->comments[i],
+                                                        &sc_other, es ) )
+        return;
       if ( strcmp( sc.key, sc_other.key ) == 0 ) {
         char buf[MCPL_STATSUMKEY_MAXLENGTH+256];
         snprintf(buf,sizeof(buf),"Duplicate stat:sum: key. The key \"%s\""
                  " appears more than once.",sc.key);
-        mcpl_error(buf);
+        mcpl_internal_raise_runtime( es, buf );
+        return;
       }
     }
   } else {
-    if ( strncmp( comment, "stat:", 5 ) == 0 )
-      mcpl_error("Refusing to create file with comments starting with"
-                 " \"stat:\" unless starting with \"stat:sum:\", as such"
-                 " syntax is reserved for future usage.");
+    if ( strncmp( comment, "stat:", 5 ) == 0 ) {
+      mcpl_internal_raise_runtime( es, "Refusing to create file with comments"
+                                   " starting with \"stat:\" unless starting"
+                                   " with \"stat:sum:\", as such syntax is"
+                                   " reserved for future usage." );
+      return;
+    }
   }
-  size_t oldn = f->ncomments;
+  const uint64_t nbytes = sizeof(uint32_t) + strlen(comment);
+  if ( !mcpl_internal_check_hdr_memory( f, nbytes, es ) )
+    return;
+  //Allocate everything before changing anything:
+  char * newcomment = NULL;
+  if ( !mcpl_store_string_es( &newcomment, comment, es ) )
+    return;
+  void * newarr = mcpl_internal_realloc_es( f->comments,
+                                            ( f->ncomments + 1 ) * sizeof(char*),
+                                            es );
+  if ( !newarr ) {
+    free(newcomment);
+    return;
+  }
+  f->comments = (char **)newarr;
+  f->comments[f->ncomments] = newcomment;
   f->ncomments += 1;
-  if (oldn)
-    f->comments = (char **)mcpl_internal_realloc( f->comments,
-                                                  f->ncomments * sizeof(char*) );
-  else
-    f->comments = (char **)mcpl_internal_calloc(f->ncomments,sizeof(char*));
-  f->comments[oldn] = NULL;
-  mcpl_store_string(&(f->comments[oldn]),comment);
+  f->hdr_memory += nbytes + MCPLIMP_HEADER_ENTRY_OVERHEAD;
+}
+
+void mcpl_hdr_add_comment(mcpl_outfile_t of,const char *comment)
+{
+  mcpl_hdr_add_comment_es( of, comment, NULL );
+}
+
+void mcpl_hdr_add_data_es( mcpl_outfile_t of, const char * key,
+                           uint32_t ldata, const char * data,
+                           mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  MCPLIMP_OUTFILEDECODE_ES_VOID;
+  if (!f->header_notwritten) {
+    mcpl_internal_raise_runtime( es, "mcpl_hdr_add_data called too late." );
+    return;
+  }
+  if ( !key || ( ldata && !data ) ) {
+    mcpl_internal_raise_runtime( es, "mcpl_hdr_add_data called with null"
+                                 " pointer." );
+    return;
+  }
+  //Check that key is unique
+  for ( uint32_t i = 0; i < f->nblobs; ++i ) {
+    if (strcmp(f->blobkeys[i],key)==0) {
+      mcpl_internal_raise_runtime( es, "mcpl_hdr_add_data got duplicate key" );
+      return;
+    }
+  }
+  const uint64_t nbytes = 2*sizeof(uint32_t) + strlen(key) + (uint64_t)ldata;
+  if ( !mcpl_internal_check_hdr_memory( f, nbytes, es ) )
+    return;
+  //Allocate everything before changing anything (the arrays might grow
+  //without the new entry being added, which is harmless):
+  char * newkey = NULL;
+  if ( !mcpl_store_string_es( &newkey, key, es ) )
+    return;
+  char * newdata = mcpl_internal_malloc_es( ldata, es );
+  if ( !newdata ) {
+    free(newkey);
+    return;
+  }
+  const uint32_t n = f->nblobs + 1;
+  void * p1 = mcpl_internal_realloc_es( f->blobkeys, n * sizeof(char*), es );
+  if ( p1 )
+    f->blobkeys = (char**)p1;
+  void * p2 = p1 ? mcpl_internal_realloc_es( f->blobs, n * sizeof(char*), es ) : NULL;
+  if ( p2 )
+    f->blobs = (char**)p2;
+  void * p3 = p2 ? mcpl_internal_realloc_es( f->bloblengths, n * sizeof(uint32_t), es ) : NULL;
+  if ( !p3 ) {
+    free(newkey);
+    free(newdata);
+    return;
+  }
+  f->bloblengths = (uint32_t*)p3;
+  if ( ldata )
+    memcpy(newdata,data,ldata);
+  f->blobkeys[f->nblobs] = newkey;
+  f->blobs[f->nblobs] = newdata;
+  f->bloblengths[f->nblobs] = ldata;
+  f->nblobs = n;
+  f->hdr_memory += nbytes + MCPLIMP_HEADER_ENTRY_OVERHEAD;
 }
 
 void mcpl_hdr_add_data(mcpl_outfile_t of, const char * key,
                        uint32_t ldata, const char * data)
 {
-  MCPLIMP_OUTFILEDECODE;
-  if (!f->header_notwritten)
-    mcpl_error("mcpl_hdr_add_data called too late.");
-  size_t oldn = f->nblobs;
-  f->nblobs += 1;
-  //Check that key is unique
-  unsigned i;
-  for (i = 0; i<oldn; ++i) {
-    if (strcmp(f->blobkeys[i],key)==0)
-      mcpl_error("mcpl_hdr_add_data got duplicate key");
-  }
-  //store key:
-  if (oldn)
-    f->blobkeys = (char **)mcpl_internal_realloc(f->blobkeys,
-                                                 f->nblobs * sizeof(char*) );
-  else
-    f->blobkeys = (char **)mcpl_internal_calloc(f->nblobs,
-                                                sizeof(char*));
-  f->blobkeys[oldn] = NULL;
-  mcpl_store_string(&(f->blobkeys[oldn]),key);
-  //store blob-lengths:
-  if (oldn)
-    f->bloblengths = (uint32_t*)mcpl_internal_realloc(f->bloblengths,
-                                                      f->nblobs * sizeof(uint32_t) );
-  else
-    f->bloblengths = (uint32_t *)mcpl_internal_calloc(f->nblobs,
-                                                      sizeof(uint32_t));
-  f->bloblengths[oldn] = ldata;
+  mcpl_hdr_add_data_es( of, key, ldata, data, NULL );
+}
 
-  //store data:
-  if (oldn)
-    f->blobs = (char **)mcpl_internal_realloc(f->blobs,
-                                              f->nblobs * sizeof(char*) );
-  else
-    f->blobs = (char **)mcpl_internal_calloc(f->nblobs,
-                                             sizeof(char*));
-  f->blobs[oldn] = mcpl_internal_malloc(ldata);
-  memcpy(f->blobs[oldn],data,ldata);
+//Enabling options: Set option (with oldval being the value to restore in
+//case of errors), recalculate particle size, and restore the option in case
+//of errors:
+#define MCPLIMP_SET_OPTION(field,value)                                 \
+  do {                                                                  \
+    f->field = value;                                                   \
+    if ( !mcpl_recalc_psize_es( f, es ) )                               \
+      f->field = oldval;                                                \
+  } while (0)
+
+void mcpl_enable_userflags_es( mcpl_outfile_t of, mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  MCPLIMP_OUTFILEDECODE_ES_VOID;
+  if (f->opt_userflags)
+    return;
+  if (!f->header_notwritten) {
+    mcpl_internal_raise_runtime( es, "mcpl_enable_userflags called too late." );
+    return;
+  }
+  int oldval = f->opt_userflags;
+  MCPLIMP_SET_OPTION(opt_userflags,1);
 }
 
 void mcpl_enable_userflags(mcpl_outfile_t of)
 {
-  MCPLIMP_OUTFILEDECODE;
-  if (f->opt_userflags)
+  mcpl_enable_userflags_es( of, NULL );
+}
+
+void mcpl_enable_userdata_es( mcpl_outfile_t of, const char * layout,
+                              mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  MCPLIMP_OUTFILEDECODE_ES_VOID;
+  uint32_t size = mcpl_internal_udlayout_validate( layout, es );
+  if ( !size )
     return;
-  if (!f->header_notwritten)
-    mcpl_error("mcpl_enable_userflags called too late.");
-  f->opt_userflags = 1;
-  mcpl_recalc_psize(of);
+  if ( f->userdata_layout ) {
+    if ( strcmp( f->userdata_layout, layout ) != 0 )
+      mcpl_internal_raise_runtime( es, "mcpl_enable_userdata called multiple"
+                                   " times with different layouts" );
+    return;
+  }
+  if (!f->header_notwritten) {
+    mcpl_internal_raise_runtime( es, "mcpl_enable_userdata called too late." );
+    return;
+  }
+  char * newlayout = NULL;
+  if ( !mcpl_store_string_es( &newlayout, layout, es ) )
+    return;
+  f->userdata_size = size;
+  if ( !mcpl_recalc_psize_es( f, es ) ) {
+    f->userdata_size = 0;
+    free(newlayout);
+    return;
+  }
+  f->userdata_layout = newlayout;
 }
 
 void mcpl_enable_userdata(mcpl_outfile_t of, const char * layout)
 {
-  MCPLIMP_OUTFILEDECODE;
-  uint32_t size = mcpl_internal_udlayout_validate( layout, NULL );
-  if ( f->userdata_layout ) {
-    if ( strcmp( f->userdata_layout, layout ) != 0 )
-      mcpl_error("mcpl_enable_userdata called multiple times with"
-                 " different layouts");
+  mcpl_enable_userdata_es( of, layout, NULL );
+}
+
+void mcpl_enable_polarisation_es( mcpl_outfile_t of, mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  MCPLIMP_OUTFILEDECODE_ES_VOID;
+  if (f->opt_polarisation)
+    return;
+  if (!f->header_notwritten) {
+    mcpl_internal_raise_runtime( es, "mcpl_enable_polarisation called too"
+                                 " late." );
     return;
   }
-  if (!f->header_notwritten)
-    mcpl_error("mcpl_enable_userdata called too late.");
-  mcpl_store_string( &(f->userdata_layout), layout );
-  f->userdata_size = size;
-  mcpl_recalc_psize(of);
+  int oldval = f->opt_polarisation;
+  MCPLIMP_SET_OPTION(opt_polarisation,1);
 }
 
 void mcpl_enable_polarisation(mcpl_outfile_t of)
 {
-  MCPLIMP_OUTFILEDECODE;
-  if (f->opt_polarisation)
+  mcpl_enable_polarisation_es( of, NULL );
+}
+
+void mcpl_enable_doubleprec_es( mcpl_outfile_t of, mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  MCPLIMP_OUTFILEDECODE_ES_VOID;
+  if (!f->opt_singleprec)
     return;
-  if (!f->header_notwritten)
-    mcpl_error("mcpl_enable_polarisation called too late.");
-  f->opt_polarisation = 1;
-  mcpl_recalc_psize(of);
+  if (!f->header_notwritten) {
+    mcpl_internal_raise_runtime( es, "mcpl_enable_doubleprec called too"
+                                 " late." );
+    return;
+  }
+  int oldval = f->opt_singleprec;
+  MCPLIMP_SET_OPTION(opt_singleprec,0);
 }
 
 void mcpl_enable_doubleprec(mcpl_outfile_t of)
 {
-  MCPLIMP_OUTFILEDECODE;
-  if (!f->opt_singleprec)
+  mcpl_enable_doubleprec_es( of, NULL );
+}
+
+void mcpl_enable_universal_pdgcode_es( mcpl_outfile_t of, int32_t pdgcode,
+                                       mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  MCPLIMP_OUTFILEDECODE_ES_VOID;
+  if (pdgcode==0) {
+    mcpl_internal_raise_runtime( es, "mcpl_enable_universal_pdgcode must be"
+                                 " called with non-zero pdgcode." );
     return;
-  if (!f->header_notwritten)
-    mcpl_error("mcpl_enable_doubleprec called too late.");
-  f->opt_singleprec = 0;
-  mcpl_recalc_psize(of);
+  }
+  if (f->opt_universalpdgcode) {
+    if (f->opt_universalpdgcode!=pdgcode)
+      mcpl_internal_raise_runtime( es, "mcpl_enable_universal_pdgcode called"
+                                   " multiple times" );
+    return;
+  }
+  if (!f->header_notwritten) {
+    mcpl_internal_raise_runtime( es, "mcpl_enable_universal_pdgcode called"
+                                 " too late." );
+    return;
+  }
+  int32_t oldval = f->opt_universalpdgcode;
+  MCPLIMP_SET_OPTION(opt_universalpdgcode,pdgcode);
 }
 
 void mcpl_enable_universal_pdgcode(mcpl_outfile_t of, int32_t pdgcode)
 {
-  MCPLIMP_OUTFILEDECODE;
-  if (pdgcode==0)
-    mcpl_error("mcpl_enable_universal_pdgcode must be called with non-zero pdgcode.");
-  if (f->opt_universalpdgcode) {
-    if (f->opt_universalpdgcode!=pdgcode)
-      mcpl_error("mcpl_enable_universal_pdgcode called multiple times");
+  mcpl_enable_universal_pdgcode_es( of, pdgcode, NULL );
+}
+
+void mcpl_enable_universal_weight_es( mcpl_outfile_t of, double w,
+                                      mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  MCPLIMP_OUTFILEDECODE_ES_VOID;
+  if (w<=0.0||isinf(w)||isnan(w)) {
+    mcpl_internal_raise_runtime( es, "mcpl_enable_universal_weight must be"
+                                 " called with positive but finite weight." );
     return;
   }
-  if (!f->header_notwritten)
-    mcpl_error("mcpl_enable_universal_pdgcode called too late.");
-  f->opt_universalpdgcode = pdgcode;
-  mcpl_recalc_psize(of);
+  if (f->opt_universalweight) {
+    if (f->opt_universalweight!=w)
+      mcpl_internal_raise_runtime( es, "mcpl_enable_universal_weight called"
+                                   " multiple times" );
+    return;
+  }
+  if (!f->header_notwritten) {
+    mcpl_internal_raise_runtime( es, "mcpl_enable_universal_weight called"
+                                 " too late." );
+    return;
+  }
+  double oldval = f->opt_universalweight;
+  MCPLIMP_SET_OPTION(opt_universalweight,w);
 }
 
 void mcpl_enable_universal_weight(mcpl_outfile_t of, double w)
 {
-  MCPLIMP_OUTFILEDECODE;
-  if (w<=0.0||isinf(w)||isnan(w))
-    mcpl_error("mcpl_enable_universal_weight must be called with positive but finite weight.");
-  if (f->opt_universalweight) {
-    if (f->opt_universalweight!=w)
-      mcpl_error("mcpl_enable_universal_weight called multiple times");
-    return;
-  }
-  if (!f->header_notwritten)
-    mcpl_error("mcpl_enable_universal_weight called too late.");
-  f->opt_universalweight = w;
-  mcpl_recalc_psize(of);
+  mcpl_enable_universal_weight_es( of, w, NULL );
 }
+#undef MCPLIMP_SET_OPTION
 
-MCPL_LOCAL void mcpl_internal_encodestatsum( const char * key,
-                                             double value,
-                                             char * targetbuf )
+//Encodes stat:sum: comment into targetbuf, returning 0 in case of errors:
+MCPL_LOCAL int mcpl_internal_encodestatsum_es( const char * key,
+                                               double value,
+                                               char * targetbuf,
+                                               mcpl_errstate_t * es )
 {
   //Sanity check value:
   size_t nbufleft = MCPL_STATSUMBUF_MAXLENGTH+1;
   if ( isnan(value) )
-    mcpl_error("Invalid value for \"stat:sum:...\". Value is invalid (NaN)");
+    return mcpl_internal_raise_runtime( es, "Invalid value for \"stat:sum:...\". Value is invalid (NaN)" );
   if ( isinf(value) ) {
     if ( value > 0.0 )
-      mcpl_error("Invalid value for \"stat:sum:...\". Value is invalid (+INF).");
+      return mcpl_internal_raise_runtime( es, "Invalid value for \"stat:sum:...\". Value is invalid (+INF)." );
     else
-      mcpl_error("Invalid value for \"stat:sum:...\". Value is invalid (-INF).");
+      return mcpl_internal_raise_runtime( es, "Invalid value for \"stat:sum:...\". Value is invalid (-INF)." );
   }
   if ( !( value>=0.0 || value==-1.0 ) ) {
       char ebuf[256];
       snprintf(ebuf,sizeof(ebuf),"Invalid value for \"stat:sum:...\"."
                " Value is negative but is not -1.0 (it is %.15g).",value);
-      mcpl_error(ebuf);
+      return mcpl_internal_raise_runtime( es, ebuf );
   }
   //Check key:
   size_t nkey = strlen(key);
   if ( nkey < 1 )
-    mcpl_error("stat:sum: key must not be empty");
+    return mcpl_internal_raise_runtime( es, "stat:sum: key must not be empty" );
   if ( nkey > MCPL_STATSUMKEY_MAXLENGTH ) {
-    size_t nbuf = 128 + nkey;
-    char fixbuf[2056];
-    char * buf = fixbuf;
-    if ( nbuf > sizeof(fixbuf) )
-      buf = mcpl_internal_malloc(nbuf);//never freed, but need to pass to
-                                       //non-returning mcpl_error so we can not.
-    snprintf(buf,nbuf,
-             "stat:sum: key \"%s\" too long (%llu chars, max %i allowed)",
-             key,
+    char buf[2056];
+    snprintf(buf,sizeof(buf),
+             "stat:sum: key \"%.1900s%s\" too long (%llu chars, max %i allowed)",
+             key, ( nkey > 1900 ? "..." : "" ),
              (unsigned long long)nkey,
              (int)(MCPL_STATSUMKEY_MAXLENGTH) );
-    mcpl_error(buf);
+    return mcpl_internal_raise_runtime( es, buf );
   }
 
   if ( !mcpl_check_isidentifier(key) ) {
@@ -1209,7 +1486,7 @@ MCPL_LOCAL void mcpl_internal_encodestatsum( const char * key,
              "Invalid stat:sum: key \"%s\" (must begin with a letter and"
              " otherwise only contain alphanumeric characters and underscores)",
              key);
-    mcpl_error(buf);
+    return mcpl_internal_raise_runtime( es, buf );
   }
 
   //Add initial marker including colon:
@@ -1220,14 +1497,14 @@ MCPL_LOCAL void mcpl_internal_encodestatsum( const char * key,
 
   //Add key marker:
   if ( nkey > nbufleft )
-    mcpl_error("stat:sum: encode buffer error");
+    return mcpl_internal_raise_runtime( es, "stat:sum: encode buffer error" );
   memcpy(targetbuf, key, nkey );
   targetbuf += nkey;
   nbufleft -= nkey;
 
   //Add colon:
   if ( !nbufleft )
-    mcpl_error("stat:sum: encode buffer error");
+    return mcpl_internal_raise_runtime( es, "stat:sum: encode buffer error" );
   *targetbuf = ':';
   ++targetbuf;
   --nbufleft;
@@ -1235,7 +1512,7 @@ MCPL_LOCAL void mcpl_internal_encodestatsum( const char * key,
   //Add MCPL_STATSUMVAL_LENGTH bytes containing the actual value, as well as a
   //final null termination byte:
   if ( nbufleft < MCPL_STATSUMVAL_LENGTH + 1 )
-    mcpl_error("stat:sum: encode buffer error");
+    return mcpl_internal_raise_runtime( es, "stat:sum: encode buffer error" );
   if ( value == 0.0 ) {
     //special case, like this to ensure we do not format a negative zero with
     //the sign.
@@ -1249,7 +1526,7 @@ MCPL_LOCAL void mcpl_internal_encodestatsum( const char * key,
                        "%" MCPL_STRINGIFY(MCPL_STATSUMVAL_LENGTH) ".15g",
                        value );
     if ( w1 != MCPL_STATSUMVAL_LENGTH )
-      mcpl_error("stat:sum: value encoding length error");
+      return mcpl_internal_raise_runtime( es, "stat:sum: value encoding length error" );
     double v = strtod( targetbuf, NULL );
     if ( v != value ) {
       //ok, .15g was not good enough, go for full .17g:
@@ -1258,12 +1535,20 @@ MCPL_LOCAL void mcpl_internal_encodestatsum( const char * key,
                          "%" MCPL_STRINGIFY(MCPL_STATSUMVAL_LENGTH) ".17g",
                          value );
       if ( w2 != MCPL_STATSUMVAL_LENGTH )
-        mcpl_error("stat:sum: value encoding length error");
+        return mcpl_internal_raise_runtime( es, "stat:sum: value encoding length error" );
     }
   }
 
   if ( strlen( targetbuf ) != MCPL_STATSUMVAL_LENGTH )
-    mcpl_error("Unexpected encoding of stat:sum: value");
+    return mcpl_internal_raise_runtime( es, "Unexpected encoding of stat:sum: value" );
+  return 1;
+}
+
+MCPL_LOCAL void mcpl_internal_encodestatsum( const char * key,
+                                             double value,
+                                             char * targetbuf )
+{
+  mcpl_internal_encodestatsum_es( key, value, targetbuf, NULL );
 }
 
 #ifdef _WIN32
@@ -1278,10 +1563,13 @@ MCPL_LOCAL void mcpl_internal_encodestatsum( const char * key,
 #  define MCPL_FTELL( fh) ftell(fh)
 #endif
 
-MCPL_LOCAL void mcpl_write_header(mcpl_outfileinternal_t * f)
+//Writes the header, returning 0 in case of errors (after which the file is
+//unusable):
+MCPL_LOCAL int mcpl_write_header_es( mcpl_outfileinternal_t * f,
+                                     mcpl_errstate_t * es )
 {
   if (!f->header_notwritten)
-    mcpl_error("Logical error!");
+    return mcpl_internal_raise_runtime( es, "Logical error!" );
 
   const char * errmsg="Errors encountered while attempting to write file header.";
   //Always start the file with an unsigned char-array (for endian agnosticity)
@@ -1298,16 +1586,16 @@ MCPL_LOCAL void mcpl_write_header(mcpl_outfileinternal_t * f)
     start[7] = 'B';
   size_t nb = fwrite(start, 1, sizeof(start), f->file);
   if (nb!=sizeof(start))
-    mcpl_error(errmsg);
+    return mcpl_internal_raise_io( es, errmsg );
 
   //Right after the initial 8 bytes, we put the number of particles (0 for now,
   //but important that position is fixed so we can seek and update it later).:
   int64_t nparticles_pos = MCPL_FTELL(f->file);
   if (nparticles_pos!=MCPLIMP_NPARTICLES_POS)
-    mcpl_error(errmsg);
+    return mcpl_internal_raise_io( es, errmsg );
   nb = fwrite(&f->nparticles, 1, sizeof(f->nparticles), f->file);
   if (nb!=sizeof(f->nparticles))
-    mcpl_error(errmsg);
+    return mcpl_internal_raise_io( es, errmsg );
 
   //Then a bunch of numbers:
   uint32_t arr[8];
@@ -1322,21 +1610,23 @@ MCPL_LOCAL void mcpl_write_header(mcpl_outfileinternal_t * f)
   MCPL_STATIC_ASSERT(sizeof(arr)==32);
   nb = fwrite(arr, 1, sizeof(arr), f->file);
   if (nb!=sizeof(arr))
-    mcpl_error(errmsg);
+    return mcpl_internal_raise_io( es, errmsg );
 
   if (f->opt_universalweight) {
     MCPL_STATIC_ASSERT(sizeof(f->opt_universalweight)==8);
     nb = fwrite((void*)(&(f->opt_universalweight)), 1, sizeof(f->opt_universalweight), f->file);
     if (nb!=sizeof(f->opt_universalweight))
-      mcpl_error(errmsg);
+      return mcpl_internal_raise_io( es, errmsg );
   }
 
   //Userdata layout (only in version 4):
-  if (f->userdata_layout)
-    mcpl_write_string(f->file,f->userdata_layout,errmsg);
+  if (f->userdata_layout
+      && !mcpl_write_string_es(f->file,f->userdata_layout,errmsg,es) )
+    return 0;
 
   //src progname:
-  mcpl_write_string(f->file,f->hdr_srcprogname?f->hdr_srcprogname:"unknown",errmsg);
+  if ( !mcpl_write_string_es(f->file,f->hdr_srcprogname?f->hdr_srcprogname:"unknown",errmsg,es) )
+    return 0;
 
   //Write comments and record positions of any stat:sum: entries:
 
@@ -1349,8 +1639,12 @@ MCPL_LOCAL void mcpl_write_header(mcpl_outfileinternal_t * f)
 
   if ( f->nstatsuminfo ) {
     f->statsuminfo = (mcpl_internal_statsuminfo_t *)
-      mcpl_internal_calloc( f->nstatsuminfo,
-                            sizeof(mcpl_internal_statsuminfo_t) );
+      mcpl_internal_calloc_es( f->nstatsuminfo,
+                               sizeof(mcpl_internal_statsuminfo_t), es );
+    if ( !f->statsuminfo ) {
+      f->nstatsuminfo = 0;
+      return 0;
+    }
   }
 
   //Now fill statsuminfo and write comment strings to file:
@@ -1360,36 +1654,45 @@ MCPL_LOCAL void mcpl_write_header(mcpl_outfileinternal_t * f)
     if ( nstatsuminfo_written < f->nstatsuminfo
          && MCPL_COMMENT_IS_STATSUM(f->comments[i]) ) {
       mcpl_internal_statsum_t sc;
-      mcpl_internal_statsum_parse_or_emit_err( f->comments[i], &sc );
+      if ( !mcpl_internal_statsum_parse_or_emit_err_es( f->comments[i], &sc, es ) )
+        return 0;
       if ( !sc.key[0] )
-        mcpl_error("logic error while writing stat:sum: comments to header");
+        return mcpl_internal_raise_runtime( es, "logic error while writing"
+                                            " stat:sum: comments to header" );
       mcpl_internal_statsuminfo_t * statsuminfo
         = &f->statsuminfo[nstatsuminfo_written++];
       size_t lcomment = strlen(f->comments[i]);
       if ( lcomment > (size_t)(UINT32_MAX) )
-        mcpl_error("logic error: unexpected large comment strlen");
+        return mcpl_internal_raise_runtime( es, "logic error: unexpected large"
+                                            " comment strlen" );
       statsuminfo->writtenstrlen = (uint32_t)lcomment;
       statsuminfo->writtenpos = MCPL_FTELL( f->file );
       statsuminfo->value = sc.value;
       size_t nn = strlen(sc.key);
       if ( nn > MCPL_STATSUMBUF_MAXLENGTH )
-        mcpl_error("stat:sum: key unexpected strlen");
+        return mcpl_internal_raise_runtime( es, "stat:sum: key unexpected"
+                                            " strlen" );
       memcpy( statsuminfo->key, sc.key, nn );
     }
-    mcpl_write_string(f->file,f->comments[i],errmsg);
+    if ( !mcpl_write_string_es(f->file,f->comments[i],errmsg,es) )
+      return 0;
   }
 
   //blob keys:
   for (i = 0; i < f->nblobs; ++i)
-    mcpl_write_string(f->file,f->blobkeys[i],errmsg);
+    if ( !mcpl_write_string_es(f->file,f->blobkeys[i],errmsg,es) )
+      return 0;
 
   //blobs:
   for (i = 0; i < f->nblobs; ++i)
-    mcpl_write_buffer(f->file, f->bloblengths[i], f->blobs[i],errmsg);
+    if ( !mcpl_write_buffer_es(f->file, f->bloblengths[i], f->blobs[i],errmsg,es) )
+      return 0;
 
   //Reduce the likelihood of partially written headers (not guaranteed to have
-  //an effect, but can't hurt):
-  fflush(f->file);
+  //an effect, but can't hurt), and detect write errors early (errors are often
+  //only detected when buffered data is actually written):
+  if ( fflush(f->file) )
+    return mcpl_internal_raise_io( es, errmsg );
 
   //Free up acquired memory only needed for header writing:
   free(f->hdr_srcprogname);
@@ -1415,6 +1718,12 @@ MCPL_LOCAL void mcpl_write_header(mcpl_outfileinternal_t * f)
     f->nblobs = 0;
   }
   f->header_notwritten = 0;
+  return 1;
+}
+
+MCPL_LOCAL void mcpl_write_header(mcpl_outfileinternal_t * f)
+{
+  mcpl_write_header_es( f, NULL );
 }
 
 MCPL_LOCAL void mcpl_unitvect_pack_adaptproj(const double* in, double* out) {
@@ -1555,13 +1864,17 @@ MCPL_LOCAL const char * mcpl_internal_nonfinite_field( const mcpl_particle_t* p,
   return NULL;
 }
 
-MCPL_LOCAL void mcpl_internal_serialise_particle_to_buffer( const mcpl_particle_t* particle,
-                                                            const uint8_t * userdata,
-                                                            mcpl_outfileinternal_t * f ) {
+MCPL_LOCAL int mcpl_internal_serialise_particle_to_buffer( const mcpl_particle_t* particle,
+                                                           const uint8_t * userdata,
+                                                           mcpl_outfileinternal_t * f,
+                                                           mcpl_errstate_t * es ) {
 
   //Serialise the provided particle (and userdata, NULL meaning zeros) into the
   //particle_buffer of the output file (according to the settings of the output
-  //file).
+  //file). Returns 0 in case of errors (invalid particles).
+  if (!particle)
+    return mcpl_internal_raise_runtime( es, "attempting to add particle"
+                                        " which is NULL" );
 
   double pack_ekindir[3];
 
@@ -1573,15 +1886,17 @@ MCPL_LOCAL void mcpl_internal_serialise_particle_to_buffer( const mcpl_particle_
     char buf[128];
     snprintf(buf,sizeof(buf),"attempting to add particle with NaN or"
              " infinite %s",nonfinite);
-    mcpl_error(buf);
+    return mcpl_internal_raise_runtime( es, buf );
   }
   double dirsq = particle->direction[0] * particle->direction[0]
     + particle->direction[1] * particle->direction[1]
     + particle->direction[2] * particle->direction[2];
   if (fabs(dirsq-1.0)>1.0e-5)
-    mcpl_error("attempting to add particle with non-unit direction vector");
+    return mcpl_internal_raise_runtime( es, "attempting to add particle with"
+                                        " non-unit direction vector" );
   if (particle->ekin<0.0)
-    mcpl_error("attempting to add particle with negative kinetic energy");
+    return mcpl_internal_raise_runtime( es, "attempting to add particle with"
+                                        " negative kinetic energy" );
   //direction and ekin are packed into 3 doubles:
   mcpl_unitvect_pack_adaptproj(particle->direction,pack_ekindir);
   //pack_ekindir[2] is now just a sign(1.0 or -1.0), so we can store the
@@ -1613,7 +1928,7 @@ MCPL_LOCAL void mcpl_internal_serialise_particle_to_buffer( const mcpl_particle_
       char buf[128];
       snprintf(buf,sizeof(buf),"attempting to add particle with %s too large"
                " for single precision storage",toolarge);
-      mcpl_error(buf);
+      return mcpl_internal_raise_runtime( es, buf );
     }
   }
 
@@ -1681,97 +1996,196 @@ MCPL_LOCAL void mcpl_internal_serialise_particle_to_buffer( const mcpl_particle_
   }
   assert(ibuf==f->particle_size);
   (void)ibuf;
+  return 1;
 }
 
-MCPL_LOCAL void mcpl_internal_write_particle_buffer_to_file(mcpl_outfileinternal_t * f ) {
+//Writes the particle buffer to file (and the header first, if needed),
+//returning 0 in case of errors (after which the file is unusable):
+MCPL_LOCAL int mcpl_internal_write_particle_buffer_to_file_es( mcpl_outfileinternal_t * f,
+                                                              mcpl_errstate_t * es ) {
   //Ensure header is written:
-  if (f->header_notwritten)
-    mcpl_write_header(f);
+  if ( f->header_notwritten && !mcpl_write_header_es( f, es ) ) {
+    mcpl_internal_outfile_failed( f, es );
+    return 0;
+  }
 
   //Increment nparticles and write buffer to file:
-  f->nparticles += 1;
   size_t nb;
   nb = fwrite(&(f->particle_buffer[0]), 1, f->particle_size, f->file);
-  if (nb!=f->particle_size)
-    mcpl_error("Errors encountered while attempting to write particle data.");
+  if (nb!=f->particle_size) {
+    mcpl_internal_raise_io( es, "Errors encountered while attempting to write"
+                            " particle data." );
+    mcpl_internal_outfile_failed( f, es );
+    return 0;
+  }
+  f->nparticles += 1;
+  return 1;
+}
+
+MCPL_LOCAL void mcpl_internal_write_particle_buffer_to_file( mcpl_outfileinternal_t * f )
+{
+  mcpl_internal_write_particle_buffer_to_file_es( f, NULL );
+}
+
+void mcpl_add_particle_es( mcpl_outfile_t of, const mcpl_particle_t* particle,
+                           mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  MCPLIMP_OUTFILEDECODE_ES_VOID;
+  if ( f->userdata_size ) {
+    mcpl_internal_raise_runtime( es, "mcpl_add_particle called for a file with"
+                                 " userdata (use mcpl_add_particle_with_userdata,"
+                                 " with NULL for userdata with all bytes zero)" );
+    return;
+  }
+  if ( mcpl_internal_serialise_particle_to_buffer( particle, NULL, f, es ) )
+    mcpl_internal_write_particle_buffer_to_file_es( f, es );
 }
 
 void mcpl_add_particle(mcpl_outfile_t of,const mcpl_particle_t* particle)
 {
-  MCPLIMP_OUTFILEDECODE;
-  if ( f->userdata_size )
-    mcpl_error("mcpl_add_particle called for a file with userdata (use"
-               " mcpl_add_particle_with_userdata, with NULL for userdata"
-               " with all bytes zero)");
-  mcpl_internal_serialise_particle_to_buffer(particle,NULL,f);
-  mcpl_internal_write_particle_buffer_to_file(f);
+  mcpl_add_particle_es( of, particle, NULL );
+}
+
+void mcpl_add_particle_with_userdata_es( mcpl_outfile_t of,
+                                         const mcpl_particle_t* particle,
+                                         const uint8_t * userdata,
+                                         mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  MCPLIMP_OUTFILEDECODE_ES_VOID;
+  if ( userdata && !f->userdata_size ) {
+    mcpl_internal_raise_runtime( es, "mcpl_add_particle_with_userdata called"
+                                 " with userdata for a file without userdata"
+                                 " (see mcpl_enable_userdata)" );
+    return;
+  }
+  if ( mcpl_internal_serialise_particle_to_buffer( particle, userdata, f, es ) )
+    mcpl_internal_write_particle_buffer_to_file_es( f, es );
 }
 
 void mcpl_add_particle_with_userdata(mcpl_outfile_t of,
                                      const mcpl_particle_t* particle,
                                      const uint8_t * userdata)
 {
-  MCPLIMP_OUTFILEDECODE;
-  if ( userdata && !f->userdata_size )
-    mcpl_error("mcpl_add_particle_with_userdata called with userdata for a"
-               " file without userdata (see mcpl_enable_userdata)");
-  mcpl_internal_serialise_particle_to_buffer(particle,userdata,f);
-  mcpl_internal_write_particle_buffer_to_file(f);
+  mcpl_add_particle_with_userdata_es( of, particle, userdata, NULL );
 }
 
-MCPL_LOCAL void mcpl_update_nparticles(FILE* f, uint64_t n)
+MCPL_LOCAL int mcpl_update_nparticles_es( FILE* f, uint64_t n,
+                                          mcpl_errstate_t * es )
 {
-  //Seek and update nparticles at correct location in header:
+  //Seek and update nparticles at correct location in header (returns 0 in
+  //case of errors):
   const char * errmsg = ( "Errors encountered while attempting "
                           "to update number of particles in file." );
   int64_t savedpos = MCPL_FTELL(f);
   if (savedpos<0)
-    mcpl_error(errmsg);
+    return mcpl_internal_raise_io( es, errmsg );
   if (MCPL_FSEEK( f, MCPLIMP_NPARTICLES_POS ))
-    mcpl_error(errmsg);
+    return mcpl_internal_raise_io( es, errmsg );
   size_t nb = fwrite(&n, 1, sizeof(n), f);
   if (nb != sizeof(n))
-    mcpl_error(errmsg);
+    return mcpl_internal_raise_io( es, errmsg );
   if (MCPL_FSEEK( f, savedpos ))
-    mcpl_error(errmsg);
+    return mcpl_internal_raise_io( es, errmsg );
+  return 1;
+}
+
+MCPL_LOCAL void mcpl_update_nparticles(FILE* f, uint64_t n)
+{
+  mcpl_update_nparticles_es( f, n, NULL );
+}
+
+mcpl_particle_t* mcpl_get_empty_particle_es( mcpl_outfile_t of,
+                                             mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  MCPLIMP_OUTFILEDECODE_ES(NULL);
+  if (f->puser) {
+    //Calling more than once. This could be innocent, or it could indicate
+    //problems in multi-threaded user-code. Better disallow and give an error:
+    mcpl_internal_raise_runtime( es, "mcpl_get_empty_particle must not be"
+                                 " called more than once per output file" );
+    return NULL;
+  }
+  f->puser = (mcpl_particle_t*)mcpl_internal_calloc_es(1,sizeof(mcpl_particle_t),es);
+  return f->puser;
 }
 
 mcpl_particle_t* mcpl_get_empty_particle(mcpl_outfile_t of)
 {
-  MCPLIMP_OUTFILEDECODE;
-  if (f->puser) {
-    //Calling more than once. This could be innocent, or it could indicate
-    //problems in multi-threaded user-code. Better disallow and give an error:
-    mcpl_error("mcpl_get_empty_particle must not be"
-               " called more than once per output file");
-  } else {
-    f->puser = (mcpl_particle_t*)mcpl_internal_calloc(1,sizeof(mcpl_particle_t));
+  return mcpl_get_empty_particle_es( of, NULL );
+}
+
+//Finishes and closes the file, and frees the file object (also in case of
+//errors). Returns 0 in case of errors, in which case the file is left
+//unfinished: with nparticles=0 in the header, so it can be recovered (if
+//the header was written completely), unless the error happened when updating
+//nparticles or closing the file.
+MCPL_LOCAL int mcpl_internal_close_outfile_es( mcpl_outfileinternal_t * f,
+                                               mcpl_errstate_t * es )
+{
+  int ok = 1;
+  if ( f->failed ) {
+    //Already failed (and reported), just leave the file unfinished:
+    mcpl_internal_cleanup_outfile(f);
+    return 1;
   }
-  return f->puser;
+  if ( f->header_notwritten && !mcpl_write_header_es( f, es ) )
+    ok = 0;
+  //Make sure all particles were actually written, before updating nparticles
+  //in the header (otherwise files would not be recognised as unfinished):
+  if ( ok && fflush(f->file) ) {
+    mcpl_internal_raise_io( es, "Errors encountered while attempting to write"
+                            " particle data." );
+    ok = 0;
+  }
+  if ( ok && f->nparticles && !mcpl_update_nparticles_es( f->file,
+                                                          f->nparticles, es ) )
+    ok = 0;
+  FILE * fh = f->file;
+  f->file = NULL;
+  if ( fclose(fh) && ok ) {
+    mcpl_internal_raise_io( es, "Errors encountered while attempting to close"
+                            " file." );
+    ok = 0;
+  }
+  mcpl_internal_cleanup_outfile(f);
+  return ok;
+}
+
+void mcpl_close_outfile_es( mcpl_outfile_t of, mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  //Closing an invalid handle (internal NULL) does nothing:
+  mcpl_outfileinternal_t * f = (mcpl_outfileinternal_t *)of.internal;
+  if ( f )
+    mcpl_internal_close_outfile_es( f, es );
 }
 
 void mcpl_close_outfile(mcpl_outfile_t of)
 {
-  MCPLIMP_OUTFILEDECODE;
-  if (f->header_notwritten)
-    mcpl_write_header(f);
-  if (f->nparticles)
-    mcpl_update_nparticles(f->file,f->nparticles);
-  mcpl_internal_cleanup_outfile(f);
+  mcpl_close_outfile_es( of, NULL );
 }
 
-void mcpl_transfer_metadata(mcpl_file_t source, mcpl_outfile_t target)
+//Transfer metadata, returning 0 in case of errors:
+MCPL_LOCAL int mcpl_internal_transfer_metadata_es( mcpl_file_t source,
+                                                   mcpl_outfile_t target,
+                                                   mcpl_errstate_t * es )
 {
   //Note that MCPL format version 2 and 3 have the same meta-data in the header,
   //except of course the version number itself.
 
   if (mcpl_hdr_little_endian(source) != mcpl_platform_is_little_endian())
-    mcpl_error("mcpl_transfer_metadata can only work on files with same endianness as current platform.");
+    return mcpl_internal_raise_runtime( es, "mcpl_transfer_metadata can only"
+                                        " work on files with same endianness"
+                                        " as current platform." );
 
-  mcpl_hdr_set_srcname(target,mcpl_hdr_srcname(source));
+#define MCPLIMP_TMD_CALL(x) do { x; if ( es && es->code ) return 0; } while (0)
+  MCPLIMP_TMD_CALL(mcpl_hdr_set_srcname_es(target,mcpl_hdr_srcname(source),es));
   unsigned i;
   for (i = 0; i < mcpl_hdr_ncomments(source); ++i)
-    mcpl_hdr_add_comment(target,mcpl_hdr_comment(source,i));
+    MCPLIMP_TMD_CALL(mcpl_hdr_add_comment_es(target,mcpl_hdr_comment(source,i),es));
   const char** blobkeys = mcpl_hdr_blobkeys(source);
   if (blobkeys) {
     int nblobs = mcpl_hdr_nblobs(source);
@@ -1781,26 +2195,49 @@ void mcpl_transfer_metadata(mcpl_file_t source, mcpl_outfile_t target)
     for (ii = 0; ii < nblobs; ++ii) {
       int res = mcpl_hdr_blob(source,blobkeys[ii],&ldata,&data);
       if (!res)
-        mcpl_error("unexpected key problem in mcpl_transfer_metadata");
-      (void)res;
-      mcpl_hdr_add_data(target, blobkeys[ii], ldata, data);
+        return mcpl_internal_raise_runtime( es, "unexpected key problem in"
+                                            " mcpl_transfer_metadata" );
+      MCPLIMP_TMD_CALL(mcpl_hdr_add_data_es(target, blobkeys[ii], ldata, data, es));
     }
   }
   if (mcpl_hdr_has_userflags(source))
-    mcpl_enable_userflags(target);
+    MCPLIMP_TMD_CALL(mcpl_enable_userflags_es(target,es));
   if (mcpl_hdr_has_polarisation(source))
-    mcpl_enable_polarisation(target);
+    MCPLIMP_TMD_CALL(mcpl_enable_polarisation_es(target,es));
   if (mcpl_hdr_has_doubleprec(source))
-    mcpl_enable_doubleprec(target);
+    MCPLIMP_TMD_CALL(mcpl_enable_doubleprec_es(target,es));
   int32_t updg = mcpl_hdr_universal_pdgcode(source);
   if (updg)
-    mcpl_enable_universal_pdgcode(target,updg);
+    MCPLIMP_TMD_CALL(mcpl_enable_universal_pdgcode_es(target,updg,es));
   double uw = mcpl_hdr_universal_weight(source);
   if (uw)
-    mcpl_enable_universal_weight(target,uw);
+    MCPLIMP_TMD_CALL(mcpl_enable_universal_weight_es(target,uw,es));
   const char * udlayout = mcpl_hdr_userdata_layout(source);
   if (udlayout)
-    mcpl_enable_userdata(target,udlayout);
+    MCPLIMP_TMD_CALL(mcpl_enable_userdata_es(target,udlayout,es));
+#undef MCPLIMP_TMD_CALL
+  return 1;
+}
+
+void mcpl_transfer_metadata_es( mcpl_file_t source, mcpl_outfile_t target,
+                                mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  mcpl_outfile_t of = target;
+  MCPLIMP_OUTFILEDECODE_ES_VOID;
+  if ( !source.internal ) {
+    mcpl_internal_raise_runtime( es, "invalid file handle (NULL)" );
+    return;
+  }
+  //Errors after some of the metadata was transferred leave the target file
+  //unusable (to not produce files with partial metadata):
+  if ( !mcpl_internal_transfer_metadata_es( source, target, es ) )
+    mcpl_internal_outfile_failed( f, es );
+}
+
+void mcpl_transfer_metadata(mcpl_file_t source, mcpl_outfile_t target)
+{
+  mcpl_transfer_metadata_es( source, target, NULL );
 }
 
 int mcpl_closeandgzip_outfile_rc(mcpl_outfile_t of)
@@ -1811,8 +2248,54 @@ int mcpl_closeandgzip_outfile_rc(mcpl_outfile_t of)
   return mcpl_closeandgzip_outfile(of);
 }
 
+MCPL_LOCAL int mcpl_internal_do_gzip(const char *filename);
+
+int mcpl_closeandgzip_outfile_es( mcpl_outfile_t of, mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  //Closing an invalid handle (internal NULL) does nothing:
+  mcpl_outfileinternal_t * f = (mcpl_outfileinternal_t *)of.internal;
+  if ( !f )
+    return 0;
+  if ( f->failed ) {
+    mcpl_internal_close_outfile_es( f, es );
+    return 0;
+  }
+  char * filename = f->filename;
+  f->filename = NULL;//prevent free when closing
+  if ( !mcpl_internal_close_outfile_es( f, es ) ) {
+    free(filename);
+    return 0;
+  }
+  char * bn = mcpl_basename(filename);
+  size_t n = 256 + strlen(bn);
+  char * buf = mcpl_internal_malloc_es(n,es);
+  if (!buf) {
+    free(bn);
+    free(filename);
+    return 0;
+  }
+  snprintf(buf,n,"MCPL: Compressing file %s\n",bn);
+  mcpl_print(buf);
+  int ok = mcpl_internal_do_gzip(filename);
+  if ( ok ) {
+    snprintf(buf,n,"MCPL: Compressed file into %s.gz\n",bn);
+    mcpl_print(buf);
+  } else {
+    snprintf(buf,n,"Problems encountered while compressing file %s (it was"
+             " closed properly, so the uncompressed file might be fine)",bn);
+    mcpl_internal_raise_io( es, buf );
+  }
+  free(buf);
+  free(bn);
+  free(filename);
+  return ok;
+}
+
 int mcpl_closeandgzip_outfile(mcpl_outfile_t of)
 {
+  //Not via mcpl_closeandgzip_outfile_es, since failures to compress files are
+  //not errors here (they are reported, and 0 is returned):
   MCPLIMP_OUTFILEDECODE;
   char * filename = f->filename;
   f->filename = NULL;//prevent free in mcpl_close_outfile
@@ -2532,35 +3015,45 @@ mcpl_file_t mcpl_open_file(const char * filename)
   return mcpl_open_file_es( filename, NULL );
 }
 
-MCPL_LOCAL void mcpl_internal_updatestatsum( FILE * f,
-                                             mcpl_internal_statsuminfo_t*sc,
-                                             const char * new_comment )
+MCPL_LOCAL int mcpl_internal_updatestatsum_es( FILE * f,
+                                               mcpl_internal_statsuminfo_t*sc,
+                                               const char * new_comment,
+                                               mcpl_errstate_t * es )
 {
-  //Seek and update comment at correct location in header.
+  //Seek and update comment at correct location in header (returns 0 in case
+  //of errors).
 
   const char * errmsg = ( "Errors encountered while attempting "
                           "to update stat:sum: header in file." );
   if (!f||!sc||!new_comment)
-    mcpl_error(errmsg);
+    return mcpl_internal_raise_io( es, errmsg );
 
   uint32_t n = sc->writtenstrlen;
   if ( n != strlen(new_comment) )
-    mcpl_error("preallocated space for stat:sum: update does not fit (2)");
+    return mcpl_internal_raise_runtime( es, "preallocated space for stat:sum:"
+                                        " update does not fit (2)" );
 
   int64_t savedpos = MCPL_FTELL(f);
   if (savedpos<0)
-    mcpl_error(errmsg);
+    return mcpl_internal_raise_io( es, errmsg );
   uint64_t updatepos = sc->writtenpos;
   updatepos += sizeof(uint32_t);//skip strlen data (no, we can't read it since
                                 //the file is in output mode)
   if (MCPL_FSEEK( f, updatepos ))
-    mcpl_error(errmsg);
+    return mcpl_internal_raise_io( es, errmsg );
   size_t nb = fwrite( new_comment, 1, n, f);
   if ( nb != n )
-    mcpl_error(errmsg);
+    return mcpl_internal_raise_io( es, errmsg );
   if (MCPL_FSEEK( f, savedpos ))
-    mcpl_error(errmsg);
+    return mcpl_internal_raise_io( es, errmsg );
+  return 1;
+}
 
+MCPL_LOCAL void mcpl_internal_updatestatsum( FILE * f,
+                                             mcpl_internal_statsuminfo_t*sc,
+                                             const char * new_comment )
+{
+  mcpl_internal_updatestatsum_es( f, sc, new_comment, NULL );
 }
 
 #ifdef _WIN32
@@ -3117,16 +3610,27 @@ int mcpl_hdr_little_endian(mcpl_file_t ff)
   return f->is_little_endian;
 }
 
-void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
+void mcpl_transfer_last_read_particle_es( mcpl_file_t source,
+                                          mcpl_outfile_t target,
+                                          mcpl_errstate_t * es )
 {
-  mcpl_outfileinternal_t * ft = (mcpl_outfileinternal_t *)target.internal;
-  assert(ft);
+  MCPLIMP_ES_RESET;
+  mcpl_outfile_t of = target;
+  MCPLIMP_OUTFILEDECODE_ES_VOID;
+  mcpl_outfileinternal_t * ft = f;
   mcpl_fileinternal_t * fs = (mcpl_fileinternal_t *)source.internal;
-  assert(fs);
+  if (!fs) {
+    mcpl_internal_raise_runtime( es, "invalid file handle (NULL)" );
+    return;
+  }
+  if ( fs->failed ) {
+    mcpl_internal_raise( es, fs->failure.code, fs->failure.msg );
+    return;
+  }
 
   if ( fs->current_particle_idx==0 && fs->particle->weight==0.0 && fs->particle->pdgcode==0 ) {
-    mcpl_error("mcpl_transfer_last_read_particle called with source file in invalid state"
-               " (did you forget to first call mcpl_read() on the source file before calling this function?)");
+    mcpl_internal_raise_runtime( es, "mcpl_transfer_last_read_particle called with source file in invalid state"
+               " (did you forget to first call mcpl_read() on the source file before calling this function?)" );
     return;
   }
 
@@ -3135,20 +3639,20 @@ void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
     char buf[256];
     snprintf(buf,sizeof(buf),"mcpl_transfer_last_read_particle asked to"
              " transfer particle with pdgcode %li into a file with"
-             " universal pdgcode of %li\n",
+             " universal pdgcode of %li",
              (long)fs->particle->pdgcode,
              (long)ft->opt_universalpdgcode);
-    mcpl_error(buf);
+    mcpl_internal_raise_runtime( es, buf );
     return;
   }
   if ( ft->opt_universalweight && fs->particle->weight != ft->opt_universalweight) {
     char buf[256];
     snprintf(buf,sizeof(buf),"mcpl_transfer_last_read_particle asked to"
              " transfer particle with weight %g into a file with universal"
-             " weight of %g\n",
+             " weight of %g",
              fs->particle->weight,
              ft->opt_universalweight );
-    mcpl_error(buf);
+    mcpl_internal_raise_runtime( es, buf );
     return;
   }
   //NB: We don't sanity check that polarisation/userflags/userdata are enabled
@@ -3159,14 +3663,14 @@ void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
   //the same layout):
   const uint8_t * userdata = NULL;
   if ( ft->userdata_size && !fs->userdata_size ) {
-    mcpl_error("mcpl_transfer_last_read_particle asked to transfer"
-               " particle without userdata into a file with userdata");
+    mcpl_internal_raise_runtime( es, "mcpl_transfer_last_read_particle asked to transfer"
+               " particle without userdata into a file with userdata" );
     return;
   }
   if ( ft->userdata_size ) {
     if ( strcmp( ft->userdata_layout, fs->userdata_layout ) != 0 ) {
-      mcpl_error("mcpl_transfer_last_read_particle asked to transfer"
-                 " particle into a file with a different userdata layout");
+      mcpl_internal_raise_runtime( es, "mcpl_transfer_last_read_particle asked to transfer"
+                 " particle into a file with a different userdata layout" );
       return;
     }
     userdata = (const uint8_t*)( fs->particle_buffer
@@ -3182,7 +3686,7 @@ void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
     char buf[160];
     snprintf(buf,sizeof(buf),"mcpl_transfer_last_read_particle asked to"
              " transfer particle with NaN or infinite %s",nonfinite);
-    mcpl_error(buf);
+    mcpl_internal_raise_runtime( es, buf );
     return;
   }
 
@@ -3191,7 +3695,7 @@ void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
     //floating point precision is increasing. In these scenarious we can not
     //reuse the 3 floats representing packed direction+ekin but must proceed via
     //a full unpacking+repacking.
-    mcpl_add_particle_with_userdata(target,fs->particle,userdata);
+    mcpl_add_particle_with_userdata_es(target,fs->particle,userdata,es);
     return;
   }
 
@@ -3199,15 +3703,20 @@ void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
     //Particle data is encoded in exactly the same manner in src and target (a
     //common scenario for many merge or extraction scenarios) -> simply transfer
     //the bytes and be done with it:
-    if ( fs->particle_size!=ft->particle_size )
-      mcpl_error("unexpectedly inconsistent particle sizes");
+    if ( fs->particle_size!=ft->particle_size ) {
+      mcpl_internal_raise_runtime( es, "unexpectedly inconsistent particle"
+                                   " sizes" );
+      return;
+    }
     memcpy(ft->particle_buffer,fs->particle_buffer,fs->particle_size);
-    mcpl_internal_write_particle_buffer_to_file(ft);
+    mcpl_internal_write_particle_buffer_to_file_es(ft,es);
     return;
   }
 
   //The hard way - first serialise the source particle into the output buffer:
-  mcpl_internal_serialise_particle_to_buffer( fs->particle, userdata, ft );
+  if ( !mcpl_internal_serialise_particle_to_buffer( fs->particle, userdata,
+                                                    ft, es ) )
+    return;
 
   //If possible, override the 3 FP representing packed ekin+dir from the packing
   //in the source, thus avoiding potentially lossy unpacking+packing:
@@ -3228,7 +3737,12 @@ void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
     }
   }
 
-  mcpl_internal_write_particle_buffer_to_file(ft);
+  mcpl_internal_write_particle_buffer_to_file_es(ft,es);
+}
+
+void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
+{
+  mcpl_transfer_last_read_particle_es( source, target, NULL );
 }
 
 void mcpl_dump_header(mcpl_file_t f)
@@ -5462,37 +5976,50 @@ void mcpl_read_file_to_buffer( const char * filename,
   *user_result_buf = out.buf;
 }
 
-void mcpl_hdr_add_stat_sum( mcpl_outfile_t of,
-                            const char * key, double value )
+void mcpl_hdr_add_stat_sum_es( mcpl_outfile_t of, const char * key,
+                               double value, mcpl_errstate_t * es )
 {
-
+  MCPLIMP_ES_RESET;
+  MCPLIMP_OUTFILEDECODE_ES_VOID;
+  if ( !key ) {
+    mcpl_internal_raise_runtime( es, "mcpl_hdr_add_stat_sum called with null"
+                                 " string." );
+    return;
+  }
   char comment[MCPL_STATSUMBUF_MAXLENGTH+1];
-  mcpl_internal_encodestatsum( key, value, comment );
-  if ( !(value>=0.0 || value == -1.0 ) || isnan(value) || isinf(value) )
-    mcpl_error("logic error: lack of expected input sanitisation.");
+  if ( !mcpl_internal_encodestatsum_es( key, value, comment, es ) )
+    return;
+  if ( !(value>=0.0 || value == -1.0 ) || isnan(value) || isinf(value) ) {
+    mcpl_internal_raise_runtime( es, "logic error: lack of expected input"
+                                 " sanitisation." );
+    return;
+  }
 
   size_t nkey = strlen(key);
 
-  MCPLIMP_OUTFILEDECODE;
   if (f->header_notwritten) {
     //Header not written yet, simply check other in-mem comments for clashes.
     for ( uint32_t i = 0; i < f->ncomments; ++i ) {
       if ( !MCPL_COMMENT_IS_STATSUM(f->comments[i]) )
         continue;
       mcpl_internal_statsum_t sc;
-      mcpl_internal_statsum_parse_or_emit_err( f->comments[i], &sc );
+      if ( !mcpl_internal_statsum_parse_or_emit_err_es( f->comments[i], &sc, es ) )
+        return;
       if ( strlen(sc.key)==nkey && memcmp(sc.key,key,nkey+1)==0 ) {
         //Same variable! Simply update in place.
         size_t n = strlen(comment);
         size_t nalloc = strlen(f->comments[i]);
-        if ( n != nalloc )
-          mcpl_error("preallocated space for stat:sum: update does not fit");
+        if ( n != nalloc ) {
+          mcpl_internal_raise_runtime( es, "preallocated space for stat:sum:"
+                                       " update does not fit" );
+          return;
+        }
         memcpy(f->comments[i],comment,nalloc);
         return;
       }
     }
     //Ok not there already, just add a new comment:
-    mcpl_hdr_add_comment( of, comment );
+    mcpl_hdr_add_comment_es( of, comment, es );
     return;
   }
 
@@ -5506,36 +6033,66 @@ void mcpl_hdr_add_stat_sum( mcpl_outfile_t of,
       break;
     }
   }
-  if (!sc_to_update)
-    mcpl_error("mcpl_hdr_add_stat_sum called after first particle was added "
-               "to file, but without first registering a value for the same "
-               "key earlier (the special value -1 can be used for this)");
+  if (!sc_to_update) {
+    mcpl_internal_raise_runtime( es, "mcpl_hdr_add_stat_sum called after first"
+                                 " particle was added to file, but without"
+                                 " first registering a value for the same key"
+                                 " earlier (the special value -1 can be used"
+                                 " for this)" );
+    return;
+  }
 
-  mcpl_internal_updatestatsum( f->file, sc_to_update, comment );
+  if ( !mcpl_internal_updatestatsum_es( f->file, sc_to_update, comment, es ) ) {
+    mcpl_internal_outfile_failed( f, es );
+    return;
+  }
   sc_to_update->value = value;
 }
 
-
-void mcpl_hdr_scale_stat_sums( mcpl_outfile_t of, double scale )
+void mcpl_hdr_add_stat_sum( mcpl_outfile_t of,
+                            const char * key, double value )
 {
-  if ( isnan(scale) )
-    mcpl_error("mcpl_hdr_scale_stat_sums called with NaN (not-a-number) scale");
-  if ( scale < 0.0 && scale != -1.0 )
-    mcpl_error("mcpl_hdr_scale_stat_sums called with negative scale");
-  if ( isinf(scale) )
-    mcpl_error("mcpl_hdr_scale_stat_sums called with infinite scale");
-  if ( scale == 0.0 )
-    mcpl_error("mcpl_hdr_scale_stat_sums called with zero scale");
+  mcpl_hdr_add_stat_sum_es( of, key, value, NULL );
+}
 
-  MCPLIMP_OUTFILEDECODE;
+void mcpl_hdr_scale_stat_sums_es( mcpl_outfile_t of, double scale,
+                                  mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  const char * errmsg = NULL;
+  if ( isnan(scale) )
+    errmsg = "mcpl_hdr_scale_stat_sums called with NaN (not-a-number) scale";
+  else if ( scale < 0.0 && scale != -1.0 )
+    errmsg = "mcpl_hdr_scale_stat_sums called with negative scale";
+  else if ( isinf(scale) )
+    errmsg = "mcpl_hdr_scale_stat_sums called with infinite scale";
+  else if ( scale == 0.0 )
+    errmsg = "mcpl_hdr_scale_stat_sums called with zero scale";
+  if ( errmsg ) {
+    mcpl_internal_raise_runtime( es, errmsg );
+    return;
+  }
+
+  MCPLIMP_OUTFILEDECODE_ES_VOID;
   int any_values_turned_to_inf = 0;
   if (f->header_notwritten) {
-    //Header not written yet, simply update in-mem comments.
+    //Header not written yet, simply update in-mem comments (first encoding
+    //all of them, so nothing is changed in case of errors).
+    char (*new_comments)[MCPL_STATSUMBUF_MAXLENGTH+1] = NULL;
+    if ( f->ncomments ) {
+      new_comments = (char (*)[MCPL_STATSUMBUF_MAXLENGTH+1])
+        mcpl_internal_calloc_es( f->ncomments, MCPL_STATSUMBUF_MAXLENGTH+1, es );
+      if ( !new_comments )
+        return;
+    }
     for ( uint32_t i = 0; i < f->ncomments; ++i ) {
       if ( !MCPL_COMMENT_IS_STATSUM(f->comments[i]) )
         continue;
       mcpl_internal_statsum_t sc;
-      mcpl_internal_statsum_parse_or_emit_err( f->comments[i], &sc );
+      if ( !mcpl_internal_statsum_parse_or_emit_err_es( f->comments[i], &sc, es ) ) {
+        free(new_comments);
+        return;
+      }
       double new_value = ( ( scale == -1.0 || sc.value == -1.0 )
                            ? -1.0 : ( sc.value * scale ) );
       if ( isinf(new_value) ) {
@@ -5544,16 +6101,26 @@ void mcpl_hdr_scale_stat_sums( mcpl_outfile_t of, double scale )
       }
       if ( sc.value == new_value )
         continue;//no update needed
-      char new_comment[MCPL_STATSUMBUF_MAXLENGTH+1];
-      mcpl_internal_encodestatsum( sc.key, new_value, new_comment );
-      size_t n = strlen(new_comment);
+      if ( !mcpl_internal_encodestatsum_es( sc.key, new_value, new_comments[i], es ) ) {
+        free(new_comments);
+        return;
+      }
+      size_t n = strlen(new_comments[i]);
       size_t nalloc = strlen(f->comments[i]);
-      if ( n != nalloc )
-        mcpl_error("preallocated space for stat:sum: update does not fit");
-      memcpy(f->comments[i],new_comment,nalloc);
+      if ( n != nalloc ) {
+        free(new_comments);
+        mcpl_internal_raise_runtime( es, "preallocated space for stat:sum:"
+                                     " update does not fit" );
+        return;
+      }
     }
+    for ( uint32_t i = 0; i < f->ncomments; ++i )
+      if ( new_comments[i][0] )
+        memcpy(f->comments[i],new_comments[i],strlen(f->comments[i]));
+    free(new_comments);
   } else {
-    //Header already written, must update on-disk.
+    //Header already written, must update on-disk (errors leave the file
+    //unusable).
     for ( unsigned i = 0; i < f->nstatsuminfo; ++i ) {
       mcpl_internal_statsuminfo_t * si = &f->statsuminfo[i];
       double new_value = ( ( scale == -1.0 || si->value == -1.0 )
@@ -5565,8 +6132,11 @@ void mcpl_hdr_scale_stat_sums( mcpl_outfile_t of, double scale )
       if ( si->value == new_value )
         continue;//no update needed
       char new_comment[MCPL_STATSUMBUF_MAXLENGTH+1];
-      mcpl_internal_encodestatsum( si->key, new_value, new_comment );
-      mcpl_internal_updatestatsum( f->file, si, new_comment );
+      if ( !mcpl_internal_encodestatsum_es( si->key, new_value, new_comment, es )
+           || !mcpl_internal_updatestatsum_es( f->file, si, new_comment, es ) ) {
+        mcpl_internal_outfile_failed( f, es );
+        return;
+      }
       si->value = new_value;
     }
   }
@@ -5576,6 +6146,11 @@ void mcpl_hdr_scale_stat_sums( mcpl_outfile_t of, double scale )
                " range and producing infinity. Reverting value to -1"
                " to indicate that a precise result is not available.\n");
   }
+}
+
+void mcpl_hdr_scale_stat_sums( mcpl_outfile_t of, double scale )
+{
+  mcpl_hdr_scale_stat_sums_es( of, scale, NULL );
 }
 
 double mcpl_hdr_stat_sum_es( mcpl_file_t ff, const char * key,
