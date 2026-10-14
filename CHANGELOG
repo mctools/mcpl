@@ -1,4 +1,27 @@
 v2.2.9  (work in progress)
+      * New variants of the C functions for reading files, which report
+        errors to the caller instead of ending the program: mcpl_open_file_es,
+        mcpl_read_es, mcpl_read_with_userdata_es, mcpl_skipforward_es,
+        mcpl_rewind_es, mcpl_seek_es, mcpl_hdr_comment_es,
+        mcpl_hdr_stat_sum_es, mcpl_userdata_layout_size_es and
+        mcpl_userdata_offset_es. They take a pointer to an mcpl_errstate_t,
+        whose code is set by each call (0, or MCPL_ERROR_RUNTIME,
+        MCPL_ERROR_IO or MCPL_ERROR_MEMORY in case of errors, along with a
+        message). After an error while reading particles, files can only be
+        closed. The functions
+        without _es are unchanged (errors still go to the error handler). The
+        error-state variants of the remaining functions will follow.
+      * New function mcpl_set_print_handler_ctx, like mcpl_set_print_handler
+        but with a context pointer passed to the handler.
+      * mcpl_close_file does nothing when called with a file object which
+        failed to open (internal NULL), and the reading functions give an
+        error for such objects instead of an assertion failure.
+      * Opening corrupted files with invalid numbers of comments or blobs, or
+        invalid lengths of strings or blobs, in their headers no longer
+        allocates memory according to these numbers (which could exhaust the
+        memory), but only as the data is actually read. Opening files fails
+        if the header would need more than 5 GB of memory (e.g. for small
+        gzipped files with huge headers).
       * New pymcpltool option --dry-run (-d), which does everything except
         writing files: the same checks, warnings, errors and messages as the
         real run (with "Would ..." instead of "Successfully ..."), followed
