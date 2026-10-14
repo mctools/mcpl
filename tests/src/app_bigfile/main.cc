@@ -35,6 +35,7 @@ namespace {
       //Make sure we do not leave such large files around after the test.
       std::remove("test.mcpl");
       std::remove("test.mcpl.gz");
+      mcpltests_sync_disk();
     }
   };
 

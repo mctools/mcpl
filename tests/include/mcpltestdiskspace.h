@@ -29,6 +29,18 @@
 #  include <unistd.h>
 #endif
 
+/* Make sure the space of deleted files is actually released. With soft updates
+   (UFS on FreeBSD), the blocks of a deleted file are released in the
+   background, possibly only after the free space has been reported as
+   available, so writing a huge file right after deleting another one can fail
+   with a full file system. */
+static void mcpltests_sync_disk( void )
+{
+#ifndef _WIN32
+  sync();
+#endif
+}
+
 /* Free disk space (bytes) in the file system of the current directory, or -1
    if it can not be determined. */
 static double mcpltests_free_disk_space( void )
@@ -38,6 +50,7 @@ static double mcpltests_free_disk_space( void )
   return 1e18;
 #else
   struct statvfs s;
+  mcpltests_sync_disk();
   if ( statvfs( ".", &s ) != 0 )
     return -1.0;
   return (double)s.f_bavail * (double)s.f_frsize;
