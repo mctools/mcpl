@@ -1,4 +1,17 @@
 v2.2.9  (work in progress)
+      * Error-state (_es) variants of the C functions for operations on
+        files: mcpl_merge_files_es, mcpl_can_merge_es, mcpl_merge_inplace_es,
+        mcpl_forcemerge_files_es, mcpl_repair_es and mcpl_gzip_file_es.
+        Errors found before any output is written leave all files unchanged.
+        Errors while merging leave the output file (for mcpl_merge_inplace_es
+        the first file) unfinished, so it can be recovered with mcpl_repair.
+        Errors while compressing remove the partially written .gz file and
+        keep the original file. With these, all C functions which can raise
+        errors have _es variants.
+      * mcpl_gzip_file (and mcpl_gzip_file_es) remove the partially written
+        .gz file after errors, instead of leaving it behind.
+      * mcpl_merge_inplace now checks for errors when flushing and closing
+        the updated file.
       * Error-state (_es) variants of the C functions for writing files:
         mcpl_create_outfile_es, mcpl_hdr_set_srcname_es,
         mcpl_hdr_add_comment_es, mcpl_hdr_add_data_es, the mcpl_enable_*_es
@@ -31,8 +44,7 @@ v2.2.9  (work in progress)
         MCPL_ERROR_IO or MCPL_ERROR_MEMORY in case of errors, along with a
         message). After an error while reading particles, files can only be
         closed. The functions
-        without _es are unchanged (errors still go to the error handler). The
-        error-state variants of the remaining functions will follow.
+        without _es are unchanged (errors still go to the error handler).
       * New function mcpl_set_print_handler_ctx, like mcpl_set_print_handler
         but with a context pointer passed to the handler.
       * mcpl_close_file does nothing when called with a file object which

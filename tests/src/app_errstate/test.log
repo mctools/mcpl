@@ -110,29 +110,20 @@ open(x.mcpl) -> ERROR RUNTIME: Syntax error: could not properly decode comment s
 open(x.mcpl) -> ERROR RUNTIME: Duplicate stat:sum: key. The key "nevents" appears more than once in the file.
 MCPL WARNING: Opened file with unknown "stat:..." syntax in comments. The present installation only has special support for "stat:sum:..." comments. It might be a sign that your installation of MCPL is too old.
 open(x.mcpl) -> ok
-MCPL WARNING: Opened file with unknown "stat:..." syntax in comments. The present installation only has special support for "stat:sum:..." comments. It might be a sign that your installation of MCPL is too old.
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 10 particles.
-MCPL WARNING: Marking stat:sum:nevents entry as not available (-1) since file not closed properly.
-MCPL WARNING: Marking stat:sum:nevento entry as not available (-1) since file not closed properly.
-open(x.mcpl) -> ok
-MCPL WARNING: Input file appears to not have been closed properly. Recovered 10 particles.
-MCPL WARNING: Marking stat:sum:nevents entry as not available (-1) since file not closed properly.
-MCPL WARNING: Marking stat:sum:nevento entry as not available (-1) since file not closed properly.
-MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
 MCPL WARNING: Marking stat:sum:nevents entry as not available (-1) since file not closed properly.
 MCPL WARNING: Marking stat:sum:nevento entry as not available (-1) since file not closed properly.
 open(x.mcpl) -> ok
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
 MCPL WARNING: Marking stat:sum:nevents entry as not available (-1) since file not closed properly.
 MCPL WARNING: Marking stat:sum:nevento entry as not available (-1) since file not closed properly.
+open(x.mcpl) -> ok
 open(x.mcpl.gz) -> ERROR RUNTIME: Input file appears to not have been closed properly and data recovery is disabled for gzipped files.
 open(x.mcpl) -> ERROR RUNTIME: Syntax error: could not properly decode comment starting with "stat:sum:" (did not find colon separating key and value). Issue with comment "stat:sum:... (1023 characters)
 open(x.mcpl) -> ERROR RUNTIME: Syntax error: could not properly decode comment starting with "stat:sum:" (content too long to show)
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 3 particles.
 MCPL WARNING: Marking stat:sum:avail entry as not available (-1) since file not closed properly.
 open(x.mcpl) -> ok
-MCPL WARNING: Input file appears to not have been closed properly. Recovered 3 particles.
-MCPL WARNING: Marking stat:sum:avail entry as not available (-1) since file not closed properly.
 open(huge_comments.mcpl) -> ERROR RUNTIME: File header is too large (it would need more than 5GB of memory)
 open(huge_comments.mcpl) -> ERROR RUNTIME: File header is too large (it would need more than 5GB of memory)
 open(huge_blobs.mcpl) -> ERROR RUNTIME: File header is too large (it would need more than 5GB of memory)

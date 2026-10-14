@@ -494,6 +494,26 @@ extern "C" {
                                                     mcpl_outfile_t target,
                                                     mcpl_errstate_t*);
 
+  /* File operations. If errors happen while writing the output of merges, it */
+  /* is left unfinished (nparticles=0 in the header, so it can be repaired).  */
+  /* The same is the case for file1 in mcpl_merge_inplace_es, if the errors   */
+  /* happen after it was modified. Partially written files from failures to   */
+  /* compress files are removed, keeping the uncompressed file:              */
+  MCPL_API mcpl_outfile_t mcpl_merge_files_es(const char * file_output,
+                                              unsigned nfiles, const char ** files,
+                                              mcpl_errstate_t*);
+  MCPL_API int mcpl_can_merge_es(const char * file1, const char * file2,
+                                 mcpl_errstate_t*);
+  MCPL_API void mcpl_merge_inplace_es(const char * file1, const char * file2,
+                                      mcpl_errstate_t*);
+  MCPL_API mcpl_outfile_t mcpl_forcemerge_files_es(const char * file_output,
+                                                   unsigned nfiles,
+                                                   const char ** files,
+                                                   int keep_userflags,
+                                                   mcpl_errstate_t*);
+  MCPL_API void mcpl_repair_es(const char * file1, mcpl_errstate_t*);
+  MCPL_API int mcpl_gzip_file_es(const char * filename, mcpl_errstate_t*);
+
   /*******/
   /* I/O */
   /*******/

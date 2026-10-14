@@ -21,13 +21,10 @@
 
 //Tests of the functions reporting errors in an error state (the _es variants)
 //when reading files. Broken files are crafted byte by byte, and every error
-//is checked in-process. Each error is also checked to be identical when
-//raised through the error handler by the functions without _es (see
-//mcpltest_errstate.h).
+//is checked in-process. (The functions without _es are wrappers which pass a
+//NULL error state, and their errors are tested in errstate_legacy.py.)
 
 #include "mcpltest_errstate.h"
-
-static mcpl_file_t legacy_f;//(static, to not be clobbered by longjmp)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Test files
@@ -135,11 +132,10 @@ static void create_file_c(void)
 ////////////////////////////////////////////////////////////////////////////////
 // Opening files
 
-//Try to open the file with both mcpl_open_file_es and (if do_legacy)
-//mcpl_open_file, returning 1 if it could be opened (and printing the result
-//unless quiet):
+//Try to open the file with mcpl_open_file_es, returning 1 if it could be
+//opened (and printing the result unless quiet):
 static int check_open_ex( const char * filename, mcpl_errstate_t * es,
-                          int quiet, int do_legacy )
+                          int quiet )
 {
   es_reset(es);
   mcpl_file_t f = mcpl_open_file_es(filename,es);
@@ -152,24 +148,18 @@ static int check_open_ex( const char * filename, mcpl_errstate_t * es,
     print_result(what,es);
   }
   mcpl_close_file(f);//does nothing for f.internal==NULL
-  if ( !do_legacy )
-    return ok;
-  legacy_f.internal = NULL;
-  LEGACY_CHECK( es, legacy_f = mcpl_open_file(legacy_copy(filename)) );
-  mcpl_close_file(legacy_f);
   return ok;
 }
 
 static int check_open( const char * filename )
 {
   mcpl_errstate_t es;
-  return check_open_ex( filename, &es, 0, 1 );
+  return check_open_ex( filename, &es, 0 );
 }
 
 //Open files with the first n bytes of the file, for all n in [0,nmax],
 //printing ranges of n with the same result. With dogzip, the truncated files
-//are gzipped first. Errors are only compared with mcpl_open_file at the start
-//of each range (since each such error leaks an open file):
+//are gzipped first:
 static void test_truncations( const char * label, const buffer_t * b,
                               size_t nmax, int dogzip )
 {
@@ -188,12 +178,10 @@ static void test_truncations( const char * label, const buffer_t * b,
         quiet_gzip("trunc.mcpl");
         fn = "trunc.mcpl.gz";
       }
-      if ( check_open_ex( fn, &es, 1, 0 ) )
+      if ( check_open_ex( fn, &es, 1 ) )
         snprintf(res,sizeof(res),"ok");
       else
         snprintf(res,sizeof(res),"ERROR %s: %s",code_name(es.code),es.msg);
-      if ( n == 0 || strcmp(res,prev) != 0 )
-        check_open_ex( fn, &es, 1, 1 );
       remove(fn);
     } else {
       res[0] = '\0';
@@ -219,7 +207,7 @@ static void test_open_errors(void)
     //Directories (fopen fails on some platforms, fread on others, so the
     //messages differ, but both are I/O errors):
     mcpl_errstate_t es;
-    check_open_ex( ".", &es, 1, 1 );
+    check_open_ex( ".", &es, 1 );
     printf("open(.) -> ERROR %s\n",code_name(es.code));
   }
   {
@@ -229,7 +217,6 @@ static void test_open_errors(void)
     if ( f.internal )
       test_fail("open(NULL) succeeded");
     print_result("open(NULL)",&es);
-    LEGACY_CHECK( &es, legacy_f = mcpl_open_file(NULL) );
   }
 
   buffer_t a = file_load("a.mcpl");
@@ -306,7 +293,7 @@ static void test_open_errors(void)
     buffer_t d = file_load("d.mcpl");
     save_modified("x.mcpl",&d,d.size,buf_find(&d,"xtat:sum:"),"s",1);
     mcpl_errstate_t es;
-    check_open_ex( "x.mcpl", &es, 1, 1 );
+    check_open_ex( "x.mcpl", &es, 1 );
     printf("open(x.mcpl) -> ERROR %s: %.150s... (%u characters)\n",
            code_name(es.code),es.msg,(unsigned)strlen(es.msg));
     save_modified("x.mcpl",&d,d.size,buf_find(&d,"ytat:sum:"),"s",1);
@@ -388,40 +375,33 @@ static void test_invalid_handle(void)
   es_reset(&es);
   const mcpl_particle_t * p = mcpl_read_es(f,&es);
   print_read("read",p,&es);
-  LEGACY_CHECK( &es, mcpl_read(f) );
 
   es_reset(&es);
   p = mcpl_read_with_userdata_es(f,&ud,&es);
   print_read("read_with_userdata",p,&es);
   if ( ud )
     test_fail("userdata not NULL after error");
-  LEGACY_CHECK( &es, mcpl_read_with_userdata(f,&ud) );
 
   es_reset(&es);
   printf("  skipforward returned %i\n",mcpl_skipforward_es(f,1,&es));
   print_result("skipforward",&es);
-  LEGACY_CHECK( &es, mcpl_skipforward(f,1) );
 
   es_reset(&es);
   printf("  rewind returned %i\n",mcpl_rewind_es(f,&es));
   print_result("rewind",&es);
-  LEGACY_CHECK( &es, mcpl_rewind(f) );
 
   es_reset(&es);
   printf("  seek returned %i\n",mcpl_seek_es(f,0,&es));
   print_result("seek",&es);
-  LEGACY_CHECK( &es, mcpl_seek(f,0) );
 
   es_reset(&es);
   const char * c = mcpl_hdr_comment_es(f,0,&es);
   printf("  hdr_comment returned %s\n",c?"non-NULL":"NULL");
   print_result("hdr_comment",&es);
-  LEGACY_CHECK( &es, mcpl_hdr_comment(f,0) );
 
   es_reset(&es);
   printf("  hdr_stat_sum returned %g\n",mcpl_hdr_stat_sum_es(f,"nevents",&es));
   print_result("hdr_stat_sum",&es);
-  LEGACY_CHECK( &es, mcpl_hdr_stat_sum(f,"nevents") );
 
   //Closing does nothing:
   mcpl_close_file(f);
@@ -484,12 +464,10 @@ static void test_header_errors(void)
   const char * c = mcpl_hdr_comment_es(f,4,&es);
   printf("  hdr_comment(4) returned %s\n",c?"non-NULL":"NULL");
   print_result("hdr_comment(4)",&es);
-  LEGACY_CHECK( &es, mcpl_hdr_comment(f,4) );
 
   es_reset(&es);
   printf("  hdr_stat_sum(NULL) returned %g\n",mcpl_hdr_stat_sum_es(f,NULL,&es));
   print_result("hdr_stat_sum(NULL)",&es);
-  LEGACY_CHECK( &es, mcpl_hdr_stat_sum(f,NULL) );
 
   //A successful call after an error resets the code (without es_reset):
   mcpl_hdr_comment_es(f,0,&es);
@@ -548,7 +526,6 @@ static void test_read_failure( const char * filename, int print_count )
   print_result("seek",&es);
   if ( es.code != first.code || strcmp(es.msg,first.msg) != 0 )
     test_fail("different error after the first one");
-  LEGACY_CHECK( &es, mcpl_read(f) );
 
   //The header can still be accessed:
   es_reset(&es);
@@ -601,8 +578,6 @@ static void test_truncated_data(void)
     printf("  %s: skipforward(8) -> %i\n",fns[i],mcpl_skipforward_es(f,8,&es));
     print_result("  skipforward(8)",&es);
     mcpl_close_file(f);
-    LEGACY_CHECK( &es, legacy_f = mcpl_open_file(legacy_copy(fns[i]));
-                  mcpl_skipforward(legacy_f,8); mcpl_close_file(legacy_f) );
     remove(fns[i]);
   }
 
@@ -628,8 +603,6 @@ static void test_truncated_data(void)
     printf("  seek(990) -> %i\n",mcpl_seek_es(f,990,&es));
     print_result("  seek(990)",&es);
     mcpl_close_file(f);
-    LEGACY_CHECK( &es, legacy_f = mcpl_open_file(legacy_copy("cz.mcpl.gz"));
-                  mcpl_seek(legacy_f,990); mcpl_close_file(legacy_f) );
     es_reset(&es);
     f = mcpl_open_file_es("cz.mcpl.gz",&es);
     printf("  skipforward(10) -> %i\n",mcpl_skipforward_es(f,10,&es));
@@ -639,8 +612,6 @@ static void test_truncated_data(void)
     printf("  skipforward(990) -> %i\n",mcpl_skipforward_es(f,990,&es));
     print_result("  skipforward(990)",&es);
     mcpl_close_file(f);
-    LEGACY_CHECK( &es, legacy_f = mcpl_open_file(legacy_copy("cz.mcpl.gz"));
-                  mcpl_skipforward(legacy_f,990); mcpl_close_file(legacy_f) );
     es_reset(&es);
     f = mcpl_open_file_es("cz.mcpl.gz",&es);
     printf("  skipforward(10) -> %i\n",mcpl_skipforward_es(f,10,&es));
@@ -652,8 +623,6 @@ static void test_truncated_data(void)
     printf("  rewind -> %i\n",mcpl_rewind_es(f,&es));
     print_result("  rewind after error",&es);
     mcpl_close_file(f);
-    LEGACY_CHECK( &es, legacy_f = mcpl_open_file(legacy_copy("cz.mcpl.gz"));
-                  while ( mcpl_read(legacy_f) ) {} mcpl_close_file(legacy_f) );
   }
   remove("cz.mcpl.gz");
   remove("trdata.mcpl");
@@ -674,7 +643,6 @@ static void check_layout( const char * layout )
   print_result(what,&es);
   if ( es_failed(&es) != ( n == 0 ) )
     test_fail("mcpl_userdata_layout_size_es: inconsistent return value");
-  LEGACY_CHECK( &es, mcpl_userdata_layout_size(layout) );
 }
 
 static void check_offset( const char * layout, const char * name,
@@ -690,7 +658,6 @@ static void check_offset( const char * layout, const char * name,
   print_result(what,&es);
   if ( es_failed(&es) != ( o == UINT32_MAX ) )
     test_fail("mcpl_userdata_offset_es: inconsistent return value");
-  LEGACY_CHECK( &es, mcpl_userdata_offset(layout,name,type) );
 }
 
 static void test_layouts(void)
@@ -733,7 +700,12 @@ static void ctx_print_handler( const char * msg, void * ctx )
 {
   if ( ctx != (void*)ctx_collected )
     test_fail("print handler called with wrong context");
-  strncat(ctx_collected,msg,sizeof(ctx_collected)-strlen(ctx_collected)-1);
+  size_t n = strlen(ctx_collected);
+  size_t nmsg = strlen(msg);
+  if ( nmsg > sizeof(ctx_collected) - 1 - n )
+    nmsg = sizeof(ctx_collected) - 1 - n;
+  memcpy(ctx_collected+n,msg,nmsg);
+  ctx_collected[n+nmsg] = '\0';
 }
 
 static void plain_print_handler( const char * msg )
@@ -766,8 +738,6 @@ int main( int argc, char ** argv )
 {
   (void)argc;
   (void)argv;
-  if ( getenv("MCPLTEST_NO_LEGACY") )
-    legacy_enabled = 0;
   printf("sizeof(mcpl_errstate_t) = %u, codes: %i %i %i\n",
          (unsigned)sizeof(mcpl_errstate_t),MCPL_ERROR_RUNTIME,MCPL_ERROR_IO,
          MCPL_ERROR_MEMORY);
@@ -786,6 +756,5 @@ int main( int argc, char ** argv )
   remove("b.mcpl");
   remove("c.mcpl");
   remove("d.mcpl");
-  legacy_remove_copies();
   return 0;
 }

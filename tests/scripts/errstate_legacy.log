@@ -1,0 +1,33 @@
+=== open_missing
+Got error from _es variant: Unable to open file!
+Got expected MCPL ERROR: Unable to open file!
+=== open_truncated_header
+Got error from _es variant: Errors encountered while attempting to read header
+Got expected MCPL ERROR: Errors encountered while attempting to read header
+=== read_truncated_data
+Got error from _es variant: Errors encountered while attempting to read particle data.
+Got expected MCPL ERROR: Errors encountered while attempting to read particle data.
+=== comment_index
+Got error from _es variant: Invalid comment requested (index out of bounds)
+Got expected MCPL ERROR: Invalid comment requested (index out of bounds)
+=== create_empty_name
+Got error from _es variant: mcpl_create_outfile called with empty string.
+Got expected MCPL ERROR: mcpl_create_outfile called with empty string.
+=== add_nan_particle
+Got error from _es variant: attempting to add particle with NaN or infinite kinetic energy
+Got expected MCPL ERROR: attempting to add particle with NaN or infinite kinetic energy
+=== srcname_too_late
+Got error from _es variant: mcpl_hdr_set_srcname called too late.
+Got expected MCPL ERROR: mcpl_hdr_set_srcname called too late.
+=== transfer_before_read
+Got error from _es variant: mcpl_transfer_last_read_particle called with source file in invalid state (did you forget to first call mcpl_read() on the source file before calling this function?)
+Got expected MCPL ERROR: mcpl_transfer_last_read_particle called with source file in invalid state (did you forget to first call mcpl_read() on the source file before calling this function?)
+=== merge_incompatible
+Got error from _es variant: Attempting to merge incompatible files (FP precision: single vs double).
+Got expected MCPL ERROR: Attempting to merge incompatible files (FP precision: single vs double).
+=== merge_inplace_same_file
+Got error from _es variant: Merging file with itself
+Got expected MCPL ERROR: Merging file with itself
+=== repair_not_broken
+Got error from _es variant: File does not appear to be broken.
+Got expected MCPL ERROR: File does not appear to be broken.

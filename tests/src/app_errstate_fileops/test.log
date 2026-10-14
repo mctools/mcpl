@@ -1,0 +1,166 @@
+
+==> Merging files into new files:
+merge_files (no input files) -> ERROR RUNTIME: mcpl_merge_files must be called with at least one input file
+merge_files (NULL input file) -> ERROR RUNTIME: Merging files with null string as filename
+merge_files (same file twice) -> ERROR RUNTIME: Merging file with itself
+merge_files (missing input file) -> ERROR IO: Unable to open file!
+merge_files (incompatible files) -> ERROR RUNTIME: Attempting to merge incompatible files (FP precision: single vs double).
+merge_files (output file exists) -> ERROR RUNTIME: requested output file of mcpl_merge_files already exists
+merge_files (NULL output file) -> ERROR RUNTIME: mcpl_merge_files called with null string as output filename
+merge_files (truncated input file) -> ERROR RUNTIME: Unexpected read-error while merging
+  output left unfinished:
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 3 particles.
+  file mout.mcpl: nparticles=3 srcname="errstate_fileops" doubleprec=0
+    comment 0: "a comment"
+    comment 1: "stat:sum:nevents:                      -1"
+    particle x values: 1 2 3
+  reading back -> ok
+MCPL: Successfully repaired file with 3 particles.
+  repair -> ok
+  file mout.mcpl: nparticles=3 srcname="errstate_fileops" doubleprec=0
+    comment 0: "a comment"
+    comment 1: "stat:sum:nevents:                      -1"
+    particle x values: 1 2 3
+  reading back -> ok
+merge_files (valid) -> ok
+close_outfile -> ok
+  file mout.mcpl: nparticles=5 srcname="errstate_fileops" doubleprec=0
+    comment 0: "a comment"
+    comment 1: "stat:sum:nevents:                      30"
+    particle x values: 1 2 3 11 12
+  reading back -> ok
+MCPL WARNING: Merging files from older MCPL format. Output will be in latest format.
+merge_files (format 2) -> ok
+  merged file has format version 3 and 5 particles
+
+==> Checking if files can be merged:
+can_merge(m1.mcpl,m2.mcpl) = 1 -> ok
+can_merge(m1.mcpl,m3_dp.mcpl) = 0 -> ok
+can_merge(m1.mcpl,nosuchfile.mcpl) = 0 -> ERROR IO: Unable to open file!
+can_merge(NULL,m1.mcpl) = 0 -> ERROR RUNTIME: mcpl_open_file called with null string
+
+==> Forced merges:
+forcemerge_files (no input files) -> ERROR RUNTIME: mcpl_forcemerge_files must be called with at least one input file
+forcemerge_files (same file twice) -> ERROR RUNTIME: Merging file with itself
+forcemerge_files (missing input file) -> ERROR IO: Unable to open file!
+forcemerge_files (output file exists) -> ERROR RUNTIME: requested output file of mcpl_forcemerge_files already exists
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Discarding comments and blobs of the input files
+MCPL force-merge: Transferring 2 particles from file m3_dp.mcpl
+MCPL force-merge: Transferring 2 particles from file m2_trunc.mcpl
+forcemerge_files (truncated input file) -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+  output left unfinished:
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 3 particles.
+  file fout.mcpl: nparticles=3 srcname="mcpl_forcemerge_files (from MCPL)" doubleprec=1
+    particle x values: 21 22 11
+  reading back -> ok
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Discarding comments and blobs of the input files
+MCPL force-merge: Transferring 2 particles from file m3_dp.mcpl
+MCPL force-merge: Transferring 3 particles from file m_nan.mcpl
+MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 2). They can not be added to other MCPL files.
+forcemerge_files (NaN in input file) -> ERROR RUNTIME: mcpl_transfer_last_read_particle asked to transfer particle with NaN or infinite position
+  output left unfinished:
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+  file fout.mcpl: nparticles=4 srcname="mcpl_forcemerge_files (from MCPL)" doubleprec=1
+    particle x values: 21 22 31 32
+  reading back -> ok
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Discarding comments and blobs of the input files
+MCPL force-merge: Transferring 3 particles from file m1.mcpl
+MCPL force-merge: Transferring 2 particles from file m3_dp.mcpl
+MCPL force-merge: Transferred a total of 5 particles to new file fout.mcpl
+forcemerge_files (valid) -> ok
+  file fout.mcpl: nparticles=5 srcname="mcpl_forcemerge_files (from MCPL)" doubleprec=1
+    particle x values: 1 2 3 21 22
+  reading back -> ok
+MCPL mcpl_forcemerge_files called with 2 files that are compatible for a standard merge => falling back to standard mcpl_merge_files function
+forcemerge_files (compatible files) -> ok
+  file fout.mcpl: nparticles=5 srcname="errstate_fileops" doubleprec=0
+    comment 0: "a comment"
+    comment 1: "stat:sum:nevents:                      30"
+    particle x values: 1 2 3 11 12
+  reading back -> ok
+
+==> Merging in place:
+MCPL: Compressing file i1_gz.mcpl
+MCPL: Compressed file into i1_gz.mcpl.gz
+merge_inplace (NULL file) -> ERROR RUNTIME: mcpl_merge_inplace called with null string as filename
+merge_inplace (same file) -> ERROR RUNTIME: Merging file with itself
+merge_inplace (missing file) -> ERROR IO: Unable to open file!
+merge_inplace (incompatible files) -> ERROR RUNTIME: Attempting to merge incompatible files (FP precision: single vs double).
+merge_inplace (different format versions) -> ERROR RUNTIME: Attempting to merge incompatible files (can not mix MCPL format versions when merging inplace)
+merge_inplace (gzipped file) -> ERROR RUNTIME: direct modification of gzipped files is not supported.
+  i1.mcpl unchanged by these errors
+merge_inplace (truncated file 2) -> ERROR RUNTIME: Unexpected read-error while merging
+  file 1 left unfinished:
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 3 particles.
+  file i1.mcpl: nparticles=3 srcname="errstate_fileops" doubleprec=0
+    comment 0: "a comment"
+    comment 1: "stat:sum:nevents:                      -1"
+    particle x values: 1 2 3
+  reading back -> ok
+MCPL: Successfully repaired file with 3 particles.
+  repair -> ok
+  file i1.mcpl: nparticles=3 srcname="errstate_fileops" doubleprec=0
+    comment 0: "a comment"
+    comment 1: "stat:sum:nevents:                      -1"
+    particle x values: 1 2 3
+  reading back -> ok
+merge_inplace (empty file 2) -> ok
+merge_inplace (valid) -> ok
+  file i1.mcpl: nparticles=5 srcname="errstate_fileops" doubleprec=0
+    comment 0: "a comment"
+    comment 1: "stat:sum:nevents:                      30"
+    particle x values: 1 2 3 11 12
+  reading back -> ok
+
+==> Repairing files:
+repair (NULL) -> ERROR RUNTIME: mcpl_open_file called with null string
+repair (missing file) -> ERROR IO: Unable to open file!
+repair (not broken) -> ERROR RUNTIME: File does not appear to be broken.
+repair (gzipped and broken) -> ERROR RUNTIME: Input file is indeed broken, but must be gunzipped before it can be repaired.
+repair (gzipped) -> ERROR RUNTIME: File must be gunzipped before it can be checked and possibly repaired.
+MCPL WARNING: Marking stat:sum:nevents entry as not available (-1) since file not closed properly.
+MCPL: Successfully repaired file with 2 particles.
+repair (unfinished file) -> ok
+  file r_unfinished.mcpl: nparticles=2 srcname="errstate_fileops" doubleprec=0
+    comment 0: "a comment"
+    comment 1: "stat:sum:nevents:                      -1"
+    particle x values: 1 2
+  reading back -> ok
+MCPL WARNING: Marking stat:sum:nevents entry as not available (-1) since file not closed properly.
+MCPL: Successfully repaired file with 2 particles.
+repair (truncated file) -> ok
+  file r_truncated.mcpl: nparticles=2 srcname="errstate_fileops" doubleprec=0
+    comment 0: "a comment"
+    comment 1: "stat:sum:nevents:                      -1"
+    particle x values: 1 2
+  reading back -> ok
+
+==> Compressing files:
+  gzip_file(NULL) returned 0
+gzip_file(NULL) -> ERROR RUNTIME: mcpl_gzip_file called with null string
+MCPL: Compressing file nosuchfile.mcpl
+  gzip_file(nosuchfile.mcpl) returned 0
+gzip_file(nosuchfile.mcpl) -> ERROR IO: Problems encountered while compressing file nosuchfile.mcpl
+MCPL: Compressing file g1.mcpl
+  gzip_file returned 0
+gzip_file (directory in the way) -> ERROR IO: Problems encountered while compressing file g1.mcpl
+  file g1.mcpl: nparticles=3 srcname="errstate_fileops" doubleprec=0
+    comment 0: "a comment"
+    comment 1: "stat:sum:nevents:                      10"
+    particle x values: 1 2 3
+  reading back -> ok
+MCPL: Compressing file g1.mcpl
+MCPL: Compressed file into g1.mcpl.gz
+  gzip_file returned 1, original file removed
+gzip_file (valid) -> ok
+  file g1.mcpl.gz: nparticles=3 srcname="errstate_fileops" doubleprec=0
+    comment 0: "a comment"
+    comment 1: "stat:sum:nevents:                      10"
+    particle x values: 1 2 3
+  reading back -> ok
+MCPL: Compressing file nosuchfile.mcpl
+MCPL ERROR: Problems encountered while compressing file nosuchfile.mcpl.
+  legacy gzip_file(nosuchfile.mcpl) returned 0
