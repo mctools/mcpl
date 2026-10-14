@@ -19,7 +19,8 @@ v2.2.9  (work in progress)
       * Opening corrupted files with invalid numbers of comments or blobs, or
         invalid lengths of strings or blobs, in their headers no longer
         allocates memory according to these numbers (which could exhaust the
-        memory), but only as the data is actually read. Opening files fails
+        memory), but only as the data is actually read (with the buffers
+        growing geometrically, to keep this fast). Opening files fails
         if the header would need more than 5 GB of memory (e.g. for small
         gzipped files with huge headers).
       * New pymcpltool option --dry-run (-d), which does everything except

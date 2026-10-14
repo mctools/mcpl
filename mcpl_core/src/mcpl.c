@@ -1937,18 +1937,32 @@ MCPL_LOCAL int mcpl_read_lengthdata( mcpl_fileinternal_t* f, uint32_t * n,
   if ( (uint64_t)*pos + sizeof(*n) + *n + f->hdr_entries_overhead
        > (uint64_t)MCPLIMP_MAX_HEADER_MEMORY )
     return mcpl_internal_raise_runtime( es, MCPLIMP_HEADER_TOO_LARGE_MSG );
+  //The buffer starts with (at most) 1MB and its capacity is doubled when
+  //needed, so the copying when growing it stays proportional to the size of
+  //the data (realloc might copy the data every time, e.g. on Windows). The
+  //data is read in chunks of at most 1MB:
   const size_t chunk = 1048576;
+  const size_t ntotal = (size_t)*n + 1;//+1 for the terminating null-byte
+  size_t capacity = ( ntotal < chunk ? ntotal : chunk );
+  void * p = mcpl_internal_realloc_es( *dest, capacity, es );
+  if (!p)
+    return 0;
+  *dest = (char*)p;
   size_t nread = 0;
-  while ( 1 ) {
-    size_t ntoread = (size_t)*n - nread;
+  while ( nread < (size_t)*n ) {
+    if ( nread + 1 == capacity ) {
+      size_t newcapacity = 2 * capacity;
+      if ( newcapacity > ntotal )
+        newcapacity = ntotal;
+      p = mcpl_internal_realloc_es( *dest, newcapacity, es );
+      if (!p)
+        return 0;
+      *dest = (char*)p;
+      capacity = newcapacity;
+    }
+    size_t ntoread = capacity - 1 - nread;
     if ( ntoread > chunk )
       ntoread = chunk;
-    void * p = mcpl_internal_realloc_es( *dest, nread + ntoread + 1, es );
-    if (!p)
-      return 0;
-    *dest = (char*)p;
-    if ( !ntoread )
-      break;
     if (f->filegz)
       nb = gzread(f->filegz, *dest + nread, (unsigned)ntoread);
     else
