@@ -122,6 +122,18 @@ extern "C" {
   typedef struct MCPL_API { void * internal; } mcpl_file_t;    /* file-object used while reading .mcpl */
   typedef struct MCPL_API { void * internal; } mcpl_outfile_t; /* file-object used while writing .mcpl */
 
+  /* Error state, filled by the _es variants of functions in case of errors */
+  /* (see the section "Reporting errors to the caller" below):              */
+  typedef struct MCPL_API {
+    int code;       /* 0 (no error) or one of the MCPL_ERROR_xxx codes   */
+    int reserved;   /* reserved for future use                           */
+    char msg[1024]; /* error message (null-terminated, maybe truncated)  */
+  } mcpl_errstate_t;
+
+#define MCPL_ERROR_RUNTIME 1 /* generic error (invalid files, arguments, ...) */
+#define MCPL_ERROR_IO      2 /* failed I/O operation (e.g. fopen or fwrite)  */
+#define MCPL_ERROR_MEMORY  3 /* memory allocation failed                     */
+
   /****************************/
   /* Creating new .mcpl files */
   /****************************/
@@ -386,10 +398,53 @@ extern "C" {
   /* Error handling */
   /******************/
 
-  /* Override the error handler which will get called with the error              */
-  /* description. If no handler is set, errors will get printed to stdout and the */
-  /* process terminated. An error handler should not return to the calling code.  */
+  /* Override the error handler which will get called with the error           */
+  /* description. If no handler is set, errors will get printed to stdout      */
+  /* and the process terminated. An error handler should not return to the     */
+  /* calling code.                                                             */
   MCPL_API void mcpl_set_error_handler(void (*handler)(const char *));
+
+  /************************************/
+  /* Error handling with error states */
+  /************************************/
+
+  /* The functions above handle errors by calling the error handler, which by  */
+  /* default prints the error and ends the program. The variants below, with   */
+  /* the suffix _es, instead report errors to the caller in a caller-provided  */
+  /* error state, and return. Each call sets the code of the error state: 0 if */
+  /* the call succeeded, otherwise an error code (and then the message is set  */
+  /* as well). In case of errors, the values returned by the functions are     */
+  /* unspecified (except that a file object returned by mcpl_open_file_es can  */
+  /* always be passed to mcpl_close_file, and that userdata pointers are set   */
+  /* to NULL). Passing NULL as the error state gives the behaviour of the      */
+  /* functions without _es (and the error handler is only used in that case).  */
+  /*                                                                           */
+  /* After an error in mcpl_read_es (or the skip or seek functions), the file  */
+  /* can only be closed, and further calls of these functions fail with the    */
+  /* same error. Other errors (like invalid arguments) leave the file usable.  */
+  /* Closing a file which failed to open (with internal NULL) does nothing.    */
+  /*                                                                           */
+  /* The functions can be used concurrently from different threads, as long as */
+  /* each file object is only used by one thread at a time.                    */
+
+  MCPL_API mcpl_file_t mcpl_open_file_es(const char * filename, mcpl_errstate_t*);
+  MCPL_API const mcpl_particle_t* mcpl_read_es(mcpl_file_t, mcpl_errstate_t*);
+  MCPL_API const mcpl_particle_t* mcpl_read_with_userdata_es(mcpl_file_t,
+                                                             const uint8_t ** userdata,
+                                                             mcpl_errstate_t*);
+  MCPL_API int mcpl_skipforward_es(mcpl_file_t,uint64_t n, mcpl_errstate_t*);
+  MCPL_API int mcpl_rewind_es(mcpl_file_t, mcpl_errstate_t*);
+  MCPL_API int mcpl_seek_es(mcpl_file_t,uint64_t ipos, mcpl_errstate_t*);
+  MCPL_API const char * mcpl_hdr_comment_es(mcpl_file_t, unsigned icomment,
+                                            mcpl_errstate_t*);
+  MCPL_API double mcpl_hdr_stat_sum_es( mcpl_file_t, const char * key,
+                                        mcpl_errstate_t* );
+  MCPL_API uint32_t mcpl_userdata_layout_size_es(const char * layout,
+                                                 mcpl_errstate_t*);
+  MCPL_API uint32_t mcpl_userdata_offset_es(const char * layout,
+                                            const char * name,
+                                            const char * type,
+                                            mcpl_errstate_t*);
 
   /*******/
   /* I/O */
@@ -400,6 +455,15 @@ extern "C" {
   /* instead. Calling with NULL resets to original. Note that this might    */
   /* get invoked with multiple or partial lines.                            */
   MCPL_API void mcpl_set_print_handler(void (*handler)(const char *));
+
+  /* Like mcpl_set_print_handler, but the handler is called with the given  */
+  /* context pointer as its second argument (setting either kind of handler */
+  /* replaces the other):                                                   */
+  MCPL_API void mcpl_set_print_handler_ctx(void (*handler)(const char *, void * ctx),
+                                           void * ctx);
+  /* Note that handlers should be set before using MCPL from several threads, */
+  /* and handlers which might be called from several threads must be thread  */
+  /* safe themselves (the default handler is).                               */
 
   /**********************/
   /* Obsolete functions */

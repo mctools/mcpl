@@ -1,0 +1,243 @@
+sizeof(mcpl_errstate_t) = 1032, codes: 1 2 3
+
+==> Userdata layouts:
+layout_size("a:int8") = 1 -> ok
+layout_size("a:uint8,b:int16,c:uint16,d:int32,e:uint32,f:int64,g:uint64,h:float32,i:float64") = 41 -> ok
+layout_size("temp:float32,tags:uint8[3]") = 7 -> ok
+layout_size("x_1:float64[65535]") = 0 -> ERROR RUNTIME: Invalid userdata layout "x_1:float64[65535]": too large userdata (at most 65535 bytes are allowed)
+layout_size("<NULL>") = 0 -> ERROR RUNTIME: Invalid userdata layout "": empty layout
+layout_size("") = 0 -> ERROR RUNTIME: Invalid userdata layout "": empty layout
+layout_size(",") = 0 -> ERROR RUNTIME: Invalid userdata layout ",": empty field
+layout_size("a:int8,") = 0 -> ERROR RUNTIME: Invalid userdata layout "a:int8,": empty field
+layout_size(",a:int8") = 0 -> ERROR RUNTIME: Invalid userdata layout ",a:int8": empty field
+layout_size("a") = 0 -> ERROR RUNTIME: Invalid userdata layout "a": fields must be given as name:type
+layout_size("a:") = 0 -> ERROR RUNTIME: Invalid userdata layout "a:": unknown type (must be one of int8, uint8, int16, uint16, int32, uint32, int64, uint64, float32, float64)
+layout_size(":int8") = 0 -> ERROR RUNTIME: Invalid userdata layout ":int8": empty field name
+layout_size("A:int8") = 0 -> ERROR RUNTIME: Invalid userdata layout "A:int8": field names must start with a lowercase letter
+layout_size("1a:int8") = 0 -> ERROR RUNTIME: Invalid userdata layout "1a:int8": field names must start with a lowercase letter
+layout_size("a-b:int8") = 0 -> ERROR RUNTIME: Invalid userdata layout "a-b:int8": field names must only contain lowercase letters, digits and underscores
+layout_size("a b:int8") = 0 -> ERROR RUNTIME: Invalid userdata layout "a b:int8": field names must only contain lowercase letters, digits and underscores
+layout_size("a:int9") = 0 -> ERROR RUNTIME: Invalid userdata layout "a:int9": unknown type (must be one of int8, uint8, int16, uint16, int32, uint32, int64, uint64, float32, float64)
+layout_size("a:INT8") = 0 -> ERROR RUNTIME: Invalid userdata layout "a:INT8": unknown type (must be one of int8, uint8, int16, uint16, int32, uint32, int64, uint64, float32, float64)
+layout_size("a:int8,a:float32") = 0 -> ERROR RUNTIME: Invalid userdata layout "a:int8,a:float32": duplicate field name
+layout_size("a:uint8[0]") = 0 -> ERROR RUNTIME: Invalid userdata layout "a:uint8[0]": invalid array size (must be like [3])
+layout_size("a:uint8[]") = 0 -> ERROR RUNTIME: Invalid userdata layout "a:uint8[]": invalid array size (must be like [3])
+layout_size("a:uint8[3") = 0 -> ERROR RUNTIME: Invalid userdata layout "a:uint8[3": invalid array size (must be like [3])
+layout_size("a:uint8[03]") = 0 -> ERROR RUNTIME: Invalid userdata layout "a:uint8[03]": invalid array size (must be like [3])
+layout_size("a:uint8[3]x") = 0 -> ERROR RUNTIME: Invalid userdata layout "a:uint8[3]x": invalid array size (must be like [3])
+layout_size("a:uint8[x]") = 0 -> ERROR RUNTIME: Invalid userdata layout "a:uint8[x]": invalid array size (must be like [3])
+layout_size("a:uint8[65536]") = 0 -> ERROR RUNTIME: Invalid userdata layout "a:uint8[65536]": too large userdata (at most 65535 bytes are allowed)
+layout_size("a:uint8[65535],b:uint8") = 0 -> ERROR RUNTIME: Invalid userdata layout "a:uint8[65535],b:uint8": too large userdata (at most 65535 bytes are allowed)
+layout_size("a:float64[8192]") = 0 -> ERROR RUNTIME: Invalid userdata layout "a:float64[8192]": too large userdata (at most 65535 bytes are allowed)
+layout_size("a:uint8[99999999999999999999]") = 0 -> ERROR RUNTIME: Invalid userdata layout "a:uint8[99999999999999999999]": too large userdata (at most 65535 bytes are allowed)
+layout_size("abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcd:int8") = 1 -> ok
+layout_size("abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcde:int8") = 0 -> ERROR RUNTIME: Invalid userdata layout "abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcde:int8": too long field name
+offset("temp:float32,origin:int32,tags:uint8[3],pos:float64[3]",temp,float32) = 0 -> ok
+offset("temp:float32,origin:int32,tags:uint8[3],pos:float64[3]",origin,int32) = 4 -> ok
+offset("temp:float32,origin:int32,tags:uint8[3],pos:float64[3]",tags,uint8[3]) = 8 -> ok
+offset("temp:float32,origin:int32,tags:uint8[3],pos:float64[3]",pos,float64[3]) = 11 -> ok
+offset("temp:float32,origin:int32,tags:uint8[3],pos:float64[3]",tags,uint8) = 4294967295 -> ERROR RUNTIME: mcpl_userdata_offset("temp:float32,origin:int32,tags:uint8[3],pos:float64[3]","tags","uint8"): field has a different type in the userdata layout
+offset("temp:float32,origin:int32,tags:uint8[3],pos:float64[3]",pos,float32[3]) = 4294967295 -> ERROR RUNTIME: mcpl_userdata_offset("temp:float32,origin:int32,tags:uint8[3],pos:float64[3]","pos","float32[3]"): field has a different type in the userdata layout
+offset("temp:float32,origin:int32,tags:uint8[3],pos:float64[3]",nosuchfield,int32) = 4294967295 -> ERROR RUNTIME: mcpl_userdata_offset("temp:float32,origin:int32,tags:uint8[3],pos:float64[3]","nosuchfield","int32"): no such field in the userdata layout
+offset("temp:float32,origin:int32,tags:uint8[3],pos:float64[3]",tem,float32) = 4294967295 -> ERROR RUNTIME: mcpl_userdata_offset("temp:float32,origin:int32,tags:uint8[3],pos:float64[3]","tem","float32"): no such field in the userdata layout
+offset("temp:float32,origin:int32,tags:uint8[3],pos:float64[3]",<NULL>,float32) = 4294967295 -> ERROR RUNTIME: mcpl_userdata_offset("temp:float32,origin:int32,tags:uint8[3],pos:float64[3]","","float32"): no such field in the userdata layout
+offset("temp:float32,origin:int32,tags:uint8[3],pos:float64[3]",temp,<NULL>) = 4294967295 -> ERROR RUNTIME: mcpl_userdata_offset("temp:float32,origin:int32,tags:uint8[3],pos:float64[3]","temp",""): field has a different type in the userdata layout
+offset("a:int9",a,int9) = 4294967295 -> ERROR RUNTIME: Invalid userdata layout "a:int9": unknown type (must be one of int8, uint8, int16, uint16, int32, uint32, int64, uint64, float32, float64)
+offset("<NULL>",a,int8) = 4294967295 -> ERROR RUNTIME: Invalid userdata layout "": empty layout
+
+==> Successful calls only set the error code (to 0):
+open(a.mcpl) -> ok
+  read 10 particles
+read until end of file -> ok
+  rewind -> 1, skipforward(3) -> 1, seek(9) -> 1, seek(10) -> 0, skipforward(100) -> 0
+rewind/skipforward/seek -> ok
+  comment 0: "first comment", stat:sum:nevents: 1000, stat:sum:nokey: -2
+header access -> ok
+  particle x=1 weight=2 pdgcode=2112 temp=300 tags=0,0,0
+  particle x=2 weight=2 pdgcode=2112 temp=301 tags=1,2,3
+  particle x=3 weight=2 pdgcode=2112 temp=302 tags=2,4,6
+  particle x=4 weight=2 pdgcode=2112 temp=303 tags=3,6,9
+  particle x=5 weight=2 pdgcode=2112 temp=304 tags=4,8,12
+reading b.mcpl with userdata -> ok
+
+==> Errors in header access leave the file usable:
+read (particle with x=1) -> ok
+  hdr_comment(4) returned NULL
+hdr_comment(4) -> ERROR RUNTIME: Invalid comment requested (index out of bounds)
+  hdr_stat_sum(NULL) returned -3
+hdr_stat_sum(NULL) -> ERROR RUNTIME: mcpl_hdr_stat_sum called with null string
+  code after successful call following an error: 0
+read (particle with x=2) -> ok
+  comment 3: "stat:sum:nevento:                    2000"
+hdr_comment(3) -> ok
+
+==> Functions called with invalid file objects (internal NULL):
+read (NULL) -> ERROR RUNTIME: invalid file handle (NULL)
+read_with_userdata (NULL) -> ERROR RUNTIME: invalid file handle (NULL)
+  skipforward returned 0
+skipforward -> ERROR RUNTIME: invalid file handle (NULL)
+  rewind returned 0
+rewind -> ERROR RUNTIME: invalid file handle (NULL)
+  seek returned 0
+seek -> ERROR RUNTIME: invalid file handle (NULL)
+  hdr_comment returned NULL
+hdr_comment -> ERROR RUNTIME: invalid file handle (NULL)
+  hdr_stat_sum returned -3
+hdr_stat_sum -> ERROR RUNTIME: invalid file handle (NULL)
+close -> ok
+
+==> Opening missing files, directories and NULL:
+open(doesnotexist.mcpl) -> ERROR IO: Unable to open file!
+open(doesnotexist.mcpl.gz) -> ERROR IO: Unable to open file!
+open(.) -> ERROR IO
+open(NULL) -> ERROR RUNTIME: mcpl_open_file called with null string
+
+==> Opening modified files:
+open(x.mcpl) -> ERROR RUNTIME: File is not an MCPL file!
+open(x.mcpl) -> ERROR RUNTIME: File is in an unsupported MCPL version!
+open(x.mcpl) -> ERROR RUNTIME: File is in an unsupported MCPL version!
+open(x.mcpl) -> ERROR RUNTIME: File is in an unsupported MCPL version!
+open(x.mcpl) -> ERROR RUNTIME: Endian-ness of current platform is different than the one used to write the file.
+open(x.mcpl) -> ERROR RUNTIME: Unexpected value in endianness field!
+open(x.mcpl) -> ERROR RUNTIME: unexpected particle size
+open(x.mcpl) -> ERROR RUNTIME: unexpected particle size
+open(x.mcpl.gz) -> ERROR RUNTIME: File is not an MCPL file!
+open(x.mcpl) -> ERROR RUNTIME: encountered unexpected null-byte in string read from file
+open(x.mcpl) -> ERROR RUNTIME: Invalid userdata layout "Temp:float32,tags:uint8[3]": field names must start with a lowercase letter
+open(x.mcpl) -> ERROR RUNTIME: Invalid userdata layout "temp:float32,tags:uint8[0]": invalid array size (must be like [3])
+open(x.mcpl) -> ERROR RUNTIME: Syntax error: could not properly decode comment starting with "stat:sum:" (value field holds forbidden characters, only 0123456789.-+eE are allowed in addition to leading or trailing spaces). Issue with comment "stat:sum:nevents:   x                1000"
+open(x.mcpl) -> ERROR RUNTIME: Syntax error: could not properly decode comment starting with "stat:sum:" (did not find colon separating key and value). Issue with comment "stat:sum:nevents?                    1000"
+open(x.mcpl) -> ERROR RUNTIME: Duplicate stat:sum: key. The key "nevents" appears more than once in the file.
+MCPL WARNING: Opened file with unknown "stat:..." syntax in comments. The present installation only has special support for "stat:sum:..." comments. It might be a sign that your installation of MCPL is too old.
+open(x.mcpl) -> ok
+MCPL WARNING: Opened file with unknown "stat:..." syntax in comments. The present installation only has special support for "stat:sum:..." comments. It might be a sign that your installation of MCPL is too old.
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 10 particles.
+MCPL WARNING: Marking stat:sum:nevents entry as not available (-1) since file not closed properly.
+MCPL WARNING: Marking stat:sum:nevento entry as not available (-1) since file not closed properly.
+open(x.mcpl) -> ok
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 10 particles.
+MCPL WARNING: Marking stat:sum:nevents entry as not available (-1) since file not closed properly.
+MCPL WARNING: Marking stat:sum:nevento entry as not available (-1) since file not closed properly.
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+MCPL WARNING: Marking stat:sum:nevents entry as not available (-1) since file not closed properly.
+MCPL WARNING: Marking stat:sum:nevento entry as not available (-1) since file not closed properly.
+open(x.mcpl) -> ok
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+MCPL WARNING: Marking stat:sum:nevents entry as not available (-1) since file not closed properly.
+MCPL WARNING: Marking stat:sum:nevento entry as not available (-1) since file not closed properly.
+open(x.mcpl.gz) -> ERROR RUNTIME: Input file appears to not have been closed properly and data recovery is disabled for gzipped files.
+open(x.mcpl) -> ERROR RUNTIME: Syntax error: could not properly decode comment starting with "stat:sum:" (did not find colon separating key and value). Issue with comment "stat:sum:... (1023 characters)
+open(x.mcpl) -> ERROR RUNTIME: Syntax error: could not properly decode comment starting with "stat:sum:" (content too long to show)
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 3 particles.
+MCPL WARNING: Marking stat:sum:avail entry as not available (-1) since file not closed properly.
+open(x.mcpl) -> ok
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 3 particles.
+MCPL WARNING: Marking stat:sum:avail entry as not available (-1) since file not closed properly.
+open(huge_comments.mcpl) -> ERROR RUNTIME: File header is too large (it would need more than 5GB of memory)
+open(huge_comments.mcpl) -> ERROR RUNTIME: File header is too large (it would need more than 5GB of memory)
+open(huge_blobs.mcpl) -> ERROR RUNTIME: File header is too large (it would need more than 5GB of memory)
+open(huge_blobs.mcpl) -> ERROR RUNTIME: File header is too large (it would need more than 5GB of memory)
+open(x.mcpl) -> ERROR RUNTIME: File header is too large (it would need more than 5GB of memory)
+
+==> Opening a.mcpl truncated to n bytes:
+  n=[0,7] -> ERROR RUNTIME: Error while reading first bytes of file!
+  n=[8,210] -> ERROR RUNTIME: Errors encountered while attempting to read header
+  n=[211,211] -> ok
+
+==> Opening a.mcpl truncated to n bytes (gzipped):
+  n=[0,7] -> ERROR RUNTIME: Error while reading first bytes of file!
+  n=[8,210] -> ERROR RUNTIME: Errors encountered while attempting to read header
+  n=[211,211] -> ok
+
+==> Opening b.mcpl truncated to n bytes:
+  n=[0,7] -> ERROR RUNTIME: Error while reading first bytes of file!
+  n=[8,104] -> ERROR RUNTIME: Errors encountered while attempting to read header
+  n=[105,105] -> ok
+
+==> Opening b.mcpl truncated to n bytes (gzipped):
+  n=[0,7] -> ERROR RUNTIME: Error while reading first bytes of file!
+  n=[8,104] -> ERROR RUNTIME: Errors encountered while attempting to read header
+  n=[105,105] -> ok
+
+==> Reading trdata.mcpl:
+open -> ok
+  read 6 particles of 10
+read (NULL) -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+read again (NULL) -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+read_with_userdata (NULL) -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+  skipforward returned 0
+skipforward -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+  rewind returned 0
+rewind -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+  seek returned 0
+seek -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+  header still available: nparticles=10, srcname="errstate_test", comment 0: "first comment", stat:sum:nevents: 1000
+header access -> ok
+
+==> Reading trdata.mcpl.gz:
+open -> ok
+  read 6 particles of 10
+read (NULL) -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+read again (NULL) -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+read_with_userdata (NULL) -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+  skipforward returned 0
+skipforward -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+  rewind returned 0
+rewind -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+  seek returned 0
+seek -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+  header still available: nparticles=10, srcname="errstate_test", comment 0: "first comment", stat:sum:nevents: 1000
+header access -> ok
+
+==> Seeking in truncated files:
+  trdata2.mcpl: seek(8) -> 1
+  seek(8) -> ok
+  read (NULL) -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+  trdata2.mcpl: skipforward(8) -> 1
+  skipforward(8) -> ok
+  trdata2.mcpl.gz: seek(8) -> 1
+  seek(8) -> ok
+  read (NULL) -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+  trdata2.mcpl.gz: skipforward(8) -> 1
+  skipforward(8) -> ok
+
+==> Reading cz.mcpl.gz:
+open -> ok
+read (NULL) -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+read again (NULL) -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+read_with_userdata (NULL) -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+  skipforward returned 0
+skipforward -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+  rewind returned 0
+rewind -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+  seek returned 0
+seek -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+  header still available: nparticles=1000, srcname="unknown", comment 0: "<none>", stat:sum:nevents: -2
+header access -> ok
+
+==> Seeking in truncated compressed data:
+  seek(990) -> 1
+  seek(990) -> ok
+  skipforward(10) -> 1
+  skipforward(10) -> ok
+  rewind -> 1
+  rewind -> ok
+  skipforward(990) -> 1
+  skipforward(990) -> ok
+  skipforward(10) -> 1
+  seek(5) -> 1
+  seek(5) -> ok
+  read until error -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+  rewind -> 0
+  rewind after error -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+
+==> Print handlers:
+  [plain handler] MCPL WARNING: Input file appears to not have been closed properly. Recovered 10 particles.
+  [plain handler] MCPL WARNING: Marking stat:sum:nevents entry as not available (-1) since file not closed properly.
+  [plain handler] MCPL WARNING: Marking stat:sum:nevento entry as not available (-1) since file not closed properly.
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 10 particles.
+MCPL WARNING: Marking stat:sum:nevents entry as not available (-1) since file not closed properly.
+MCPL WARNING: Marking stat:sum:nevento entry as not available (-1) since file not closed properly.
+  collected by the handler with context: MCPL WARNING: Input file appears to not have been closed properly. Recovered 10 particles.
+MCPL WARNING: Marking stat:sum:nevents entry as not available (-1) since file not closed properly.
+MCPL WARNING: Marking stat:sum:nevento entry as not available (-1) since file not closed properly.

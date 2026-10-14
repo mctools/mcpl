@@ -111,6 +111,14 @@
 #include "mcpl_fileutils.h"
 
 #define MCPLIMP_NPARTICLES_POS 8
+//Opening files fails if the header would need more memory than this (to
+//protect against corrupted or malicious files, e.g. small gzipped files with
+//huge headers), with the memory estimated roughly as the size of the header
+//plus an overhead per comment and blob:
+#define MCPLIMP_MAX_HEADER_MEMORY 5000000000
+#define MCPLIMP_HEADER_TOO_LARGE_MSG                                    \
+  "File header is too large (it would need more than 5GB of memory)"
+#define MCPLIMP_HEADER_ENTRY_OVERHEAD 64
 #define MCPLIMP_MAX_PARTICLE_SIZE 96
 #define MCPL_STATIC_ASSERT0(COND,MSG) { typedef char mcpl_##MSG[(COND)?1:-1]; mcpl_##MSG dummy; (void)dummy; }
 #define MCPL_STATIC_ASSERT3(expr,x) MCPL_STATIC_ASSERT0(expr,fail_at_line_##x)
@@ -129,21 +137,29 @@ MCPL_LOCAL void mcpl_default_print_handler( const char * msg )
 #define printf MCPLNOUSEPRINTF
 
 typedef void (*MCPL_CHARTOVOID_FCT)(const char *);
+typedef void (*MCPL_CHARCTXTOVOID_FCT)(const char *, void *);
 
-MCPL_LOCAL MCPL_CHARTOVOID_FCT* mcpl_current_print_handler(void)
+typedef struct {
+  MCPL_CHARTOVOID_FCT handler;
+  MCPL_CHARCTXTOVOID_FCT ctxhandler;
+  void * ctx;
+} mcpl_internal_printhandler_t;
+
+MCPL_LOCAL mcpl_internal_printhandler_t* mcpl_current_print_handler(void)
 {
-  static MCPL_CHARTOVOID_FCT current = NULL;
+  static mcpl_internal_printhandler_t current = { NULL, NULL, NULL };
   return &current;
 }
 
 MCPL_LOCAL void mcpl_print( const char * msg )
 {
-  MCPL_CHARTOVOID_FCT current = *mcpl_current_print_handler();
-  if (!current) {
+  mcpl_internal_printhandler_t * current = mcpl_current_print_handler();
+  if ( current->ctxhandler )
+    current->ctxhandler( msg, current->ctx );
+  else if ( current->handler )
+    current->handler( msg );
+  else
     mcpl_default_print_handler(msg);
-  } else {
-    current(msg);
-  }
 }
 
 #define MCPL_STRINGIFY(x)   MCPL_STRINGIFY2(x)
@@ -181,21 +197,102 @@ MCPL_LOCAL void mcpl_error(const char * msg)
   }
 }
 
-MCPL_LOCAL char * mcpl_internal_malloc(size_t n)
+//Errors in functions with an error state (es) argument: If es is NULL, the
+//error is raised with mcpl_error (which does not return). Otherwise the error
+//state is filled and 0 is returned, after which the caller must clean up and
+//return with an error value itself:
+MCPL_LOCAL int mcpl_internal_raise( mcpl_errstate_t * es, int code,
+                                    const char * msg )
+{
+  //NB: No code after mcpl_error, since MSVC warns about unreachable code.
+  if ( !es ) {
+    mcpl_error(msg);
+  } else {
+    es->code = code;
+    es->reserved = 0;
+    size_t n = strlen(msg);
+    if ( n >= sizeof(es->msg) )
+      n = sizeof(es->msg) - 1;
+    memcpy( es->msg, msg, n );
+    es->msg[n] = '\0';
+  }
+  return 0;
+}
+
+//All public functions with an error state start by resetting the error code.
+//Their return values in case of errors are unspecified in the API, but are
+//fixed by the tests (to not change them by accident):
+#define MCPLIMP_ES_RESET if (es) es->code = 0
+
+MCPL_LOCAL int mcpl_internal_raise_runtime( mcpl_errstate_t * es,
+                                            const char * msg )
+{
+  return mcpl_internal_raise( es, MCPL_ERROR_RUNTIME, msg );
+}
+
+MCPL_LOCAL int mcpl_internal_raise_io( mcpl_errstate_t * es,
+                                       const char * msg )
+{
+  return mcpl_internal_raise( es, MCPL_ERROR_IO, msg );
+}
+
+MCPL_LOCAL int mcpl_internal_raise_nomem( mcpl_errstate_t * es )
+{
+  return mcpl_internal_raise( es, MCPL_ERROR_MEMORY,
+                              "memory allocation failed" );
+}
+
+MCPL_LOCAL char * mcpl_internal_malloc_es( size_t n, mcpl_errstate_t * es )
 {
   char * res = (char*)malloc(n ? n : 1);
   if (!res)
-    mcpl_error("memory allocation failed");
+    mcpl_internal_raise_nomem( es );
   return res;
 }
 
-MCPL_LOCAL char * mcpl_internal_calloc(size_t num, size_t size)
+MCPL_LOCAL char * mcpl_internal_calloc_es( size_t num, size_t size,
+                                           mcpl_errstate_t * es )
 {
   char * res = (char*)calloc( ( num ? num : 1 ),
                               ( size ? size : 1 ) );
   if (!res)
-    mcpl_error("memory allocation failed");
+    mcpl_internal_raise_nomem( es );
   return res;
+}
+
+//Capacity for one more entry in an array with n entries and capacity cap,
+//growing to at most nmax entries (for arrays whose size in the file header can
+//not be trusted for allocating them up front):
+MCPL_LOCAL uint32_t mcpl_internal_grow_capacity( uint32_t n, uint32_t cap,
+                                                 uint32_t nmax )
+{
+  if ( n < cap )
+    return cap;
+  uint64_t newcap = 2 * (uint64_t)cap;
+  if ( newcap < 16 )
+    newcap = 16;
+  if ( newcap > nmax )
+    newcap = nmax;
+  return (uint32_t)newcap;
+}
+
+MCPL_LOCAL void * mcpl_internal_realloc_es( void * mem, size_t new_size,
+                                            mcpl_errstate_t * es )
+{
+  void * res = realloc( mem, new_size ? new_size : 1 );
+  if (!res)
+    mcpl_internal_raise_nomem( es );
+  return res;
+}
+
+MCPL_LOCAL char * mcpl_internal_malloc(size_t n)
+{
+  return mcpl_internal_malloc_es( n, NULL );
+}
+
+MCPL_LOCAL char * mcpl_internal_calloc(size_t num, size_t size)
+{
+  return mcpl_internal_calloc_es( num, size, NULL );
 }
 
 MCPL_LOCAL void * mcpl_internal_realloc( void* mem, size_t new_size)
@@ -214,8 +311,19 @@ void mcpl_set_error_handler(void (*handler)(const char *))
 
 void mcpl_set_print_handler(void (*handler)(const char *))
 {
-  MCPL_CHARTOVOID_FCT* cptr = mcpl_current_print_handler();
-  *cptr = handler;
+  mcpl_internal_printhandler_t * current = mcpl_current_print_handler();
+  current->ctxhandler = NULL;
+  current->ctx = NULL;
+  current->handler = handler;
+}
+
+void mcpl_set_print_handler_ctx( void (*handler)(const char *, void *),
+                                 void * ctx )
+{
+  mcpl_internal_printhandler_t * current = mcpl_current_print_handler();
+  current->handler = NULL;
+  current->ctxhandler = handler;
+  current->ctx = handler ? ctx : NULL;
 }
 
 MCPL_LOCAL int mcpl_platform_is_little_endian(void) {
@@ -398,19 +506,22 @@ MCPL_LOCAL const char * mcpl_internal_udlayout_parse( const char * layout,
   return NULL;
 }
 
-MCPL_LOCAL void mcpl_internal_udlayout_error( const char * layout,
-                                              const char * errmsg )
+MCPL_LOCAL int mcpl_internal_udlayout_error( const char * layout,
+                                             const char * errmsg,
+                                             mcpl_errstate_t * es )
 {
   char buf[512];
   snprintf( buf, sizeof(buf), "Invalid userdata layout \"%.200s%s\": %s",
             layout ? layout : "",
             ( layout && strlen(layout) > 200 ) ? "..." : "", errmsg );
-  mcpl_error(buf);
+  return mcpl_internal_raise_runtime( es, buf );
 }
 
 //Validates the layout and returns the number of bytes (with an error in case
-//of invalid layouts):
-MCPL_LOCAL uint32_t mcpl_internal_udlayout_validate( const char * layout )
+//of invalid layouts, in which case 0 is returned, since valid layouts are
+//never empty):
+MCPL_LOCAL uint32_t mcpl_internal_udlayout_validate( const char * layout,
+                                                     mcpl_errstate_t * es )
 {
   uint32_t nfields, size;
   //First pass for syntax and count, second pass also checks for duplicates:
@@ -418,28 +529,43 @@ MCPL_LOCAL uint32_t mcpl_internal_udlayout_validate( const char * layout )
                                                    &nfields, &size );
   if ( !err ) {
     mcpl_internal_udfield_t * fields = (mcpl_internal_udfield_t *)
-      mcpl_internal_malloc( nfields * sizeof(mcpl_internal_udfield_t) );
+      mcpl_internal_malloc_es( nfields * sizeof(mcpl_internal_udfield_t), es );
+    if ( !fields )
+      return 0;
     err = mcpl_internal_udlayout_parse( layout, fields, &nfields, &size );
     free(fields);
   }
-  if ( err )
-    mcpl_internal_udlayout_error( layout, err );
+  if ( err ) {
+    mcpl_internal_udlayout_error( layout, err, es );
+    return 0;
+  }
   return size;
+}
+
+uint32_t mcpl_userdata_layout_size_es( const char * layout,
+                                       mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  return mcpl_internal_udlayout_validate( layout, es );
 }
 
 uint32_t mcpl_userdata_layout_size( const char * layout )
 {
-  return mcpl_internal_udlayout_validate( layout );
+  return mcpl_internal_udlayout_validate( layout, NULL );
 }
 
-uint32_t mcpl_userdata_offset( const char * layout, const char * name,
-                               const char * type )
+uint32_t mcpl_userdata_offset_es( const char * layout, const char * name,
+                                  const char * type, mcpl_errstate_t * es )
 {
+  MCPLIMP_ES_RESET;
   uint32_t nfields, size;
-  mcpl_internal_udlayout_validate( layout );
+  if ( !mcpl_internal_udlayout_validate( layout, es ) )
+    return UINT32_MAX;
   mcpl_internal_udlayout_parse( layout, NULL, &nfields, &size );
   mcpl_internal_udfield_t * fields = (mcpl_internal_udfield_t *)
-    mcpl_internal_malloc( nfields * sizeof(mcpl_internal_udfield_t) );
+    mcpl_internal_malloc_es( nfields * sizeof(mcpl_internal_udfield_t), es );
+  if ( !fields )
+    return UINT32_MAX;
   mcpl_internal_udlayout_parse( layout, fields, &nfields, &size );
   size_t lname = name ? strlen(name) : 0;
   const char * err = "no such field in the userdata layout";
@@ -463,9 +589,16 @@ uint32_t mcpl_userdata_offset( const char * layout, const char * name,
     snprintf( buf, sizeof(buf), "mcpl_userdata_offset(\"%.200s\",\"%.70s\","
               "\"%.20s\"): %s", layout, name ? name : "",
               type ? type : "", err );
-    mcpl_error(buf);
+    mcpl_internal_raise_runtime( es, buf );
+    return UINT32_MAX;
   }
   return offset;
+}
+
+uint32_t mcpl_userdata_offset( const char * layout, const char * name,
+                               const char * type )
+{
+  return mcpl_userdata_offset_es( layout, name, type, NULL );
 }
 
 #define MCPLIMP_UD_GETSET(tname,ctype)                                      \
@@ -547,7 +680,7 @@ MCPL_LOCAL void mcpl_recalc_psize(mcpl_outfile_t of)
     + 32 * (f->userdata_size?1:0);
 }
 
-MCPL_LOCAL void mcpl_platform_compatibility_check(void) {
+MCPL_LOCAL int mcpl_platform_compatibility_check_es( mcpl_errstate_t * es ) {
   MCPL_STATIC_ASSERT(CHAR_BIT==8);
   MCPL_STATIC_ASSERT(sizeof(float)==4);
   MCPL_STATIC_ASSERT(sizeof(double)==8);
@@ -557,14 +690,19 @@ MCPL_LOCAL void mcpl_platform_compatibility_check(void) {
   int64_t m1_64 = -1;
   int64_t not0_64 = ~((int64_t)0);
   if ( m1_32 != not0_32 || m1_64 != not0_64 )
-    mcpl_error("Platform compatibility check failed (integers are not two's complement)");
+    return mcpl_internal_raise_runtime( es, "Platform compatibility check failed (integers are not two's complement)" );
 
   if (copysign(1.0, -0.0) != -1.0)
-    mcpl_error("Platform compatibility check failed (floating point numbers do not have signed zero)");
+    return mcpl_internal_raise_runtime( es, "Platform compatibility check failed (floating point numbers do not have signed zero)" );
 
   mcpl_particle_t pd;
   if ( (char*)&(pd.userflags)-(char*)&(pd) != 12*sizeof(double)+sizeof(uint32_t) )
-    mcpl_error("Platform compatibility check failed (unexpected padding in mcpl_particle_t)");
+    return mcpl_internal_raise_runtime( es, "Platform compatibility check failed (unexpected padding in mcpl_particle_t)" );
+  return 1;
+}
+
+MCPL_LOCAL void mcpl_platform_compatibility_check(void) {
+  mcpl_platform_compatibility_check_es( NULL );
 }
 
 MCPL_LOCAL FILE * mcpl_internal_fopen( const char * filename, const char * mode )
@@ -831,24 +969,34 @@ MCPL_LOCAL void mcpl_internal_statsumparse( const char * comment,
   return;
 }
 
-MCPL_LOCAL void mcpl_internal_statsum_parse_or_emit_err( const char * comment,
-                                                         mcpl_internal_statsum_t* res )
+MCPL_LOCAL int mcpl_internal_statsum_parse_or_emit_err_es( const char * comment,
+                                                           mcpl_internal_statsum_t* res,
+                                                           mcpl_errstate_t * es )
 {
+  //Returns 0 (after raising an error) in case of syntax errors:
   mcpl_internal_statsumparse( comment, res );
   if ( !res->errmsg )
-    return;
+    return 1;
   if ( strlen(comment) > 16*MCPL_STATSUMBUF_MAXLENGTH
        || strlen(res->errmsg) > 1024 ) {
-    mcpl_error("Syntax error: could not properly decode comment "
-               "starting with \"stat:sum:\" (content too long to show)");
+    return mcpl_internal_raise_runtime( es, "Syntax error: could not properly"
+                                        " decode comment starting with"
+                                        " \"stat:sum:\" (content too long to"
+                                        " show)" );
   } else {
     char buf[1200+16*MCPL_STATSUMBUF_MAXLENGTH];
     snprintf(buf,sizeof(buf),
              "Syntax error: could not properly decode comment starting"
              " with \"stat:sum:\" (%s). Issue with comment \"%s\"",
              res->errmsg,comment);
-    mcpl_error(buf);
+    return mcpl_internal_raise_runtime( es, buf );
   }
+}
+
+MCPL_LOCAL void mcpl_internal_statsum_parse_or_emit_err( const char * comment,
+                                                         mcpl_internal_statsum_t* res )
+{
+  mcpl_internal_statsum_parse_or_emit_err_es( comment, res, NULL );
 }
 
 void mcpl_hdr_add_comment(mcpl_outfile_t of,const char *comment)
@@ -948,7 +1096,7 @@ void mcpl_enable_userflags(mcpl_outfile_t of)
 void mcpl_enable_userdata(mcpl_outfile_t of, const char * layout)
 {
   MCPLIMP_OUTFILEDECODE;
-  uint32_t size = mcpl_internal_udlayout_validate( layout );
+  uint32_t size = mcpl_internal_udlayout_validate( layout, NULL );
   if ( f->userdata_layout ) {
     if ( strcmp( f->userdata_layout, layout ) != 0 )
       mcpl_error("mcpl_enable_userdata called multiple times with"
@@ -1704,53 +1852,138 @@ typedef struct {
   uint64_t first_comment_pos;
   uint32_t * repaired_statsum_icomments;
   int warned_nonfinite;
+  //After errors in functions reading particles (or seeking), the file can only
+  //be closed and all other such functions fail with the same error:
+  int failed;
+  mcpl_errstate_t failure;
+  uint64_t hdr_entries_overhead;//estimated memory for comments and blobs
 } mcpl_fileinternal_t;
 
 #define MCPLIMP_FILEDECODE mcpl_fileinternal_t * f = (mcpl_fileinternal_t *)ff.internal; assert(f)
 
-MCPL_LOCAL uint64_t mcpl_read_buffer(mcpl_fileinternal_t* f, unsigned* n, char ** buf, const char * errmsg)
+//For functions with an error state argument, also give an error (returning
+//retval) for invalid handles:
+#define MCPLIMP_FILEDECODE_ES(retval)                                   \
+  mcpl_fileinternal_t * f = (mcpl_fileinternal_t *)ff.internal;         \
+  if (!f) {                                                             \
+    mcpl_internal_raise_runtime( es, "invalid file handle (NULL)" );    \
+    return retval;                                                      \
+  }
+
+//Fail (returning retval) if an earlier error made the file unusable:
+#define MCPLIMP_FILE_CHECKFAILED(retval)                                \
+  if ( f->failed ) {                                                    \
+    mcpl_internal_raise( es, f->failure.code, f->failure.msg );         \
+    return retval;                                                      \
+  }
+
+//Remember error (which was just raised in es) to make the file unusable:
+MCPL_LOCAL void mcpl_internal_file_failed( mcpl_fileinternal_t * f,
+                                           const mcpl_errstate_t * es )
 {
-  //Reads buffer and returns number of bytes consumed from file
+  if ( !es )
+    return;//not reached (errors without error state end the program)
+  f->failed = 1;
+  f->failure = *es;
+}
+
+//Errors after failed (or short) reads. These are I/O errors if the stream
+//reports one, otherwise the file simply ended prematurely or holds invalid
+//data:
+MCPL_LOCAL int mcpl_internal_readerr( mcpl_fileinternal_t * f,
+                                      const char * msg,
+                                      mcpl_errstate_t * es )
+{
+  int is_io_error;
+  if ( f->filegz ) {
+    int errnum = 0;
+    gzerror( f->filegz, &errnum );
+    is_io_error = ( errnum == Z_ERRNO );
+  } else {
+    is_io_error = ( f->file && ferror(f->file) );
+  }
+  return mcpl_internal_raise( es, ( is_io_error ? MCPL_ERROR_IO
+                                    : MCPL_ERROR_RUNTIME ), msg );
+}
+
+//Errors after failed seeks (where a failed gzseek might also be due to
+//truncated or invalid compressed data):
+MCPL_LOCAL int mcpl_internal_seekerr( mcpl_fileinternal_t * f,
+                                      mcpl_errstate_t * es,
+                                      const char * msg )
+{
+  if ( f->filegz )
+    return mcpl_internal_readerr( f, msg, es );
+  return mcpl_internal_raise_io( es, msg );
+}
+
+//Reads a length n (uint32) followed by n bytes into a newly allocated buffer
+//(*dest, with a terminating null-byte added), and adds the number of bytes
+//consumed from the file to pos. Returns 0 in case of errors. The buffer grows
+//while the data is read, so invalid lengths in corrupted files do not lead to
+//huge allocations:
+MCPL_LOCAL int mcpl_read_lengthdata( mcpl_fileinternal_t* f, uint32_t * n,
+                                     char ** dest, int64_t * pos,
+                                     const char * errmsg,
+                                     mcpl_errstate_t * es )
+{
   size_t nb;
   if (f->filegz)
     nb = gzread(f->filegz, n, sizeof(*n));
   else
     nb = fread(n, 1, sizeof(*n), f->file);
   if (nb!=sizeof(*n))
-    mcpl_error(errmsg);
-  *buf = mcpl_internal_calloc(*n,1);
-  if (f->filegz)
-    nb = gzread(f->filegz, *buf, *n);
-  else
-    nb = fread(*buf, 1, *n, f->file);
-  if (nb!=*n)
-    mcpl_error(errmsg);
-  return sizeof(*n) + *n;
+    return mcpl_internal_readerr( f, errmsg, es );
+  if ( (uint64_t)*pos + sizeof(*n) + *n + f->hdr_entries_overhead
+       > (uint64_t)MCPLIMP_MAX_HEADER_MEMORY )
+    return mcpl_internal_raise_runtime( es, MCPLIMP_HEADER_TOO_LARGE_MSG );
+  const size_t chunk = 1048576;
+  size_t nread = 0;
+  while ( 1 ) {
+    size_t ntoread = (size_t)*n - nread;
+    if ( ntoread > chunk )
+      ntoread = chunk;
+    void * p = mcpl_internal_realloc_es( *dest, nread + ntoread + 1, es );
+    if (!p)
+      return 0;
+    *dest = (char*)p;
+    if ( !ntoread )
+      break;
+    if (f->filegz)
+      nb = gzread(f->filegz, *dest + nread, (unsigned)ntoread);
+    else
+      nb = fread(*dest + nread, 1, ntoread, f->file);
+    if ( nb != ntoread )
+      return mcpl_internal_readerr( f, errmsg, es );
+    nread += ntoread;
+  }
+  (*dest)[nread] = '\0';
+  *pos += sizeof(*n) + *n;
+  return 1;
 }
 
-MCPL_LOCAL uint64_t mcpl_read_string(mcpl_fileinternal_t* f, char ** dest, const char* errmsg)
+MCPL_LOCAL int mcpl_read_buffer( mcpl_fileinternal_t* f, uint32_t* n,
+                                 char ** buf, int64_t * pos,
+                                 const char * errmsg, mcpl_errstate_t * es )
 {
-  //Reads string and returns number of bytes consumed from file
-  size_t nb;
+  //Reads buffer and adds the number of bytes consumed from file to pos.
+  //Returns 0 in case of errors.
+  return mcpl_read_lengthdata( f, n, buf, pos, errmsg, es );
+}
+
+MCPL_LOCAL int mcpl_read_string( mcpl_fileinternal_t* f, char ** dest,
+                                 int64_t * pos, const char* errmsg,
+                                 mcpl_errstate_t * es )
+{
+  //Reads string and adds the number of bytes consumed from file to pos.
+  //Returns 0 in case of errors.
   uint32_t n;
-  if (f->filegz)
-    nb = gzread(f->filegz, &n, sizeof(n));
-  else
-    nb = fread(&n, 1, sizeof(n), f->file);
-  if (nb!=sizeof(n))
-    mcpl_error(errmsg);
-  char * s = mcpl_internal_calloc(n+1,1);
-  if (f->filegz)
-    nb = gzread(f->filegz, s, n);
-  else
-    nb = fread(s, 1, n, f->file);
-  if (nb!=n)
-    mcpl_error(errmsg);
-  s[n] = '\0';
-  *dest = s;
-  if ( strlen(s) != n )
-    mcpl_error("encountered unexpected null-byte in string read from file");
-  return sizeof(n) + n;
+  if ( !mcpl_read_lengthdata( f, &n, dest, pos, errmsg, es ) )
+    return 0;
+  if ( strlen(*dest) != n )
+    return mcpl_internal_raise_runtime( es, "encountered unexpected null-byte"
+                                        " in string read from file" );
+  return 1;
 }
 
 MCPL_LOCAL gzFile mcpl_gzopen( const char * filename, const char * mode )
@@ -1891,38 +2124,29 @@ MCPL_LOCAL void mcpl_internal_cleanup_file(mcpl_fileinternal_t * f)
   free(f);
 }
 
-MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair_status)
+//Raise error and return 0 from mcpl_internal_open_file:
+#define MCPLIMP_OPENFAIL(code,msg) return mcpl_internal_raise( es, code, msg )
+
+//Opens the file and reads the header into f, returning 0 in case of errors
+//(after which the caller must clean up f):
+MCPL_LOCAL int mcpl_internal_open_file( mcpl_fileinternal_t * f,
+                                        const char * filename,
+                                        int caller_is_mcpl_repair,
+                                        int * repair_status,
+                                        mcpl_errstate_t * es )
 {
-  int caller_is_mcpl_repair = *repair_status;
-  *repair_status = 0;//file not broken
-
-  if (!filename)
-    mcpl_error("mcpl_open_file called with null string");
-
-  mcpl_platform_compatibility_check();
-
-  mcpl_file_t out;
-  out.internal = NULL;
-
-  mcpl_fileinternal_t * f
-    = (mcpl_fileinternal_t*)mcpl_internal_calloc(1,sizeof(mcpl_fileinternal_t));
-
   //open file (with gzopen if filename ends with .gz):
   f->file = NULL;
   f->filegz = NULL;
   const char * lastdot = strrchr(filename, '.');
   if (lastdot && strcmp(lastdot, ".gz") == 0) {
     f->filegz = mcpl_gzopen( filename, "rb" );
-    if (!f->filegz) {
-      mcpl_internal_cleanup_file(f);
-      mcpl_error("Unable to open file!");
-    }
+    if (!f->filegz)
+      MCPLIMP_OPENFAIL(MCPL_ERROR_IO,"Unable to open file!");
   } else {
     f->file = mcpl_internal_fopen(filename,"rb");
-    if (!f->file) {
-      mcpl_internal_cleanup_file(f);
-      mcpl_error("Unable to open file!");
-    }
+    if (!f->file)
+      MCPLIMP_OPENFAIL(MCPL_ERROR_IO,"Unable to open file!");
   }
 
   //First read and check magic word, format version and endianness.
@@ -1932,19 +2156,22 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
     nb = gzread(f->filegz, start, sizeof(start));
   else
     nb = fread(start, 1, sizeof(start), f->file);
-  if (nb>=4&&(start[0]!='M'||start[1]!='C'||start[2]!='P'||start[3]!='L'))
-    mcpl_error("File is not an MCPL file!");
-  if (nb!=sizeof(start))
-    mcpl_error("Error while reading first bytes of file!");
+  if (nb>=4&&nb<=sizeof(start)
+      &&(start[0]!='M'||start[1]!='C'||start[2]!='P'||start[3]!='L'))
+    MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"File is not an MCPL file!");
+  if (nb!=sizeof(start)) {
+    mcpl_internal_readerr( f, "Error while reading first bytes of file!", es );
+    return 0;
+  }
   f->format_version = (start[4]-'0')*100 + (start[5]-'0')*10 + (start[6]-'0');
   if (f->format_version<2||f->format_version>4)
-    mcpl_error("File is in an unsupported MCPL version!");
+    MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"File is in an unsupported MCPL version!");
   f->is_little_endian = mcpl_platform_is_little_endian();
   if (start[7]!=(f->is_little_endian?'L':'B')) {
     if (start[7]=='L'||start[7]=='B')
-      mcpl_error("Endian-ness of current platform is different than the one used to write the file.");
+      MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"Endian-ness of current platform is different than the one used to write the file.");
     else
-      mcpl_error("Unexpected value in endianness field!");
+      MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"Unexpected value in endianness field!");
   }
   int64_t current_pos = sizeof(start);
 
@@ -1956,8 +2183,10 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
     nb = gzread(f->filegz, &numpart, sizeof(numpart));
   else
     nb = fread(&numpart, 1, sizeof(numpart), f->file);
-  if (nb!=sizeof(numpart))
-    mcpl_error(errmsg);
+  if (nb!=sizeof(numpart)) {
+    mcpl_internal_readerr( f, errmsg, es );
+    return 0;
+  }
   current_pos += nb;
   f->nparticles = numpart;
 
@@ -1967,12 +2196,23 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
     nb = gzread(f->filegz, arr, sizeof(arr));
   else
     nb=fread(arr, 1, sizeof(arr), f->file);
-  if (nb!=sizeof(arr))
-    mcpl_error(errmsg);
+  if (nb!=sizeof(arr)) {
+    mcpl_internal_readerr( f, errmsg, es );
+    return 0;
+  }
   current_pos += nb;
 
-  f->ncomments = arr[0];
-  f->nblobs = arr[1];
+  //The numbers of comments and blobs are counted while reading them below (so
+  //invalid numbers in corrupted files do not lead to huge allocations):
+  const uint32_t ncomments_hdr = arr[0];
+  const uint32_t nblobs_hdr = arr[1];
+  f->ncomments = 0;
+  f->nblobs = 0;
+  f->hdr_entries_overhead = ( (uint64_t)ncomments_hdr + nblobs_hdr )
+    * MCPLIMP_HEADER_ENTRY_OVERHEAD;
+  if ( (uint64_t)current_pos + f->hdr_entries_overhead
+       > (uint64_t)MCPLIMP_MAX_HEADER_MEMORY )
+    MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,MCPLIMP_HEADER_TOO_LARGE_MSG);
   f->opt_userflags = arr[2];
   f->opt_polarisation = arr[3];
   f->opt_singleprec = arr[4];
@@ -1985,15 +2225,20 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
       nb = gzread(f->filegz, (void*)&(f->opt_universalweight), sizeof(f->opt_universalweight));
     else
       nb=fread((void*)&(f->opt_universalweight), 1, sizeof(f->opt_universalweight), f->file);
-    if (nb!=sizeof(f->opt_universalweight))
-      mcpl_error(errmsg);
+    if (nb!=sizeof(f->opt_universalweight)) {
+      mcpl_internal_readerr( f, errmsg, es );
+      return 0;
+    }
     current_pos += nb;
   }
 
   if (f->format_version>=4) {
     //Userdata layout (always present in version 4):
-    current_pos += mcpl_read_string(f,&f->userdata_layout,errmsg);
-    f->userdata_size = mcpl_internal_udlayout_validate( f->userdata_layout );
+    if (!mcpl_read_string(f,&f->userdata_layout,&current_pos,errmsg,es))
+      return 0;
+    f->userdata_size = mcpl_internal_udlayout_validate( f->userdata_layout, es );
+    if (!f->userdata_size)
+      return 0;
     //Check consistency with the size of the other fields:
     unsigned fp = f->opt_singleprec ? sizeof(float) : sizeof(double);
     uint64_t expected = 7*fp + ( f->opt_polarisation ? 3*fp : 0 )
@@ -2002,12 +2247,15 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
       + ( f->opt_userflags ? sizeof(uint32_t) : 0 )
       + f->userdata_size;
     if ( f->particle_size != expected )
-      mcpl_error("unexpected particle size");
+      MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"unexpected particle size");
   } else if ( ! (f->particle_size<=MCPLIMP_MAX_PARTICLE_SIZE) ) {
-    mcpl_error("unexpected particle size");
+    MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"unexpected particle size");
   }
-  f->particle_buffer = (char*)mcpl_internal_malloc( f->particle_size
-                                                    ? f->particle_size : 1 );
+  f->particle_buffer = (char*)mcpl_internal_malloc_es( f->particle_size
+                                                       ? f->particle_size : 1,
+                                                       es );
+  if (!f->particle_buffer)
+    return 0;
 
   f->opt_signature = 0
     + 1 * f->opt_singleprec
@@ -2018,17 +2266,27 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
     + 32 * (f->userdata_size?1:0);
 
   //Then some strings:
-  current_pos += mcpl_read_string(f,&f->hdr_srcprogname,errmsg);
-  f->comments = ( f->ncomments
-                  ? (char **)mcpl_internal_calloc(f->ncomments,sizeof(char*))
-                  : NULL );
+  if (!mcpl_read_string(f,&f->hdr_srcprogname,&current_pos,errmsg,es))
+    return 0;
   f->first_comment_pos = current_pos;
 
   //Validate stat: entries to get error on load rather than later on use:
   int unknown_stat_syntax = 0;
   uint32_t n_statsum_comments = 0;
-  for (uint32_t i = 0; i < f->ncomments; ++i) {
-    current_pos += mcpl_read_string(f,&(f->comments[i]),errmsg);
+  uint32_t capacity = 0;
+  for (uint32_t i = 0; i < ncomments_hdr; ++i) {
+    uint32_t newcap = mcpl_internal_grow_capacity( i, capacity, ncomments_hdr );
+    if ( newcap != capacity ) {
+      void * p = mcpl_internal_realloc_es( f->comments, newcap*sizeof(char*), es );
+      if (!p)
+        return 0;
+      f->comments = (char**)p;
+      capacity = newcap;
+    }
+    f->comments[i] = NULL;
+    f->ncomments = i + 1;//(entry is now owned by f)
+    if (!mcpl_read_string(f,&(f->comments[i]),&current_pos,errmsg,es))
+      return 0;
     if ( strncmp( f->comments[i], "stat:", 5 ) != 0 )
       continue;
     if ( MCPL_COMMENT_IS_STATSUM(f->comments[i]) )
@@ -2041,13 +2299,19 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
     //mcpl_internal_statsum_t although we will only use the key field.
     mcpl_internal_statsum_t * ssi_buf
       = (mcpl_internal_statsum_t*)
-      mcpl_internal_calloc( n_statsum_comments,
-                            sizeof(mcpl_internal_statsum_t) );
+      mcpl_internal_calloc_es( n_statsum_comments,
+                               sizeof(mcpl_internal_statsum_t), es );
+    if (!ssi_buf)
+      return 0;
     mcpl_internal_statsum_t * ssi_buf_next = ssi_buf;
     for (uint32_t i = 0; i < f->ncomments; ++i) {
       if ( !MCPL_COMMENT_IS_STATSUM(f->comments[i]) )
         continue;
-      mcpl_internal_statsum_parse_or_emit_err( f->comments[i], ssi_buf_next );
+      if ( !mcpl_internal_statsum_parse_or_emit_err_es( f->comments[i],
+                                                        ssi_buf_next, es ) ) {
+        free(ssi_buf);
+        return 0;
+      }
       for ( mcpl_internal_statsum_t * it = ssi_buf;
             it < ssi_buf_next; ++it ) {
         if ( strcmp( it->key, ssi_buf_next->key ) == 0 ) {
@@ -2057,7 +2321,7 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
                    "Duplicate stat:sum: key. The key \"%s\" appears"
                    " more than once in the file.",it->key);
           free(ssi_buf);
-          mcpl_error(buf);
+          MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,buf);
         }
       }
       ++ssi_buf_next;
@@ -2074,16 +2338,37 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
   f->blobkeys = NULL;
   f->bloblengths = NULL;
   f->blobs = NULL;
-  if (f->nblobs) {
-    f->blobs = (char **)mcpl_internal_calloc(f->nblobs,sizeof(char*));
-    f->blobkeys = (char **)mcpl_internal_calloc(f->nblobs,sizeof(char*));
-    f->bloblengths = (uint32_t *)mcpl_internal_calloc(f->nblobs,sizeof(uint32_t));
-    for (uint32_t i =0; i < f->nblobs; ++i)
-      current_pos += mcpl_read_string(f,&(f->blobkeys[i]),errmsg);
-    for (uint32_t i =0; i < f->nblobs; ++i)
-      current_pos += mcpl_read_buffer(f, &(f->bloblengths[i]), &(f->blobs[i]), errmsg);
+  capacity = 0;
+  for (uint32_t i = 0; i < nblobs_hdr; ++i) {
+    uint32_t newcap = mcpl_internal_grow_capacity( i, capacity, nblobs_hdr );
+    if ( newcap != capacity ) {
+      void * p = mcpl_internal_realloc_es( f->blobkeys, newcap*sizeof(char*), es );
+      if (!p)
+        return 0;
+      f->blobkeys = (char**)p;
+      p = mcpl_internal_realloc_es( f->blobs, newcap*sizeof(char*), es );
+      if (!p)
+        return 0;
+      f->blobs = (char**)p;
+      p = mcpl_internal_realloc_es( f->bloblengths, newcap*sizeof(uint32_t), es );
+      if (!p)
+        return 0;
+      f->bloblengths = (uint32_t*)p;
+      capacity = newcap;
+    }
+    f->blobkeys[i] = NULL;
+    f->blobs[i] = NULL;
+    f->bloblengths[i] = 0;
+    f->nblobs = i + 1;//(entries are now owned by f)
+    if (!mcpl_read_string(f,&(f->blobkeys[i]),&current_pos,errmsg,es))
+      return 0;
   }
-  f->particle = (mcpl_particle_t*)mcpl_internal_calloc(1,sizeof(mcpl_particle_t));
+  for (uint32_t i =0; i < f->nblobs; ++i)
+    if (!mcpl_read_buffer(f, &(f->bloblengths[i]), &(f->blobs[i]), &current_pos, errmsg, es))
+      return 0;
+  f->particle = (mcpl_particle_t*)mcpl_internal_calloc_es(1,sizeof(mcpl_particle_t),es);
+  if (!f->particle)
+    return 0;
 
   //At first event now:
   f->current_particle_idx = 0;
@@ -2112,17 +2397,17 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
           if (caller_is_mcpl_repair) {
             *repair_status = 1;//file broken but can't recover since gzip.
           } else {
-            mcpl_error("Input file appears to not have been closed properly"
-                       " and data recovery is disabled for gzipped files.");
+            MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"Input file appears to not have been closed properly"
+                             " and data recovery is disabled for gzipped files.");
           }
         }
       } else {
         if (!caller_is_mcpl_repair)
-          mcpl_error("logic error (!caller_is_mcpl_repair)");
+          MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"logic error (!caller_is_mcpl_repair)");
         *repair_status = 2;//file brokenness can not be determined since gzip.
       }
       if (!mcpl_gzseek( f->filegz, f->first_particle_pos ) )
-        mcpl_error("Unexpected issue skipping to start of empty gzipped file");
+        MCPLIMP_OPENFAIL(MCPL_ERROR_IO,"Unexpected issue skipping to start of empty gzipped file");
     } else {
       //SEEK_END is not guaranteed to always work, so we fail our recovery
       //attempt silently:
@@ -2136,13 +2421,13 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
             if ( f->nparticles > 0 && np > f->nparticles ) {
               //should really not happen unless file was corrupted or file was
               //first closed properly and then something was appended to it.
-              mcpl_error("Input file has invalid combination of meta-data & filesize.");
+              MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"Input file has invalid combination of meta-data & filesize.");
             }
             if (caller_is_mcpl_repair) {
               *repair_status = 3;//file broken and should be able to repair
             } else {
               if (f->nparticles!=0)
-                mcpl_error("unexpected nparticles value");
+                MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"unexpected nparticles value");
               char buf[256];
               snprintf(buf,sizeof(buf),"MCPL WARNING: Input file appears to"
                        " not have been closed properly. Recovered %"
@@ -2156,7 +2441,9 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
               if (!MCPL_COMMENT_IS_STATSUM(f->comments[i]))
                 continue;
               mcpl_internal_statsum_t sc;
-              mcpl_internal_statsum_parse_or_emit_err( f->comments[i], &sc );
+              if ( !mcpl_internal_statsum_parse_or_emit_err_es( f->comments[i],
+                                                                &sc, es ) )
+                return 0;
               if ( sc.value == -1.0 )
                 continue;//already marked as not available
               char buf[256+MCPL_STATSUMKEY_MAXLENGTH];
@@ -2171,8 +2458,11 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
                 if (!f->repaired_statsum_icomments) {
                   //allocate array. First entry will be the size.
                   f->repaired_statsum_icomments
-                    = (uint32_t *)mcpl_internal_calloc(f->ncomments+1,
-                                                       sizeof(uint32_t));
+                    = (uint32_t *)mcpl_internal_calloc_es(f->ncomments+1,
+                                                          sizeof(uint32_t),
+                                                          es);
+                  if (!f->repaired_statsum_icomments)
+                    return 0;
                   f->repaired_statsum_icomments[0] = 0;
                 }
                 uint32_t ir = ((f->repaired_statsum_icomments[0])++) + 1;
@@ -2182,7 +2472,7 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
               mcpl_internal_encodestatsum( sc.key, -1.0, new_comment );
               size_t nn = strlen(f->comments[i]);
               if ( nn != strlen(new_comment) )
-                mcpl_error("inconsistent length of stat:sum: comment");
+                MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"inconsistent length of stat:sum: comment");
               memcpy(f->comments[i],new_comment,nn);
             }
           }
@@ -2194,14 +2484,52 @@ MCPL_LOCAL mcpl_file_t mcpl_actual_open_file(const char * filename, int * repair
     }
   }
 
+  return 1;
+}
+#undef MCPLIMP_OPENFAIL
+
+MCPL_LOCAL mcpl_file_t mcpl_actual_open_file( const char * filename,
+                                              int * repair_status,
+                                              mcpl_errstate_t * es )
+{
+  int caller_is_mcpl_repair = *repair_status;
+  *repair_status = 0;//file not broken
+
+  mcpl_file_t out;
+  out.internal = NULL;
+
+  if (!filename) {
+    mcpl_internal_raise_runtime( es, "mcpl_open_file called with null string" );
+    return out;
+  }
+
+  if ( !mcpl_platform_compatibility_check_es( es ) )
+    return out;
+
+  mcpl_fileinternal_t * f
+    = (mcpl_fileinternal_t*)mcpl_internal_calloc_es(1,sizeof(mcpl_fileinternal_t),es);
+  if (!f)
+    return out;
+
+  if ( !mcpl_internal_open_file( f, filename, caller_is_mcpl_repair,
+                                 repair_status, es ) ) {
+    mcpl_internal_cleanup_file(f);
+    return out;
+  }
   out.internal = f;
   return out;
 }
 
+mcpl_file_t mcpl_open_file_es( const char * filename, mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  int repair_status = 0;
+  return mcpl_actual_open_file(filename,&repair_status,es);
+}
+
 mcpl_file_t mcpl_open_file(const char * filename)
 {
-  int repair_status = 0;
-  return mcpl_actual_open_file(filename,&repair_status);
+  return mcpl_open_file_es( filename, NULL );
 }
 
 MCPL_LOCAL void mcpl_internal_updatestatsum( FILE * f,
@@ -2258,7 +2586,7 @@ MCPL_LOCAL int mcpl_internal_truncate_file( FILE * fh, uint64_t size )
 void mcpl_repair(const char * filename)
 {
   int repair_status = 1;
-  mcpl_file_t f = mcpl_actual_open_file(filename,&repair_status);
+  mcpl_file_t f = mcpl_actual_open_file(filename,&repair_status,NULL);
   uint64_t nparticles = mcpl_hdr_nparticles(f);
   mcpl_fileinternal_t * fi = (mcpl_fileinternal_t *)f.internal;
   uint64_t repaired_filesize = ( fi->first_particle_pos
@@ -2345,7 +2673,7 @@ void mcpl_repair(const char * filename)
   fclose(fh);
   //Verify that we fixed it:
   repair_status = 1;
-  f = mcpl_actual_open_file( filename, &repair_status );
+  f = mcpl_actual_open_file( filename, &repair_status, NULL );
   uint64_t nparticles2 = mcpl_hdr_nparticles(f);
   mcpl_close_file(f);
   if ( repair_status == 0 && nparticles == nparticles2 ) {
@@ -2360,8 +2688,8 @@ void mcpl_repair(const char * filename)
 
 void mcpl_close_file(mcpl_file_t ff)
 {
-  MCPLIMP_FILEDECODE;
-  mcpl_internal_cleanup_file(f);
+  //Closing an invalid handle (internal NULL) does nothing:
+  mcpl_internal_cleanup_file( (mcpl_fileinternal_t *)ff.internal );
 }
 
 unsigned mcpl_hdr_version(mcpl_file_t ff)
@@ -2382,12 +2710,22 @@ unsigned mcpl_hdr_ncomments(mcpl_file_t ff)
   return f->ncomments;
 }
 
+const char * mcpl_hdr_comment_es( mcpl_file_t ff, unsigned i,
+                                  mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  MCPLIMP_FILEDECODE_ES(NULL);
+  if (i>=f->ncomments) {
+    mcpl_internal_raise_runtime( es, "Invalid comment requested (index out"
+                                 " of bounds)" );
+    return NULL;
+  }
+  return f->comments[i];
+}
+
 const char * mcpl_hdr_comment(mcpl_file_t ff, unsigned i)
 {
-  MCPLIMP_FILEDECODE;
-  if (i>=f->ncomments)
-    mcpl_error("Invalid comment requested (index out of bounds)");
-  return f->comments[i];
+  return mcpl_hdr_comment_es( ff, i, NULL );
 }
 
 int mcpl_hdr_nblobs(mcpl_file_t ff)
@@ -2443,9 +2781,11 @@ int mcpl_hdr_has_doubleprec(mcpl_file_t ff)
   return !f->opt_singleprec;
 }
 
-const mcpl_particle_t* mcpl_read(mcpl_file_t ff)
+const mcpl_particle_t* mcpl_read_es( mcpl_file_t ff, mcpl_errstate_t * es )
 {
-  MCPLIMP_FILEDECODE;
+  MCPLIMP_ES_RESET;
+  MCPLIMP_FILEDECODE_ES(NULL);
+  MCPLIMP_FILE_CHECKFAILED(NULL);
   f->last_read_valid = 0;
   f->current_particle_idx += 1;
   if ( f->current_particle_idx > f->nparticles ) {
@@ -2461,8 +2801,12 @@ const mcpl_particle_t* mcpl_read(mcpl_file_t ff)
     nb = gzread(f->filegz, pbuf, lbuf);
   else
     nb = fread(pbuf, 1, lbuf, f->file);
-  if (nb!=lbuf)
-    mcpl_error("Errors encountered while attempting to read particle data.");
+  if (nb!=lbuf) {
+    mcpl_internal_readerr( f, "Errors encountered while attempting to read"
+                           " particle data.", es );
+    mcpl_internal_file_failed( f, es );
+    return NULL;
+  }
 
   //Transfer to particle struct:
   unsigned ibuf = 0;
@@ -2567,6 +2911,11 @@ const mcpl_particle_t* mcpl_read(mcpl_file_t ff)
   return p;
 }
 
+const mcpl_particle_t* mcpl_read(mcpl_file_t ff)
+{
+  return mcpl_read_es( ff, NULL );
+}
+
 const char * mcpl_hdr_userdata_layout(mcpl_file_t ff)
 {
   MCPLIMP_FILEDECODE;
@@ -2588,18 +2937,30 @@ const uint8_t * mcpl_last_read_userdata(mcpl_file_t ff)
                            + ( f->particle_size - f->userdata_size ) );
 }
 
-const mcpl_particle_t* mcpl_read_with_userdata(mcpl_file_t ff,
-                                               const uint8_t ** userdata)
+const mcpl_particle_t* mcpl_read_with_userdata_es( mcpl_file_t ff,
+                                                   const uint8_t ** userdata,
+                                                   mcpl_errstate_t * es )
 {
-  const mcpl_particle_t* p = mcpl_read(ff);
+  MCPLIMP_ES_RESET;
   if (userdata)
+    *userdata = NULL;
+  const mcpl_particle_t* p = mcpl_read_es( ff, es );
+  if ( p && userdata )
     *userdata = mcpl_last_read_userdata(ff);
   return p;
 }
 
-int mcpl_skipforward(mcpl_file_t ff,uint64_t n)
+const mcpl_particle_t* mcpl_read_with_userdata(mcpl_file_t ff,
+                                               const uint8_t ** userdata)
 {
-  MCPLIMP_FILEDECODE;
+  return mcpl_read_with_userdata_es( ff, userdata, NULL );
+}
+
+int mcpl_skipforward_es( mcpl_file_t ff, uint64_t n, mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  MCPLIMP_FILEDECODE_ES(0);
+  MCPLIMP_FILE_CHECKFAILED(0);
   f->last_read_valid = 0;
   //increment, but guard against overflows:
   if ( n >= f->nparticles || f->current_particle_idx >= f->nparticles )
@@ -2620,15 +2981,26 @@ int mcpl_skipforward(mcpl_file_t ff,uint64_t n)
     } else {
       error = MCPL_FSEEK_CUR( f->file, f->particle_size * n )!=0;
     }
-    if (error)
-      mcpl_error("Errors encountered while skipping in particle list");
+    if (error) {
+      mcpl_internal_seekerr( f, es, "Errors encountered while skipping in"
+                              " particle list" );
+      mcpl_internal_file_failed( f, es );
+      return 0;
+    }
   }
   return notEOF;
 }
 
-int mcpl_rewind(mcpl_file_t ff)
+int mcpl_skipforward(mcpl_file_t ff,uint64_t n)
 {
-  MCPLIMP_FILEDECODE;
+  return mcpl_skipforward_es( ff, n, NULL );
+}
+
+int mcpl_rewind_es( mcpl_file_t ff, mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  MCPLIMP_FILEDECODE_ES(0);
+  MCPLIMP_FILE_CHECKFAILED(0);
   f->last_read_valid = 0;
   int already_there = (f->current_particle_idx==0);
   f->current_particle_idx = 0;
@@ -2640,15 +3012,26 @@ int mcpl_rewind(mcpl_file_t ff)
     } else {
       error = MCPL_FSEEK( f->file, f->first_particle_pos )!=0;
     }
-    if (error)
-      mcpl_error("Errors encountered while rewinding particle list");
+    if (error) {
+      mcpl_internal_seekerr( f, es, "Errors encountered while rewinding"
+                              " particle list" );
+      mcpl_internal_file_failed( f, es );
+      return 0;
+    }
   }
   return notEOF;
 }
 
-int mcpl_seek(mcpl_file_t ff,uint64_t ipos)
+int mcpl_rewind(mcpl_file_t ff)
 {
-  MCPLIMP_FILEDECODE;
+  return mcpl_rewind_es( ff, NULL );
+}
+
+int mcpl_seek_es( mcpl_file_t ff, uint64_t ipos, mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  MCPLIMP_FILEDECODE_ES(0);
+  MCPLIMP_FILE_CHECKFAILED(0);
   f->last_read_valid = 0;
   int already_there = (f->current_particle_idx==ipos);
   f->current_particle_idx = (ipos<f->nparticles?ipos:f->nparticles);
@@ -2661,10 +3044,19 @@ int mcpl_seek(mcpl_file_t ff,uint64_t ipos)
     } else {
       error = MCPL_FSEEK( f->file, f->first_particle_pos + f->particle_size * ipos )!=0;
     }
-    if (error)
-      mcpl_error("Errors encountered while seeking in particle list");
+    if (error) {
+      mcpl_internal_seekerr( f, es, "Errors encountered while seeking in"
+                              " particle list" );
+      mcpl_internal_file_failed( f, es );
+      return 0;
+    }
   }
   return notEOF;
+}
+
+int mcpl_seek(mcpl_file_t ff,uint64_t ipos)
+{
+  return mcpl_seek_es( ff, ipos, NULL );
 }
 
 uint64_t mcpl_currentposition(mcpl_file_t ff)
@@ -5186,19 +5578,32 @@ void mcpl_hdr_scale_stat_sums( mcpl_outfile_t of, double scale )
   }
 }
 
-double mcpl_hdr_stat_sum( mcpl_file_t ff, const char * key )
+double mcpl_hdr_stat_sum_es( mcpl_file_t ff, const char * key,
+                             mcpl_errstate_t * es )
 {
-  MCPLIMP_FILEDECODE;
+  MCPLIMP_ES_RESET;
+  MCPLIMP_FILEDECODE_ES(-3.0);
+  if ( !key ) {
+    mcpl_internal_raise_runtime( es, "mcpl_hdr_stat_sum called with null"
+                                 " string" );
+    return -3.0;
+  }
   for ( uint32_t i = 0; i < f->ncomments; ++i ) {
     const char * c = f->comments[i];
     if ( MCPL_COMMENT_IS_STATSUM(c) ) {
       mcpl_internal_statsum_t sc;
-      mcpl_internal_statsum_parse_or_emit_err( c, &sc );
+      if ( !mcpl_internal_statsum_parse_or_emit_err_es( c, &sc, es ) )
+        return -3.0;
       if ( strcmp(key,sc.key)==0 )
         return sc.value;
     }
   }
   return -2.0;//not present
+}
+
+double mcpl_hdr_stat_sum( mcpl_file_t ff, const char * key )
+{
+  return mcpl_hdr_stat_sum_es( ff, key, NULL );
 }
 
 MCPL_LOCAL void mcpl_internal_strip_ending( mcu8str* ss,
