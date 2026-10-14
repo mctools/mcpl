@@ -1,0 +1,226 @@
+
+==> Creating files:
+create_outfile(NULL) -> ERROR RUNTIME: mcpl_create_outfile called with null string.
+create_outfile("") -> ERROR RUNTIME: mcpl_create_outfile called with empty string.
+create_outfile(".mcpl") -> ERROR RUNTIME: mcpl_create_outfile called with string with no basename part (".mcpl").
+create_outfile(<4097 chars>) -> ERROR RUNTIME: mcpl_create_outfile called with too long string.
+create_outfile("nosuchdir/nosuchsubdir/file.mcpl") -> ERROR IO: Unable to open output file!
+create_outfile("created") -> filename "created.mcpl"
+create_outfile("created") -> ok
+close_outfile -> ok
+  file created.mcpl: nparticles=0 srcname="unknown" userflags=0 polarisation=0 doubleprec=0 universal pdgcode=0 weight=0 userdata layout=none
+  reading back -> ok
+
+==> Functions called with invalid file objects (internal NULL):
+hdr_set_srcname -> ERROR RUNTIME: invalid output file handle (NULL)
+hdr_add_comment -> ERROR RUNTIME: invalid output file handle (NULL)
+hdr_add_data -> ERROR RUNTIME: invalid output file handle (NULL)
+enable_userflags -> ERROR RUNTIME: invalid output file handle (NULL)
+enable_polarisation -> ERROR RUNTIME: invalid output file handle (NULL)
+enable_doubleprec -> ERROR RUNTIME: invalid output file handle (NULL)
+enable_universal_pdgcode -> ERROR RUNTIME: invalid output file handle (NULL)
+enable_universal_weight -> ERROR RUNTIME: invalid output file handle (NULL)
+enable_userdata -> ERROR RUNTIME: invalid output file handle (NULL)
+hdr_add_stat_sum -> ERROR RUNTIME: invalid output file handle (NULL)
+hdr_scale_stat_sums -> ERROR RUNTIME: invalid output file handle (NULL)
+get_empty_particle -> ERROR RUNTIME: invalid output file handle (NULL)
+add_particle -> ERROR RUNTIME: invalid output file handle (NULL)
+add_particle_with_userdata -> ERROR RUNTIME: invalid output file handle (NULL)
+transfer_metadata -> ERROR RUNTIME: invalid output file handle (NULL)
+transfer_last_read_particle -> ERROR RUNTIME: invalid output file handle (NULL)
+  closeandgzip_outfile returned 0
+closeandgzip_outfile (does nothing) -> ok
+close_outfile (does nothing) -> ok
+
+==> Invalid arguments and calls before writing the header:
+create_outfile -> ok
+hdr_set_srcname(NULL) -> ERROR RUNTIME: string is NULL
+hdr_set_srcname(<65535 chars>) -> ERROR RUNTIME: string length out of range
+hdr_set_srcname("errstate_write") -> ok
+hdr_add_comment(NULL) -> ERROR RUNTIME: mcpl_hdr_add_comment called with null string.
+hdr_add_comment(<65535 chars>) -> ERROR RUNTIME: string length out of range
+hdr_add_comment("stat:foo") -> ERROR RUNTIME: Refusing to create file with comments starting with "stat:" unless starting with "stat:sum:", as such syntax is reserved for future usage.
+hdr_add_comment("stat:sum:bad") -> ERROR RUNTIME: Syntax error: could not properly decode comment starting with "stat:sum:" (did not find colon separating key and value). Issue with comment "stat:sum:bad"
+hdr_add_comment("a comment") -> ok
+hdr_add_stat_sum(NULL,1) -> ERROR RUNTIME: mcpl_hdr_add_stat_sum called with null string.
+hdr_add_stat_sum("",1) -> ERROR RUNTIME: stat:sum: key must not be empty
+hdr_add_stat_sum(<70 chars>,1) -> ERROR RUNTIME: stat:sum: key "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk" too long (70 chars, max 64 allowed)
+hdr_add_stat_sum("1abc",1) -> ERROR RUNTIME: Invalid stat:sum: key "1abc" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
+hdr_add_stat_sum("a:b",1) -> ERROR RUNTIME: Invalid stat:sum: key "a:b" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
+hdr_add_stat_sum("key",NaN) -> ERROR RUNTIME: Invalid value for "stat:sum:...". Value is invalid (NaN)
+hdr_add_stat_sum("key",+inf) -> ERROR RUNTIME: Invalid value for "stat:sum:...". Value is invalid (+INF).
+hdr_add_stat_sum("key",-inf) -> ERROR RUNTIME: Invalid value for "stat:sum:...". Value is invalid (-INF).
+hdr_add_stat_sum("key",-2) -> ERROR RUNTIME: Invalid value for "stat:sum:...". Value is negative but is not -1.0 (it is -2).
+hdr_scale_stat_sums(NaN) -> ERROR RUNTIME: mcpl_hdr_scale_stat_sums called with NaN (not-a-number) scale
+hdr_scale_stat_sums(+inf) -> ERROR RUNTIME: mcpl_hdr_scale_stat_sums called with infinite scale
+hdr_scale_stat_sums(-inf) -> ERROR RUNTIME: mcpl_hdr_scale_stat_sums called with negative scale
+hdr_scale_stat_sums(-0.5) -> ERROR RUNTIME: mcpl_hdr_scale_stat_sums called with negative scale
+hdr_scale_stat_sums(0) -> ERROR RUNTIME: mcpl_hdr_scale_stat_sums called with zero scale
+hdr_add_stat_sum("nevents",-1) -> ok
+hdr_add_stat_sum("eventsum",10) -> ok
+hdr_add_comment("stat:sum:eventsum:   1") -> ERROR RUNTIME: Syntax error: could not properly decode comment starting with "stat:sum:" (value field is not exactly 24 characters wide). Issue with comment "stat:sum:eventsum:   1"
+hdr_scale_stat_sums(3) -> ok
+hdr_add_data(NULL,...) -> ERROR RUNTIME: mcpl_hdr_add_data called with null pointer.
+hdr_add_data("k",3,NULL) -> ERROR RUNTIME: mcpl_hdr_add_data called with null pointer.
+hdr_add_data(<65535 chars>,...) -> ERROR RUNTIME: string length out of range
+hdr_add_data("blob1",3,"abc") -> ok
+hdr_add_data("blob1",2,"de") -> ERROR RUNTIME: mcpl_hdr_add_data got duplicate key
+hdr_add_data("empty",0,NULL) -> ok
+enable_universal_pdgcode(0) -> ERROR RUNTIME: mcpl_enable_universal_pdgcode must be called with non-zero pdgcode.
+enable_universal_pdgcode(2112) -> ok
+enable_universal_pdgcode(2112) again -> ok
+enable_universal_pdgcode(22) -> ERROR RUNTIME: mcpl_enable_universal_pdgcode called multiple times
+enable_universal_weight(0) -> ERROR RUNTIME: mcpl_enable_universal_weight must be called with positive but finite weight.
+enable_universal_weight(-1) -> ERROR RUNTIME: mcpl_enable_universal_weight must be called with positive but finite weight.
+enable_universal_weight(+inf) -> ERROR RUNTIME: mcpl_enable_universal_weight must be called with positive but finite weight.
+enable_universal_weight(NaN) -> ERROR RUNTIME: mcpl_enable_universal_weight must be called with positive but finite weight.
+enable_universal_weight(2) -> ok
+enable_universal_weight(3) -> ERROR RUNTIME: mcpl_enable_universal_weight called multiple times
+enable_userdata(NULL) -> ERROR RUNTIME: Invalid userdata layout "": empty layout
+enable_userdata("a:int9") -> ERROR RUNTIME: Invalid userdata layout "a:int9": unknown type (must be one of int8, uint8, int16, uint16, int32, uint32, int64, uint64, float32, float64)
+enable_userdata("temp:float32") -> ok
+enable_userdata("temp:float32") again -> ok
+enable_userdata("temp:float64") -> ERROR RUNTIME: mcpl_enable_userdata called multiple times with different layouts
+enable_userflags -> ok
+get_empty_particle -> ok
+  second get_empty_particle returned NULL
+get_empty_particle again -> ERROR RUNTIME: mcpl_get_empty_particle must not be called more than once per output file
+
+==> Invalid particles:
+add_particle (file has userdata) -> ERROR RUNTIME: mcpl_add_particle called for a file with userdata (use mcpl_add_particle_with_userdata, with NULL for userdata with all bytes zero)
+add_particle_with_userdata(NULL particle) -> ERROR RUNTIME: attempting to add particle which is NULL
+add_particle_with_userdata(NaN position) -> ERROR RUNTIME: attempting to add particle with NaN or infinite position
+add_particle_with_userdata(infinite position) -> ERROR RUNTIME: attempting to add particle with NaN or infinite position
+add_particle_with_userdata(NaN direction) -> ERROR RUNTIME: attempting to add particle with NaN or infinite direction
+add_particle_with_userdata(NaN polarisation (not stored)) -> ok
+add_particle_with_userdata(NaN ekin) -> ERROR RUNTIME: attempting to add particle with NaN or infinite kinetic energy
+add_particle_with_userdata(infinite time) -> ERROR RUNTIME: attempting to add particle with NaN or infinite time
+add_particle_with_userdata(NaN weight (universal weight)) -> ok
+add_particle_with_userdata(non-unit direction) -> ERROR RUNTIME: attempting to add particle with non-unit direction vector
+add_particle_with_userdata(negative ekin) -> ERROR RUNTIME: attempting to add particle with negative kinetic energy
+add_particle_with_userdata(position too large for single precision) -> ERROR RUNTIME: attempting to add particle with position too large for single precision storage
+add_particle_with_userdata(polarisation too large for single precision (not stored)) -> ok
+add_particle_with_userdata(ekin too large for single precision) -> ERROR RUNTIME: attempting to add particle with kinetic energy too large for single precision storage
+add_particle_with_userdata(time too large for single precision) -> ERROR RUNTIME: attempting to add particle with time too large for single precision storage
+add_particle_with_userdata (valid) -> ok
+add_particle_with_userdata (valid) -> ok
+add_particle_with_userdata (valid) -> ok
+
+==> Invalid calls after writing the header:
+hdr_set_srcname -> ERROR RUNTIME: mcpl_hdr_set_srcname called too late.
+hdr_add_comment -> ERROR RUNTIME: mcpl_hdr_add_comment called too late.
+hdr_add_data -> ERROR RUNTIME: mcpl_hdr_add_data called too late.
+enable_userflags (already enabled) -> ok
+enable_polarisation -> ERROR RUNTIME: mcpl_enable_polarisation called too late.
+enable_doubleprec -> ERROR RUNTIME: mcpl_enable_doubleprec called too late.
+enable_userdata (other layout) -> ERROR RUNTIME: mcpl_enable_userdata called multiple times with different layouts
+hdr_add_stat_sum("newkey",1) -> ERROR RUNTIME: mcpl_hdr_add_stat_sum called after first particle was added to file, but without first registering a value for the same key earlier (the special value -1 can be used for this)
+hdr_add_stat_sum("nevents",NaN) -> ERROR RUNTIME: Invalid value for "stat:sum:...". Value is invalid (NaN)
+hdr_add_stat_sum("nevents",1000) (updates the file) -> ok
+hdr_scale_stat_sums(-3) -> ERROR RUNTIME: mcpl_hdr_scale_stat_sums called with negative scale
+hdr_scale_stat_sums(0.5) (updates the file) -> ok
+close_outfile -> ok
+  Reading back (with none of the invalid data):
+  file usage.mcpl: nparticles=6 srcname="errstate_write" userflags=1 polarisation=0 doubleprec=0 universal pdgcode=2112 weight=2 userdata layout=temp:float32
+    comment 0: "a comment"
+    comment 1: "stat:sum:nevents:                     500"
+    comment 2: "stat:sum:eventsum:                      15"
+    blob "blob1": 3 bytes
+    blob "empty": 0 bytes
+    particle x=1 pdgcode=2112 weight=2 userflags=1000 (with userdata)
+    particle x=1 pdgcode=2112 weight=2 userflags=1000 (with userdata)
+    particle x=1 pdgcode=2112 weight=2 userflags=1000 (with userdata)
+    particle x=1 pdgcode=2112 weight=2 userflags=1000 (with userdata)
+    particle x=2 pdgcode=2112 weight=2 userflags=1001 (with userdata)
+    particle x=3 pdgcode=2112 weight=2 userflags=1002 (with userdata)
+  reading back -> ok
+
+==> File without userdata:
+add_particle_with_userdata (with userdata) -> ERROR RUNTIME: mcpl_add_particle_with_userdata called with userdata for a file without userdata (see mcpl_enable_userdata)
+add_particle_with_userdata (NULL userdata) -> ok
+enable_universal_pdgcode (too late) -> ERROR RUNTIME: mcpl_enable_universal_pdgcode called too late.
+enable_universal_weight (too late) -> ERROR RUNTIME: mcpl_enable_universal_weight called too late.
+enable_userflags (too late) -> ERROR RUNTIME: mcpl_enable_userflags called too late.
+close_outfile -> ok
+  file usage2.mcpl: nparticles=1 srcname="unknown" userflags=0 polarisation=0 doubleprec=0 universal pdgcode=0 weight=0 userdata layout=none
+    particle x=1 pdgcode=2112 weight=1 userflags=0
+  reading back -> ok
+
+==> Values too large for single precision:
+add_particle (polarisation too large) -> ERROR RUNTIME: attempting to add particle with polarisation too large for single precision storage
+add_particle (weight too large) -> ERROR RUNTIME: attempting to add particle with weight too large for single precision storage
+add_particle (NaN weight) -> ERROR RUNTIME: attempting to add particle with NaN or infinite weight
+close_outfile -> ok
+  file usage3.mcpl: nparticles=0 srcname="unknown" userflags=0 polarisation=1 doubleprec=0 universal pdgcode=0 weight=0 userdata layout=none
+  reading back -> ok
+
+==> Scaling stat:sum: values beyond the floating point range:
+MCPL WARNING: The call to mcpl_hdr_scale_stat_sums resulted in one or more stat:sum: entries overflowing floating point range and producing infinity. Reverting value to -1 to indicate that a precise result is not available.
+hdr_scale_stat_sums(1e10) -> ok
+MCPL WARNING: The call to mcpl_hdr_scale_stat_sums resulted in one or more stat:sum: entries overflowing floating point range and producing infinity. Reverting value to -1 to indicate that a precise result is not available.
+hdr_scale_stat_sums(1e10) after writing the header -> ok
+close_outfile -> ok
+  file usage4.mcpl: nparticles=1 srcname="unknown" userflags=0 polarisation=0 doubleprec=0 universal pdgcode=0 weight=0 userdata layout=none
+    comment 0: "stat:sum:big:                      -1"
+    comment 1: "stat:sum:big2:                      -1"
+    comment 2: "stat:sum:unavail:                      -1"
+    comment 3: "stat:sum:small:                   1e+20"
+    particle x=1 pdgcode=2112 weight=1 userflags=0
+  reading back -> ok
+
+==> Transferring metadata:
+transfer_metadata -> ok
+  file tr1.mcpl: nparticles=0 srcname="source" userflags=1 polarisation=1 doubleprec=1 universal pdgcode=2112 weight=2 userdata layout=temp:float32
+    comment 0: "source comment"
+    comment 1: "stat:sum:nevents:                     123"
+    blob "srcblob": 4 bytes
+  reading back -> ok
+transfer_metadata (with clashing blob key) -> ERROR RUNTIME: mcpl_hdr_add_data got duplicate key
+add_particle after failed transfer_metadata -> ERROR RUNTIME: mcpl_hdr_add_data got duplicate key
+hdr_add_comment after failed transfer_metadata -> ERROR RUNTIME: mcpl_hdr_add_data got duplicate key
+close_outfile (frees, leaves the file unfinished) -> ok
+  reading back -> ERROR RUNTIME: Error while reading first bytes of file!
+
+==> Transferring particles:
+transfer_last_read_particle (nothing read) -> ERROR RUNTIME: mcpl_transfer_last_read_particle called with source file in invalid state (did you forget to first call mcpl_read() on the source file before calling this function?)
+transfer_last_read_particle (pdgcode differs from universal one) -> ERROR RUNTIME: mcpl_transfer_last_read_particle asked to transfer particle with pdgcode 2112 into a file with universal pdgcode of 22
+transfer_last_read_particle (weight differs from universal one) -> ERROR RUNTIME: mcpl_transfer_last_read_particle asked to transfer particle with weight 2 into a file with universal weight of 3
+transfer_last_read_particle (source without userdata) -> ERROR RUNTIME: mcpl_transfer_last_read_particle asked to transfer particle without userdata into a file with userdata
+transfer_last_read_particle (different userdata layout) -> ERROR RUNTIME: mcpl_transfer_last_read_particle asked to transfer particle into a file with a different userdata layout
+MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 1). They can not be added to other MCPL files.
+transfer_last_read_particle (NaN weight) -> ERROR RUNTIME: mcpl_transfer_last_read_particle asked to transfer particle with NaN or infinite weight
+transfer_metadata (invalid source) -> ERROR RUNTIME: invalid file handle (NULL)
+transfer_last_read_particle (invalid source) -> ERROR RUNTIME: invalid file handle (NULL)
+transfer_last_read_particle (source failed to read) -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+transfer_last_read_particle (same settings) -> ok
+close_outfile -> ok
+  file tr5.mcpl: nparticles=1 srcname="source" userflags=1 polarisation=1 doubleprec=1 universal pdgcode=2112 weight=2 userdata layout=temp:float32
+    comment 0: "source comment"
+    comment 1: "stat:sum:nevents:                     123"
+    blob "srcblob": 4 bytes
+    particle x=1 pdgcode=2112 weight=2 userflags=1000 (with userdata)
+  reading back -> ok
+transfer_last_read_particle (other settings) -> ok
+close_outfile -> ok
+  file tr6.mcpl: nparticles=1 srcname="unknown" userflags=0 polarisation=0 doubleprec=1 universal pdgcode=0 weight=0 userdata layout=none
+    particle x=1 pdgcode=2112 weight=1 userflags=0
+  reading back -> ok
+
+==> Closing and compressing files:
+MCPL: Compressing file gz1.mcpl
+MCPL: Compressed file into gz1.mcpl.gz
+  closeandgzip_outfile returned 1
+closeandgzip_outfile -> ok
+  file gz1.mcpl.gz: nparticles=1 srcname="unknown" userflags=0 polarisation=0 doubleprec=0 universal pdgcode=0 weight=0 userdata layout=none
+    particle x=1 pdgcode=2112 weight=1 userflags=0
+  reading back -> ok
+MCPL: Compressing file gz2.mcpl
+  closeandgzip_outfile returned 0
+closeandgzip_outfile (directory in the way) -> ERROR IO: Problems encountered while compressing file gz2.mcpl (it was closed properly, so the uncompressed file might be fine)
+  file gz2.mcpl: nparticles=2 srcname="unknown" userflags=0 polarisation=0 doubleprec=0 universal pdgcode=0 weight=0 userdata layout=none
+    particle x=1 pdgcode=2112 weight=1 userflags=0
+    particle x=1 pdgcode=2112 weight=1 userflags=0
+  reading back -> ok
+MCPL: Compressing file gz2.mcpl
+MCPL ERROR: Problems encountered while compressing file gz2.mcpl.
+  legacy closeandgzip_outfile returned 0

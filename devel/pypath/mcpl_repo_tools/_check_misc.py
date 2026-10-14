@@ -50,7 +50,7 @@ def main():
     max_size_kb_log = 300
     max_size_kb_other = 60
     max_size_overrides = {
-        'mcpl_core/src/mcpl.c' : 200,
+        'mcpl_core/src/mcpl.c' : 260,
         'tests/scripts/forcemerge.log' : 500,
         'tests/scripts/pystat.log' : 500,
     }
