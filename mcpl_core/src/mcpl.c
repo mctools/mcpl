@@ -3090,10 +3090,13 @@ MCPL_LOCAL int mcpl_internal_truncate_file( FILE * fh, uint64_t size )
 #endif
 }
 
-void mcpl_repair(const char * filename)
+void mcpl_repair_es( const char * filename, mcpl_errstate_t * es )
 {
+  MCPLIMP_ES_RESET;
   int repair_status = 1;
-  mcpl_file_t f = mcpl_actual_open_file(filename,&repair_status,NULL);
+  mcpl_file_t f = mcpl_actual_open_file(filename,&repair_status,es);
+  if ( !f.internal )
+    return;
   uint64_t nparticles = mcpl_hdr_nparticles(f);
   mcpl_fileinternal_t * fi = (mcpl_fileinternal_t *)f.internal;
   uint64_t repaired_filesize = ( fi->first_particle_pos
@@ -3103,11 +3106,16 @@ void mcpl_repair(const char * filename)
   //the repair (i.e. we must mark then as unavailable by setting them to -1).
   mcpl_internal_statsuminfo_t * ssi = NULL;
   uint32_t nssi_to_repair = 0;
+  const char * errmsg = NULL;
   if ( fi->repaired_statsum_icomments ) {
     nssi_to_repair = fi->repaired_statsum_icomments[0];
     ssi = (mcpl_internal_statsuminfo_t *)
-      mcpl_internal_calloc( nssi_to_repair,
-                            sizeof(mcpl_internal_statsuminfo_t) );
+      mcpl_internal_calloc_es( nssi_to_repair,
+                               sizeof(mcpl_internal_statsuminfo_t), es );
+    if ( !ssi ) {
+      mcpl_close_file(f);
+      return;
+    }
     uint32_t nssi_repair_check = 0;
     uint64_t next_comment_pos = fi->first_comment_pos;
     uint32_t* icmt_next_to_repair = &fi->repaired_statsum_icomments[1];
@@ -3116,71 +3124,83 @@ void mcpl_repair(const char * filename)
       size_t lcomment = strlen(comment);
       uint64_t writtenpos = next_comment_pos;
       next_comment_pos += ( lcomment + sizeof(uint32_t) );
-      if ( i == *icmt_next_to_repair ) {
+      if ( nssi_repair_check < nssi_to_repair && i == *icmt_next_to_repair ) {
         ++icmt_next_to_repair;
         mcpl_internal_statsum_t sc;
-        mcpl_internal_statsum_parse_or_emit_err( comment, &sc );
-        if ( !(sc.value==-1.0) ) {
+        mcpl_internal_statsumparse( comment, &sc );
+        if ( sc.errmsg || !(sc.value==-1.0) ) {
           //value should already have been repaired to be -1 in the in-mem
           //comment string.
-          mcpl_error("unexpected stat:sum value in file");
+          errmsg = "unexpected stat:sum value in file";
+          break;
         }
         mcpl_internal_statsuminfo_t * s = &ssi[nssi_repair_check++];
         memcpy( s->key, sc.key, strlen(sc.key) + 1 );
-        if ( lcomment > (size_t)(UINT32_MAX) )
-          mcpl_error("logic error: unexpected large stat:sum comment strlen");
         s->writtenstrlen = (uint32_t)lcomment;
         s->writtenpos = writtenpos;
       }
     }
-    if ( nssi_to_repair != nssi_repair_check )
-      mcpl_error("logic error during stat:sum repair");
+    if ( !errmsg && nssi_to_repair != nssi_repair_check )
+      errmsg = "logic error during stat:sum repair";
   }
 
   mcpl_close_file(f);
   fi = NULL;
 
-  if (repair_status==0) {
+  if (!errmsg) {
+    if (repair_status==0)
+      errmsg = "File does not appear to be broken.";
+    else if (repair_status==1)
+      errmsg = "Input file is indeed broken, but must be gunzipped before it can be repaired.";
+    else if (repair_status==2)
+      errmsg = "File must be gunzipped before it can be checked and possibly repaired.";
+  }
+  if (errmsg) {
     free(ssi);
-    mcpl_error("File does not appear to be broken.");
-  } else if (repair_status==1) {
-    free(ssi);
-    mcpl_error("Input file is indeed broken, but must be gunzipped before it can be repaired.");
-  } else if (repair_status==2) {
-    free(ssi);
-    mcpl_error("File must be gunzipped before it can be checked and possibly repaired.");
+    mcpl_internal_raise_runtime( es, errmsg );
+    return;
   }
 
   //Ok, we should repair the file by updating nparticles in the header, and also
   //possibly by setting any stat:sum comment entries to the value -1 since they
   //are not trustworthy. We update nparticles last, since after that the file
-  //will appear as already having been repaired:
+  //will appear as already having been repaired (so errors before that leave the
+  //file in need of repair):
 
   FILE * fh = mcpl_internal_fopen(filename,"r+b");
-  if (!fh)
-    mcpl_error("Unable to open file in update mode!");
-
-  if ( ssi ) {
-    for ( uint32_t i = 0; i < nssi_to_repair; ++i ) {
-      char new_comment[MCPL_STATSUMBUF_MAXLENGTH+1];
-      mcpl_internal_encodestatsum( ssi[i].key, -1.0, new_comment );
-      mcpl_internal_updatestatsum( fh, &ssi[i], new_comment );
-      ssi[i].value = -1.0;
-    }
+  if (!fh) {
     free(ssi);
+    mcpl_internal_raise_io( es, "Unable to open file in update mode!" );
+    return;
   }
+
+  int ok = 1;
+  for ( uint32_t i = 0; ok && i < nssi_to_repair; ++i ) {
+    char new_comment[MCPL_STATSUMBUF_MAXLENGTH+1];
+    ok = ( mcpl_internal_encodestatsum_es( ssi[i].key, -1.0, new_comment, es )
+           && mcpl_internal_updatestatsum_es( fh, &ssi[i], new_comment, es ) );
+    ssi[i].value = -1.0;
+  }
+  free(ssi);
 
   //Remove any partially written particle at the end:
-  if ( !mcpl_internal_truncate_file( fh, repaired_filesize ) ) {
-    fclose(fh);
-    mcpl_error("Unable to remove incomplete particle data at end of file.");
-  }
+  if ( ok && !mcpl_internal_truncate_file( fh, repaired_filesize ) )
+    ok = mcpl_internal_raise_io( es, "Unable to remove incomplete particle"
+                                 " data at end of file." );
 
-  mcpl_update_nparticles(fh, nparticles);
-  fclose(fh);
+  if ( ok )
+    ok = mcpl_update_nparticles_es(fh, nparticles, es);
+  if ( fclose(fh) && ok )
+    ok = mcpl_internal_raise_io( es, "Errors encountered while attempting to"
+                                 " close file." );
+  if ( !ok )
+    return;
+
   //Verify that we fixed it:
   repair_status = 1;
-  f = mcpl_actual_open_file( filename, &repair_status, NULL );
+  f = mcpl_actual_open_file( filename, &repair_status, es );
+  if ( !f.internal )
+    return;
   uint64_t nparticles2 = mcpl_hdr_nparticles(f);
   mcpl_close_file(f);
   if ( repair_status == 0 && nparticles == nparticles2 ) {
@@ -3189,8 +3209,14 @@ void mcpl_repair(const char * filename)
              PRIu64 " particles.\n",nparticles);
     mcpl_print(buf);
   } else {
-    mcpl_error("Something went wrong while attempting to repair file.");
+    mcpl_internal_raise_runtime( es, "Something went wrong while attempting"
+                                 " to repair file." );
   }
+}
+
+void mcpl_repair(const char * filename)
+{
+  mcpl_repair_es( filename, NULL );
 }
 
 void mcpl_close_file(mcpl_file_t ff)
@@ -4115,27 +4141,41 @@ MCPL_LOCAL int mcpl_actual_can_merge(mcpl_file_t ff1, mcpl_file_t ff2)
 }
 
 //Like mcpl_actual_can_merge, but raising an error with the given message
-//prefix and the reason (like "<prefix> (<reason>).") if incompatible:
-MCPL_LOCAL void mcpl_internal_require_mergeable( mcpl_file_t ff1, mcpl_file_t ff2,
-                                                 const char * msgprefix )
+//prefix and the reason (like "<prefix> (<reason>).") if incompatible (returns
+//0 in that case):
+MCPL_LOCAL int mcpl_internal_require_mergeable( mcpl_file_t ff1, mcpl_file_t ff2,
+                                                const char * msgprefix,
+                                                mcpl_errstate_t * es )
 {
   char reason[512];
   if ( mcpl_internal_merge_compat(ff1,ff2,reason,sizeof(reason)) )
-    return;
+    return 1;
   char buf[1024];
   snprintf(buf,sizeof(buf),"%s (%s).",msgprefix,reason);
-  mcpl_error(buf);
+  return mcpl_internal_raise_runtime( es, buf );
 }
 
-
-int mcpl_can_merge(const char * file1, const char* file2)
+int mcpl_can_merge_es( const char * file1, const char * file2,
+                       mcpl_errstate_t * es )
 {
-  mcpl_file_t f1 = mcpl_open_file(file1);
-  mcpl_file_t f2 = mcpl_open_file(file2);
+  MCPLIMP_ES_RESET;
+  mcpl_file_t f1 = mcpl_open_file_es(file1,es);
+  if ( !f1.internal )
+    return 0;
+  mcpl_file_t f2 = mcpl_open_file_es(file2,es);
+  if ( !f2.internal ) {
+    mcpl_close_file(f1);
+    return 0;
+  }
   int can_merge = mcpl_actual_can_merge(f1,f2);
   mcpl_close_file(f1);
   mcpl_close_file(f2);
   return can_merge;
+}
+
+int mcpl_can_merge(const char * file1, const char* file2)
+{
+  return mcpl_can_merge_es( file1, file2, NULL );
 }
 
 MCPL_LOCAL int mcpl_file_certainly_exists(const char * filename)
@@ -4144,49 +4184,57 @@ MCPL_LOCAL int mcpl_file_certainly_exists(const char * filename)
   return mctools_is_file( &fn );
 }
 
-MCPL_LOCAL void mcpl_error_on_dups(unsigned n, const char ** filenames)
+MCPL_LOCAL int mcpl_error_on_dups( unsigned n, const char ** filenames,
+                                   mcpl_errstate_t * es )
 {
   //Checks that no filenames in provided list represent the same file, and
-  //produce error if they do.
+  //produce error if they do (returning 0). Also checks for NULL filenames.
   //
   //Note: This used to be merely a warning, but in order to ensure consistent
   //operations on Windows it became an error in MCPL 2.0.0.
   //
   //Since this is C, we resort to slow O(N^2) comparison for simplicity.
 
-  if (n<2)
-    return;
-
   unsigned i;
   unsigned j;
+  for (i = 0; i<n; ++i)
+    if ( !filenames || !filenames[i] )
+      return mcpl_internal_raise_runtime( es, "Merging files with null"
+                                          " string as filename" );
   for (i = 0; i<n; ++i) {
     mcu8str fn_i = mcu8str_view_cstr( filenames[i] );
     for (j = 0; j<i; ++j) {
       mcu8str fn_j = mcu8str_view_cstr( filenames[j] );
       if ( mctools_is_same_file(&fn_i, &fn_j) )
-        mcpl_error("Merging file with itself");
+        return mcpl_internal_raise_runtime( es, "Merging file with itself" );
     }
   }
+  return 1;
 }
 
 
 //Internal function for merges which will transfer the particle data in the
 //input file into an output file handle which must already be open and ready to
 //be written to, and otherwise be associated with an MCPL file with a compatible
-//format. Note that the error messages assume the overall operation is a merge:
-void mcpl_transfer_particle_contents(FILE * fo, mcpl_file_t ffi, uint64_t nparticles)
+//format. Note that the error messages assume the overall operation is a merge.
+//Returns 0 in case of errors:
+MCPL_LOCAL int mcpl_transfer_particle_contents( FILE * fo, mcpl_file_t ffi,
+                                                uint64_t nparticles,
+                                                mcpl_errstate_t * es )
 {
   mcpl_fileinternal_t * fi = (mcpl_fileinternal_t *)ffi.internal;
   assert(fi);
 
   if (!nparticles)
-    return;//no particles to transfer
+    return 1;//no particles to transfer
 
   unsigned particle_size = fi->particle_size;
 
   //buffer for transferring up to 1000 particles at a time:
   const unsigned npbufsize = 1000;
-  char * buf = mcpl_internal_malloc(npbufsize*particle_size);
+  char * buf = mcpl_internal_malloc_es(npbufsize*particle_size,es);
+  if (!buf)
+    return 0;
   uint64_t np_remaining = nparticles;
 
   while(np_remaining) {
@@ -4203,37 +4251,116 @@ void mcpl_transfer_particle_contents(FILE * fo, mcpl_file_t ffi, uint64_t nparti
     } else {
       nb = fread(buf,1,toread*particle_size,fi->file);
     }
-    if (nb!=toread*particle_size)
-      mcpl_error("Unexpected read-error while merging");
+    if (nb!=toread*particle_size) {
+      free(buf);
+      return mcpl_internal_readerr( fi, "Unexpected read-error while merging",
+                                    es );
+    }
 
     //write:
     nb = fwrite(buf,1,toread*particle_size,fo);
-    if (nb!=toread*particle_size)
-      mcpl_error("Unexpected write-error while merging");
+    if (nb!=toread*particle_size) {
+      free(buf);
+      return mcpl_internal_raise_io( es, "Unexpected write-error while"
+                                     " merging" );
+    }
   }
 
   free(buf);
+  return 1;
 }
 
 
-mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
-                                      unsigned nfiles,
-                                      const char ** files,
-                                      int keep_userflags )
+//Transfer the particles of all files into out, returning 0 in case of errors:
+MCPL_LOCAL int mcpl_internal_forcemerge_transfer( mcpl_outfile_t out,
+                                                  const char * file_output,
+                                                  unsigned nfiles,
+                                                  const char ** files,
+                                                  mcpl_errstate_t * es )
 {
+  //Figure out largest filename for print buffer:
+  unsigned ifile;
+  size_t nbuf = strlen(file_output);
+  for (ifile = 0; ifile < nfiles; ++ifile) {
+    size_t nf = strlen(files[ifile]);
+    if ( nf > nbuf )
+      nbuf = nf;
+  }
+  nbuf += 128;//other stuff on the lines
+  char * buf = mcpl_internal_malloc_es(nbuf,es);
+  if (!buf)
+    return 0;
+
+  //Finally, perform the transfer:
+  for (ifile = 0; ifile < nfiles; ++ifile) {
+    mcpl_file_t f = mcpl_open_file_es(files[ifile],es);
+    if ( !f.internal ) {
+      free(buf);
+      return 0;
+    }
+    uint64_t np = mcpl_hdr_nparticles(f);
+    snprintf(buf,nbuf,"MCPL force-merge: Transferring %" PRIu64
+             " particle%s from file %s\n",
+             np,(np==1?"":"s"),files[ifile]);
+    mcpl_print(buf);
+    while ( mcpl_read_es(f,es) != 0 ) {
+      //lossless transfer when possible:
+      mcpl_transfer_last_read_particle_es(f, out, es);
+      if ( es && es->code )
+        break;
+    }
+    mcpl_close_file(f);
+    if ( es && es->code ) {
+      free(buf);
+      return 0;
+    }
+  }
+
+  mcpl_outfileinternal_t * out_internal = (mcpl_outfileinternal_t *)out.internal;
+  uint64_t np = out_internal->nparticles;
+  snprintf(buf,nbuf,
+           "MCPL force-merge: Transferred a total of %" PRIu64
+           " particle%s to new file %s\n",
+           np,(np==1?"":"s"),file_output);
+  mcpl_print(buf);
+  free(buf);
+  return 1;
+}
+
+mcpl_outfile_t mcpl_forcemerge_files_es( const char * file_output,
+                                         unsigned nfiles,
+                                         const char ** files,
+                                         int keep_userflags,
+                                         mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  mcpl_outfile_t out;
+  out.internal = NULL;
+
   ////////////////////////////////////
   // Initial sanity check of input: //
   ////////////////////////////////////
 
-  if (!nfiles)
-    mcpl_error("mcpl_forcemerge_files must be called"
-               " with at least one input file");
+  if (!nfiles) {
+    mcpl_internal_raise_runtime( es, "mcpl_forcemerge_files must be called"
+                                 " with at least one input file" );
+    return out;
+  }
 
-  mcpl_error_on_dups(nfiles,files);
+  if ( !mcpl_error_on_dups(nfiles,files,es) )
+    return out;
 
   //Create new file:
-  if (mcpl_file_certainly_exists(file_output))
-    mcpl_error("requested output file of mcpl_forcemerge_files already exists");
+  if ( !file_output ) {
+    mcpl_internal_raise_runtime( es, "mcpl_forcemerge_files called with null"
+                                 " string as output filename" );
+    return out;
+  }
+  if (mcpl_file_certainly_exists(file_output)) {
+    mcpl_internal_raise_runtime( es, "requested output file of"
+                                 " mcpl_forcemerge_files already exists" );
+    return out;
+  }
 
   ///////////////////////////////////////////
   // Fallback to normal merge if possible: //
@@ -4244,7 +4371,10 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
   unsigned ifile;
   int normal_merge_ok = 1;
   for (ifile = 1; ifile < nfiles; ++ifile) {
-    if (!mcpl_can_merge(files[0],files[ifile])) {
+    int can_merge = mcpl_can_merge_es(files[0],files[ifile],es);
+    if ( es && es->code )
+      return out;
+    if (!can_merge) {
       normal_merge_ok = 0;
       break;
     }
@@ -4256,7 +4386,7 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
              " compatible for a standard merge => falling back to"
              " standard mcpl_merge_files function\n", nfiles );
     mcpl_print(prbuf);
-    return mcpl_merge_files(file_output,nfiles,files);
+    return mcpl_merge_files_es(file_output,nfiles,files,es);
   }
 
   /////////////////////////////
@@ -4280,7 +4410,11 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
   int any_metadata = 0;
 
   for (ifile = 0; ifile < nfiles; ++ifile) {
-    mcpl_file_t f = mcpl_open_file(files[ifile]);
+    mcpl_file_t f = mcpl_open_file_es(files[ifile],es);
+    if ( !f.internal ) {
+      free(udlayout);
+      return out;
+    }
     if (!mcpl_hdr_nparticles(f)) {
       mcpl_close_file(f);
       continue;//won't affect anything
@@ -4288,8 +4422,10 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
 
     const char * udl = mcpl_hdr_userdata_layout(f);
     if (!seen_file) {
-      if (udl)
-        mcpl_store_string(&udlayout,udl);
+      if ( udl && !mcpl_store_string_es(&udlayout,udl,es) ) {
+        mcpl_close_file(f);
+        return out;
+      }
     } else if ( (udl!=NULL) != (udlayout!=NULL)
                 || ( udl && strcmp(udl,udlayout)!=0 ) ) {
       discard_userdata = 1;
@@ -4368,60 +4504,52 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
     }
   }
 
-  mcpl_outfile_t out = mcpl_create_outfile(file_output);
-
-  if ( mcpl_internal_fakeconstantversion(0) )
-    mcpl_hdr_set_srcname(out,"mcpl_forcemerge_files (from MCPL v" "99.99.99" ")");
-  else
-    mcpl_hdr_set_srcname(out,"mcpl_forcemerge_files (from MCPL v" MCPL_VERSION_STR ")");
-  if ( opt_uf )
-    mcpl_enable_userflags(out);
-  if ( opt_pol )
-    mcpl_enable_polarisation(out);
-  if (opt_dp)
-    mcpl_enable_doubleprec(out);
-  if ( !disallow_universalpdg && lastseen_universalpdg )
-    mcpl_enable_universal_pdgcode(out,lastseen_universalpdg);
-  if ( !disallow_universalweight && lastseen_universalweight )
-    mcpl_enable_universal_weight(out,lastseen_universalweight);
-  if ( udlayout ) {
-    mcpl_enable_userdata(out,udlayout);
+  out = mcpl_create_outfile_es(file_output,es);
+  if ( !out.internal ) {
     free(udlayout);
-    udlayout = NULL;
+    return out;
   }
 
-  //Figure out largest filename for print buffer:
-  size_t nbuf = strlen(file_output);
-  for (ifile = 0; ifile < nfiles; ++ifile) {
-    size_t nf = strlen(files[ifile]);
-    if ( nf > nbuf )
-      nbuf = nf;
-  }
-  nbuf += 128;//other stuff on the lines
-  char * buf = mcpl_internal_malloc(nbuf);
+#define MCPLIMP_FM_CALL(x) do { x; if ( es && es->code ) goto_fail = 1; } while (0)
+  int goto_fail = 0;
+  if ( mcpl_internal_fakeconstantversion(0) )
+    MCPLIMP_FM_CALL(mcpl_hdr_set_srcname_es(out,"mcpl_forcemerge_files (from MCPL v" "99.99.99" ")",es));
+  else
+    MCPLIMP_FM_CALL(mcpl_hdr_set_srcname_es(out,"mcpl_forcemerge_files (from MCPL v" MCPL_VERSION_STR ")",es));
+  if ( opt_uf && !goto_fail )
+    MCPLIMP_FM_CALL(mcpl_enable_userflags_es(out,es));
+  if ( opt_pol && !goto_fail )
+    MCPLIMP_FM_CALL(mcpl_enable_polarisation_es(out,es));
+  if ( opt_dp && !goto_fail )
+    MCPLIMP_FM_CALL(mcpl_enable_doubleprec_es(out,es));
+  if ( !disallow_universalpdg && lastseen_universalpdg && !goto_fail )
+    MCPLIMP_FM_CALL(mcpl_enable_universal_pdgcode_es(out,lastseen_universalpdg,es));
+  if ( !disallow_universalweight && lastseen_universalweight && !goto_fail )
+    MCPLIMP_FM_CALL(mcpl_enable_universal_weight_es(out,lastseen_universalweight,es));
+  if ( udlayout && !goto_fail )
+    MCPLIMP_FM_CALL(mcpl_enable_userdata_es(out,udlayout,es));
+#undef MCPLIMP_FM_CALL
+  free(udlayout);
+  udlayout = NULL;
 
-  //Finally, perform the transfer:
-  for (ifile = 0; ifile < nfiles; ++ifile) {
-    mcpl_file_t f = mcpl_open_file(files[ifile]);
-    uint64_t np = mcpl_hdr_nparticles(f);
-    snprintf(buf,nbuf,"MCPL force-merge: Transferring %" PRIu64
-             " particle%s from file %s\n",
-             np,(np==1?"":"s"),files[ifile]);
-    mcpl_print(buf);
-    while ( mcpl_read(f) != 0 )
-      mcpl_transfer_last_read_particle(f, out);//lossless transfer when possible
-    mcpl_close_file(f);
+  if ( goto_fail
+       || !mcpl_internal_forcemerge_transfer( out, file_output, nfiles,
+                                              files, es ) ) {
+    //Leave the output file unfinished:
+    mcpl_internal_outfile_failed( (mcpl_outfileinternal_t *)out.internal, es );
+    mcpl_internal_close_outfile_es( (mcpl_outfileinternal_t *)out.internal, NULL );
+    out.internal = NULL;
   }
-
-  mcpl_outfileinternal_t * out_internal = (mcpl_outfileinternal_t *)out.internal;
-  uint64_t np = out_internal->nparticles;
-  snprintf(buf,nbuf,
-           "MCPL force-merge: Transferred a total of %" PRIu64
-           " particle%s to new file %s\n",
-           np,(np==1?"":"s"),file_output);
-  mcpl_print(buf);
-  free(buf);
   return out;
+}
+
+mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
+                                      unsigned nfiles,
+                                      const char ** files,
+                                      int keep_userflags )
+{
+  return mcpl_forcemerge_files_es( file_output, nfiles, files,
+                                   keep_userflags, NULL );
 }
 
 MCPL_LOCAL void mcpl_internal_delete_file( const char * filename );
@@ -4449,154 +4577,141 @@ MCPL_LOCAL void mcpl_impl_stablesum_add( double* s1, double* s2, double x )
 
 }
 
-mcpl_outfile_t mcpl_merge_files( const char* file_output,
-                                 unsigned nfiles, const char ** files )
-{
-  mcpl_outfile_t out;
-  out.internal = NULL;
-
-  if (!nfiles)
-    mcpl_error("mcpl_merge_files must be called with at least one input file");
-
-  //Check all files for compatibility before we start (for robustness, we check
-  //again when actually merging each file).
-  mcpl_error_on_dups(nfiles,files);
-  unsigned ifile;
-  for (ifile = 1; ifile < nfiles; ++ifile) {
-    mcpl_file_t f1 = mcpl_open_file(files[0]);
-    mcpl_file_t f2 = mcpl_open_file(files[ifile]);
-    mcpl_internal_require_mergeable(f1,f2,"Attempting to merge incompatible files");
-    mcpl_close_file(f1);
-    mcpl_close_file(f2);
-  }
-
-  //Create new file:
-  if (mcpl_file_certainly_exists(file_output))
-    mcpl_error("requested output file of mcpl_merge_files already exists");
-
-  out = mcpl_create_outfile(file_output);
-  mcpl_outfileinternal_t * out_internal = (mcpl_outfileinternal_t *)out.internal;
-
+//State of an ongoing mcpl_merge_files (freed in one place, also after errors):
+typedef struct {
   mcpl_file_t f1;
-  f1.internal = NULL;
+  mcpl_file_t fi;
+  unsigned n_scinfo;
+  uint32_t * scinfo_indices;
+  //values kept in two doubles, s1 and s2, for use with stablesum.
+  double * scinfo_values_s1;
+  double * scinfo_values_s2;
+  int delete_output;
+} mcpl_internal_mergestate_t;
 
+//Merge the files into out (in which the header is not written yet), returning
+//0 in case of errors:
+MCPL_LOCAL int mcpl_internal_merge_files( mcpl_outfile_t out,
+                                          unsigned nfiles, const char ** files,
+                                          mcpl_internal_mergestate_t * st,
+                                          mcpl_errstate_t * es )
+{
+  mcpl_outfileinternal_t * out_internal = (mcpl_outfileinternal_t *)out.internal;
   int warned_oldversion = 0;
 
-  unsigned n_scinfo = 0;
-  uint32_t * scinfo_indices = NULL;
-  //values kept in two doubles, s1 and s2, for use with stablesum.
-  double * scinfo_values_s1 = NULL;
-  double * scinfo_values_s2 = NULL;
-
-  for (ifile = 0; ifile < nfiles; ++ifile) {
-    mcpl_file_t fi = mcpl_open_file(files[ifile]);
-    mcpl_fileinternal_t * fi_internal = (mcpl_fileinternal_t *)fi.internal;
-    assert( fi_internal );
-
+  for ( unsigned ifile = 0; ifile < nfiles; ++ifile ) {
+    st->fi = mcpl_open_file_es(files[ifile],es);
+    if ( !st->fi.internal )
+      return 0;
+    mcpl_fileinternal_t * fi_internal = (mcpl_fileinternal_t *)st->fi.internal;
 
     if (ifile==0) {
       //Add metadata from the first file:
-      mcpl_transfer_metadata(fi, out);
+      mcpl_transfer_metadata_es(st->fi, out, es);
+      if ( es && es->code )
+        return 0;
 
       //Check for stat:sum: info, and convert all values in the output file to
       //-1 initially (and update only just before returning the file handle):
       if ( !(out_internal->header_notwritten) )
-        mcpl_error("unexpected early header write");
+        return mcpl_internal_raise_runtime( es, "unexpected early header"
+                                            " write" );
       uint32_t ncomments = out_internal->ncomments;
-      if ( !fi_internal || fi_internal->ncomments != ncomments )
-        mcpl_error("unexpected ncomments after transfer");
+      if ( fi_internal->ncomments != ncomments )
+        return mcpl_internal_raise_runtime( es, "unexpected ncomments after"
+                                            " transfer" );
       for ( uint32_t ic = 0; ic < ncomments; ++ic ) {
         if ( MCPL_COMMENT_IS_STATSUM(fi_internal->comments[ic]) ) {
           mcpl_internal_statsum_t sc;
-          mcpl_internal_statsum_parse_or_emit_err( fi_internal->comments[ic],
-                                                   &sc );
-          if (!scinfo_indices) {
-            scinfo_indices
-              = (uint32_t*)mcpl_internal_malloc( sizeof(uint32_t)*ncomments );
-            scinfo_values_s1
-              = (double*)mcpl_internal_malloc( sizeof(double)*ncomments );
-            scinfo_values_s2
-              = (double*)mcpl_internal_malloc( sizeof(double)*ncomments );
+          if ( !mcpl_internal_statsum_parse_or_emit_err_es( fi_internal->comments[ic],
+                                                            &sc, es ) )
+            return 0;
+          if (!st->scinfo_indices) {
+            st->scinfo_indices
+              = (uint32_t*)mcpl_internal_malloc_es( sizeof(uint32_t)*ncomments, es );
+            st->scinfo_values_s1
+              = (double*)mcpl_internal_malloc_es( sizeof(double)*ncomments, es );
+            st->scinfo_values_s2
+              = (double*)mcpl_internal_malloc_es( sizeof(double)*ncomments, es );
+            if ( !st->scinfo_indices || !st->scinfo_values_s1
+                 || !st->scinfo_values_s2 )
+              return 0;
           }
-          scinfo_indices[n_scinfo] = ic;
-          scinfo_values_s1[n_scinfo] = 0.0;
-          scinfo_values_s2[n_scinfo] = 0.0;
+          unsigned n = st->n_scinfo;
+          st->scinfo_indices[n] = ic;
+          st->scinfo_values_s1[n] = 0.0;
+          st->scinfo_values_s2[n] = 0.0;
           if ( sc.value == -1 ) {
-            scinfo_values_s1[n_scinfo] = -1.0;
+            st->scinfo_values_s1[n] = -1.0;
           } else {
-            mcpl_impl_stablesum_add( scinfo_values_s1+n_scinfo,
-                                     scinfo_values_s2+n_scinfo,
+            mcpl_impl_stablesum_add( st->scinfo_values_s1+n,
+                                     st->scinfo_values_s2+n,
                                      sc.value );
           }
-          ++n_scinfo;
+          ++(st->n_scinfo);
           //register -1 for now:
           if ( sc.value != -1.0 ) {
             char new_comment[MCPL_STATSUMBUF_MAXLENGTH+1];
-            mcpl_internal_encodestatsum( sc.key, -1.0, new_comment );
+            if ( !mcpl_internal_encodestatsum_es( sc.key, -1.0, new_comment, es ) )
+              return 0;
             size_t nn = strlen(out_internal->comments[ic]);
             if ( nn != strlen(new_comment) )
-              mcpl_error("inconsistent length of stat:sum: comment");
+              return mcpl_internal_raise_runtime( es, "inconsistent length of"
+                                                  " stat:sum: comment" );
             memcpy(out_internal->comments[ic],new_comment,nn);
           }
         }
       }
 
-      mcpl_write_header(out_internal);
-      f1 = fi;
+      if ( !mcpl_write_header_es(out_internal,es) )
+        return 0;
+      st->f1 = st->fi;
+      st->fi.internal = NULL;
     } else {
       //Check file is still compatible with first file
-      if (!mcpl_actual_can_merge(f1,fi)) {
-        if ( scinfo_indices ) {
-          free(scinfo_indices);
-          scinfo_indices = NULL;
-        }
-        if ( scinfo_values_s1 ) {
-          free(scinfo_values_s1);
-          scinfo_values_s1 = NULL;
-        }
-        if ( scinfo_values_s2 ) {
-          free(scinfo_values_s2);
-          scinfo_values_s2 = NULL;
-        }
-        mcpl_close_outfile( out );
-        mcpl_internal_delete_file( file_output );
-        mcpl_close_file(fi);
-        mcpl_close_file(f1);
-        mcpl_error("Aborting merge of suddenly incompatible files.");
+      if (!mcpl_actual_can_merge(st->f1,st->fi)) {
+        st->delete_output = 1;
+        return mcpl_internal_raise_runtime( es, "Aborting merge of suddenly"
+                                            " incompatible files." );
       }
       //Update stat:sum: data (adding up, except that -1 combines with anything
       //to give -1):
-      if ( n_scinfo ) {
-        for ( unsigned isc = 0; isc < n_scinfo; ++isc ) {
-          uint32_t isc_idx = scinfo_indices[isc];
-          if ( scinfo_values_s1[isc] == -1.0 && scinfo_values_s2[isc] == 0.0 )
-            continue;//ignore
-          if ( !fi_internal || isc_idx >= fi_internal->ncomments )
-            mcpl_error("Number of comments changed during merge");
-          if ( !MCPL_COMMENT_IS_STATSUM(fi_internal->comments[isc_idx]) )
-            mcpl_error("logic error during stat:sum: merge");
-          mcpl_internal_statsum_t sc;
-          mcpl_internal_statsum_parse_or_emit_err( fi_internal->comments[isc_idx],
-                                                   &sc );
-          if ( sc.value == -1.0 ) {
-            scinfo_values_s1[isc] = -1.0;
-            scinfo_values_s2[isc] = 0.0;
-          } else {
-            mcpl_impl_stablesum_add( scinfo_values_s1+isc,
-                                     scinfo_values_s2+isc,
-                                     sc.value );
-          }
+      for ( unsigned isc = 0; isc < st->n_scinfo; ++isc ) {
+        uint32_t isc_idx = st->scinfo_indices[isc];
+        if ( st->scinfo_values_s1[isc] == -1.0 && st->scinfo_values_s2[isc] == 0.0 )
+          continue;//ignore
+        if ( isc_idx >= fi_internal->ncomments )
+          return mcpl_internal_raise_runtime( es, "Number of comments changed"
+                                              " during merge" );
+        if ( !MCPL_COMMENT_IS_STATSUM(fi_internal->comments[isc_idx]) )
+          return mcpl_internal_raise_runtime( es, "logic error during"
+                                              " stat:sum: merge" );
+        mcpl_internal_statsum_t sc;
+        if ( !mcpl_internal_statsum_parse_or_emit_err_es( fi_internal->comments[isc_idx],
+                                                          &sc, es ) )
+          return 0;
+        if ( sc.value == -1.0 ) {
+          st->scinfo_values_s1[isc] = -1.0;
+          st->scinfo_values_s2[isc] = 0.0;
+        } else {
+          mcpl_impl_stablesum_add( st->scinfo_values_s1+isc,
+                                   st->scinfo_values_s2+isc,
+                                   sc.value );
         }
       }
     }
 
     //Transfer particle contents:
-    if (mcpl_hdr_version(fi)>=3) {
+    mcpl_file_t fcur = ( ifile == 0 ? st->f1 : st->fi );
+    if (mcpl_hdr_version(fcur)>=3) {
       //Can transfer raw bytes (particle data is encoded in the same way in
       //format versions 3 and 4, and versions 2 and 4 can not be mixed since the
       //userdata layouts must be the same):
-      uint64_t npi = mcpl_hdr_nparticles(fi);
-      mcpl_transfer_particle_contents(out_internal->file, fi, npi);
+      uint64_t npi = mcpl_hdr_nparticles(fcur);
+      if ( !mcpl_transfer_particle_contents( out_internal->file, fcur, npi, es ) ) {
+        mcpl_internal_outfile_failed( out_internal, es );
+        return 0;
+      }
       out_internal->nparticles += npi;
     } else {
       //Merging from older version. Transfer via public interface to re-encode
@@ -4609,26 +4724,33 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
 
       //Writing the next loop in an annoying way to silence MSVC C4706 warning:
       for(;;) {
-        const mcpl_particle_t* particle = mcpl_read(fi);
+        const mcpl_particle_t* particle = mcpl_read_es(fcur,es);
         if (!particle)
           break;
-        mcpl_add_particle(out,particle);
+        mcpl_add_particle_es(out,particle,es);
+        if ( es && es->code )
+          return 0;
       }
+      if ( es && es->code )
+        return 0;
     }
 
-    if (ifile!=0)
-      mcpl_close_file(fi);
+    if (ifile!=0) {
+      mcpl_close_file(st->fi);
+      st->fi.internal = NULL;
+    }
   }
 
-  mcpl_close_file(f1);
+  mcpl_close_file(st->f1);
+  st->f1.internal = NULL;
 
   //Finally we must update the sum stats:
-  if ( scinfo_values_s1 && scinfo_values_s2 && scinfo_indices ) {
+  if ( st->scinfo_values_s1 && st->scinfo_values_s2 && st->scinfo_indices ) {
     int warned_statsuminf = 0;
-    if ( n_scinfo != out_internal->nstatsuminfo || !out_internal->statsuminfo )
-      mcpl_error("stat:sum: merge logic error");
-    for ( unsigned isc = 0; isc < n_scinfo; ++isc ) {
-      double val = scinfo_values_s1[isc] + scinfo_values_s2[isc];
+    if ( st->n_scinfo != out_internal->nstatsuminfo || !out_internal->statsuminfo )
+      return mcpl_internal_raise_runtime( es, "stat:sum: merge logic error" );
+    for ( unsigned isc = 0; isc < st->n_scinfo; ++isc ) {
+      double val = st->scinfo_values_s1[isc] + st->scinfo_values_s2[isc];
       if ( val == -1.0 )
         continue;//already at -1
       if ( isinf(val) ) {
@@ -4643,16 +4765,100 @@ mcpl_outfile_t mcpl_merge_files( const char* file_output,
       }
       mcpl_internal_statsuminfo_t * sci = out_internal->statsuminfo + isc;
       char comment[MCPL_STATSUMBUF_MAXLENGTH+1];
-      mcpl_internal_encodestatsum( sci->key, val, comment );
-      mcpl_internal_updatestatsum( out_internal->file, sci, comment );
+      if ( !mcpl_internal_encodestatsum_es( sci->key, val, comment, es ) )
+        return 0;
+      if ( !mcpl_internal_updatestatsum_es( out_internal->file, sci, comment, es ) ) {
+        mcpl_internal_outfile_failed( out_internal, es );
+        return 0;
+      }
       sci->value = val;
     }
+  }
+  return 1;
+}
 
-    free(scinfo_indices);
-    free(scinfo_values_s1);
-    free(scinfo_values_s2);
+mcpl_outfile_t mcpl_merge_files_es( const char* file_output,
+                                    unsigned nfiles, const char ** files,
+                                    mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  mcpl_outfile_t out;
+  out.internal = NULL;
+
+  if (!nfiles) {
+    mcpl_internal_raise_runtime( es, "mcpl_merge_files must be called with at"
+                                 " least one input file" );
+    return out;
+  }
+
+  //Check all files for compatibility before we start (for robustness, we check
+  //again when actually merging each file).
+  if ( !mcpl_error_on_dups(nfiles,files,es) )
+    return out;
+  for ( unsigned ifile = 1; ifile < nfiles; ++ifile ) {
+    mcpl_file_t f1 = mcpl_open_file_es(files[0],es);
+    if ( !f1.internal )
+      return out;
+    mcpl_file_t f2 = mcpl_open_file_es(files[ifile],es);
+    if ( !f2.internal ) {
+      mcpl_close_file(f1);
+      return out;
+    }
+    int ok = mcpl_internal_require_mergeable(f1,f2,"Attempting to merge"
+                                             " incompatible files",es);
+    mcpl_close_file(f1);
+    mcpl_close_file(f2);
+    if (!ok)
+      return out;
+  }
+
+  //Create new file:
+  if ( !file_output ) {
+    mcpl_internal_raise_runtime( es, "mcpl_merge_files called with null string"
+                                 " as output filename" );
+    return out;
+  }
+  if (mcpl_file_certainly_exists(file_output)) {
+    mcpl_internal_raise_runtime( es, "requested output file of mcpl_merge_files"
+                                 " already exists" );
+    return out;
+  }
+
+  out = mcpl_create_outfile_es(file_output,es);
+  if ( !out.internal )
+    return out;
+
+  mcpl_internal_mergestate_t st;
+  memset(&st,0,sizeof(st));
+  st.f1.internal = NULL;
+  st.fi.internal = NULL;
+  int ok = mcpl_internal_merge_files( out, nfiles, files, &st, es );
+  mcpl_close_file(st.fi);
+  mcpl_close_file(st.f1);
+  free(st.scinfo_indices);
+  free(st.scinfo_values_s1);
+  free(st.scinfo_values_s2);
+  if ( !ok ) {
+    //Leave the output file unfinished (or remove it if the input files were
+    //incompatible):
+    char * fn = NULL;
+    if ( st.delete_output )
+      mcpl_store_string_es( &fn, mcpl_outfile_filename(out), NULL );
+    mcpl_internal_outfile_failed( (mcpl_outfileinternal_t *)out.internal, es );
+    mcpl_internal_close_outfile_es( (mcpl_outfileinternal_t *)out.internal, NULL );
+    out.internal = NULL;
+    if ( fn ) {
+      mcpl_internal_delete_file( fn );
+      free(fn);
+    }
   }
   return out;
+}
+
+mcpl_outfile_t mcpl_merge_files( const char* file_output,
+                                 unsigned nfiles, const char ** files )
+{
+  return mcpl_merge_files_es( file_output, nfiles, files, NULL );
 }
 
 void mcpl_merge(const char * file1, const char* file2)
@@ -4662,25 +4868,22 @@ void mcpl_merge(const char * file1, const char* file2)
   mcpl_merge_inplace(file1, file2);
 }
 
-void mcpl_merge_inplace(const char * file1, const char* file2)
+//Appends the particles of ff2 to the file (already opened as *pff1, which is
+//closed before modifying it), returning 0 in case of errors. Errors before
+//file1 is modified leave it unchanged, while errors during the transfer leave
+//it marked as unfinished (nparticles=0 and stat:sum: values -1), so it can be
+//repaired:
+MCPL_LOCAL int mcpl_internal_merge_inplace( const char * file1,
+                                            mcpl_file_t * pff1, mcpl_file_t ff2,
+                                            mcpl_errstate_t * es )
 {
-  {
-    mcu8str file1_str = mcu8str_view_cstr( file1 );
-    mcu8str file2_str = mcu8str_view_cstr( file2 );
-    if ( mctools_is_same_file(&file1_str, &file2_str) )
-      mcpl_error("Merging file with itself");
-  }
-
-  mcpl_file_t ff1 = mcpl_open_file(file1);
-  mcpl_file_t ff2 = mcpl_open_file(file2);
+  mcpl_file_t ff1 = *pff1;
   {
     char reason[512];
     if ( !mcpl_internal_merge_compat(ff1,ff2,reason,sizeof(reason)) ) {
-      mcpl_close_file(ff1);
-      mcpl_close_file(ff2);
       char buf[1024];
       snprintf(buf,sizeof(buf),"Attempting to merge incompatible files (%s).",reason);
-      mcpl_error(buf);
+      return mcpl_internal_raise_runtime( es, buf );
     }
   }
 
@@ -4690,27 +4893,19 @@ void mcpl_merge_inplace(const char * file1, const char* file2)
   assert(f1);
   assert(f2);
 
-  if (f1->format_version!=f2->format_version) {
-    mcpl_close_file(ff1);
-    mcpl_close_file(ff2);
-    mcpl_error("Attempting to merge incompatible files (can not mix"
-               " MCPL format versions when merging inplace)");
-  }
+  if (f1->format_version!=f2->format_version)
+    return mcpl_internal_raise_runtime( es, "Attempting to merge incompatible"
+                                        " files (can not mix MCPL format"
+                                        " versions when merging inplace)" );
 
-  if (f1->filegz) {
-    mcpl_close_file(ff1);
-    mcpl_close_file(ff2);
-    mcpl_error("direct modification of gzipped files is not supported.");
-  }
+  if (f1->filegz)
+    return mcpl_internal_raise_runtime( es, "direct modification of gzipped"
+                                        " files is not supported." );
 
   uint64_t np1 = f1->nparticles;
   uint64_t np2 = f2->nparticles;
-  if (!np2) {
-    //nothing to take from file 2.
-    mcpl_close_file(ff1);
-    mcpl_close_file(ff2);
-    return;
-  }
+  if (!np2)
+    return 1;//nothing to take from file 2.
 
   unsigned particle_size = f1->particle_size;
   uint64_t first_particle_pos = f1->first_particle_pos;
@@ -4718,7 +4913,8 @@ void mcpl_merge_inplace(const char * file1, const char* file2)
   //Should be same since can_merge:
   if ( particle_size != f2->particle_size
        || first_particle_pos != f2->first_particle_pos )
-    mcpl_error("mcpl_merge_inplace: unexpected particle size or position");
+    return mcpl_internal_raise_runtime( es, "mcpl_merge_inplace: unexpected"
+                                        " particle size or position" );
 
   //Collect information on any stat:sum entries needing to be updated
   //post-merge:
@@ -4736,14 +4932,24 @@ void mcpl_merge_inplace(const char * file1, const char* file2)
       if ( !MCPL_COMMENT_IS_STATSUM(comment) )
         continue;
       mcpl_internal_statsum_t sc, sc2;
-      mcpl_internal_statsum_parse_or_emit_err( comment, &sc );
-      mcpl_internal_statsum_parse_or_emit_err( f2->comments[i], &sc2 );
+      if ( !mcpl_internal_statsum_parse_or_emit_err_es( comment, &sc, es )
+           || !mcpl_internal_statsum_parse_or_emit_err_es( f2->comments[i], &sc2, es ) ) {
+        free(statsuminfo);
+        free(statsuminfo_newvalues);
+        return 0;
+      }
       if (!statsuminfo) {
         statsuminfo = (mcpl_internal_statsuminfo_t *)
-          mcpl_internal_calloc( f1->ncomments-i,
-                                sizeof(mcpl_internal_statsuminfo_t) );
-        statsuminfo_newvalues = (double*) mcpl_internal_calloc( f1->ncomments-i,
-                                                                sizeof(double) );
+          mcpl_internal_calloc_es( f1->ncomments-i,
+                                   sizeof(mcpl_internal_statsuminfo_t), es );
+        statsuminfo_newvalues = (double*) mcpl_internal_calloc_es( f1->ncomments-i,
+                                                                   sizeof(double),
+                                                                   es );
+        if ( !statsuminfo || !statsuminfo_newvalues ) {
+          free(statsuminfo);
+          free(statsuminfo_newvalues);
+          return 0;
+        }
       }
       uint32_t idx = nssi++;
       mcpl_internal_statsuminfo_t * s = &statsuminfo[idx];
@@ -4759,15 +4965,15 @@ void mcpl_merge_inplace(const char * file1, const char* file2)
         }
       }
       memcpy( s->key, sc.key, strlen(sc.key) + 1 );
-      if ( lcomment > (size_t)(UINT32_MAX) )
-        mcpl_error("logic error: unexpected large stat:sum comment strlen");
       s->writtenstrlen = (uint32_t)lcomment;
       s->writtenpos = writtenpos;
     }
   }
 
-  //Now, close file1 and reopen a file handle in append mode:
+  //Now, close file1 and reopen a file handle in update mode:
   mcpl_close_file(ff1);
+  pff1->internal = NULL;
+  f1 = NULL;
   FILE * f1a = mcpl_internal_fopen(file1,"r+b");
 
   //Update file positions. Note that f2->file is already at the position for the
@@ -4777,58 +4983,103 @@ void mcpl_merge_inplace(const char * file1, const char* file2)
   if (!f1a) {
     free(statsuminfo);
     free(statsuminfo_newvalues);
-    mcpl_close_file(ff2);
-    mcpl_error("Unable to open file1 in update mode!");
+    return mcpl_internal_raise_io( es, "Unable to open file1 in update mode!" );
   }
   if (MCPL_FSEEK( f1a, first_particle_pos + particle_size*np1 )) {
     free(statsuminfo);
     free(statsuminfo_newvalues);
-    mcpl_close_file(ff2);
     fclose(f1a);
-    mcpl_error("Unable to seek to end of file1 in update mode");
+    return mcpl_internal_raise_io( es, "Unable to seek to end of file1 in"
+                                   " update mode" );
   }
 
   //Transfer particle contents, and update stat:sum: comments. We set nparticles
   //to 0 and stat sums to -1 during the operation (so the file appears broken
-  //and in need of mcpl_repair in case of errors during the transfer):
-  mcpl_update_nparticles(f1a,0);
-
-  fflush(f1a);
+  //and in need of mcpl_repair in case of errors during the transfer). From
+  //here on, errors leave the file in that state:
+  int ok = mcpl_update_nparticles_es(f1a,0,es);
+  if ( ok && fflush(f1a) )
+    ok = mcpl_internal_raise_io( es, "Errors encountered while attempting to"
+                                 " update number of particles in file." );
 
   //Set stat:sum entries to -1:
-  if ( nssi && statsuminfo && statsuminfo_newvalues ) {
-    for ( uint32_t i = 0; i < nssi; ++i ) {
-      char new_comment[MCPL_STATSUMBUF_MAXLENGTH+1];
-      mcpl_internal_encodestatsum( statsuminfo[i].key, -1.0, new_comment );
-      mcpl_internal_updatestatsum( f1a, &statsuminfo[i], new_comment );
-      statsuminfo[i].value = -1.0;
-    }
+  for ( uint32_t i = 0; ok && i < nssi; ++i ) {
+    char new_comment[MCPL_STATSUMBUF_MAXLENGTH+1];
+    ok = ( mcpl_internal_encodestatsum_es( statsuminfo[i].key, -1.0,
+                                           new_comment, es )
+           && mcpl_internal_updatestatsum_es( f1a, &statsuminfo[i],
+                                              new_comment, es ) );
+    statsuminfo[i].value = -1.0;
   }
   //Transfer particles (potentially a lot of work and chance of running out of
   //quota, etc.):
-  mcpl_transfer_particle_contents(f1a, ff2, np2);
+  if ( ok )
+    ok = mcpl_transfer_particle_contents(f1a, ff2, np2, es);
+
+  //Make sure all particles were written, before updating the header:
+  if ( ok && fflush(f1a) )
+    ok = mcpl_internal_raise_io( es, "Unexpected write-error while merging" );
 
   //Set stat:sum entries to final values:
-  if ( nssi && statsuminfo && statsuminfo_newvalues ) {
-    for ( uint32_t i = 0; i < nssi; ++i ) {
-      double newval = statsuminfo_newvalues[i];
-      if ( newval == -1.0 )
-        continue;//already fine
-      char new_comment[MCPL_STATSUMBUF_MAXLENGTH+1];
-      mcpl_internal_encodestatsum( statsuminfo[i].key, newval, new_comment );
-      mcpl_internal_updatestatsum( f1a, &statsuminfo[i], new_comment );
-      statsuminfo[i].value = newval;
-    }
+  for ( uint32_t i = 0; ok && i < nssi; ++i ) {
+    double newval = statsuminfo_newvalues[i];
+    if ( newval == -1.0 )
+      continue;//already fine
+    char new_comment[MCPL_STATSUMBUF_MAXLENGTH+1];
+    ok = ( mcpl_internal_encodestatsum_es( statsuminfo[i].key, newval,
+                                           new_comment, es )
+           && mcpl_internal_updatestatsum_es( f1a, &statsuminfo[i],
+                                              new_comment, es ) );
+    statsuminfo[i].value = newval;
   }
 
   //Finally we can update nparticles:
-  mcpl_update_nparticles(f1a,np1+np2);
+  if ( ok )
+    ok = mcpl_update_nparticles_es(f1a,np1+np2,es);
 
   //Finish up.
-  fclose(f1a);
-  mcpl_close_file(ff2);
+  if ( fclose(f1a) && ok )
+    ok = mcpl_internal_raise_io( es, "Errors encountered while attempting to"
+                                 " close file." );
   free(statsuminfo);
   free(statsuminfo_newvalues);
+  return ok;
+}
+
+void mcpl_merge_inplace_es( const char * file1, const char * file2,
+                            mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  if ( !file1 || !file2 ) {
+    mcpl_internal_raise_runtime( es, "mcpl_merge_inplace called with null"
+                                 " string as filename" );
+    return;
+  }
+  {
+    mcu8str file1_str = mcu8str_view_cstr( file1 );
+    mcu8str file2_str = mcu8str_view_cstr( file2 );
+    if ( mctools_is_same_file(&file1_str, &file2_str) ) {
+      mcpl_internal_raise_runtime( es, "Merging file with itself" );
+      return;
+    }
+  }
+
+  mcpl_file_t ff1 = mcpl_open_file_es(file1,es);
+  if ( !ff1.internal )
+    return;
+  mcpl_file_t ff2 = mcpl_open_file_es(file2,es);
+  if ( !ff2.internal ) {
+    mcpl_close_file(ff1);
+    return;
+  }
+  mcpl_internal_merge_inplace( file1, &ff1, ff2, es );
+  mcpl_close_file(ff1);//(does nothing if already closed)
+  mcpl_close_file(ff2);
+}
+
+void mcpl_merge_inplace(const char * file1, const char* file2)
+{
+  mcpl_merge_inplace_es( file1, file2, NULL );
 }
 
 #define MCPLIMP_TOOL_DEFAULT_NLIMIT 10
@@ -5524,6 +5775,10 @@ int mcpl_gzip_file_rc(const char * filename)
 
 MCPL_LOCAL int mcpl_internal_do_gzip(const char *filename)
 {
+  //Compresses filename into filename.gz, removing filename on success. In
+  //case of errors, any partially written filename.gz is removed. Returns 0
+  //in case of errors.
+
   //Open input file:
   FILE *handle_in = mcpl_internal_fopen(filename, "rb");
   if (!handle_in)
@@ -5531,52 +5786,90 @@ MCPL_LOCAL int mcpl_internal_do_gzip(const char *filename)
 
   //Construct output file name by appending .gz:
   size_t nn = strlen(filename);
-  char * outfn = mcpl_internal_malloc(nn + 4);
+  char * outfn = (char*)malloc(nn + 4);
+  if (!outfn) {
+    fclose(handle_in);
+    return 0;
+  }
   memcpy(outfn,filename,nn);
   memcpy(outfn+nn,".gz",4);
 
   //Open output file:
   gzFile handle_out = mcpl_gzopen(outfn, "wb");
-
-  free(outfn);
-
   if (!handle_out) {
+    //(nothing was created, so nothing to remove)
+    free(outfn);
     fclose(handle_in);
     return 0;
   }
 
   //Compress input to output:
+  int ok = 1;
   char buf[16384];
   size_t len;
   while (1) {
     len = (int)fread(buf, 1, sizeof(buf), handle_in);
     if (ferror(handle_in)) {
-      fclose(handle_in);
-      gzclose(handle_out);
-      return 0;
+      ok = 0;
+      break;
     }
     if (!len)
       break;
     if ((size_t)gzwrite(handle_out, buf, (unsigned)len) != len) {
-      fclose(handle_in);
-      gzclose(handle_out);
-      return 0;
+      ok = 0;
+      break;
     }
   }
 
-  //close file:
+  //close files:
   fclose(handle_in);
   if (gzclose(handle_out) != Z_OK)
+    ok = 0;
+
+  if ( ok ) {
+    //remove input file:
+    mcpl_internal_delete_file( filename );
+  } else {
+    //remove partial output file:
+    mcpl_internal_delete_file( outfn );
+  }
+  free(outfn);
+  return ok;
+}
+
+int mcpl_gzip_file_es( const char * filename, mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  if (!filename) {
+    mcpl_internal_raise_runtime( es, "mcpl_gzip_file called with null string" );
     return 0;
-
-  //remove input file and return success:
-  mcpl_internal_delete_file( filename );
-  return 1;
-
+  }
+  char * bn = mcpl_basename(filename);
+  size_t n = 256 + strlen(bn);
+  char * buf = mcpl_internal_malloc_es(n,es);
+  if (!buf) {
+    free(bn);
+    return 0;
+  }
+  snprintf(buf,n,"MCPL: Compressing file %s\n",bn);
+  mcpl_print(buf);
+  int ok = mcpl_internal_do_gzip(filename);
+  if ( ok ) {
+    snprintf(buf,n,"MCPL: Compressed file into %s.gz\n",bn);
+    mcpl_print(buf);
+  } else {
+    snprintf(buf,n,"Problems encountered while compressing file %s",bn);
+    mcpl_internal_raise_io( es, buf );
+  }
+  free(bn);
+  free(buf);
+  return ok;
 }
 
 int mcpl_gzip_file(const char * filename)
 {
+  //Not via mcpl_gzip_file_es, since failures to compress files are not errors
+  //here (they are reported, and 0 is returned):
   char * bn = mcpl_basename(filename);
   size_t n = 128 + strlen(bn);
   char * buf = mcpl_internal_malloc(n);
