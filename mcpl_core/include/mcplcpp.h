@@ -23,48 +23,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-// Header-only C++ interface to MCPL (requires C++17), built on the functions //
-// of the C API with error states (the _es variants). Errors are reported as  //
-// exceptions: mcpl::Error (derived from std::runtime_error), mcpl::IOError   //
-// (derived from mcpl::Error) for failed I/O operations, and std::bad_alloc   //
-// when memory allocation fails.                                              //
-//                                                                            //
-// Reading files:                                                             //
-//                                                                            //
-//   mcpl::MCPLFile f("input.mcpl");                                          //
-//   auto temp = f.userdata_field<float>("temp");    // (if needed)           //
-//   for ( auto p : f )                                                       //
-//     if ( p.ekin() > 1.0 )                                                  //
-//       do_something( p.position(), temp(p) );                               //
-//                                                                            //
-// Particles (mcpl::Particle) are lightweight views of the particle data in   //
-// the file object, which are only valid until the next particle is read.     //
-// Views of header data (strings, comments and blobs) are valid as long as    //
-// the file object is open.                                                   //
-//                                                                            //
-// Writing files:                                                             //
-//                                                                            //
-//   mcpl::MCPLOutFile out("output.mcpl");                                    //
-//   out.set_srcname("my program");                                           //
-//   auto temp = out.add_userdata_field<float>("temp");    // (if needed)     //
-//   auto p = out.new_particle();                                             //
-//   p.set_ekin(1.5);                                                         //
-//   p.set_userdata(temp,300.0f);                                             //
-//   out.add(p);                                                              //
-//   //... add many more particles                                            //
-//   out.close();                                                             //
-//                                                                            //
-// Filenames can be given as std::filesystem::path objects, which work with   //
-// all names on all platforms, or as strings (std::string, std::string_view   //
-// or C strings), which are interpreted as UTF-8 like elsewhere in MCPL.      //
-//                                                                            //
-// Output files are only finished by close() or close_and_gzip(). If an       //
-// mcpl::MCPLOutFile is destroyed without being closed (e.g. because of an    //
-// exception), the file is left unfinished (it can often be recovered with    //
-// mcpl::repair). File objects can be moved, but not copied.                  //
-//                                                                            //
-// Unless noted otherwise, all functions of the C API (in mcpl.h) have a      //
-// counterpart here, with the same meaning.                                   //
+// Header-only C++ interface to MCPL (requires C++17), documented below.      //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -100,18 +59,86 @@
 #include <utility>
 #include <vector>
 
+/**
+ * @brief Header-only C++ interface to MCPL.
+ *
+ * The C++ interface to MCPL requires C++17, and is built on the functions
+ * of the C API with error states (the `_es` variants). It offers the same
+ * functionality as the C API, with errors reported as exceptions (see
+ * mcpl::Error), files which are closed automatically, and type-safe access
+ * to particles and their userdata.
+ *
+ * Reading files:
+ * @code{.cpp}
+ * mcpl::MCPLFile f("input.mcpl");
+ * auto temp = f.userdata_field<float>("temp");    // (if needed)
+ * for ( auto p : f )
+ *   if ( p.ekin() > 1.0 )
+ *     do_something( p.position(), temp(p) );
+ * @endcode
+ *
+ * Particles (mcpl::Particle) are lightweight views of the particle data in
+ * the file object, which are only valid until the next particle is read.
+ * Views of header data (strings, comments and blobs) are valid as long as
+ * the file object is open.
+ *
+ * Writing files:
+ * @code{.cpp}
+ * mcpl::MCPLOutFile out("output.mcpl");
+ * out.set_srcname("my program");
+ * auto temp = out.add_userdata_field<float>("temp");    // (if needed)
+ * auto p = out.new_particle();
+ * p.set_ekin(1.5);
+ * p.set_userdata(temp,300.0f);
+ * out.add(p);
+ * //... add many more particles
+ * out.close();
+ * @endcode
+ *
+ * Output files are only finished by close() or close_and_gzip(). If an
+ * mcpl::MCPLOutFile is destroyed without being closed (e.g. because of an
+ * exception), the file is left unfinished (it can often be recovered with
+ * mcpl::repair). File objects can be moved, but not copied.
+ *
+ * Filenames can be given as `std::filesystem::path` objects, which work
+ * with all names on all platforms, or as strings (`std::string`,
+ * `std::string_view` or C strings), which are interpreted as UTF-8 like
+ * elsewhere in MCPL.
+ */
 namespace mcpl {
 
   //////////////////////////////////////////////////////////////////////////////
   // Exceptions
 
+  /**
+   * @brief Errors from MCPL.
+   *
+   * All errors are reported as exceptions: mcpl::Error for invalid files or
+   * arguments (and other errors), the derived mcpl::IOError for failed I/O
+   * operations (e.g. when opening or writing files), and `std::bad_alloc`
+   * when memory allocation fails. After an error while reading particles, or
+   * while writing data to an output file, the file object can only be closed
+   * (and further calls give the same error). Other errors, like invalid
+   * arguments, leave the file usable.
+   */
   class Error : public std::runtime_error {
   public:
+    /**
+     * @brief Error with the given message.
+     *
+     * @param msg The error message.
+     */
     explicit Error( const std::string& msg ) : std::runtime_error(msg) {}
   };
 
+  /** @brief Failed I/O operations (e.g. when opening or writing files). */
   class IOError : public Error {
   public:
+    /**
+     * @brief Error with the given message.
+     *
+     * @param msg The error message.
+     */
     explicit IOError( const std::string& msg ) : Error(msg) {}
   };
 
@@ -306,12 +333,24 @@ namespace mcpl {
   //////////////////////////////////////////////////////////////////////////////
   // Messages
 
-  //Set a function which is called with all messages from MCPL (which by
-  //default are printed to stdout). Calling with nullptr (or an empty
-  //function) restores the default. Handlers should be set before using MCPL
-  //from several threads, and handlers which might be called from several
-  //threads must be thread safe themselves. Handlers must not throw
-  //exceptions (std::terminate is called if they do):
+  /**
+   * @brief Pass all messages from MCPL to a function.
+   *
+   * MCPL prints some messages (e.g. warnings about files which were not
+   * properly closed) to standard output by default. With this, they are
+   * passed to the handler instead, for example:
+   * @code{.cpp}
+   * mcpl::set_print_handler( []( const char * msg )
+   *                          { mylogger << msg; } );
+   * @endcode
+   *
+   * Handlers should be set before using MCPL from several threads, and
+   * handlers which might be called from several threads must be thread safe
+   * themselves. Handlers must not throw exceptions (`std::terminate` is called
+   * if they do).
+   *
+   * @param handler Function called with the messages, or `nullptr` (or an empty function) to restore the default.
+   */
   inline void set_print_handler( std::function<void(const char*)> handler )
   {
     auto& state = detail::print_handler_state();
@@ -329,27 +368,58 @@ namespace mcpl {
   //////////////////////////////////////////////////////////////////////////////
   // Header data of files being read
 
-  //View of a blob (bytes of data stored under a key in the header):
+  /**
+   * @brief View of a blob (bytes of data stored under a key in the header).
+   *
+   * Obtained from MCPLFile::blob, and valid as long as the file is open.
+   */
   class BlobView {
   public:
+    /** @brief Empty view. */
     BlobView() noexcept = default;
+    /**
+     * @brief View of the given bytes.
+     *
+     * @param bytes The bytes.
+     * @param nbytes Number of bytes.
+     */
     BlobView( const std::uint8_t * bytes, std::size_t nbytes ) noexcept
       : m_data(bytes), m_size(nbytes) {}
+    /** @brief The bytes. */
     const std::uint8_t * data() const noexcept { return m_data; }
+    /** @brief Number of bytes. */
     std::size_t size() const noexcept { return m_size; }
+    /** @brief Whether there are no bytes. */
     bool empty() const noexcept { return m_size == 0; }
+    /**
+     * @brief Byte number `i`.
+     *
+     * @param i Index of the byte.
+     */
     std::uint8_t operator[]( std::size_t i ) const noexcept { return m_data[i]; }
+    /** @brief Begin iterator for range-based for loops over the bytes. */
     const std::uint8_t * begin() const noexcept { return m_data; }
+    /** @brief End iterator for range-based for loops over the bytes. */
     const std::uint8_t * end() const noexcept { return m_data + m_size; }
   private:
     const std::uint8_t * m_data = nullptr;
     std::size_t m_size = 0;
   };
 
-  //View of a list of strings in the header (comments or blob keys), which
-  //supports size(), [i] and range-based for loops:
+  /**
+   * @brief View of a list of strings in the header (comments or blob keys).
+   *
+   * Obtained from MCPLFile::comments and MCPLFile::blob_keys, and valid as
+   * long as the file is open. It supports `size()`, `[i]` and range-based for
+   * loops, giving `std::string_view` values:
+   * @code{.cpp}
+   * for ( auto c : f.comments() )
+   *   std::cout << c << std::endl;
+   * @endcode
+   */
   class StringListView {
   public:
+    /** @brief Random access iterator over the strings. */
     class iterator {
     public:
       using iterator_category = std::random_access_iterator_tag;
@@ -391,9 +461,16 @@ namespace mcpl {
       const StringListView * m_v = nullptr;
       std::size_t m_i = 0;
     };
+    /** @brief Number of strings. */
     std::size_t size() const noexcept { return m_size; }
+    /** @brief Whether there are no strings. */
     bool empty() const noexcept { return m_size == 0; }
-    //Throws std::out_of_range for invalid indices:
+    /**
+     * @brief String number `i`.
+     *
+     * @param i Index of the string.
+     * @throws std::out_of_range for invalid indices.
+     */
     std::string_view operator[]( std::size_t i ) const
     {
       if ( i >= m_size )
@@ -405,7 +482,9 @@ namespace mcpl {
       es.check();
       return c;
     }
+    /** @brief Begin iterator for range-based for loops. */
     iterator begin() const noexcept { return iterator(this,0); }
+    /** @brief End iterator for range-based for loops. */
     iterator end() const noexcept { return iterator(this,m_size); }
   private:
     friend class MCPLFile;
@@ -421,38 +500,64 @@ namespace mcpl {
 
   template<class T, std::size_t N> class UserdataField;
 
-  //Common accessors of particles (the members of mcpl_particle_t):
+  /**
+   * @brief Values of particles, common to mcpl::Particle and mcpl::OutParticle.
+   *
+   * These are the members of `mcpl_particle_t` in the C API.
+   *
+   * @tparam Derived The particle class (mcpl::Particle or mcpl::OutParticle).
+   */
   template<class Derived>
   class ParticleAccessors {
   public:
+    /** @name Particle values */
+    ///@{
+    /** @brief Kinetic energy [MeV]. */
     double ekin() const noexcept { return s().ekin; }
+    /** @brief Position [cm]. */
     std::array<double,3> position() const noexcept
     {
       return { s().position[0], s().position[1], s().position[2] };
     }
+    /** @brief Direction (unit vector). */
     std::array<double,3> direction() const noexcept
     {
       return { s().direction[0], s().direction[1], s().direction[2] };
     }
+    /** @brief Polarisation vector. */
     std::array<double,3> polarisation() const noexcept
     {
       return { s().polarisation[0], s().polarisation[1], s().polarisation[2] };
     }
+    /** @brief Position: x coordinate [cm]. */
     double x() const noexcept { return s().position[0]; }
+    /** @brief Position: y coordinate [cm]. */
     double y() const noexcept { return s().position[1]; }
+    /** @brief Position: z coordinate [cm]. */
     double z() const noexcept { return s().position[2]; }
+    /** @brief Direction: x component. */
     double ux() const noexcept { return s().direction[0]; }
+    /** @brief Direction: y component. */
     double uy() const noexcept { return s().direction[1]; }
+    /** @brief Direction: z component. */
     double uz() const noexcept { return s().direction[2]; }
+    /** @brief Polarisation: x component. */
     double polx() const noexcept { return s().polarisation[0]; }
+    /** @brief Polarisation: y component. */
     double poly() const noexcept { return s().polarisation[1]; }
+    /** @brief Polarisation: z component. */
     double polz() const noexcept { return s().polarisation[2]; }
+    /** @brief Time [ms]. */
     double time() const noexcept { return s().time; }
+    /** @brief Weight or intensity. */
     double weight() const noexcept { return s().weight; }
+    /** @brief Particle type (PDG code, e.g. 2112 for neutrons and 22 for gammas). */
     std::int32_t pdgcode() const noexcept { return s().pdgcode; }
+    /** @brief User flags (32 bits). */
     std::uint32_t userflags() const noexcept { return s().userflags; }
-    //The particle in the C API:
+    /** @brief The particle as the `mcpl_particle_t` struct of the C API. */
     const mcpl_particle_t& c_struct() const noexcept { return s(); }
+    ///@}
   private:
     const mcpl_particle_t& s() const noexcept
     {
@@ -460,19 +565,30 @@ namespace mcpl {
     }
   };
 
-  //Particle read from a file. This is a view of the data in the file object,
-  //which is only valid until the next particle is read from the file (or the
-  //file is closed). Default constructed objects (and the particles returned
-  //by MCPLFile::read at the end of the file) are empty, which can be tested
-  //by converting them to bool. Accessing the data of empty particles is not
-  //allowed.
+  /**
+   * @brief Particle read from a file.
+   *
+   * This is a lightweight view of the particle data in the file object,
+   * which is only valid until the next particle is read from the file (or
+   * the file is closed). Default constructed objects (and the particles
+   * returned by MCPLFile::read at the end of the file) are empty, which can
+   * be tested by converting them to `bool`. Accessing the data of empty
+   * particles is not allowed. The userdata of particles is read with
+   * mcpl::UserdataField objects.
+   */
   class Particle : public ParticleAccessors<Particle> {
   public:
+    /** @brief Empty particle. */
     Particle() noexcept = default;
+    /** @brief Whether the particle is not empty. */
     explicit operator bool() const noexcept { return m_p != nullptr; }
-    //Raw userdata bytes (nullptr if the file has no userdata) and their
-    //number (normally accessed with userdata fields instead):
+    /**
+     * @brief Raw userdata bytes (`nullptr` if the file has no userdata).
+     *
+     * These are normally accessed with mcpl::UserdataField objects instead.
+     */
     const std::uint8_t * raw_userdata() const noexcept { return m_ud; }
+    /** @brief Number of userdata bytes. */
     std::uint32_t userdata_size() const noexcept { return m_udsize; }
   private:
     friend class ParticleAccessors<Particle>;
@@ -485,76 +601,231 @@ namespace mcpl {
     std::uint32_t m_udsize = 0;
   };
 
-  //Particle to be added to an output file, from MCPLOutFile::new_particle.
-  //This refers to data in the file object, and is only valid as long as the
-  //file is open. All values are kept after adding the particle, so only
-  //changed values need to be set before adding the next particle.
+  /**
+   * @brief Particle to be added to an output file.
+   *
+   * Obtained from MCPLOutFile::new_particle, and added with
+   * MCPLOutFile::add. It refers to data in the file object, and is only
+   * valid as long as the file is open. All values are kept after adding the
+   * particle, so only changed values need to be set before adding the next
+   * particle. Values can be read with the same methods as for
+   * mcpl::Particle.
+   */
   class OutParticle : public ParticleAccessors<OutParticle> {
   public:
+    /** @brief Empty particle (which can not be added to files). */
     OutParticle() noexcept = default;
+    /** @name Setting values */
+    ///@{
+    /**
+     * @brief Set the kinetic energy [MeV].
+     *
+     * @param v The value.
+     */
     void set_ekin( double v ) noexcept { m_p->ekin = v; }
+    /**
+     * @brief Set the position [cm].
+     *
+     * @param posx x coordinate.
+     * @param posy y coordinate.
+     * @param posz z coordinate.
+     */
     void set_position( double posx, double posy, double posz ) noexcept
     {
       m_p->position[0] = posx; m_p->position[1] = posy;
       m_p->position[2] = posz;
     }
+    /**
+     * @brief Set the position [cm].
+     *
+     * @param v The coordinates.
+     */
     void set_position( const std::array<double,3>& v ) noexcept
     {
       set_position(v[0],v[1],v[2]);
     }
+    /**
+     * @brief Set the direction (unit vector).
+     *
+     * @param dirx x component.
+     * @param diry y component.
+     * @param dirz z component.
+     */
     void set_direction( double dirx, double diry, double dirz ) noexcept
     {
       m_p->direction[0] = dirx; m_p->direction[1] = diry;
       m_p->direction[2] = dirz;
     }
+    /**
+     * @brief Set the direction (unit vector).
+     *
+     * @param v The components.
+     */
     void set_direction( const std::array<double,3>& v ) noexcept
     {
       set_direction(v[0],v[1],v[2]);
     }
+    /**
+     * @brief Set the polarisation vector.
+     *
+     * @param polarx x component.
+     * @param polary y component.
+     * @param polarz z component.
+     */
     void set_polarisation( double polarx, double polary,
                            double polarz ) noexcept
     {
       m_p->polarisation[0] = polarx; m_p->polarisation[1] = polary;
       m_p->polarisation[2] = polarz;
     }
+    /**
+     * @brief Set the polarisation vector.
+     *
+     * @param v The components.
+     */
     void set_polarisation( const std::array<double,3>& v ) noexcept
     {
       set_polarisation(v[0],v[1],v[2]);
     }
+    /**
+     * @brief Set the x coordinate of the position [cm].
+     *
+     * @param v The value.
+     */
     void set_x( double v ) noexcept { m_p->position[0] = v; }
+    /**
+     * @brief Set the y coordinate of the position [cm].
+     *
+     * @param v The value.
+     */
     void set_y( double v ) noexcept { m_p->position[1] = v; }
+    /**
+     * @brief Set the z coordinate of the position [cm].
+     *
+     * @param v The value.
+     */
     void set_z( double v ) noexcept { m_p->position[2] = v; }
+    /**
+     * @brief Set the x component of the direction.
+     *
+     * @param v The value.
+     */
     void set_ux( double v ) noexcept { m_p->direction[0] = v; }
+    /**
+     * @brief Set the y component of the direction.
+     *
+     * @param v The value.
+     */
     void set_uy( double v ) noexcept { m_p->direction[1] = v; }
+    /**
+     * @brief Set the z component of the direction.
+     *
+     * @param v The value.
+     */
     void set_uz( double v ) noexcept { m_p->direction[2] = v; }
+    /**
+     * @brief Set the x component of the polarisation.
+     *
+     * @param v The value.
+     */
     void set_polx( double v ) noexcept { m_p->polarisation[0] = v; }
+    /**
+     * @brief Set the y component of the polarisation.
+     *
+     * @param v The value.
+     */
     void set_poly( double v ) noexcept { m_p->polarisation[1] = v; }
+    /**
+     * @brief Set the z component of the polarisation.
+     *
+     * @param v The value.
+     */
     void set_polz( double v ) noexcept { m_p->polarisation[2] = v; }
+    /**
+     * @brief Set the time [ms].
+     *
+     * @param v The value.
+     */
     void set_time( double v ) noexcept { m_p->time = v; }
+    /**
+     * @brief Set the weight or intensity.
+     *
+     * @param v The value.
+     */
     void set_weight( double v ) noexcept { m_p->weight = v; }
+    /**
+     * @brief Set the particle type (PDG code).
+     *
+     * @param v The value.
+     */
     void set_pdgcode( std::int32_t v ) noexcept { m_p->pdgcode = v; }
+    /**
+     * @brief Set the user flags (32 bits).
+     *
+     * @param v The value.
+     */
     void set_userflags( std::uint32_t v ) noexcept { m_p->userflags = v; }
+    ///@}
 
-    //Userdata (see UserdataField). Values of scalar fields are converted to
-    //the type of the field, and values of array fields can be given as
-    //std::array<T,N> (or braced lists) or T[N]. Elements of array fields can
-    //also be set individually:
+    /** @name Userdata */
+    ///@{
+    /**
+     * @brief Set the value of a userdata field (see mcpl::UserdataField).
+     *
+     * Values of single-value fields are converted to the type of the field,
+     * and values of array fields can be given as `T[N]`.
+     *
+     * @tparam T Type of the values of the field.
+     * @tparam N Number of values of array fields (0 for single values).
+     * @tparam V Type of the value.
+     * @param field The field.
+     * @param value The value.
+     */
     template<class T, std::size_t N, class V>
     void set_userdata( const UserdataField<T,N>& field, const V& value );
+    /**
+     * @brief Set the values of an array field.
+     *
+     * The values can also be given as braced lists, like `{0.0f, 0.6f, 0.8f}`.
+     *
+     * @tparam T Type of the values of the field.
+     * @tparam N Number of values of array fields (0 for single values).
+     * @param field The field.
+     * @param values The values.
+     */
     template<class T, std::size_t N, class = std::enable_if_t<(N>0)>>
     void set_userdata( const UserdataField<T,N>& field,
                        const std::array<T,N>& values );
+    /**
+     * @brief Set one element of an array field.
+     *
+     * @tparam T Type of the values of the field.
+     * @tparam N Number of values of array fields (0 for single values).
+     * @param field The field.
+     * @param i Index of the element.
+     * @param value The value.
+     * @throws std::out_of_range if `i>=N`.
+     */
     template<class T, std::size_t N>
     void set_userdata( const UserdataField<T,N>& field, std::size_t i,
                        T value );
 
-    //The particle in the C API (for direct modification):
+
+    /** @brief Raw userdata bytes (`nullptr` if the file has no userdata). */
+    std::uint8_t * raw_userdata() noexcept { return m_ud; }
+    /** @brief Raw userdata bytes (`nullptr` if the file has no userdata). */
+    const std::uint8_t * raw_userdata() const noexcept { return m_ud; }
+    /** @brief Number of userdata bytes. */
+    std::uint32_t userdata_size() const noexcept { return m_udsize; }
+    ///@}
+
+    /**
+     * @brief The particle as the `mcpl_particle_t` struct of the C API.
+     *
+     * This allows direct modification of the values.
+     */
     mcpl_particle_t& c_struct() noexcept { return *m_p; }
     using ParticleAccessors<OutParticle>::c_struct;
-
-    std::uint8_t * raw_userdata() noexcept { return m_ud; }
-    const std::uint8_t * raw_userdata() const noexcept { return m_ud; }
-    std::uint32_t userdata_size() const noexcept { return m_udsize; }
   private:
     friend class ParticleAccessors<OutParticle>;
     friend class MCPLOutFile;
@@ -570,16 +841,33 @@ namespace mcpl {
   //////////////////////////////////////////////////////////////////////////////
   // Userdata fields
 
-  //Access to a field of the userdata of particles, with values of type T
-  //(std::int8_t, std::uint8_t, ..., std::uint64_t, float or double for the
-  //types int8, uint8, ..., uint64, float32 or float64), or arrays of N such
-  //values. Objects are obtained from MCPLFile::userdata_field or from
-  //MCPLOutFile::add_userdata_field (or MCPLOutFile::userdata_field), which
-  //check that the field exists with exactly this type. Values are read with
-  //field(particle) (and array elements with field(particle,i)), and set with
-  //OutParticle::set_userdata. Fields can be used with particles from any file
-  //(e.g. when reading several files with the same layout), but give errors
-  //if the userdata of the particle is too short.
+  /**
+   * @brief Access to a field of the userdata of particles.
+   *
+   * Objects are obtained from MCPLFile::userdata_field or from
+   * MCPLOutFile::add_userdata_field (or MCPLOutFile::userdata_field), which
+   * check that the field exists with exactly this type, so that their use is
+   * efficient. Values are read with `field(particle)` (and array elements with
+   * `field(particle,i)`), and set with OutParticle::set_userdata:
+   * @code{.cpp}
+   * mcpl::MCPLFile f("myfile.mcpl");
+   * //For "temp:float32,dir:float32[3]":
+   * auto temp = f.userdata_field<float>("temp");
+   * auto dir = f.userdata_field<float,3>("dir");
+   * for ( auto p : f ) {
+   *   float t = temp(p);
+   *   std::array<float,3> d = dir(p);
+   *   float dz = dir(p,2);//(single element)
+   * }
+   * @endcode
+   *
+   * Fields can be used with particles from any file (e.g. when reading
+   * several files with the same layout), but give errors if the userdata of
+   * the particle is too short.
+   *
+   * @tparam T Type of the values: `std::int8_t`, `std::uint8_t`, ..., `std::uint64_t`, `float` or `double`, for the types `int8`, `uint8`, ..., `uint64`, `float32` and `float64` in layouts.
+   * @tparam N Number of values of array fields (0, the default, for single values).
+   */
   template<class T, std::size_t N = 0>
   class UserdataField {
     static_assert( detail::is_ud_type_v<T>,
@@ -587,29 +875,62 @@ namespace mcpl {
                    " std::int16_t, std::uint16_t, std::int32_t, std::uint32_t,"
                    " std::int64_t, std::uint64_t, float or double" );
   public:
+    /** @brief Number of values (1 for single-value fields). */
     static constexpr std::size_t nvalues = ( N == 0 ? 1 : N );
+    /** @brief Number of bytes of the field. */
     static constexpr std::size_t nbytes = nvalues * sizeof(T);
-    //Scalar fields (N==0) give values of type T, and array fields give
-    //std::array<T,N>:
+    /** @brief Type of values: `T` for single-value fields, `std::array<T,N>` for array fields. */
     using value_type = std::conditional_t< N == 0, T, std::array<T,(N==0?1:N)> >;
 
+    /**
+     * @brief Field object which is not associated with any field.
+     *
+     * Such objects can not be used with particles.
+     */
     UserdataField() noexcept = default;
+    /** @brief Offset of the field in the userdata [bytes]. */
     std::uint32_t offset() const noexcept { return m_offset; }
+    /** @brief Number of values (1 for single-value fields). */
     std::size_t size() const noexcept { return nvalues; }
 
+    /**
+     * @brief Value of the field.
+     *
+     * @param p The particle.
+     * @throws mcpl::Error if the particle has no (or too short) userdata.
+     */
     value_type operator()( const Particle& p ) const
     {
       return get( p.raw_userdata(), p.userdata_size() );
     }
+    /**
+     * @brief Value of the field.
+     *
+     * @param p The particle.
+     * @throws mcpl::Error if the particle has no (or too short) userdata.
+     */
     value_type operator()( const OutParticle& p ) const
     {
       return get( p.raw_userdata(), p.userdata_size() );
     }
-    //Element i of array fields (std::out_of_range if i>=N):
+    /**
+     * @brief Element of an array field.
+     *
+     * @param p The particle.
+     * @param i Index of the element.
+     * @throws std::out_of_range if `i>=N`, and mcpl::Error if the particle has no (or too short) userdata.
+     */
     T operator()( const Particle& p, std::size_t i ) const
     {
       return get_element( p.raw_userdata(), p.userdata_size(), i );
     }
+    /**
+     * @brief Element of an array field.
+     *
+     * @param p The particle.
+     * @param i Index of the element.
+     * @throws std::out_of_range if `i>=N`, and mcpl::Error if the particle has no (or too short) userdata.
+     */
     T operator()( const OutParticle& p, std::size_t i ) const
     {
       return get_element( p.raw_userdata(), p.userdata_size(), i );
@@ -698,15 +1019,35 @@ namespace mcpl {
   //////////////////////////////////////////////////////////////////////////////
   // Reading files
 
-  //Parts of files shown by dump():
+  /** @brief Parts of files shown by MCPLFile::dump. */
   enum class DumpParts { All = 0, Header = 1, Particles = 2 };
 
-  //Whether forcemerge_files keeps the userflags of particles:
+  /** @brief Whether mcpl::forcemerge_files keeps the userflags of particles. */
   enum class KeepUserflags { No, Yes };
 
+  /**
+   * @brief File being read.
+   *
+   * Files are opened by the constructor, and closed when the object is
+   * destroyed (or with close()). Objects can be moved (e.g. into
+   * containers), but not copied. Particles are read with range-based for
+   * loops, or with read():
+   * @code{.cpp}
+   * mcpl::MCPLFile f("myfile.mcpl");
+   * for ( auto p : f )
+   *   std::cout << p.ekin() << std::endl;
+   * @endcode
+   */
   class MCPLFile {
   public:
-    //Open the file:
+    /**
+     * @brief Open the file.
+     *
+     * Gzipped files (with names ending in `.gz`) can be read directly.
+     *
+     * @param filename Name of the file.
+     * @throws mcpl::IOError if the file can not be read, and mcpl::Error if it is not a valid MCPL file.
+     */
     explicit MCPLFile( detail::FilenameArg filename )
     {
       detail::ErrState es;
@@ -717,13 +1058,25 @@ namespace mcpl {
       }
       m_udsize = mcpl_hdr_userdata_size( m_f );
     }
+    /** @brief Closes the file. */
     ~MCPLFile() { close(); }
     MCPLFile( const MCPLFile& ) = delete;
     MCPLFile& operator=( const MCPLFile& ) = delete;
+    /**
+     * @brief Move constructor (o is left closed).
+     *
+     * @param o The file object moved from.
+     */
     MCPLFile( MCPLFile&& o ) noexcept : m_f(o.m_f), m_udsize(o.m_udsize)
     {
       o.m_f.internal = nullptr;
     }
+    /**
+     * @brief Move assignment (closing any file of this object first).
+     *
+     * @param o The file object moved from.
+     * @return This object.
+     */
     MCPLFile& operator=( MCPLFile&& o ) noexcept
     {
       if ( this != &o ) {
@@ -735,7 +1088,7 @@ namespace mcpl {
       return *this;
     }
 
-    //Close the file (it is closed automatically when destroyed):
+    /** @brief Close the file (does nothing if it is not open). */
     void close() noexcept
     {
       if ( m_f.internal ) {
@@ -743,35 +1096,64 @@ namespace mcpl {
         m_f.internal = nullptr;
       }
     }
+    /** @brief Whether the file is open (not closed or moved from). */
     bool is_open() const noexcept { return m_f.internal != nullptr; }
 
-    //Header data (string views are valid as long as the file is open):
+    /** @name Header data */
+    ///@{
+    /**
+     * @brief MCPL format version of the file.
+     *
+     * Strings are views of data in the file object, valid as long as the file is open.
+     */
     unsigned version() const { return mcpl_hdr_version( h() ); }
+    /** @brief Number of particles in the file. */
     std::uint64_t nparticles() const { return mcpl_hdr_nparticles( h() ); }
+    /** @brief Name of the application which created the file. */
     std::string_view srcname() const { return mcpl_hdr_srcname( h() ); }
+    /** @brief Number of comments. */
     std::size_t ncomments() const { return mcpl_hdr_ncomments( h() ); }
+    /**
+     * @brief Comment number `i`.
+     *
+     * @param i Index of the comment.
+     * @throws std::out_of_range for invalid indices.
+     */
     std::string_view comment( std::size_t i ) const { return comments()[i]; }
+    /** @brief List of all comments. */
     StringListView comments() const
     {
       mcpl_file_t f = h();
       return StringListView( f, mcpl_hdr_ncomments( f ), nullptr );
     }
+    /** @brief Number of blobs (binary data stored by key). */
     std::size_t nblobs() const
     {
       return static_cast<std::size_t>( mcpl_hdr_nblobs( h() ) );
     }
+    /** @brief List of the keys of all blobs. */
     StringListView blob_keys() const
     {
       const char ** keys = mcpl_hdr_blobkeys( h() );
       return StringListView( m_f, keys ? nblobs() : 0, keys );
     }
+    /**
+     * @brief Whether there is a blob with the key.
+     *
+     * @param key The key.
+     */
     bool has_blob( std::string_view key ) const
     {
       uint32_t ldata;
       const char * data;
       return mcpl_hdr_blob( h(), std::string(key).c_str(), &ldata, &data ) != 0;
     }
-    //Throws mcpl::Error if there is no blob with the key:
+    /**
+     * @brief The blob with the key.
+     *
+     * @param key The key.
+     * @throws mcpl::Error if there is no blob with the key.
+     */
     BlobView blob( std::string_view key ) const
     {
       uint32_t ldata = 0;
@@ -781,25 +1163,39 @@ namespace mcpl {
         detail::throw_runtime( "no blob with key \"" + k + "\"" );
       return BlobView( reinterpret_cast<const std::uint8_t*>(data), ldata );
     }
+    /** @brief Whether particles in the file have userflags. */
     bool has_userflags() const { return mcpl_hdr_has_userflags( h() ) != 0; }
+    /** @brief Whether particles in the file have polarisation. */
     bool has_polarisation() const { return mcpl_hdr_has_polarisation( h() ) != 0; }
+    /** @brief Whether values are stored in double precision. */
     bool has_doubleprec() const { return mcpl_hdr_has_doubleprec( h() ) != 0; }
+    /** @brief Number of bytes used by the header (uncompressed). */
     std::uint64_t header_size() const { return mcpl_hdr_header_size( h() ); }
+    /** @brief Number of bytes used per particle (uncompressed). */
     int particle_size() const { return mcpl_hdr_particle_size( h() ); }
-    //0 if particles have individual pdgcodes:
+    /** @brief PDG code of all particles (0 if particles have individual PDG codes). */
     std::int32_t universal_pdgcode() const { return mcpl_hdr_universal_pdgcode( h() ); }
-    //0.0 if particles have individual weights:
+    /** @brief Weight of all particles (0.0 if particles have individual weights). */
     double universal_weight() const { return mcpl_hdr_universal_weight( h() ); }
+    /** @brief Whether numbers are stored in little endian byte order. */
     bool little_endian() const { return mcpl_hdr_little_endian( h() ) != 0; }
 
-    //Statistics "sum" by key. stat_sum returns an empty value if the entry
-    //exists but its value is not available (-1 in the file, e.g. if the
-    //program writing the file crashed), and throws mcpl::Error if there is
-    //no entry with the key:
+    /**
+     * @brief Whether there is a stat:sum entry with the key.
+     *
+     * @param key The key.
+     */
     bool has_stat_sum( std::string_view key ) const
     {
       return stat_sum_raw(key) != -2.0;
     }
+    /**
+     * @brief Value of a stat:sum entry.
+     *
+     * @param key The key.
+     * @return The value, or an empty value if it is not available (-1 in the file, e.g. if the program writing the file crashed).
+     * @throws mcpl::Error if there is no entry with the key.
+     */
     std::optional<double> stat_sum( std::string_view key ) const
     {
       double v = stat_sum_raw(key);
@@ -811,18 +1207,25 @@ namespace mcpl {
       return v;
     }
 
-    //Userdata layout (empty if the file has no userdata) and the number of
-    //bytes per particle:
+    /** @brief Layout of the userdata (empty if the file has no userdata). */
     std::string_view userdata_layout() const
     {
       const char * l = mcpl_hdr_userdata_layout( h() );
       return l ? l : std::string_view();
     }
+    /** @brief Number of userdata bytes per particle. */
     std::uint32_t userdata_size() const { h(); return m_udsize; }
 
-    //Field in the userdata, which must exist with exactly this type (e.g.
-    //userdata_field<float>("temp") for "temp:float32", or
-    //userdata_field<float,3>("dir") for "dir:float32[3]"):
+    /**
+     * @brief Field in the userdata (see mcpl::UserdataField).
+     *
+     * For example `userdata_field<float>("temp")` for a field `temp:float32`, or `userdata_field<float,3>("dir")` for `dir:float32[3]`.
+     *
+     * @tparam T Type of the values of the field.
+     * @tparam N Number of values of array fields (0 for single values).
+     * @param name Name of the field.
+     * @throws mcpl::Error if the file has no userdata, or the field does not exist with exactly this type.
+     */
     template<class T, std::size_t N = 0>
     UserdataField<T,N> userdata_field( std::string_view name ) const
     {
@@ -836,8 +1239,15 @@ namespace mcpl {
       es.check();
       return UserdataField<T,N>(off);
     }
+    ///@}
 
-    //Read the next particle (an empty particle at the end of the file):
+    /** @name Reading particles */
+    ///@{
+    /**
+     * @brief Read the next particle.
+     *
+     * @return The particle, or an empty particle at the end of the file.
+     */
     Particle read()
     {
       detail::ErrState es;
@@ -847,8 +1257,12 @@ namespace mcpl {
       return Particle( p, ud, ud ? m_udsize : 0 );
     }
 
-    //Skip forward or go to a position (returning false if there is no
-    //particle at the new position):
+    /**
+     * @brief Skip particles.
+     *
+     * @param n Number of particles to skip.
+     * @return Whether there is a particle at the new position.
+     */
     bool skip_forward( std::uint64_t n )
     {
       detail::ErrState es;
@@ -856,6 +1270,11 @@ namespace mcpl {
       es.check();
       return r != 0;
     }
+    /**
+     * @brief Go to the first particle.
+     *
+     * @return Whether there is a particle at the new position.
+     */
     bool rewind()
     {
       detail::ErrState es;
@@ -863,6 +1282,12 @@ namespace mcpl {
       es.check();
       return r != 0;
     }
+    /**
+     * @brief Go to a particle.
+     *
+     * @param ipos Index of the particle.
+     * @return Whether there is a particle at the new position.
+     */
     bool seek( std::uint64_t ipos )
     {
       detail::ErrState es;
@@ -870,9 +1295,10 @@ namespace mcpl {
       es.check();
       return r != 0;
     }
+    /** @brief Index of the next particle to be read. */
     std::uint64_t current_position() const { return mcpl_currentposition( h() ); }
 
-    //Range-based for loops over the particles, from the current position:
+    /** @brief Input iterator over the particles, for range-based for loops. */
     class iterator {
     public:
       using iterator_category = std::input_iterator_tag;
@@ -899,13 +1325,21 @@ namespace mcpl {
       MCPLFile * m_f = nullptr;
       Particle m_p;
     };
+    /** @brief Begin iterator for range-based for loops (reads from the current position). */
     iterator begin() { return iterator(this); }
+    /** @brief End iterator for range-based for loops. */
     iterator end() noexcept { return iterator(); }
+    ///@}
 
-    //Dump information about the file (like mcpl_dump, with nlimit=0 meaning
-    //no limit), to the print handler or to a stream. The position in the file
-    //is not changed, but particles read before are no longer valid
-    //afterwards (also for MCPLOutFile::transfer_last_read_particle):
+    /**
+     * @brief Show the contents of the file (like `mcpl_dump`) through the print handler.
+     *
+     * The position in the file is not changed, but particles read before are no longer valid afterwards (also for MCPLOutFile::transfer_last_read_particle).
+     *
+     * @param parts Parts of the file to show.
+     * @param nskip Index of the first particle shown.
+     * @param nlimit Maximum number of particles shown (0 for all).
+     */
     void dump( DumpParts parts = DumpParts::All, std::uint64_t nskip = 0,
                std::uint64_t nlimit = 0 )
     {
@@ -914,6 +1348,14 @@ namespace mcpl {
                          nullptr, nullptr, es );
       es.check();
     }
+    /**
+     * @brief Show the contents of the file (like `mcpl_dump`) on a stream.
+     *
+     * @param os The stream.
+     * @param parts Parts of the file to show.
+     * @param nskip Index of the first particle shown.
+     * @param nlimit Maximum number of particles shown (0 for all).
+     */
     void dump( std::ostream& os, DumpParts parts = DumpParts::All,
                std::uint64_t nskip = 0, std::uint64_t nlimit = 0 )
     {
@@ -926,7 +1368,7 @@ namespace mcpl {
       es.check();
     }
 
-    //The file object in the C API (for direct use with the C functions):
+    /** @brief The file object of the C API (for direct use with the C functions). */
     mcpl_file_t c_handle() const noexcept { return m_f; }
 
   private:
@@ -952,10 +1394,23 @@ namespace mcpl {
   //////////////////////////////////////////////////////////////////////////////
   // Writing files
 
+  /**
+   * @brief File being written.
+   *
+   * Files are created by the constructor, and only finished by close() (or
+   * close_and_gzip()). Files which are not closed, for instance because an
+   * exception was thrown while writing them, are left unfinished when the
+   * object is destroyed (or when abandon() is called). Such files can often be
+   * recovered with mcpl::repair. Objects can be moved, but not copied.
+   */
   class MCPLOutFile {
   public:
-    //Create the file (.mcpl is appended to the name if it does not already
-    //end with .mcpl):
+    /**
+     * @brief Create the file.
+     *
+     * @param filename Name of the file (`.mcpl` is appended if it does not end with `.mcpl`).
+     * @throws mcpl::IOError if the file can not be created.
+     */
     explicit MCPLOutFile( detail::FilenameArg filename )
     {
       detail::ErrState es;
@@ -967,10 +1422,15 @@ namespace mcpl {
         es.check();
       }
     }
-    //Leaves the file unfinished unless it was closed:
+    /** @brief Leaves the file unfinished, unless it was closed. */
     ~MCPLOutFile() { abandon(); }
     MCPLOutFile( const MCPLOutFile& ) = delete;
     MCPLOutFile& operator=( const MCPLOutFile& ) = delete;
+    /**
+     * @brief Move constructor (o is left closed).
+     *
+     * @param o The file object moved from.
+     */
     MCPLOutFile( MCPLOutFile&& o ) noexcept
       : m_f(o.m_f), m_pending_layout(std::move(o.m_pending_layout)),
         m_ud(std::move(o.m_ud)), m_puser(o.m_puser),
@@ -980,6 +1440,12 @@ namespace mcpl {
       o.m_puser = nullptr;
       o.m_layout_locked = false;
     }
+    /**
+     * @brief Move assignment (abandoning any file of this object first).
+     *
+     * @param o The file object moved from.
+     * @return This object.
+     */
     MCPLOutFile& operator=( MCPLOutFile&& o ) noexcept
     {
       if ( this != &o ) {
@@ -996,9 +1462,11 @@ namespace mcpl {
       return *this;
     }
 
-    //Finish and close the file (optionally gzipping it). Errors leave the
-    //file unfinished, and the object is closed in any case. Does nothing if
-    //the file is not open:
+    /**
+     * @brief Finish and close the file.
+     *
+     * Errors leave the file unfinished, and the object is closed in any case. Does nothing if the file is not open.
+     */
     void close()
     {
       if ( !m_f.internal )
@@ -1009,6 +1477,7 @@ namespace mcpl {
       mcpl_close_outfile_es( f, es );
       es.check();
     }
+    /** @brief Finish, close and compress the file (like close()). */
     void close_and_gzip()
     {
       if ( !m_f.internal )
@@ -1019,8 +1488,11 @@ namespace mcpl {
       mcpl_closeandgzip_outfile_es( f, es );
       es.check();
     }
-    //Close the file without finishing it (like the destructor), leaving it
-    //unfinished. Errors are ignored:
+    /**
+     * @brief Close the file without finishing it, leaving it unfinished.
+     *
+     * Like the destructor. Errors are ignored.
+     */
     void abandon() noexcept
     {
       if ( m_f.internal ) {
@@ -1030,50 +1502,100 @@ namespace mcpl {
         mcpl_close_outfile_unfinished_es( release(), ignored );
       }
     }
+    /** @brief Whether the file is open (not closed or moved from). */
     bool is_open() const noexcept { return m_f.internal != nullptr; }
 
-    //Name of the file (valid as long as the file is open):
+    /** @brief Name of the file (valid as long as the file is open). */
     std::string_view filename() const { return mcpl_outfile_filename( h() ); }
 
-    //Header data and options (which must be set before adding particles):
+    /** @name Header data and options */
+    ///@{
+    /**
+     * @brief Set the name of the application creating the file.
+     *
+     * These must be set before the first particle is added (except stat:sum values, which can be updated until the file is closed).
+     *
+     * @param name The name.
+     */
     void set_srcname( std::string_view name )
     {
       call( mcpl_hdr_set_srcname_es, std::string(name).c_str() );
     }
+    /**
+     * @brief Add a comment.
+     *
+     * @param comment The comment.
+     */
     void add_comment( std::string_view comment )
     {
       call( mcpl_hdr_add_comment_es, std::string(comment).c_str() );
     }
+    /**
+     * @brief Add binary data under a key.
+     *
+     * @param key The key.
+     * @param data The data.
+     * @param size Number of bytes.
+     */
     void add_blob( std::string_view key, const void * data, std::size_t size )
     {
       call( mcpl_hdr_add_data_es, std::string(key).c_str(),
             detail::to_uint32( size, "blob too large" ),
             static_cast<const char*>(data) );
     }
+    /**
+     * @brief Add binary data under a key.
+     *
+     * @param key The key.
+     * @param data The data.
+     */
     void add_blob( std::string_view key, const std::vector<std::uint8_t>& data )
     {
       add_blob( key, data.data(), data.size() );
     }
+    /**
+     * @brief Add binary data under a key.
+     *
+     * @param key The key.
+     * @param data The data.
+     */
     void add_blob( std::string_view key, std::string_view data )
     {
       add_blob( key, data.data(), data.size() );
     }
+    /** @brief Store the userflags of particles. */
     void enable_userflags() { call( mcpl_enable_userflags_es ); }
+    /** @brief Store the polarisation of particles. */
     void enable_polarisation() { call( mcpl_enable_polarisation_es ); }
+    /** @brief Store values in double precision. */
     void enable_doubleprec() { call( mcpl_enable_doubleprec_es ); }
+    /**
+     * @brief All particles have this PDG code.
+     *
+     * @param pdgcode The PDG code.
+     */
     void enable_universal_pdgcode( std::int32_t pdgcode )
     {
       call( mcpl_enable_universal_pdgcode_es, pdgcode );
     }
+    /**
+     * @brief All particles have this weight.
+     *
+     * @param w The weight.
+     */
     void enable_universal_weight( double w )
     {
       call( mcpl_enable_universal_weight_es, w );
     }
 
-    //Statistics "sum": the value must be non-negative, and can be added again
-    //later to update it. Entries can be reserved with reserve_stat_sum (when
-    //the value is not yet known), but a value must then be added before
-    //closing the file:
+    /**
+     * @brief Add a stat:sum entry.
+     *
+     * Entries can be added again to update their values.
+     *
+     * @param key The key.
+     * @param value The value (non-negative).
+     */
     void add_stat_sum( std::string_view key, double value )
     {
       if ( !( value >= 0.0 ) )
@@ -1081,24 +1603,41 @@ namespace mcpl {
                                " reserve_stat_sum to reserve entries)" );
       call( mcpl_hdr_add_stat_sum_es, std::string(key).c_str(), value );
     }
+    /**
+     * @brief Reserve a stat:sum entry whose value is not yet known.
+     *
+     * A value must then be added (with add_stat_sum) before closing the file.
+     *
+     * @param key The key.
+     */
     void reserve_stat_sum( std::string_view key )
     {
       call( mcpl_hdr_add_stat_sum_es, std::string(key).c_str(), -1.0 );
     }
-    //Scale all stat:sum entries with a finite factor >0 (or -1 to mark them
-    //all as not available), like mcpl_hdr_scale_stat_sums:
+    /**
+     * @brief Scale all stat:sum values (like `mcpl_hdr_scale_stat_sums`).
+     *
+     * @param scale Finite factor >0, or -1 to mark all values as not available.
+     */
     void scale_stat_sums( double scale )
     {
       call( mcpl_hdr_scale_stat_sums_es, scale );
     }
 
-    //Userdata. Fields are added one at a time with add_userdata_field, which
-    //returns the object for setting their values (e.g.
-    //add_userdata_field<float>("temp") for a field "temp:float32", or
-    //add_userdata_field<float,3>("dir") for "dir:float32[3]"). Alternatively,
-    //the whole layout can be given with enable_userdata. The layout is fixed
-    //when particles are added (or new_particle is called), after which no
-    //fields can be added:
+    ///@}
+    /** @name Userdata */
+    ///@{
+    /**
+     * @brief Add a field to the userdata.
+     *
+     * For example `add_userdata_field<float>("temp")` for a field `temp:float32`, or `add_userdata_field<float,3>("dir")` for `dir:float32[3]`. Fields are added one at a time, and the layout is fixed when the first particle is added (or new_particle() is called), after which no fields can be added.
+     *
+     * @tparam T Type of the values of the field.
+     * @tparam N Number of values of array fields (0 for single values).
+     * @param name Name of the field.
+     * @return The field object for setting the values.
+     * @throws mcpl::Error for invalid names, or after the layout is fixed.
+     */
     template<class T, std::size_t N = 0>
     UserdataField<T,N> add_userdata_field( std::string_view name )
     {
@@ -1121,6 +1660,11 @@ namespace mcpl {
       m_pending_layout = std::move(layout);
       return UserdataField<T,N>(off);
     }
+    /**
+     * @brief Give the whole userdata layout at once (instead of add_userdata_field).
+     *
+     * @param layout The layout, like `"temp:float32,dir:float32[3]"`.
+     */
     void enable_userdata( std::string_view layout )
     {
       h();
@@ -1134,14 +1678,20 @@ namespace mcpl {
       call( mcpl_enable_userdata_es, std::string(layout).c_str() );
       update_userdata_buffer();
     }
-    //Layout of the userdata (empty if none):
+    /** @brief Layout of the userdata (empty if none). */
     std::string userdata_layout() const
     {
       const char * l = mcpl_outfile_userdata_layout( h() );
       return l ? std::string(l) : m_pending_layout;
     }
-    //Field in an already given layout (e.g. from enable_userdata or
-    //transfer_metadata):
+    /**
+     * @brief Field in an already given layout (e.g. from enable_userdata or transfer_metadata).
+     *
+     * @tparam T Type of the values of the field.
+     * @tparam N Number of values of array fields (0 for single values).
+     * @param name Name of the field.
+     * @throws mcpl::Error if there is no userdata, or the field does not exist with exactly this type.
+     */
     template<class T, std::size_t N = 0>
     UserdataField<T,N> userdata_field( std::string_view name ) const
     {
@@ -1157,9 +1707,14 @@ namespace mcpl {
       return UserdataField<T,N>(off);
     }
 
-    //The particle object of the file, reset to zero (also the userdata). It
-    //is the same object every time, and is valid as long as the file is
-    //open:
+    ///@}
+    /** @name Adding particles */
+    ///@{
+    /**
+     * @brief The particle object of the file, reset to zero (also the userdata).
+     *
+     * It is the same object every time, and valid as long as the file is open.
+     */
     OutParticle new_particle()
     {
       h();
@@ -1177,7 +1732,11 @@ namespace mcpl {
                           m_f.internal );
     }
 
-    //Add the particle (with its userdata, if the file has userdata):
+    /**
+     * @brief Add the particle (with its userdata, if the file has userdata).
+     *
+     * @param p The particle (from new_particle()).
+     */
     void add( const OutParticle& p )
     {
       h();
@@ -1185,8 +1744,11 @@ namespace mcpl {
         detail::throw_runtime( "particle does not belong to this output file" );
       add_impl( p.c_struct(), p.m_ud );
     }
-    //Add a particle given as in the C API (with all userdata bytes zero, if
-    //the file has userdata):
+    /**
+     * @brief Add a particle given as in the C API (with all userdata bytes zero, if the file has userdata).
+     *
+     * @param p The particle.
+     */
     void add( const mcpl_particle_t& p )
     {
       h();
@@ -1194,9 +1756,13 @@ namespace mcpl {
       add_impl( p, nullptr );
     }
 
-    //Transfer all header data and settings from a file being read (like
-    //mcpl_transfer_metadata), and the last particle read from it (like
-    //mcpl_transfer_last_read_particle):
+    /**
+     * @brief Copy all header data and options from a file being read (like `mcpl_transfer_metadata`).
+     *
+     * Must be called before particles are added (or new_particle() is called).
+     *
+     * @param source The file being read.
+     */
     void transfer_metadata( const MCPLFile& source )
     {
       h();
@@ -1210,6 +1776,13 @@ namespace mcpl {
       es.check();
       update_userdata_buffer();
     }
+    /**
+     * @brief Add the last particle read from a file, transferred exactly (like `mcpl_transfer_last_read_particle`).
+     *
+     * This avoids any loss of precision when copying files.
+     *
+     * @param source The file being read.
+     */
     void transfer_last_read_particle( const MCPLFile& source )
     {
       h();
@@ -1219,7 +1792,8 @@ namespace mcpl {
       es.check();
     }
 
-    //The file object in the C API (for direct use with the C functions):
+    ///@}
+    /** @brief The file object of the C API (for direct use with the C functions). */
     mcpl_outfile_t c_handle() const noexcept { return m_f; }
 
   private:
@@ -1326,9 +1900,7 @@ namespace mcpl {
   // std::vector) of C strings, std::string, std::string_view or
   // std::filesystem::path, or as initializer lists like {"a.mcpl","b.mcpl"}.
 
-  //Merge files into a new file (which must not exist), like mcpl_merge_files.
-  //The returned output file must be closed by calling .close() (but can have
-  //more particles added first):
+  /// @cond INTERNAL
   inline MCPLOutFile merge_files( detail::FilenameArg file_output,
                                   detail::FilenameList&& files )
   {
@@ -1338,12 +1910,30 @@ namespace mcpl {
     es.check();
     return MCPLOutFile(f);
   }
+  /// @endcond
+  /**
+   * @brief Merge files into a new file (like `mcpl_merge_files`).
+   *
+   * The returned output file must be closed with close() (but can have more particles added first).
+   *
+   * @tparam Range Container of filenames (e.g. `std::vector<std::string>`).
+   * @param file_output Name of the new file (which must not exist).
+   * @param files The files to merge.
+   * @return The output file (still open).
+   */
   template<class Range>
   inline MCPLOutFile merge_files( detail::FilenameArg file_output,
                                   const Range& files )
   {
     return merge_files( file_output.c_str(), detail::FilenameList(files) );
   }
+  /**
+   * @brief Merge files into a new file, given as a braced list like `{"a.mcpl","b.mcpl"}`.
+   *
+   * @param file_output Name of the new file (which must not exist).
+   * @param files The files to merge.
+   * @return The output file (still open).
+   */
   inline MCPLOutFile merge_files( detail::FilenameArg file_output,
                                   std::initializer_list<detail::FilenameArg> files )
   {
@@ -1353,8 +1943,7 @@ namespace mcpl {
     return merge_files( file_output.c_str(), detail::FilenameList(names) );
   }
 
-  //Merge files with different settings, discarding metadata if needed (like
-  //mcpl_forcemerge_files):
+  /// @cond INTERNAL
   inline MCPLOutFile forcemerge_files( detail::FilenameArg file_output,
                                        detail::FilenameList&& files,
                                        KeepUserflags keep_userflags )
@@ -1367,6 +1956,16 @@ namespace mcpl {
     es.check();
     return MCPLOutFile(f);
   }
+  /// @endcond
+  /**
+   * @brief Merge files with different settings, discarding data if needed (like `mcpl_forcemerge_files`).
+   *
+   * @tparam Range Container of filenames.
+   * @param file_output Name of the new file (which must not exist).
+   * @param files The files to merge.
+   * @param keep_userflags Whether the userflags are kept.
+   * @return The output file (still open).
+   */
   template<class Range>
   inline MCPLOutFile forcemerge_files( detail::FilenameArg file_output,
                                        const Range& files,
@@ -1375,6 +1974,14 @@ namespace mcpl {
     return forcemerge_files( file_output.c_str(), detail::FilenameList(files),
                              keep_userflags );
   }
+  /**
+   * @brief Merge files with different settings, given as a braced list.
+   *
+   * @param file_output Name of the new file (which must not exist).
+   * @param files The files to merge.
+   * @param keep_userflags Whether the userflags are kept.
+   * @return The output file (still open).
+   */
   inline MCPLOutFile forcemerge_files( detail::FilenameArg file_output,
                                        std::initializer_list<detail::FilenameArg> files,
                                        KeepUserflags keep_userflags = KeepUserflags::No )
@@ -1386,7 +1993,12 @@ namespace mcpl {
                              keep_userflags );
   }
 
-  //Whether two files can be merged:
+  /**
+   * @brief Whether two files can be merged.
+   *
+   * @param file1 First file.
+   * @param file2 Second file.
+   */
   inline bool can_merge( detail::FilenameArg file1, detail::FilenameArg file2 )
   {
     detail::ErrState es;
@@ -1395,7 +2007,12 @@ namespace mcpl {
     return r != 0;
   }
 
-  //Append the particles of file2 to file1:
+  /**
+   * @brief Append the particles of file2 to file1.
+   *
+   * @param file1 File to which the particles are added.
+   * @param file2 File with the particles to add.
+   */
   inline void merge_inplace( detail::FilenameArg file1,
                              detail::FilenameArg file2 )
   {
@@ -1404,7 +2021,11 @@ namespace mcpl {
     es.check();
   }
 
-  //Repair a file which was not properly closed:
+  /**
+   * @brief Repair a file which was not properly closed.
+   *
+   * @param filename Name of the file.
+   */
   inline void repair( detail::FilenameArg filename )
   {
     detail::ErrState es;
@@ -1412,7 +2033,11 @@ namespace mcpl {
     es.check();
   }
 
-  //Compress a file (replacing filename with filename.gz):
+  /**
+   * @brief Compress a file (replacing filename with filename.gz).
+   *
+   * @param filename Name of the file.
+   */
   inline void gzip_file( detail::FilenameArg filename )
   {
     detail::ErrState es;

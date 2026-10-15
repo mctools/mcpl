@@ -1,4 +1,7 @@
 v2.2.9  (work in progress)
+      * The C++ interface (mcplcpp.h) is documented with Doxygen comments,
+        from which the developer tool command "mcpldevtool cppapi" generates
+        the reference documentation (as Markdown, for the website).
       * New header-only C++ interface, mcplcpp.h (requires C++17), built on
         the _es functions of the C API (issue #61). Errors are reported as
         exceptions (mcpl::Error, mcpl::IOError and std::bad_alloc). Files are
