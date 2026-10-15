@@ -1,0 +1,110 @@
+
+==> Merging files:
+can_merge(a,b)=1 can_merge(a,dp)=0 can_merge(a,ud)=0 can_merge(ud,ud2)=1
+can_merge(a,nosuchfile) -> mcpl::IOError: Unable to open file!
+  m1.mcpl: nparticles=5 doubleprec=0 layout="" srcname="cppapi_misc" nevents=50.000000 x: 1 2 11 12 13
+  m2.mcpl: nparticles=6 doubleprec=0 layout="" srcname="cppapi_misc" nevents=60.000000 x: 1 2 11 12 13 21
+  m3.mcpl: nparticles=3 doubleprec=0 layout="" srcname="cppapi_misc" nevents=30.000000 x: 21 1 2
+  m4.mcpl: nparticles=4 doubleprec=0 layout="" srcname="cppapi_misc" nevents=40.000000 x: 11 12 13 21
+  m5.mcpl: nparticles=2 doubleprec=0 layout="" srcname="cppapi_misc" nevents=20.000000 x: 1 2
+merged file with userdata: layout="id:int32"
+add_userdata_field on merged file -> mcpl::Error: userdata fields can not be added after the userdata layout is fixed
+  m6.mcpl: nparticles=4 doubleprec=0 layout="id:int32" srcname="cppapi_misc" nevents=30.000000 x: 41 42 51 99
+  ids: 4100 4200 5100 -1
+  m7.mcpl: nparticles=5 doubleprec=0 layout="" srcname="cppapi_misc" nevents=n/a x: 1 2 11 12 13
+  (messages: MCPL WARNING: Input file appears to not have been closed properly. Recovered 5 particles.
+MCPL WARNING: Marking stat:sum:nevents entry as not available (-1) since file not closed properly.
+)
+merge_files (incompatible files) -> mcpl::Error: Attempting to merge incompatible files (FP precision: single vs double).
+merge_files (missing file) -> mcpl::IOError: Unable to open file!
+merge_files (output exists) -> mcpl::Error: requested output file of mcpl_merge_files already exists
+merge_files (no files) -> mcpl::Error: mcpl_merge_files must be called with at least one input file
+merge_files (same file twice) -> mcpl::Error: Merging file with itself
+
+==> Forced merging:
+  (12 lines of messages)
+  f1.mcpl: nparticles=6 doubleprec=1 layout="" srcname="mcpl_forcemerge" nevents=none x: 1 2 31 32 41 42
+  f2.mcpl: nparticles=4 doubleprec=1 layout="" srcname="mcpl_forcemerge" nevents=none x: 1 2 31 32
+forcemerge_files (missing file) -> mcpl::IOError: Unable to open file!
+
+==> Merging in place:
+  ip.mcpl: nparticles=5 doubleprec=0 layout="" srcname="cppapi_misc" nevents=50.000000 x: 1 2 11 12 13
+merge_inplace (incompatible) -> mcpl::Error: Attempting to merge incompatible files (FP precision: single vs double).
+merge_inplace (same file) -> mcpl::Error: Merging file with itself
+merge_inplace (missing file) -> mcpl::IOError: Unable to open file!
+  ip.mcpl: nparticles=5 doubleprec=0 layout="" srcname="cppapi_misc" nevents=50.000000 x: 1 2 11 12 13
+
+==> Repairing and compressing:
+repair (not broken) -> mcpl::Error: File does not appear to be broken.
+repair (missing file) -> mcpl::IOError: Unable to open file!
+repair(broken.mcpl): MCPL: Successfully repaired file with 2 particles.
+  broken.mcpl: nparticles=2 doubleprec=0 layout="" srcname="unknown" nevents=none x: 0 0
+gzip_file(r.mcpl): MCPL: Compressing file r.mcpl
+MCPL: Compressed file into r.mcpl.gz
+  r.mcpl.gz: nparticles=3 doubleprec=0 layout="" srcname="cppapi_misc" nevents=30.000000 x: 1 2 3
+MCPL: Compressing file nosuch.mcpl
+gzip_file (missing file) -> mcpl::IOError: Problems encountered while compressing file nosuch.mcpl
+repair (gzipped file) -> mcpl::Error: File must be gunzipped before it can be checked and possibly repaired.
+
+==> Dumping files:
+
+  Basic info
+    Format             : MCPL-4
+    No. of particles   : 5
+    Header storage     : 133 bytes
+    Data storage       : 200 bytes
+
+  Custom meta data
+    Source             : "cppapi_misc"
+    Number of comments : 2
+          -> comment 0 : "a comment"
+          -> comment 1 : "stat:sum:nevents:                      50"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    User data          : 4 bytes (layout "id:int32")
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 40 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userdata
+    0        2112       0.001           1           0           0           0           0           1           0           1  64000000
+    1          22       0.002           2           0           0           0           0           1           0           1  c8000000
+    2        2112       0.003           3           0           0           0           0           1           0           1  2c010000
+    3          22       0.004           4           0           0           0           0           1           0           1  90010000
+    4        2112       0.005           5           0           0           0           0           1           0           1  f4010000
+dump() via the print handler gives the same output
+dump(Particles,nskip=1,nlimit=2):
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userdata
+    1          22       0.002           2           0           0           0           0           1           0           1  c8000000
+    2        2112       0.003           3           0           0           0           0           1           0           1  2c010000
+dump(Header) gives 659 characters
+position after dump: 3, next x=4
+dump(DumpParts(7)) -> mcpl::Error: mcpl_dump_file got forbidden value for argument parts
+dump to a stream whose buffer throws -> other std::exception: stream buffer full
+file still usable after these: read().x()=1
+
+==> Print handlers:
+first handler got: [A]MCPL: Compressing file ph.mcpl
+[A]MCPL: Compressed file into ph.mcpl.gz
+second handler was called many times
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112       0.001           1           0           0           0           0           1           0           1
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    1          22       0.002           2           0           0           0           0           1           0           1
+C++ handler after C handler got the output
+
+==> Exceptions:
+error state with code 1 -> mcpl::Error: message for code 1
+error state with code 2 -> mcpl::IOError: message for code 2
+error state with code 3 -> std::bad_alloc
+caught as std::runtime_error: Unable to open file!
+caught as mcpl::Error: Unable to open file!
+user exceptions: custom, custom io
+long message: 1023 characters
+
+All ok

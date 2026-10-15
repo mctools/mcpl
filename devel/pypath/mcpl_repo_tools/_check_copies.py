@@ -57,6 +57,8 @@ def main():
     for e in ['filter','read','userdata','write']:
         check_same(f'examples/example_{e}mcpl.c',
                    f'tests/src/app_examples/example_{e}mcpl.h')
+    check_same('examples/example_cppmcpl.cc',
+               'tests/src/app_cppexamples/example_cppmcpl.hh')
 
     #The tests only use files under tests/, so examples used by them are
     #kept as copies there:

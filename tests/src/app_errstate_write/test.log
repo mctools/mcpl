@@ -224,3 +224,31 @@ closeandgzip_outfile (directory in the way) -> ERROR IO: Problems encountered wh
 MCPL: Compressing file gz2.mcpl
 MCPL ERROR: Problems encountered while compressing file gz2.mcpl.
   legacy closeandgzip_outfile returned 0
+
+==> Closing files without finishing them:
+close_outfile_unfinished(invalid handle) -> ok
+outfile_userdata_layout (no userdata) = NULL
+outfile_userdata_layout = v:float64,w:int8[2]
+close_outfile_unfinished (header not written) -> ok
+  unf1.mcpl has 0 bytes
+close_outfile_unfinished (3 particles) -> ok
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 3 particles.
+MCPL WARNING: Marking stat:sum:nevents entry as not available (-1) since file not closed properly.
+  file unf2.mcpl: nparticles=3 srcname="unknown" userflags=0 polarisation=0 doubleprec=0 universal pdgcode=0 weight=0 userdata layout=none
+    comment 0: "stat:sum:nevents:                      -1"
+    particle x=1 pdgcode=2112 weight=1 userflags=0
+    particle x=2 pdgcode=22 weight=1.5 userflags=0
+    particle x=3 pdgcode=2112 weight=2 userflags=0
+  reading back -> ok
+MCPL WARNING: Marking stat:sum:nevents entry as not available (-1) since file not closed properly.
+MCPL: Successfully repaired file with 3 particles.
+  file unf2.mcpl: nparticles=3 srcname="unknown" userflags=0 polarisation=0 doubleprec=0 universal pdgcode=0 weight=0 userdata layout=none
+    comment 0: "stat:sum:nevents:                      -1"
+    particle x=1 pdgcode=2112 weight=1 userflags=0
+    particle x=2 pdgcode=22 weight=1.5 userflags=0
+    particle x=3 pdgcode=2112 weight=2 userflags=0
+  reading back -> ok
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 1 particles.
+  file unf3.mcpl: nparticles=1 srcname="unknown" userflags=0 polarisation=0 doubleprec=0 universal pdgcode=0 weight=0 userdata layout=none
+    particle x=3 pdgcode=2112 weight=2 userflags=0
+  reading back -> ok

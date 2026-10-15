@@ -47,5 +47,6 @@ if __name__ == '__main__':
                   'read_truncated_data', 'comment_index', 'create_empty_name',
                   'add_nan_particle', 'srcname_too_late',
                   'transfer_before_read', 'merge_incompatible',
-                  'merge_inplace_same_file', 'repair_not_broken' ):
+                  'merge_inplace_same_file', 'repair_not_broken',
+                  'dump_file_bad_parts' ):
         check(name)

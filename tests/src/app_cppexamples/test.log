@@ -1,0 +1,37 @@
+Input file has 20 particles from "app_cppexamples"
+  comment: input for the C++ example
+Output file has 3 particles with userdata "index:uint64,origdir:float32[3]". The first ones are:
+  ekin=0.02MeV, particle 1 in the input file, which had uz=0.8
+  ekin=0.04MeV, particle 2 in the input file, which had uz=-0.8
+  ekin=0.08MeV, particle 4 in the input file, which had uz=-0.8
+Opened MCPL file cppexample_out.mcpl:
+
+  Basic info
+    Format             : MCPL-4
+    No. of particles   : 3
+    Header storage     : 154 bytes
+    Data storage       : 168 bytes
+
+  Custom meta data
+    Source             : "example_cppmcpl"
+    Number of comments : 1
+          -> comment 0 : "Neutrons with ekin<0.1MeV, sent along the z axis"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    User data          : 20 bytes (layout "index:uint64,origdir:float32[3]")
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 56 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userdata
+    0        2112        0.02           1           0          -1           0           0           1         0.1           2  01000000000000009a99193f00000000...
+    1        2112        0.04           2           0          -1           0           0           1         0.2           3  02000000000000009a99193f00000000...
+    2        2112        0.08           4           0          -1           0           0           1         0.4           5  04000000000000009a99193f00000000...
+With a missing input file:
+Error: Unable to open file!
+(exit code 1)

@@ -250,6 +250,12 @@ target_compile_definitions( mcpltool PRIVATE mcpl_LIB_IS_STATIC )
 
 include( "mcpl_headercreate" )
 mcpl_create_header( mcplheader_include_path )
+#The header-only C++ interface is placed next to the generated mcpl.h:
+configure_file(
+  "${PROJECT_SOURCE_DIR}/include/mcplcpp.h"
+  "${mcplheader_include_path}/mcplcpp.h"
+  COPYONLY
+)
 
 set_target_common_props( mcpl )
 set_target_common_props( mcpltool )
@@ -297,7 +303,7 @@ install(
 )
 
 install(
-  FILES "${mcplheader_include_path}/mcpl.h"
+  FILES "${mcplheader_include_path}/mcpl.h" "${mcplheader_include_path}/mcplcpp.h"
   DESTINATION "${MCPL_INCDIR}"
 )
 

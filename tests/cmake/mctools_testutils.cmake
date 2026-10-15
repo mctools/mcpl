@@ -283,7 +283,8 @@ function(
       #Shared library to be loaded by python ctypes
       add_library( ${name} MODULE ${srcfiles} )
       if ( is_cxx )
-        target_compile_features( ${name} PRIVATE cxx_std_11 )
+        mctools_testutils_internal_detectcxxstd( cxxstd "${srcfiles}" )
+        target_compile_features( ${name} PRIVATE cxx_std_${cxxstd} )
       endif()
       set_target_properties(
         ${name} PROPERTIES
@@ -348,7 +349,8 @@ function(
     mctools_testutils_internal_getsrcfiles( srcfiles is_cxx "${appdir}" "OFF" )
     add_executable( ${bn} ${srcfiles})
     if ( is_cxx )
-      target_compile_features( ${bn} PRIVATE cxx_std_11 )
+      mctools_testutils_internal_detectcxxstd( cxxstd "${srcfiles}" )
+      target_compile_features( ${bn} PRIVATE cxx_std_${cxxstd} )
     endif()
     mctools_apply_strict_comp_properties( ${bn} )
     mctools_testutils_internal_detectlibdeps( "deplist" "${srcfiles}" "" )
@@ -457,6 +459,22 @@ function( mctools_testutils_internal_detectlibdeps resvar files )
     endforeach()
   endforeach()
   set( "${resvar}" "${deplist}" PARENT_SCOPE )
+endfunction()
+
+function( mctools_testutils_internal_detectcxxstd resvar files )
+  #C++ standard required by C++ sources, which is 11 unless a source file
+  #contains a line like "// NEEDS: C++17":
+  set( cxxstd 11 )
+  foreach( file ${files} )
+    file( STRINGS "${file}" needs_lines REGEX "^// NEEDS: C\\+\\+[0-9]+$" )
+    foreach( entry ${needs_lines} )
+      string( SUBSTRING "${entry}" 13 -1 entry )#13 is length of "// NEEDS: C++"
+      if ( entry GREATER cxxstd )
+        set( cxxstd "${entry}" )
+      endif()
+    endforeach()
+  endforeach()
+  set( "${resvar}" "${cxxstd}" PARENT_SCOPE )
 endfunction()
 
 function( mctools_testutils_internal_detectpydeps resvar pyfile )

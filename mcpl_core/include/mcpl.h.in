@@ -131,8 +131,8 @@ extern "C" {
   } mcpl_errstate_t;
 
 #define MCPL_ERROR_RUNTIME 1 /* generic error (invalid files, arguments, ...) */
-#define MCPL_ERROR_IO      2 /* failed I/O operation (e.g. fopen or fwrite)  */
-#define MCPL_ERROR_MEMORY  3 /* memory allocation failed                     */
+#define MCPL_ERROR_IO      2 /* failed I/O operation (e.g. fopen or fwrite)   */
+#define MCPL_ERROR_MEMORY  3 /* memory allocation failed                      */
 
   /****************************/
   /* Creating new .mcpl files */
@@ -142,6 +142,7 @@ extern "C" {
   MCPL_API mcpl_outfile_t mcpl_create_outfile(const char * filename);
 
   MCPL_API const char * mcpl_outfile_filename(mcpl_outfile_t);/* filename being written to (might have had .mcpl appended) */
+  MCPL_API const char * mcpl_outfile_userdata_layout(mcpl_outfile_t);/* userdata layout (NULL if no userdata) */
 
   /* Optionally set global options or add info to the header: */
   MCPL_API void mcpl_hdr_set_srcname(mcpl_outfile_t, const char *);/* Name of the generating application         */
@@ -179,9 +180,9 @@ extern "C" {
   /* Returns non-zero if gzipping was succesful:                      */
   MCPL_API int mcpl_closeandgzip_outfile(mcpl_outfile_t);
 
-  /* Convenience function which returns a pointer to a nulled-out particle
-     struct which can be used to edit and pass to mcpl_add_particle. It can be
-     reused and will be automatically free'd when the file is closed: */
+  /* Convenience function which returns a pointer to a nulled-out particle  */
+  /* struct which can be used to edit and pass to mcpl_add_particle. It can */
+  /* be reused and will be automatically free'd when the file is closed:    */
   MCPL_API mcpl_particle_t* mcpl_get_empty_particle(mcpl_outfile_t);
 
   /***********************/
@@ -206,7 +207,7 @@ extern "C" {
   MCPL_API int mcpl_hdr_has_polarisation(mcpl_file_t);
   MCPL_API int mcpl_hdr_has_doubleprec(mcpl_file_t);
   MCPL_API uint64_t mcpl_hdr_header_size(mcpl_file_t);/* bytes consumed by header (uncompressed) */
-  MCPL_API int mcpl_hdr_particle_size(mcpl_file_t);/* bytes per particle (uncompressed)     */
+  MCPL_API int mcpl_hdr_particle_size(mcpl_file_t);/* bytes per particle (uncompressed) */
   MCPL_API int32_t mcpl_hdr_universal_pdgcode(mcpl_file_t);/* returns 0 in case of per-particle pdgcode */
   MCPL_API double mcpl_hdr_universal_weight(mcpl_file_t);/* returns 0.0 in case of per-particle weights */
   MCPL_API int mcpl_hdr_little_endian(mcpl_file_t);
@@ -326,10 +327,10 @@ extern "C" {
   /* (arrays of n values), like "temp:float32,origin:int32,tags:uint8[3]".   */
   /* The types are int8, uint8, int16, uint16, int32, uint32, int64, uint64, */
   /* float32 and float64. Names must start with a lowercase letter followed  */
-  /* by lowercase letters, digits or underscores (names are required, also  */
+  /* by lowercase letters, digits or underscores (names are required, also   */
   /* for plain bytes like "data:uint8[27]", to avoid mixing up different     */
   /* data with the same types when merging files).                           */
-  /* Values are packed without any padding, in the byte order of the file   */
+  /* Values are packed without any padding, in the byte order of the file    */
   /* (which is the native one of the platform). At most 65535 bytes per      */
   /* particle are allowed. Files with userdata are written in MCPL format    */
   /* version 4 (which older MCPL releases can not read), while all other     */
@@ -356,10 +357,10 @@ extern "C" {
   /* Like mcpl_read, but also provides the userdata of the particle (set to */
   /* NULL if the file has no userdata or there is no particle):             */
   MCPL_API const mcpl_particle_t* mcpl_read_with_userdata(mcpl_file_t,
-                                                         const uint8_t ** userdata);
+                                                          const uint8_t ** userdata);
   /* Userdata of the particle returned by the last call to mcpl_read (or    */
   /* mcpl_read_with_userdata). Returns NULL if the file has no userdata, or */
-  /* if there is no such particle (also after seeking, skipping or EOF):   */
+  /* if there is no such particle (also after seeking, skipping or EOF):    */
   MCPL_API const uint8_t * mcpl_last_read_userdata(mcpl_file_t);
 
   /* Helpers for encoding and decoding fields. Number of bytes described by */
@@ -368,7 +369,7 @@ extern "C" {
   /* Offset in bytes of a field in the layout. The type must be the one in  */
   /* the layout, including any array size (e.g. "float32" or "uint8[3]"),   */
   /* and errors are raised in case of mismatches. Elements i of array       */
-  /* fields are at offset+i*sizeof(type):                                    */
+  /* fields are at offset+i*sizeof(type):                                   */
   MCPL_API uint32_t mcpl_userdata_offset(const char * layout,
                                          const char * name,
                                          const char * type);
@@ -434,6 +435,12 @@ extern "C" {
   /* The functions can be used concurrently from different threads, as long as */
   /* each file object is only used by one thread at a time.                    */
 
+  /* If the error state has an error, pass it to the error handler, like the   */
+  /* functions without _es would have done (otherwise nothing happens). This   */
+  /* is for code relying on the error handler, which needs to call functions   */
+  /* only available with _es (like mcpl_dump_file_es):                         */
+  MCPL_API void mcpl_check_error(const mcpl_errstate_t*);
+
   MCPL_API mcpl_file_t mcpl_open_file_es(const char * filename, mcpl_errstate_t*);
   MCPL_API const mcpl_particle_t* mcpl_read_es(mcpl_file_t, mcpl_errstate_t*);
   MCPL_API const mcpl_particle_t* mcpl_read_with_userdata_es(mcpl_file_t,
@@ -484,8 +491,13 @@ extern "C" {
                                                    const uint8_t * userdata,
                                                    mcpl_errstate_t*);
   MCPL_API void mcpl_close_outfile_es(mcpl_outfile_t, mcpl_errstate_t*);
-  /* If compressing the file fails, the error message notes that the file was */
-  /* closed properly (so the uncompressed file might be fine):               */
+  /* Close an output file without finishing it: buffered particles are       */
+  /* written, but the header is left as it is (nparticles=0, so the file can */
+  /* be recovered with mcpl_repair, and without the header if it was not     */
+  /* yet written). All resources are freed, also in case of errors. This is  */
+  /* for abandoning files, e.g. after exceptions in C++. This function has   */
+  /* no variant without _es:                                                 */
+  MCPL_API void mcpl_close_outfile_unfinished_es(mcpl_outfile_t, mcpl_errstate_t*);
   MCPL_API int mcpl_closeandgzip_outfile_es(mcpl_outfile_t, mcpl_errstate_t*);
   MCPL_API void mcpl_transfer_metadata_es(mcpl_file_t source,
                                           mcpl_outfile_t target,
@@ -498,7 +510,7 @@ extern "C" {
   /* is left unfinished (nparticles=0 in the header, so it can be repaired).  */
   /* The same is the case for file1 in mcpl_merge_inplace_es, if the errors   */
   /* happen after it was modified. Partially written files from failures to   */
-  /* compress files are removed, keeping the uncompressed file:              */
+  /* compress files are removed, keeping the uncompressed file:               */
   MCPL_API mcpl_outfile_t mcpl_merge_files_es(const char * file_output,
                                               unsigned nfiles, const char ** files,
                                               mcpl_errstate_t*);
@@ -513,6 +525,18 @@ extern "C" {
                                                    mcpl_errstate_t*);
   MCPL_API void mcpl_repair_es(const char * file1, mcpl_errstate_t*);
   MCPL_API int mcpl_gzip_file_es(const char * filename, mcpl_errstate_t*);
+
+  /* Dump information about a file which is already open, like mcpl_dump    */
+  /* (with the same meaning of parts, nskip and nlimit, except that the     */
+  /* line with the filename is not included). The output is passed to the   */
+  /* output function (with the ctx pointer as its second argument), or to   */
+  /* the print handler if output is NULL. Listing particles does not change */
+  /* the position in the file, but the last read particle is no longer      */
+  /* available afterwards (e.g. for mcpl_transfer_last_read_particle).      */
+  MCPL_API void mcpl_dump_file_es( mcpl_file_t, int parts, uint64_t nskip,
+                                   uint64_t nlimit,
+                                   void (*output)(const char * msg, void * ctx),
+                                   void * ctx, mcpl_errstate_t* );
 
   /*******/
   /* I/O */
@@ -530,8 +554,8 @@ extern "C" {
   MCPL_API void mcpl_set_print_handler_ctx(void (*handler)(const char *, void * ctx),
                                            void * ctx);
   /* Note that handlers should be set before using MCPL from several threads, */
-  /* and handlers which might be called from several threads must be thread  */
-  /* safe themselves (the default handler is).                               */
+  /* and handlers which might be called from several threads must be thread   */
+  /* safe themselves (the default handler is).                                */
 
   /**********************/
   /* Obsolete functions */

@@ -1,0 +1,110 @@
+
+==> Header data:
+version=4 nparticles=5 srcname="cppapi_read"
+has_userflags=1 has_polarisation=1 has_doubleprec=1 universal_pdgcode=0 universal_weight=0
+header_size=362 particle_size=171 userdata_size=75 userdata_layout="a:int8,b:uint8,c:int16,d:uint16,e:int32,f:uint32,g:int64,h:uint64,i:float32,j:float64,k:float32[3],l:uint8[5],m:int64[2]"
+ncomments=4 comments().size()=4
+  comment: "comment one"
+  comment: "comment two"
+  comment: "stat:sum:nevents:                  1234.5"
+  comment: "stat:sum:notdone:                      -1"
+comments()[4] -> std::out_of_range: index out of range
+comment(99) -> std::out_of_range: index out of range
+nblobs=3 blob_keys(): "binary" "text" "empty"
+  blob "binary": 5 bytes: 97 0 98 255 99
+  blob "text": 11 bytes: 104 101 108 108 111 32 119 111 114 108 100
+  blob "empty": 0 bytes: (empty)
+blob("nosuchkey") -> mcpl::Error: no blob with key "nosuchkey"
+blob_keys()[3] -> std::out_of_range: index out of range
+has_stat_sum(nevents)=1 has_stat_sum(notdone)=1 has_stat_sum(nosuchkey)=0
+stat_sum(nevents)=1234.500000 stat_sum(notdone)=none
+stat_sum("nosuchkey") -> mcpl::Error: no stat:sum entry with key "nosuchkey"
+simple file: version=3 srcname="unknown" ncomments=0 nblobs=0 blob_keys().size()=0 comments().empty()=1 has_doubleprec=0 universal_pdgcode=2112 universal_weight=2.5 userdata_size=0 userdata_layout=""
+
+==> Reading particles:
+  particle: ekin=0.25 pos=(1,-0,0.5) dir=(0,0.6,0.8) pol=(0,0.2,-0.3) time=0 weight=1 pdgcode=2112 userflags=0x1000
+  particle: ekin=0.5 pos=(2,-2,0.5) dir=(0,0.6,0.8) pol=(0.1,0.2,-0.3) time=10 weight=1.5 pdgcode=22 userflags=0x1001
+  particle: ekin=0.75 pos=(3,-4,0.5) dir=(0,0.6,0.8) pol=(0.2,0.2,-0.3) time=20 weight=2 pdgcode=2112 userflags=0x1002
+  particle: ekin=1 pos=(4,-6,0.5) dir=(0,0.6,0.8) pol=(0.3,0.2,-0.3) time=30 weight=2.5 pdgcode=22 userflags=0x1003
+  particle: ekin=1.25 pos=(5,-8,0.5) dir=(0,0.6,0.8) pol=(0.4,0.2,-0.3) time=40 weight=3 pdgcode=2112 userflags=0x1004
+at the end: read() gives an empty particle, and loops do nothing
+while loop read 5 particles
+rewind()=1 seek(1)=1 current_position()=1 read().x()=2 skip_forward(1)=1 read().x()=4 seek(5)=0 seek(100)=0 current_position()=5 rewind()=1 skip_forward(2)=1 skip_forward(10)=0
+loop from position 2: 3 4 5
+count_if(pdgcode==22) = 2
+iterator: it->x()=1 after it++: it->x()=2 (*it).ekin()=0.5 it==end: 0 it!=end: 1
+  particle: ekin=0.25 pos=(1,-0,0.5) dir=(0,0.6,0.8) pol=(0,0,0) time=0 weight=2.5 pdgcode=2112 userflags=0x0
+  particle: ekin=0.5 pos=(2,-2,0.5) dir=(0,0.6,0.8) pol=(0,0,0) time=10 weight=2.5 pdgcode=2112 userflags=0x0
+  particle: ekin=0.75 pos=(3,-4,0.5) dir=(0,0.6,0.8) pol=(0,0,0) time=20 weight=2.5 pdgcode=2112 userflags=0x0
+
+==> Userdata fields:
+offsets: 0 1 2 4 6 10 14 22 30 34 42 54 59 sizes: 1 3 5 2
+  particle 0: a=0 b=200 c=0 d=60000 e=0 f=4000000000 g=0 h=9223372036854775808 i=0 j=0 k=0,1,2 l=0,4 m=0,-1
+  particle 1: a=-1 b=201 c=-1000 d=60001 e=-100000 f=4000000001 g=-1099511627776 h=9223372036854775809 i=1.5 j=1e+100 k=10,11,12 l=1,5 m=-5,-6
+  particle 2: a=-2 b=202 c=-2000 d=60002 e=-200000 f=4000000002 g=-2199023255552 h=9223372036854775810 i=3 j=2e+100 k=20,21,22 l=2,6 m=-10,-11
+  particle 3: a=-3 b=203 c=-3000 d=60003 e=-300000 f=4000000003 g=-3298534883328 h=9223372036854775811 i=4.5 j=3e+100 k=30,31,32 l=3,7 m=-15,-16
+  particle 4: a=-4 b=204 c=-4000 d=60004 e=-400000 f=4000000004 g=-4398046511104 h=9223372036854775812 i=6 j=4e+100 k=40,41,42 l=4,8 m=-20,-21
+userdata_field<double>("i") (float32 field) -> mcpl::Error: mcpl_userdata_offset("a:int8,b:uint8,c:int16,d:uint16,e:int32,f:uint32,g:int64,h:uint64,i:float32,j:float64,k:float32[3],l:uint8[5],m:int64[2]","i","float64"): field has a different type in the userdata layout
+userdata_field<std::uint8_t>("a") (int8 field) -> mcpl::Error: mcpl_userdata_offset("a:int8,b:uint8,c:int16,d:uint16,e:int32,f:uint32,g:int64,h:uint64,i:float32,j:float64,k:float32[3],l:uint8[5],m:int64[2]","a","uint8"): field has a different type in the userdata layout
+userdata_field<float>("k") (array field) -> mcpl::Error: mcpl_userdata_offset("a:int8,b:uint8,c:int16,d:uint16,e:int32,f:uint32,g:int64,h:uint64,i:float32,j:float64,k:float32[3],l:uint8[5],m:int64[2]","k","float32"): field has a different type in the userdata layout
+userdata_field<float,2>("k") (float32[3] field) -> mcpl::Error: mcpl_userdata_offset("a:int8,b:uint8,c:int16,d:uint16,e:int32,f:uint32,g:int64,h:uint64,i:float32,j:float64,k:float32[3],l:uint8[5],m:int64[2]","k","float32[2]"): field has a different type in the userdata layout
+userdata_field<float,1>("i") (scalar field) -> mcpl::Error: mcpl_userdata_offset("a:int8,b:uint8,c:int16,d:uint16,e:int32,f:uint32,g:int64,h:uint64,i:float32,j:float64,k:float32[3],l:uint8[5],m:int64[2]","i","float32[1]"): field has a different type in the userdata layout
+userdata_field<float>("nosuch") -> mcpl::Error: mcpl_userdata_offset("a:int8,b:uint8,c:int16,d:uint16,e:int32,f:uint32,g:int64,h:uint64,i:float32,j:float64,k:float32[3],l:uint8[5],m:int64[2]","nosuch","float32"): no such field in the userdata layout
+userdata_field<float>("") -> mcpl::Error: mcpl_userdata_offset("a:int8,b:uint8,c:int16,d:uint16,e:int32,f:uint32,g:int64,h:uint64,i:float32,j:float64,k:float32[3],l:uint8[5],m:int64[2]","","float32"): no such field in the userdata layout
+userdata_field<float>("i") (file without userdata) -> mcpl::Error: file has no userdata
+k(p,3) -> std::out_of_range: userdata array index out of range
+l(p,5) -> std::out_of_range: userdata array index out of range
+i(particle without userdata) -> mcpl::Error: particle has no userdata
+k(particle without userdata,0) -> mcpl::Error: particle has no userdata
+i(empty particle) -> mcpl::Error: particle has no userdata
+m(particle with shorter userdata) -> mcpl::Error: userdata of particle is too short for the userdata field
+m(particle with shorter userdata,0) -> mcpl::Error: userdata of particle is too short for the userdata field
+a(particle with shorter userdata) = 0 (fields within the userdata can be used)
+j(particle 1 of another file) = 1e+100
+
+==> Errors:
+MCPLFile("nosuchfile.mcpl") -> mcpl::IOError: Unable to open file!
+MCPLFile("") -> mcpl::IOError: Unable to open file!
+MCPLFile("trunc_hdr.mcpl") -> mcpl::Error: Errors encountered while attempting to read header
+MCPLFile("garbage.mcpl") -> mcpl::Error: File is not an MCPL file!
+trunc_data.mcpl opened, reading: 1 2 3 4
+  -> mcpl::Error: Errors encountered while attempting to read particle data.
+read() after the error -> mcpl::Error: Errors encountered while attempting to read particle data.
+rewind() after the error -> mcpl::Error: Errors encountered while attempting to read particle data.
+seek(0) after the error -> mcpl::Error: Errors encountered while attempting to read particle data.
+skip_forward(0) after the error -> mcpl::Error: Errors encountered while attempting to read particle data.
+dump() after the error -> mcpl::Error: Errors encountered while attempting to read particle data.
+header data still available: nparticles=5
+
+==> Moving and closing:
+after move construction: f.is_open()=0 g.is_open()=1 g.current_position()=1
+f.nparticles() (moved from) -> mcpl::Error: MCPLFile object is not open
+f.srcname() (moved from) -> mcpl::Error: MCPLFile object is not open
+f.comments() (moved from) -> mcpl::Error: MCPLFile object is not open
+f.blob_keys() (moved from) -> mcpl::Error: MCPLFile object is not open
+f.has_blob("text") (moved from) -> mcpl::Error: MCPLFile object is not open
+f.read() (moved from) -> mcpl::Error: MCPLFile object is not open
+f.seek(0) (moved from) -> mcpl::Error: MCPLFile object is not open
+f.current_position() (moved from) -> mcpl::Error: MCPLFile object is not open
+f.stat_sum("nevents") (moved from) -> mcpl::Error: MCPLFile object is not open
+f.userdata_field<float>("i") (moved from) -> mcpl::Error: MCPLFile object is not open
+f.userdata_size() (moved from) -> mcpl::Error: MCPLFile object is not open
+f.dump() (moved from) -> mcpl::Error: MCPLFile object is not open
+loop over f (moved from) -> mcpl::Error: MCPLFile object is not open
+after move assignment: g.is_open()=0 h.is_open()=1 h.srcname()="cppapi_read" h.current_position()=1
+f.is_open()=1 after self-move
+after close(): is_open()=0
+f.version() (closed) -> mcpl::Error: MCPLFile object is not open
+files in a vector: 10 particles in total
+
+==> Filenames, gzipped files and C handles:
+MCPLFile(std::string) -> ok
+MCPLFile(std::string_view) -> ok
+MCPLFile(std::filesystem::path) -> ok
+MCPLFile(const char*) -> ok
+MCPLFile(UTF-8 std::string) -> ok
+MCPLFile(std::filesystem::path from UTF-8 name) -> ok
+gzipped file: 5 particles, seek(1) then read() gives x=2
+C API on c_handle(): nparticles=5, mcpl_read gives x=1, then read().x()=2
+
+All ok
