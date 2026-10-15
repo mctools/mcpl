@@ -45,7 +45,7 @@ if ( DEFINED MCPL_ENABLE_RPATHMOD )
     "MCPL_ENABLE_RPATHMOD no longer supported."
   )
 endif()
-if ( DEFINED MCPL_BUILD_FATBINARIES )
+if ( DEFINED MCPL_ENABLE_PYTHON )
   message( FATAL_ERROR
     "MCPL_ENABLE_PYTHON not supported: The mcpl-core"
     " project no longer contains any python code."
@@ -71,13 +71,13 @@ if ( DEFINED MCPL_ENABLE_GEANT4 )
 endif()
 if ( DEFINED MCPL_ENABLE_PHITS )
   message( FATAL_ERROR
-    "MCPL_ENABLE_GEANT4 not supported: The MCPL-Geant4"
-    " bindings are now provided in a standalone project."
+    "MCPL_ENABLE_PHITS not supported: The PHITS converters"
+    " are now provided in the separate mcpl-extra project."
   )
 endif()
 if ( DEFINED MCPL_ENABLE_SSW )
   message( FATAL_ERROR
-    "MCPL_ENABLE_GEANT4 not supported: The MCPL-Geant4"
-    " bindings are now provided in a standalone project."
+    "MCPL_ENABLE_SSW not supported: The MCNP SSW converters"
+    " are now provided in the separate mcpl-extra project."
   )
 endif()
