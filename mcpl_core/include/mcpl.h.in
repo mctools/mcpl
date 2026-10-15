@@ -151,6 +151,9 @@ extern "C" {
                                   uint32_t ldata, const char * data);/* add binary blobs by key                  */
   /* (keys: unique, non-empty, ASCII, no non-printable characters,           */
   /* whitespace, backslash, or quotation marks)                              */
+  /* (blobs are stored byte for byte, so binary numbers in them are in the    */
+  /* byte order chosen by the application, unlike all other numbers in MCPL   */
+  /* files, which are in the byte order of the file)                          */
   MCPL_API void mcpl_enable_userflags(mcpl_outfile_t);/* to write the "userflags" info                           */
   MCPL_API void mcpl_enable_polarisation(mcpl_outfile_t);/* to write the "polarisation" info                     */
   MCPL_API void mcpl_enable_doubleprec(mcpl_outfile_t);/* use double precision FP numbers in storage             */

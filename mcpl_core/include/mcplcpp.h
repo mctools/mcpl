@@ -372,6 +372,8 @@ namespace mcpl {
    * @brief View of a blob (bytes of data stored under a key in the header).
    *
    * Obtained from MCPLFile::blob, and valid as long as the file is open.
+   * Blobs are stored byte for byte, so binary numbers in them are in the byte
+   * order chosen by the application that wrote them.
    */
   class BlobView {
   public:
