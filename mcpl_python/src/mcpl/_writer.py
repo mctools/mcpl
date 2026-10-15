@@ -377,7 +377,10 @@ class MCPLOutFile:
     def hdr_add_data(self, key, data):
         """Add binary blob (bytes-like object) by key (unique, non-empty,
         ASCII, no non-printable characters, whitespace, backslash, or
-        quotation marks)"""
+        quotation marks). Blobs are stored byte for byte, so binary numbers in
+        them are in the byte order chosen by the application, unlike all
+        other numbers in MCPL files (which are in the byte order of the
+        file)."""
         self._hdr_add_data(key, data, lenient = False)
 
     def _hdr_add_data(self, key, data, lenient):
