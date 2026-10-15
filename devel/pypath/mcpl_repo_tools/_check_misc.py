@@ -51,6 +51,7 @@ def main():
     max_size_kb_other = 60
     max_size_overrides = {
         'mcpl_core/src/mcpl.c' : 260,
+        'mcpl_core/include/mcplcpp.h' : 80,
         'tests/scripts/forcemerge.log' : 500,
         'tests/scripts/pystat.log' : 500,
     }
