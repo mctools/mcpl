@@ -24,7 +24,8 @@ The `mcpl-core` package provides:
   information about this tool, refer to the
   https://mctools.github.io/mcpl/usage_cmdline page.
 * The C/C++ API in the form of the `mcpl.h` header file and associated shared
-  library. For more information about this API, refer to the
+  library, along with the header-only C++ interface `mcplcpp.h` (which
+  requires C++17). For more information about this API, refer to the
   https://mctools.github.io/mcpl/usage_c page.
 * Configuration utilities for working with the C/C++ API in downstream
   projects. Specifically, CMake configuration code and the `mcpl-config`

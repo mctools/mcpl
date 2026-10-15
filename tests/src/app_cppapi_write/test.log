@@ -1,0 +1,394 @@
+
+==> Writing a file with all options:
+filename() = basic.mcpl
+after close(): is_open()=0
+Opened MCPL file basic.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 4
+    Header storage     : 301 bytes
+    Data storage       : 384 bytes
+
+  Custom meta data
+    Source             : "cppapi_write"
+    Number of comments : 5
+          -> comment 0 : "first comment"
+          -> comment 1 : "second comment"
+          -> comment 2 : "stat:sum:nevents:                    2000"
+          -> comment 3 : "stat:sum:later:                      42"
+          -> comment 4 : "stat:sum:unset:                      -1"
+    Number of blobs    : 4
+          -> 4 bytes of data with key "rawbytes"
+          -> 3 bytes of data with key "vector"
+          -> 9 bytes of data with key "text"
+          -> 0 bytes of data with key "empty"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112         0.5           0           2           3           0           0           1           0         1.5         0.1         0.2         0.3 0xabcd0000
+    1        2112           1           1           2           3           0           0           1        0.25         1.5         0.1         0.2         0.3 0xabcd0001
+    2        2112         1.5          -1          -2          -3         0.6           0         0.8         0.5         1.5        -0.1        -0.2        -0.3 0xabcd0002
+    3          22           2           7           8           9           0           1           0        0.75         1.5           1           0           0 0xabcd0003
+stat sums: nevents=2000 later=42 unset=-1
+
+==> Universal pdgcode and weight, gzipped:
+MCPL: Compressing file universal.mcpl
+MCPL: Compressed file into universal.mcpl.gz
+Opened MCPL file universal.mcpl.gz:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 3
+    Header storage     : 67 bytes
+    Data storage       : 84 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : yes (pdgcode 22)
+    Fixed part. weight : yes (weight 0.5)
+    FP precision       : single
+    Endianness         : little
+    Storage            : 28 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]
+    0          22           1           0           0           0           0           0           1           0
+    1          22           2           0           0           0           0           0           1           0
+    2          22           3           0           0           0           0           0           1           0
+
+==> Userdata with add_userdata_field:
+layout before adding particles: "a:int8,b:uint8,c:int16,d:uint16,e:int32,g:uint32,h:int64,i:uint64,j:float32,k:float64,dir:float32[3],tags:uint8[4],ids:int64[2]"
+offsets: 0 1 2 4 6 10 14 22 30 34 42 54 58
+userdata_field<double>("j") -> mcpl::Error: mcpl_userdata_offset("a:int8,b:uint8,c:int16,d:uint16,e:int32,g:uint32,h:int64,i:uint64,j:float32,k:float64,dir:float32[3],tags:uint8[4],ids:int64[2]","j","float64"): field has a different type in the userdata layout
+after new_particle(): userdata_size()=74 layout="a:int8,b:uint8,c:int16,d:uint16,e:int32,g:uint32,h:int64,i:uint64,j:float32,k:float64,dir:float32[3],tags:uint8[4],ids:int64[2]"
+dir set element 3 -> std::out_of_range: userdata array index out of range
+dir(p,3) -> std::out_of_range: userdata array index out of range
+Opened MCPL file ud1.mcpl:
+
+  Basic info
+    Format             : MCPL-4
+    No. of particles   : 3
+    Header storage     : 190 bytes
+    Data storage       : 330 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    User data          : 74 bytes (layout "a:int8,b:uint8,c:int16,d:uint16,e:int32,g:uint32,h:int64,i:uint64,j:float32,k:float64,dir:float32[3],tags:uint8[4],ids:int64[2]")
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 110 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userdata
+    0           0           1           0           0           0           0           0           1           0           0  00c8000060ea0000000000286bee0000...
+    1           0           2           0           0           0           0           0           1           0           0  ffc9d4fe61ea90eefeff01286bee0000...
+    2           0           3           0           0           0           0           0           1           0           0  fecaa8fd62ea20ddfdff02286bee0000...
+  read back: dir=0,0.6,0.8 ids=-1,1 i=18446744073709551615
+  read back: dir=0,0.6,1 ids=-1,2199023255552 i=18446744073709551614
+  read back: dir=0,0.6,2 ids=-1,4398046511104 i=18446744073709551613
+
+==> Userdata with enable_userdata:
+layout: "x:float64,n:uint16[2]"
+add_userdata_field after enable_userdata -> mcpl::Error: userdata fields can not be added after the userdata layout is fixed
+userdata_field<float>("x") -> mcpl::Error: mcpl_userdata_offset("x:float64,n:uint16[2]","x","float32"): field has a different type in the userdata layout
+userdata_field<std::uint16_t>("n") -> mcpl::Error: mcpl_userdata_offset("x:float64,n:uint16[2]","n","uint16"): field has a different type in the userdata layout
+enable_userdata again (other layout) -> mcpl::Error: mcpl_enable_userdata called multiple times with different layouts
+enable_userdata after adding particles -> mcpl::Error: enable_userdata must be called before particles are added (or new_particle is called)
+Opened MCPL file ud2.mcpl:
+
+  Basic info
+    Format             : MCPL-4
+    No. of particles   : 2
+    Header storage     : 84 bytes
+    Data storage       : 96 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    User data          : 12 bytes (layout "x:float64,n:uint16[2]")
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 48 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userdata
+    0           0           1           0           0           0           0           0           1           0           0  0000000000000a4001000200
+    1           0           2           0           0           0           0           0           1           0           0  000000000000000000000000
+
+==> Fields added but no particles:
+Opened MCPL file ud3.mcpl:
+
+  Basic info
+    Format             : MCPL-4
+    No. of particles   : 0
+    Header storage     : 72 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    User data          : 4 bytes (layout "x:float32")
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 40 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userdata
+
+==> Userdata errors:
+add_userdata_field (duplicate name) -> mcpl::Error: Invalid userdata layout "x:float32,x:float64": duplicate field name
+add_userdata_field (invalid name) -> mcpl::Error: Invalid userdata layout "x:float32,Bad:float64": field names must start with a lowercase letter
+add_userdata_field (empty name) -> mcpl::Error: Invalid userdata layout "x:float32,:float64": empty field name
+add_userdata_field (name with colon) -> mcpl::Error: Invalid userdata layout "x:float32,a:b:float64": unknown type (must be one of int8, uint8, int16, uint16, int32, uint32, int64, uint64, float32, float64)
+add_userdata_field (too large) -> mcpl::Error: Invalid userdata layout "x:float32,big:uint8[70000]": too large userdata (at most 65535 bytes are allowed)
+layout unchanged by these errors: "x:float32"
+enable_userdata after add_userdata_field -> mcpl::Error: enable_userdata can not be used after add_userdata_field
+add_userdata_field after new_particle -> mcpl::Error: userdata fields can not be added after the userdata layout is fixed
+Opened MCPL file ud_err.mcpl:
+
+  Basic info
+    Format             : MCPL-4
+    No. of particles   : 1
+    Header storage     : 82 bytes
+    Data storage       : 44 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    User data          : 8 bytes (layout "x:float32,y:float32")
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 44 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userdata
+    0           0           0           0           0           0           0           0           1           0           0  000000000000803f
+enable_userdata("x:float16") -> mcpl::Error: Invalid userdata layout "x:float16": unknown type (must be one of int8, uint8, int16, uint16, int32, uint32, int64, uint64, float32, float64)
+enable_userdata("") -> mcpl::Error: Invalid userdata layout "": empty layout
+userdata_field<float>("x") (no userdata) -> mcpl::Error: file has no userdata
+set_userdata on particle without userdata -> mcpl::Error: particle has no userdata
+add_userdata_field after new_particle (no userdata) -> mcpl::Error: userdata fields can not be added after the userdata layout is fixed
+
+==> Errors:
+MCPLOutFile("") -> mcpl::Error: mcpl_create_outfile called with empty string.
+MCPLOutFile("nosuchdir/out.mcpl") -> mcpl::IOError: Unable to open output file!
+add_stat_sum("x",-1) -> mcpl::Error: stat:sum values must be non-negative (use reserve_stat_sum to reserve entries)
+add_stat_sum("x",NaN) -> mcpl::Error: stat:sum values must be non-negative (use reserve_stat_sum to reserve entries)
+add_stat_sum("x",inf) -> mcpl::Error: Invalid value for "stat:sum:...". Value is invalid (+INF).
+add_stat_sum("a:b",1) -> mcpl::Error: Invalid stat:sum: key "a:b" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
+reserve_stat_sum("") -> mcpl::Error: stat:sum: key must not be empty
+scale_stat_sums(0) -> mcpl::Error: mcpl_hdr_scale_stat_sums called with zero scale
+enable_universal_pdgcode(0) -> mcpl::Error: mcpl_enable_universal_pdgcode must be called with non-zero pdgcode.
+enable_universal_weight(-1) -> mcpl::Error: mcpl_enable_universal_weight must be called with positive but finite weight.
+add_blob (duplicate key) -> mcpl::Error: mcpl_hdr_add_data got duplicate key
+set_srcname after adding particles -> mcpl::Error: mcpl_hdr_set_srcname called too late.
+add_comment after adding particles -> mcpl::Error: mcpl_hdr_add_comment called too late.
+enable_doubleprec after adding particles -> mcpl::Error: mcpl_enable_doubleprec called too late.
+add (NaN energy) -> mcpl::Error: attempting to add particle with NaN or infinite kinetic energy
+add (zero direction) -> mcpl::Error: attempting to add particle with non-unit direction vector
+add (the file is still usable) -> ok
+add (particle of another file) -> mcpl::Error: particle does not belong to this output file
+add (default constructed particle) -> mcpl::Error: particle does not belong to this output file
+Opened MCPL file errors.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 2
+    Header storage     : 69 bytes
+    Data storage       : 72 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 1 bytes of data with key "k"
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0           0           1           0           0           0           0           0           1           0           0
+    1           0           2           0           0           0           0           0           1           0           0
+
+==> Files not closed are left unfinished:
+reading unfinished.mcpl: nparticles=5 stat_sum(nevents)=not available
+  messages: MCPL WARNING: Input file appears to not have been closed properly. Recovered 5 particles.
+MCPL WARNING: Marking stat:sum:nevents entry as not available (-1) since file not closed properly.
+repair: MCPL WARNING: Marking stat:sum:nevents entry as not available (-1) since file not closed properly.
+MCPL: Successfully repaired file with 5 particles.
+Opened MCPL file unfinished.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 104 bytes
+    Data storage       : 180 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 1
+          -> comment 0 : "stat:sum:nevents:                      -1"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0           0           1           0           0           0           0           0           1           0           0
+    1           0           2           0           0           0           0           0           1           0           0
+    2           0           3           0           0           0           0           0           1           0           0
+    3           0           4           0           0           0           0           0           1           0           0
+    4           0           5           0           0           0           0           0           1           0           0
+exception while writing: some problem
+exception.mcpl has 3 particles, messages: MCPL WARNING: Input file appears to not have been closed properly. Recovered 3 particles.
+after abandon(): is_open()=0
+set_srcname after abandon() -> mcpl::Error: MCPLOutFile object is not open
+abandoned.mcpl (header not written) has 0 bytes
+MCPLFile("abandoned.mcpl") -> mcpl::Error: Error while reading first bytes of file!
+
+==> Transferring metadata and particles:
+after transfer_metadata: layout="t:float64,id:uint32[2]"
+transfer_metadata after adding particles -> mcpl::Error: transfer_metadata must be called before particles are added (or new_particle is called)
+Opened MCPL file filtered.mcpl:
+
+  Basic info
+    Format             : MCPL-4
+    No. of particles   : 5
+    Header storage     : 163 bytes
+    Data storage       : 320 bytes
+
+  Custom meta data
+    Source             : "source"
+    Number of comments : 2
+          -> comment 0 : "source comment"
+          -> comment 1 : "stat:sum:nevents:                     100"
+    Number of blobs    : 1
+          -> 5 bytes of data with key "key"
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : yes
+    User data          : 16 bytes (layout "t:float64,id:uint32[2]")
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 64 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userdata
+    0        2112         0.2           0           0           0           0         0.6         0.8           0           0           1           0           0  0000000000488f400100000007000000
+    1        2112         0.3           0           0           0           0         0.6         0.8           0           0           1           0           0  0000000000508f400200000007000000
+    2        2112         0.5           0           0           0           0         0.6         0.8           0           0           1           0           0  0000000000608f400400000007000000
+    3        2112         0.6           0           0           0           0         0.6         0.8           0           0           1           0           0  0000000000688f400500000007000000
+    4        2112           5           0           0           0           0           0           1           0           0           0           0           0  000000000000f0bf0000000000000000
+transfer_last_read_particle before reading -> mcpl::Error: mcpl_transfer_last_read_particle called with source file in invalid state (did you forget to first call mcpl_read() on the source file before calling this function?)
+transfer_metadata (different userdata) -> mcpl::Error: mcpl_enable_userdata called multiple times with different layouts
+
+==> Moving output files:
+after move construction: f.is_open()=0 g.is_open()=1 g.filename()=moved.mcpl
+f.add(p) (moved from) -> mcpl::Error: MCPLOutFile object is not open
+f.filename() (moved from) -> mcpl::Error: MCPLOutFile object is not open
+f.set_srcname (moved from) -> mcpl::Error: MCPLOutFile object is not open
+f.new_particle() (moved from) -> mcpl::Error: MCPLOutFile object is not open
+f.add_userdata_field (moved from) -> mcpl::Error: MCPLOutFile object is not open
+f.userdata_layout() (moved from) -> mcpl::Error: MCPLOutFile object is not open
+after move assignment: g.is_open()=0 h.is_open()=1
+Opened MCPL file moved.mcpl:
+
+  Basic info
+    Format             : MCPL-4
+    No. of particles   : 3
+    Header storage     : 72 bytes
+    Data storage       : 120 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    User data          : 4 bytes (layout "x:float32")
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 40 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userdata
+    0           0           1           0           0           0           0           0           1           0           0  0000803f
+    1           0           2           0           0           0           0           0           1           0           0  00000040
+    2           0           3           0           0           0           0           0           1           0           0  00004040
+other.mcpl (abandoned before the header was written) has 0 bytes
+output files in a vector: ok
+
+==> Filenames, new_particle and C handles:
+MCPLOutFile(path).filename() = viapath.mcpl
+new_particle() gives the same particle, reset to zero
+viapath.mcpl: nparticles=2 comment(0)="added with the C API"
+MCPLOutFile(string_view).filename() = viastringview.mcpl
+
+==> Scaling stat sums, closing twice:
+MCPL: Compressing file scaled.mcpl
+MCPL: Compressed file into scaled.mcpl.gz
+scaled by 2.5: a=25 b=7.5
+scaled by -1: a is not available
+
+==> Errors when fixing the layout at close:
+close (layout can not be given) -> mcpl::Error: mcpl_enable_userdata called too late.
+is_open() = 0
+latelayout.mcpl (left unfinished): nparticles=1 layout=""
+
+All ok

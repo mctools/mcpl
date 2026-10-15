@@ -31,3 +31,6 @@ Got expected MCPL ERROR: Merging file with itself
 === repair_not_broken
 Got error from _es variant: File does not appear to be broken.
 Got expected MCPL ERROR: File does not appear to be broken.
+=== dump_file_bad_parts
+Got error from _es variant: mcpl_dump_file got forbidden value for argument parts
+Got expected MCPL ERROR: mcpl_dump_file got forbidden value for argument parts

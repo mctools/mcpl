@@ -351,6 +351,47 @@ static void test_fileops(void)
   remove("df_in2dp.mcpl");
 }
 
+static void test_close_unfinished(void)
+{
+  printf("\n==> Closing without finishing, exceeding the file size limit:\n");
+  mcpl_errstate_t es;
+  //Buffered particles exceeding the limit when written:
+  set_filesize_limit(300);
+  es_reset(&es);
+  mcpl_outfile_t f = mcpl_create_outfile_es("df_unf1.mcpl",&es);
+  unsigned n = write_until_error(f,20,&es);
+  es_reset(&es);
+  mcpl_close_outfile_unfinished_es(f,&es);
+  if ( n == 20 ) {
+    printf("  20 particles added without errors\n");
+    expect_error(&es,MCPL_ERROR_IO,"close_outfile_unfinished");
+  } else {
+    //(only if the C library buffers less than about 700 bytes; errors are
+    //not reported again)
+    if ( es.code != 0 )
+      test_fail("closing file after error failed");
+  }
+  reset_filesize_limit();
+  uint64_t nrec = check_recovered("df_unf1.mcpl",1);
+  if ( nrec == 0 || nrec >= 20 )
+    test_fail("unexpected number of particles in file left after errors");
+  remove("df_unf1.mcpl");
+
+  //After errors which made the file unusable (not reported again):
+  set_filesize_limit(20000);
+  es_reset(&es);
+  f = mcpl_create_outfile_es("df_unf2.mcpl",&es);
+  write_until_error(f,100000,&es);
+  es_reset(&es);
+  mcpl_close_outfile_unfinished_es(f,&es);
+  if ( es.code != 0 )
+    test_fail("error reported again by close_outfile_unfinished");
+  printf("  close_outfile_unfinished after the error -> ok\n");
+  reset_filesize_limit();
+  check_recovered("df_unf2.mcpl",1);
+  remove("df_unf2.mcpl");
+}
+
 int main( int argc, char ** argv )
 {
   (void)argc;
@@ -364,6 +405,7 @@ int main( int argc, char ** argv )
   test_particles("df_particles2.mcpl",1);
   test_error_at_close();
   test_fileops();
+  test_close_unfinished();
   printf("\nAll ok\n");
   return 0;
 }

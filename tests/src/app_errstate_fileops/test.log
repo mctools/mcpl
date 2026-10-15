@@ -164,3 +164,98 @@ gzip_file (valid) -> ok
 MCPL: Compressing file nosuchfile.mcpl
 MCPL ERROR: Problems encountered while compressing file nosuchfile.mcpl.
   legacy gzip_file(nosuchfile.mcpl) returned 0
+
+==> Dumping open files:
+dump_file(d1.mcpl,parts=0,nskip=0,nlimit=0) -> ok
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 126 bytes
+    Data storage       : 180 bytes
+
+  Custom meta data
+    Source             : "errstate_fileops"
+    Number of comments : 2
+          -> comment 0 : "a comment"
+          -> comment 1 : "stat:sum:nevents:                       5"
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112       0.001           1           0           0           0           0           1           0           1
+    1          22       0.002           2           0           0           0           0           1           0           2
+    2        2112       0.003           3           0           0           0           0           1           0           3
+    3          22       0.004           4           0           0           0           0           1           0           4
+    4        2112       0.005           5           0           0           0           0           1           0           5
+dump_file(d1.mcpl,parts=1,nskip=0,nlimit=0) -> ok
+dump_file(d1.mcpl,parts=2,nskip=0,nlimit=0) -> ok
+dump_file(d1.mcpl,parts=2,nskip=1,nlimit=2) -> ok
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    1          22       0.002           2           0           0           0           0           1           0           2
+    2        2112       0.003           3           0           0           0           0           1           0           3
+dump_file(d1.mcpl,parts=0,nskip=3,nlimit=1) -> ok
+dump_file(d1.mcpl,parts=2,nskip=4,nlimit=10) -> ok
+dump_file(d1.mcpl,parts=2,nskip=5,nlimit=0) -> ok
+dump_file(d1.mcpl,parts=2,nskip=100,nlimit=0) -> ok
+dump_file(d_ud.mcpl,parts=0,nskip=0,nlimit=0) -> ok
+
+  Basic info
+    Format             : MCPL-4
+    No. of particles   : 3
+    Header storage     : 83 bytes
+    Data storage       : 126 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    User data          : 6 bytes (layout "tag:uint16,v:float32")
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 42 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userdata
+    0        2112       0.001           1           0           0           0           0           1           0           1  640000000000
+    1          22       0.002           2           0           0           0           0           1           0           2  65000000003f
+    2        2112       0.003           3           0           0           0           0           1           0           3  66000000803f
+  output identical to mcpl_dump in all cases
+dump_file(d1.mcpl, no output function) -> ok
+  output via print handler identical to mcpl_dump
+dump_file(d_ud.mcpl,parts=2) after reading 2 particles -> ok
+  position afterwards: 2, last read userdata: NULL, next particle x=3
+dump_file(d_ud.mcpl,parts=1) -> ok
+  last read userdata: available
+dump_file(d1gz.mcpl.gz,parts=2,nskip=2,nlimit=2) -> ok
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    2        2112       0.003           3           0           0           0           0           1           0           3
+    3          22       0.004           4           0           0           0           0           1           0           4
+  next particle x=2
+dump_file(invalid handle) -> ERROR RUNTIME: invalid file handle (NULL)
+dump_file(parts=-1) -> ERROR RUNTIME: mcpl_dump_file got forbidden value for argument parts
+dump_file(parts=3) -> ERROR RUNTIME: mcpl_dump_file got forbidden value for argument parts
+  no output for invalid arguments
+dump_file(parts=1) after these errors -> ok
+  check_error without errors -> ok
+dump_file(d1_trunc.mcpl,parts=1) -> ok
+dump_file(d1_trunc.mcpl,parts=2) -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112       0.001           1           0           0           0           0           1           0           1
+    1          22       0.002           2           0           0           0           0           1           0           2
+    2        2112       0.003           3           0           0           0           0           1           0           3
+    3          22       0.004           4           0           0           0           0           1           0           4
+dump_file(d1_trunc.mcpl,parts=1) afterwards -> ERROR RUNTIME: Errors encountered while attempting to read particle data.

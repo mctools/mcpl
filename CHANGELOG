@@ -1,4 +1,27 @@
 v2.2.9  (work in progress)
+      * New header-only C++ interface, mcplcpp.h (requires C++17), built on
+        the _es functions of the C API (issue #61). Errors are reported as
+        exceptions (mcpl::Error, mcpl::IOError and std::bad_alloc). Files are
+        read with mcpl::MCPLFile (with range-based for loops over the
+        particles, which are lightweight mcpl::Particle views) and written
+        with mcpl::MCPLOutFile (which leaves files unfinished unless they are
+        explicitly closed). Userdata fields are accessed through typed field
+        objects (e.g. userdata_field<float,3>("dir")), and output files can
+        get their userdata layout one field at a time. All other functions of
+        the C API have counterparts, including the operations on files, and
+        set_print_handler accepts any std::function. An example is in
+        examples/example_cppmcpl.cc.
+      * New C function mcpl_dump_file_es, which dumps the header and particles
+        of a file which is already open (like mcpl_dump), with the output
+        passed to a function given by the caller (or the print handler).
+      * New C function mcpl_check_error, which passes an error in an error
+        state to the error handler (like the functions without _es would).
+        This allows code relying on the error handler to use the functions
+        which are only available with _es.
+      * New C function mcpl_close_outfile_unfinished_es, which closes an
+        output file without finishing it (as needed when abandoning files,
+        e.g. after exceptions in C++), and mcpl_outfile_userdata_layout, which
+        gives the userdata layout of an output file.
       * Error-state (_es) variants of the C functions for operations on
         files: mcpl_merge_files_es, mcpl_can_merge_es, mcpl_merge_inplace_es,
         mcpl_forcemerge_files_es, mcpl_repair_es and mcpl_gzip_file_es.

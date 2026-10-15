@@ -661,6 +661,66 @@ static void test_closeandgzip(void)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// Closing files without finishing them, and userdata layouts of output files
+
+static void test_close_unfinished(void)
+{
+  printf("\n==> Closing files without finishing them:\n");
+  mcpl_errstate_t es;
+  //Invalid handles are ignored:
+  mcpl_outfile_t fnull;
+  fnull.internal = NULL;
+  es_reset(&es);
+  mcpl_close_outfile_unfinished_es(fnull,&es);
+  print_es("close_outfile_unfinished(invalid handle)",&es);
+
+  //The userdata layout of output files:
+  mcpl_outfile_t f = mcpl_create_outfile("unf1.mcpl");
+  const char * l = mcpl_outfile_userdata_layout(f);
+  printf("outfile_userdata_layout (no userdata) = %s\n", l ? l : "NULL");
+  mcpl_enable_userdata(f,"v:float64,w:int8[2]");
+  l = mcpl_outfile_userdata_layout(f);
+  printf("outfile_userdata_layout = %s\n", l ? l : "NULL");
+
+  //Header not yet written (the file is left empty):
+  mcpl_hdr_set_srcname(f,"unfinished");
+  es_reset(&es);
+  mcpl_close_outfile_unfinished_es(f,&es);
+  print_es("close_outfile_unfinished (header not written)",&es);
+  {
+    buffer_t b = file_load("unf1.mcpl");
+    printf("  unf1.mcpl has %u bytes\n",(unsigned)b.size);
+    free(b.data);
+  }
+  remove("unf1.mcpl");
+
+  //With particles (left unfinished, and repairable):
+  f = mcpl_create_outfile("unf2.mcpl");
+  mcpl_hdr_add_stat_sum(f,"nevents",5.0);
+  mcpl_particle_t * p = mcpl_get_empty_particle(f);
+  for ( int i = 0; i < 3; ++i ) {
+    fill_particle(p,i);
+    mcpl_add_particle(f,p);
+  }
+  es_reset(&es);
+  mcpl_close_outfile_unfinished_es(f,&es);
+  print_es("close_outfile_unfinished (3 particles)",&es);
+  dump_file("unf2.mcpl");
+  mcpl_repair("unf2.mcpl");
+  dump_file("unf2.mcpl");
+  remove("unf2.mcpl");
+
+  //Without an error state:
+  f = mcpl_create_outfile("unf3.mcpl");
+  mcpl_particle_t p3;
+  fill_particle(&p3,2);
+  mcpl_add_particle(f,&p3);
+  mcpl_close_outfile_unfinished_es(f,NULL);
+  dump_file("unf3.mcpl");
+  remove("unf3.mcpl");
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 int main( int argc, char ** argv )
 {
@@ -671,6 +731,7 @@ int main( int argc, char ** argv )
   test_usage_errors();
   test_transfers();
   test_closeandgzip();
+  test_close_unfinished();
   remove("usage.mcpl");
   return 0;
 }

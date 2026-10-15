@@ -934,6 +934,11 @@ const char * mcpl_outfile_filename(mcpl_outfile_t of) {
   return f->filename;
 }
 
+const char * mcpl_outfile_userdata_layout(mcpl_outfile_t of) {
+  MCPLIMP_OUTFILEDECODE;
+  return f->userdata_layout;
+}
+
 void mcpl_hdr_set_srcname_es( mcpl_outfile_t of, const char * spn,
                               mcpl_errstate_t * es )
 {
@@ -2166,6 +2171,32 @@ void mcpl_close_outfile_es( mcpl_outfile_t of, mcpl_errstate_t * es )
 void mcpl_close_outfile(mcpl_outfile_t of)
 {
   mcpl_close_outfile_es( of, NULL );
+}
+
+void mcpl_close_outfile_unfinished_es( mcpl_outfile_t of, mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  //Closing an invalid handle (internal NULL) does nothing:
+  mcpl_outfileinternal_t * f = (mcpl_outfileinternal_t *)of.internal;
+  if ( !f )
+    return;
+  //Write any buffered particles, but leave the header unchanged (the header is
+  //not written if it was not already, and nparticles stays 0). Errors after
+  //earlier errors are not reported again:
+  if ( f->file && !f->failed ) {
+    int ok = 1;
+    if ( !f->header_notwritten && fflush(f->file) ) {
+      mcpl_internal_raise_io( es, "Errors encountered while attempting to"
+                              " write particle data." );
+      ok = 0;
+    }
+    FILE * fh = f->file;
+    f->file = NULL;
+    if ( fclose(fh) && ok )
+      mcpl_internal_raise_io( es, "Errors encountered while attempting to"
+                              " close file." );
+  }
+  mcpl_internal_cleanup_outfile(f);
 }
 
 //Transfer metadata, returning 0 in case of errors:
@@ -3785,25 +3816,44 @@ void mcpl_transfer_last_read_particle(mcpl_file_t source, mcpl_outfile_t target)
   mcpl_transfer_last_read_particle_es( source, target, NULL );
 }
 
-void mcpl_dump_header(mcpl_file_t f)
+//Destination of the output of the dump functions (the print handler if fct is
+//NULL):
+typedef struct {
+  MCPL_CHARCTXTOVOID_FCT fct;
+  void * ctx;
+} mcpl_internal_output_t;
+
+MCPL_LOCAL void mcpl_internal_output( const mcpl_internal_output_t * out,
+                                      const char * msg )
+{
+  if ( out->fct )
+    out->fct( msg, out->ctx );
+  else
+    mcpl_print( msg );
+}
+
+//Dump the header (returns 0 in case of errors):
+MCPL_LOCAL int mcpl_internal_dump_header( mcpl_file_t f,
+                                          const mcpl_internal_output_t * out,
+                                          mcpl_errstate_t * es )
 {
   char buf[4096];
-  mcpl_print("\n  Basic info\n");
+  mcpl_internal_output(out,"\n  Basic info\n");
   snprintf(buf,sizeof(buf),
            "    Format             : MCPL-%i\n",mcpl_hdr_version(f));
-  mcpl_print(buf);
+  mcpl_internal_output(out,buf);
   snprintf(buf,sizeof(buf),
            "    No. of particles   : %" PRIu64 "\n",mcpl_hdr_nparticles(f) );
-  mcpl_print(buf);
+  mcpl_internal_output(out,buf);
   snprintf(buf,sizeof(buf),
            "    Header storage     : %" PRIu64 " bytes\n",
            mcpl_hdr_header_size(f));
-  mcpl_print(buf);
+  mcpl_internal_output(out,buf);
   snprintf(buf,sizeof(buf),
            "    Data storage       : %" PRIu64 " bytes\n",
            mcpl_hdr_nparticles(f)*mcpl_hdr_particle_size(f));
-  mcpl_print(buf);
-  mcpl_print("\n  Custom meta data\n");
+  mcpl_internal_output(out,buf);
+  mcpl_internal_output(out,"\n  Custom meta data\n");
 
   //srcname or comments might be too long for our static print buffer, so we use
   //a dynamic buffer if needed.
@@ -3829,24 +3879,26 @@ void mcpl_dump_header(mcpl_file_t f)
   size_t lflexbuf = sizeof(buf);
   if ( lmax > lflexbuf ) {
     lflexbuf = lmax;
-    flexbuf = mcpl_internal_malloc( lflexbuf );
+    flexbuf = mcpl_internal_malloc_es( lflexbuf, es );
+    if (!flexbuf)
+      return 0;
   }
 
   snprintf(flexbuf,lflexbuf,
            "    Source             : \"%s\"\n",mcpl_hdr_srcname(f));
-  mcpl_print(flexbuf);
+  mcpl_internal_output(out,flexbuf);
   snprintf(buf,sizeof(buf),
            "    Number of comments : %i\n",ncomments);
-  mcpl_print(buf);
+  mcpl_internal_output(out,buf);
   unsigned ic;
   for (ic = 0; ic < ncomments; ++ic) {
     snprintf(flexbuf,lflexbuf,
              "          -> comment %i : \"%s\"\n",ic,mcpl_hdr_comment(f,ic));
-    mcpl_print(flexbuf);
+    mcpl_internal_output(out,flexbuf);
   }
   snprintf(buf,sizeof(buf),
            "    Number of blobs    : %i\n",nblobs);
-  mcpl_print(buf);
+  mcpl_internal_output(out,buf);
   for (uint32_t ib = 0; ib < nblobs; ++ib) {
     const char * data;
     uint32_t ldata;
@@ -3854,90 +3906,112 @@ void mcpl_dump_header(mcpl_file_t f)
     if (!ok) {
       if ( flexbuf != buf )
         free(flexbuf);
-      mcpl_error("Unexpected blob access error");
+      return mcpl_internal_raise_runtime( es, "Unexpected blob access error" );
     }
     snprintf(flexbuf,lflexbuf,
              "          -> %lu bytes of data with key \"%s\"\n",
              (unsigned long)ldata,blobkeys[ib]);
-    mcpl_print(flexbuf);
+    mcpl_internal_output(out,flexbuf);
   }
 
   if ( flexbuf != buf )
     free(flexbuf);
 
-  mcpl_print("\n  Particle data format\n");
+  mcpl_internal_output(out,"\n  Particle data format\n");
   snprintf(buf,sizeof(buf),
            "    User flags         : %s\n",
            (mcpl_hdr_has_userflags(f)?"yes":"no") );
-  mcpl_print(buf);
+  mcpl_internal_output(out,buf);
   snprintf(buf,sizeof(buf),
            "    Polarisation info  : %s\n",
            (mcpl_hdr_has_polarisation(f)?"yes":"no"));
-  mcpl_print(buf);
+  mcpl_internal_output(out,buf);
   if (mcpl_hdr_userdata_size(f)) {
     //(only shown for files with userdata, keeping the output for other files):
     const char * udl = mcpl_hdr_userdata_layout(f);
     size_t nudbuf = strlen(udl) + 128;
-    char * udbuf = mcpl_internal_malloc(nudbuf);
+    char * udbuf = mcpl_internal_malloc_es( nudbuf, es );
+    if (!udbuf)
+      return 0;
     snprintf(udbuf,nudbuf,
              "    User data          : %lu bytes (layout \"%s\")\n",
              (unsigned long)mcpl_hdr_userdata_size(f), udl);
-    mcpl_print(udbuf);
+    mcpl_internal_output(out,udbuf);
     free(udbuf);
   }
-  mcpl_print("    Fixed part. type   : ");
+  mcpl_internal_output(out,"    Fixed part. type   : ");
   int32_t updg = mcpl_hdr_universal_pdgcode(f);
   if (updg) {
     snprintf(buf,sizeof(buf),"yes (pdgcode %li)\n",(long)updg);
-    mcpl_print(buf);
+    mcpl_internal_output(out,buf);
   } else {
-    mcpl_print("no\n");
+    mcpl_internal_output(out,"no\n");
   }
-  mcpl_print("    Fixed part. weight : ");
+  mcpl_internal_output(out,"    Fixed part. weight : ");
   double uw = mcpl_hdr_universal_weight(f);
   if (uw) {
     snprintf(buf,sizeof(buf),"yes (weight %g)\n",uw);
-    mcpl_print(buf);
+    mcpl_internal_output(out,buf);
   } else {
-    mcpl_print("no\n");
+    mcpl_internal_output(out,"no\n");
   }
   snprintf(buf,sizeof(buf),
            "    FP precision       : %s\n",
            (mcpl_hdr_has_doubleprec(f)?"double":"single"));
-  mcpl_print(buf);
+  mcpl_internal_output(out,buf);
   snprintf(buf,sizeof(buf),
            "    Endianness         : %s\n",
            (mcpl_hdr_little_endian(f)?"little":"big"));
-  mcpl_print(buf);
+  mcpl_internal_output(out,buf);
   snprintf(buf,sizeof(buf),
            "    Storage            : %i bytes/particle\n\n",
            mcpl_hdr_particle_size(f));
-  mcpl_print(buf);
+  mcpl_internal_output(out,buf);
+  return 1;
 }
 
-void mcpl_dump_particles(mcpl_file_t f, uint64_t nskip, uint64_t nlimit,
-                         int(filter)(const mcpl_particle_t*))
+void mcpl_dump_header(mcpl_file_t f)
+{
+  mcpl_internal_output_t out = { NULL, NULL };
+  mcpl_internal_dump_header( f, &out, NULL );
+}
+
+//Dump particles, starting nskip particles after the current position (or at
+//the absolute position nskip if absolute is set). Returns 0 in case of errors:
+MCPL_LOCAL int mcpl_internal_dump_particles( mcpl_file_t f, uint64_t nskip,
+                                             uint64_t nlimit,
+                                             int(filter)(const mcpl_particle_t*),
+                                             int absolute,
+                                             const mcpl_internal_output_t * out,
+                                             mcpl_errstate_t * es )
 {
   int has_uf = mcpl_hdr_has_userflags(f);
   int has_pol = mcpl_hdr_has_polarisation(f);
   double uweight = mcpl_hdr_universal_weight(f);
-  mcpl_print("index     pdgcode   ekin[MeV]       x[cm]       y[cm]"
+  mcpl_internal_output(out,"index     pdgcode   ekin[MeV]       x[cm]       y[cm]"
              "       z[cm]          ux          uy          uz    time[ms]");
   if (!uweight)
-    mcpl_print("      weight");
+    mcpl_internal_output(out,"      weight");
   if (has_pol)
-    mcpl_print("       pol-x       pol-y       pol-z");
+    mcpl_internal_output(out,"       pol-x       pol-y       pol-z");
   if (has_uf)
-    mcpl_print("  userflags");
+    mcpl_internal_output(out,"  userflags");
   uint32_t udsize = mcpl_hdr_userdata_size(f);
   if (udsize)
-    mcpl_print("  userdata");
-  mcpl_print("\n");
-  mcpl_skipforward(f,nskip);
+    mcpl_internal_output(out,"  userdata");
+  mcpl_internal_output(out,"\n");
+  if ( absolute )
+    mcpl_seek_es(f,nskip,es);
+  else
+    mcpl_skipforward_es(f,nskip,es);
+  if ( es && es->code )
+    return 0;
   //Writing the next loop in an annoying way to silence MSVC C4706 warning:
   char buf[256];
   for ( uint64_t count = nlimit ; ( nlimit==0 || count-- ) ; ) {
-    const mcpl_particle_t* p = mcpl_read(f);
+    const mcpl_particle_t* p = mcpl_read_es(f,es);
+    if ( es && es->code )
+      return 0;
     if (!p)
       break;
     if (filter && !filter(p) ) {
@@ -3952,33 +4026,82 @@ void mcpl_dump_particles(mcpl_file_t f, uint64_t nskip, uint64_t nlimit,
             p->position[0], p->position[1], p->position[2],
             p->direction[0], p->direction[1], p->direction[2],
             p->time );
-    mcpl_print(buf);
+    mcpl_internal_output(out,buf);
     if (!uweight) {
       snprintf(buf,sizeof(buf)," %11.5g",p->weight);
-      mcpl_print(buf);
+      mcpl_internal_output(out,buf);
     }
     if (has_pol) {
       snprintf(buf,sizeof(buf),
                " %11.5g %11.5g %11.5g",
                p->polarisation[0],p->polarisation[1],p->polarisation[2]);
-      mcpl_print(buf);
+      mcpl_internal_output(out,buf);
     }
     if (has_uf) {
       snprintf(buf,sizeof(buf)," 0x%08x",p->userflags);
-      mcpl_print(buf);
+      mcpl_internal_output(out,buf);
     }
     if (udsize) {
       //Bytes in hex (at most the first 16):
       const uint8_t * ud = mcpl_last_read_userdata(f);
-      mcpl_print("  ");
+      mcpl_internal_output(out,"  ");
       for ( uint32_t i = 0; i < udsize && i < 16; ++i ) {
         snprintf(buf,sizeof(buf),"%02x",(unsigned)ud[i]);
-        mcpl_print(buf);
+        mcpl_internal_output(out,buf);
       }
       if ( udsize > 16 )
-        mcpl_print("...");
+        mcpl_internal_output(out,"...");
     }
-    mcpl_print("\n");
+    mcpl_internal_output(out,"\n");
+  }
+  return 1;
+}
+
+void mcpl_dump_particles(mcpl_file_t f, uint64_t nskip, uint64_t nlimit,
+                         int(filter)(const mcpl_particle_t*))
+{
+  mcpl_internal_output_t out = { NULL, NULL };
+  mcpl_internal_dump_particles( f, nskip, nlimit, filter, 0, &out, NULL );
+}
+
+void mcpl_check_error( const mcpl_errstate_t * es )
+{
+  if ( es && es->code )
+    mcpl_error( es->msg );
+}
+
+void mcpl_dump_file_es( mcpl_file_t ff, int parts, uint64_t nskip,
+                        uint64_t nlimit,
+                        void (*output)(const char * msg, void * ctx),
+                        void * ctx, mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  //(not using MCPLIMP_FILEDECODE_ES etc., since MSVC warns about empty macro
+  //arguments):
+  mcpl_fileinternal_t * f = (mcpl_fileinternal_t *)ff.internal;
+  if (!f) {
+    mcpl_internal_raise_runtime( es, "invalid file handle (NULL)" );
+    return;
+  }
+  if ( f->failed ) {
+    mcpl_internal_raise( es, f->failure.code, f->failure.msg );
+    return;
+  }
+  if ( parts < 0 || parts > 2 ) {
+    mcpl_internal_raise_runtime( es, "mcpl_dump_file got forbidden value for"
+                                 " argument parts" );
+    return;
+  }
+  mcpl_internal_output_t out = { output, ctx };
+  if ( parts == 0 || parts == 1 ) {
+    if ( !mcpl_internal_dump_header( ff, &out, es ) )
+      return;
+  }
+  if ( parts == 0 || parts == 2 ) {
+    uint64_t pos = f->current_particle_idx;
+    if ( !mcpl_internal_dump_particles( ff, nskip, nlimit, NULL, 1, &out, es ) )
+      return;
+    mcpl_seek_es( ff, pos, es );
   }
 }
 

@@ -127,6 +127,15 @@ MCPLTEST_CTYPES void mcpltest_es_case( const char * name, int use_es )
     mcpl_merge_inplace_es("es_a.mcpl","es_a.mcpl",es);
   } else if ( strcmp(name,"repair_not_broken") == 0 ) {
     mcpl_repair_es("es_a.mcpl",es);
+  } else if ( strcmp(name,"dump_file_bad_parts") == 0 ) {
+    //Functions only available with _es are combined with mcpl_check_error
+    //when using the error handler:
+    mcpl_file_t f = mcpl_open_file("es_a.mcpl");
+    mcpl_errstate_t own;
+    mcpl_dump_file_es(f,7,0,0,NULL,NULL,es ? es : &own);
+    if ( !es )
+      mcpl_check_error(&own);
+    mcpl_close_file(f);
   } else {
     printf("unknown case: %s\n",name);
     exit(1);
