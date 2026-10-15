@@ -19,6 +19,8 @@
 ##                                                                            ##
 ################################################################################
 
+# NEEDS: numpy
+
 #NB: Written carefully with __name__ protection we can call functions with
 #pythons multiprocessing
 
