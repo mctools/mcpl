@@ -68,6 +68,13 @@ static int32_t ssw_rd_i32( const char * buf )
   return v;
 }
 
+static int64_t ssw_rd_i64( const char * buf )
+{
+  int64_t v;
+  memcpy( &v, buf, sizeof(v) );
+  return v;
+}
+
 
 //Should be large enough to hold first record in all supported files:
 #define SSWREAD_STDBUFSIZE 1024
@@ -117,12 +124,12 @@ typedef struct {
   char idtms[20]; // Machine-Designator
   char probs[20]; // Problem-ID
   char aids[129];  // Creation-Run Problem-Title-Card
-  int32_t np1;
-  int32_t nrss;
+  int64_t np1;
+  int64_t nrss;
   int32_t njsw;
   int32_t nrcd;
-  int32_t niss;
-  int32_t pos;
+  int64_t niss;
+  int64_t pos;
   int mcnp_type;
   mcpl_generic_filehandle_t filehandle;
   ssw_particle_t part;
@@ -131,6 +138,8 @@ typedef struct {
   char * buf;
   size_t np1pos;
   size_t nrsspos;
+  size_t nisspos;
+  int hdrintsize;//size of the np1, nrss and niss fields (4 or 8 bytes)
   size_t headlen;
 } ssw_fileinternal_t;
 
@@ -478,15 +487,25 @@ ssw_file_t ssw_open_file( const char * filename )
   //Read size data and mark position of nrss & np1 variables.
   int32_t bi[10] = {0};
   memcpy( bi, f->buf, ( f->lbuf < sizeof(bi) ? (size_t)f->lbuf : sizeof(bi) ) );
-  if ( (f->mcnp_type == SSW_MCNP6) && f->lbuf>=32 ) {
-    f->np1 = bi[0];
-    f->np1pos = current_recpos + 0 * sizeof(int32_t);
-    f->nrss = bi[2];
-    f->nrsspos = current_recpos + 2 * sizeof(int32_t);
-    f->nrcd = abs(bi[4]);
+  if ( ( (f->mcnp_type == SSW_MCNP6) && f->lbuf>=32 )
+       || ( (f->mcnp_type == SSW_MCNP5) && f->lbuf==32 ) ) {
+    //64 bit integers np1, nrss and niss, with 32 bit integers nrcd and njsw
+    //between the last two. Only the lower 32 bits of np1, nrss and niss were
+    //read until MCPL 2.2.8, which gave wrong results for files with more than
+    //2147483647 histories (with negative np1, the sign was lost as well, so the
+    //header was not parsed correctly, see
+    //https://github.com/mctools/mcpl/issues/45).
+    f->hdrintsize = 8;
+    f->np1 = ssw_rd_i64(f->buf);
+    f->np1pos = current_recpos + 0;
+    f->nrss = ssw_rd_i64(f->buf+8);
+    f->nrsspos = current_recpos + 8;
+    f->nrcd = ( f->mcnp_type == SSW_MCNP6 ? abs(bi[4]) : bi[4] );
     f->njsw = bi[5];
-    f->niss = bi[6];
+    f->niss = ssw_rd_i64(f->buf+24);
+    f->nisspos = current_recpos + 24;
   } else if ( (f->mcnp_type == SSW_MCNPX) && f->lbuf==20 ) {
+    f->hdrintsize = 4;
     f->np1 = bi[0];
     f->np1pos = current_recpos + 0 * sizeof(int32_t);
     f->nrss = bi[1];
@@ -494,25 +513,11 @@ ssw_file_t ssw_open_file( const char * filename )
     f->nrcd = bi[2];
     f->njsw = bi[3];
     f->niss = bi[4];
-  } else if ( (f->mcnp_type == SSW_MCNP5) && f->lbuf==32 ) {
-    int64_t np1_64 = (int64_t)ssw_rd_u64(f->buf);
-    if (np1_64 > 2147483647 || np1_64 < -2147483647)
-      ssw_openerror(f,"ssw_open_file error: MCNP5 files with more than 2147483647"
-                    " histories are not supported");
-    f->np1 = (int32_t)np1_64;
-    f->np1pos = current_recpos + 0 * sizeof(int64_t);
-    uint64_t nrss_64 = ssw_rd_u64(f->buf+8);
-    if (nrss_64 > 2147483647 )
-      ssw_openerror(f,"ssw_open_file error: MCNP5 files with more than 2147483647"
-                    " particles are not supported");
-    f->nrss = (int32_t)nrss_64;
-    f->nrsspos = current_recpos + 1 * sizeof(int64_t);
-    f->nrcd = bi[4];
-    f->njsw = bi[5];
-    f->niss = bi[6];
+    f->nisspos = current_recpos + 4 * sizeof(int32_t);
   } else if (f->lbuf==40) {
     fprintf(ssw_stdout(),"ssw_open_file WARNING: File format has header format for which decoding was never tested (feedback"
             " appreciated at https://mctools.github.io/mcpl/contact/).\n");
+    f->hdrintsize = 4;
     f->np1 = bi[0];
     f->np1pos = current_recpos + 0 * sizeof(int32_t);
     f->nrss = bi[2];
@@ -520,6 +525,7 @@ ssw_file_t ssw_open_file( const char * filename )
     f->nrcd = bi[4];
     f->njsw = bi[6];
     f->niss = bi[8];
+    f->nisspos = current_recpos + 8 * sizeof(int32_t);
   } else {
     ssw_openerror(f,"ssw_open_file error: Unexpected record length");
   }
@@ -533,10 +539,12 @@ ssw_file_t ssw_open_file( const char * filename )
   /* fprintf(ssw_stdout(),"ssw_open_file: Found idtms = '%s'\n",f->idtms); */
   /* fprintf(ssw_stdout(),"ssw_open_file: Found probs = '%s'\n",f->probs); */
   /* fprintf(ssw_stdout(),"ssw_open_file: Found aids  = '%s'\n",f->aids); */
-  fprintf(ssw_stdout(),"ssw_open_file:    Source statistics (histories): %11i\n" , abs(f->np1));
-  fprintf(ssw_stdout(),"ssw_open_file:    Particles in file            : %11i\n" , f->nrss);
+  if ( f->np1 == INT64_MIN || f->nrss < 0 || f->niss < 0 )
+    ssw_openerror(f,"ssw_open_file error: Invalid number of histories or particles in header");
+  fprintf(ssw_stdout(),"ssw_open_file:    Source statistics (histories): %11lli\n" , (long long)( f->np1 < 0 ? -f->np1 : f->np1 ));
+  fprintf(ssw_stdout(),"ssw_open_file:    Particles in file            : %11lli\n" , (long long)f->nrss);
   fprintf(ssw_stdout(),"ssw_open_file:    Number of surfaces           : %11i\n" , f->njsw);
-  fprintf(ssw_stdout(),"ssw_open_file:    Histories at surfaces        : %11i\n" , f->niss);
+  fprintf(ssw_stdout(),"ssw_open_file:    Histories at surfaces        : %11lli\n" , (long long)f->niss);
   //  fprintf(ssw_stdout(),"ssw_open_file: File length of SSB array          : %11i\n" , f->nrcd);
 
   if(f->nrcd==6)
@@ -609,9 +617,9 @@ ssw_file_t ssw_open_file( const char * filename )
 }
 
 //Query header info:
-unsigned long ssw_nparticles(ssw_file_t ff) {
+uint64_t ssw_nparticles(ssw_file_t ff) {
   SSW_FILEDECODE;
-  return f->nrss;
+  return (uint64_t)f->nrss;
 }
 
 const char* ssw_srcname(ssw_file_t ff) {
@@ -629,9 +637,9 @@ const char* ssw_title(ssw_file_t ff) {
   return f->aids;
 }
 
-int32_t ssw_abs_np1(ssw_file_t ff) {
+int64_t ssw_abs_np1(ssw_file_t ff) {
   SSW_FILEDECODE;
-  return abs(f->np1);
+  return f->np1;//made positive in ssw_open_file
 }
 
 int ssw_is_mcnp6(ssw_file_t ff) {
@@ -662,13 +670,17 @@ const char * ssw_mcnpflavour(ssw_file_t ff) {
   }
 }
 
-void ssw_layout(ssw_file_t ff, int* reclen, int* ssblen, int64_t* hdrlen, int64_t* np1pos, int64_t* nrsspos)
+void ssw_layout(ssw_file_t ff, int* reclen, int* ssblen, int64_t* hdrlen,
+                int* hdrintsize, int64_t* np1pos, int64_t* nrsspos,
+                int64_t* nisspos)
 {
   SSW_FILEDECODE;
   *reclen = f->reclen;
   *ssblen = f->nrcd;
+  *hdrintsize = f->hdrintsize;
   *np1pos = f->np1pos;
   *nrsspos = f->nrsspos;
+  *nisspos = f->nisspos;
   *hdrlen = f->headlen;
 }
 
@@ -915,8 +927,8 @@ void ssw_dump( const char * filename, const char * outfile )
 
   ssw_file_t f = ssw_open_file(filename);
 
-  fprintf(ssw_stdout(),"opened ssw file from %s has %lu particles:\n",
-          ssw_mcnpflavour(f), ssw_nparticles(f));
+  fprintf(ssw_stdout(),"opened ssw file from %s has %llu particles:\n",
+          ssw_mcnpflavour(f), (unsigned long long)ssw_nparticles(f));
 
   fprintf(ssw_stdout(),
           "    pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]"

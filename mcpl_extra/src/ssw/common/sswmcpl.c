@@ -43,6 +43,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <assert.h>
+#include <stdint.h>
 
 void ssw_error(const char * msg);//fwd declare internal function from sswread.c
 
@@ -109,7 +110,7 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
 
   mcpl_outfile_t mcplfh = mcpl_create_outfile(mcplfile);
   mcpl_hdr_set_srcname(mcplfh,ssw_mcnpflavour(f));
-  const int32_t np1 = ssw_abs_np1( f );
+  const int64_t np1 = ssw_abs_np1( f );
 
   size_t lstrbuf = 1024;
   lstrbuf += strlen(ssw_srcname(f));
@@ -304,16 +305,52 @@ int ssw2mcpl_app(int argc,char** argv)
   return ok ? 0 : 1;
 }
 
-void ssw_update_nparticles( mcpl_generic_wfilehandle_t* fh,
-                            int64_t np1pos, int32_t np1,
-                            int64_t nrsspos, int32_t nrss)
+static void ssw_encode_hdrint( char * dest, int intsize, int64_t value )
 {
-  //Seek and update np1 and nrss fields at correct location in header:
+  //Encode an integer field of the SSW header (np1, nrss or niss), which
+  //depending on the file layout is either a 32 or a 64 bit integer:
+  if ( intsize == 4 ) {
+    if ( value > INT32_MAX || value < -INT32_MAX )
+      ssw_error("Value too large for the 32 bit integers in the header of the"
+                " SSW file format of the reference file");
+    int32_t v = (int32_t)value;
+    memcpy( dest, &v, sizeof(v) );
+  } else {
+    assert( intsize == 8 );
+    memcpy( dest, &value, sizeof(value) );
+  }
+}
+
+static int64_t ssw_decode_hdrint( const char * src, int intsize )
+{
+  if ( intsize == 4 ) {
+    int32_t v;
+    memcpy( &v, src, sizeof(v) );
+    return v;
+  }
+  assert( intsize == 8 );
+  int64_t v;
+  memcpy( &v, src, sizeof(v) );
+  return v;
+}
+
+void ssw_update_nparticles( mcpl_generic_wfilehandle_t* fh, int intsize,
+                            int64_t np1pos, int64_t np1,
+                            int64_t nrsspos, int64_t nrss,
+                            int64_t nisspos, int64_t niss )
+{
+  //Seek and update np1, nrss and niss fields at correct location in header:
+  char buf[8];
   uint64_t savedpos = fh->current_pos;
+  ssw_encode_hdrint( buf, intsize, np1 );
   mcpl_generic_fwseek( fh, np1pos );
-  mcpl_generic_fwrite( fh, (char*)&np1, sizeof(np1) );
+  mcpl_generic_fwrite( fh, buf, intsize );
+  ssw_encode_hdrint( buf, intsize, nrss );
   mcpl_generic_fwseek( fh, nrsspos );
-  mcpl_generic_fwrite( fh, (char*)&nrss, sizeof(nrss) );
+  mcpl_generic_fwrite( fh, buf, intsize );
+  ssw_encode_hdrint( buf, intsize, niss );
+  mcpl_generic_fwseek( fh, nisspos );
+  mcpl_generic_fwrite( fh, buf, intsize );
   mcpl_generic_fwseek( fh, savedpos );
 }
 
@@ -358,11 +395,15 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
   int ssw_reclen;
   int ssw_ssblen;
   int64_t ssw_hdrlen;
+  int ssw_hdrintsize;
   int64_t ssw_np1pos;
   int64_t ssw_nrsspos;
-  ssw_layout(fsswref, &ssw_reclen, &ssw_ssblen, &ssw_hdrlen, &ssw_np1pos, &ssw_nrsspos);
-  assert(ssw_np1pos<ssw_hdrlen);
-  assert(ssw_nrsspos<ssw_hdrlen);
+  int64_t ssw_nisspos;
+  ssw_layout( fsswref, &ssw_reclen, &ssw_ssblen, &ssw_hdrlen,
+              &ssw_hdrintsize, &ssw_np1pos, &ssw_nrsspos, &ssw_nisspos );
+  assert(ssw_np1pos+ssw_hdrintsize<=ssw_hdrlen);
+  assert(ssw_nrsspos+ssw_hdrintsize<=ssw_hdrlen);
+  assert(ssw_nisspos+ssw_hdrintsize<=ssw_hdrlen);
 
 #define SSW_MCNP6 1
 #define SSW_MCNPX 2
@@ -396,14 +437,16 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
       ssw_error("Problems extracting header from reference file");
   }
 
-  int32_t orig_np1;
-  memcpy( &orig_np1, hdrbuf + ssw_np1pos, sizeof(orig_np1) );
+  //The sign of np1 indicates the presence of an additional record in the
+  //header, so we must keep it:
+  const int orig_np1_negative = ssw_decode_hdrint( hdrbuf + ssw_np1pos,
+                                                   ssw_hdrintsize ) < 0;
 
-  //Clear |np1| and nrss in header to to indicate incomplete info (we will
+  //Clear np1, nrss and niss in header to to indicate incomplete info (we will
   //update just before closing the file):
-  const int32_t zero = 0;
-  memcpy( hdrbuf + ssw_np1pos, &zero, sizeof(zero) );
-  memcpy( hdrbuf + ssw_nrsspos, &zero, sizeof(zero) );
+  ssw_encode_hdrint( hdrbuf + ssw_np1pos, ssw_hdrintsize, 0 );
+  ssw_encode_hdrint( hdrbuf + ssw_nrsspos, ssw_hdrintsize, 0 );
+  ssw_encode_hdrint( hdrbuf + ssw_nisspos, ssw_hdrintsize, 0 );
 
   printf("Creating (or overwriting) output SSW file.\n");
 
@@ -441,7 +484,6 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
     const mcpl_particle_t* mcpl_p = mcpl_read(fmcpl);
     if (!mcpl_p)
       break;
-    ++ssb[0];
     ssb[2] = mcpl_p->weight;
     ssb[3] = mcpl_p->ekin;//already in MeV
     ssb[4] = mcpl_p->time * 1.0e5;//milliseconds to "shakes"
@@ -511,6 +553,10 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
     if (mcpl_p->direction[2]<0.0)
       ssb[1] = - ssb[1];
 
+    //History number (only counting the particles actually written, so it
+    //does not exceed np1):
+    ++ssb[0];
+
     ssw_writerecord(&fout,ssw_reclen,sizeof(double)*ssw_ssblen,(char*)&ssb[0]);
     if (++used==nparticles_limit) {
       long long remaining = mcpl_hdr_nparticles(fmcpl) - skipped_nosswtype - used;
@@ -528,8 +574,10 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
            " could not be converted to MCNP types.\n",(long long)skipped_nosswtype);
   }
 
-  int32_t new_nrss = used;
-  int32_t new_np1 = new_nrss;
+  //Each particle is its own history (see ssb[0] above):
+  int64_t new_nrss = used;
+  int64_t new_niss = used;
+  int64_t new_np1 = new_nrss;
 
   if (new_np1==0) {
     //SSW files must at least have 1 history (but can have 0 particles)
@@ -537,15 +585,20 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
            " of histories in new SSW file to 1 to avoid creating an invalid file.\n");
     new_np1 = 1;
   }
-  if (orig_np1<0)
+  const int64_t abs_new_np1 = new_np1;
+  if (orig_np1_negative)
     new_np1 = - new_np1;
 
-  ssw_update_nparticles(&fout,ssw_np1pos,new_np1,ssw_nrsspos,new_nrss);
+  ssw_update_nparticles( &fout, ssw_hdrintsize,
+                         ssw_np1pos, new_np1,
+                         ssw_nrsspos, new_nrss,
+                         ssw_nisspos, new_niss );
 
   mcpl_close_file(fmcpl);
   mcpl_generic_fwclose(&fout);
 
-  printf("Created %s with %lli particles (nrss) and %lli histories (np1).\n",outsswfile,(long long)new_nrss,(long long)labs(new_np1));
+  printf("Created %s with %lli particles (nrss) and %lli histories (np1).\n",
+         outsswfile,(long long)new_nrss,(long long)abs_new_np1);
   return 1;
 
 

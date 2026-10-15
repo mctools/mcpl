@@ -1,4 +1,23 @@
 v2.2.9  (work in progress)
+      * ssw2mcpl and mcpl2ssw read and write the numbers of histories (np1),
+        particles (nrss) and histories with particles (niss) in the headers
+        of MCNP5 and MCNP6 SSW files as the 64 bit integers they are (issue
+        #207). Previously only the lower 32 bits were used for MCNP6 files,
+        which for files with more than 2147483647 histories gave a wrong
+        number of histories and could make the header parsing fail (the
+        actual cause of the "unexpected record" in issue #45), and MCNP5 files
+        with more than 2147483647 histories were rejected (discussion #118).
+        Files with fewer histories were always handled correctly.
+      * mcpl2ssw now sets niss in the header of the new SSW file to the number
+        of histories with particles (which is the number of particles, since
+        each particle is given its own history), instead of copying it from
+        the reference SSW file (issue #207).
+      * mcpl2ssw no longer counts particles which it skips (because their
+        PDG codes have no MCNP equivalent) in the history numbers of the
+        particles, which could then exceed the number of histories (np1) in
+        the header of the new SSW file.
+      * The documentation states that blobs are stored byte for byte, so the
+        byte order of binary numbers in them is chosen by the application.
       * The C and Python readers refuse files whose particle size in the header
         does not match the fields of the particles (it was only checked for
         files with userdata, and a size of 0 could lead to a division by
