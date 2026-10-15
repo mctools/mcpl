@@ -576,6 +576,10 @@ function( mctools_testutils_internal_addtest name cmd_file reflog )
   foreach( cfgval ${cfgtypelist} )
     file( MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/tests/rundirs_${cfgval}/${name}" )
   endforeach()
+  if ( NOT cfgtypelist )
+    #No build type given (so $<CONFIG> is empty):
+    file( MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/tests/rundirs_/${name}" )
+  endif()
   set_property( TEST "${name}" PROPERTY WORKING_DIRECTORY "${wd}" )
 
   #Set a timeout to prevent hanging jobs and test times getting out of hand

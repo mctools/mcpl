@@ -19,6 +19,8 @@
 ##                                                                            ##
 ################################################################################
 
+# NEEDS: numpy
+
 # Test that --repair handles files truncated anywhere after the header, both for
 # files which were never closed (nparticles=0 in header) and files which were
 # truncated after being closed, and that no partial particle is left behind.
