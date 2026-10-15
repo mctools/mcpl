@@ -243,5 +243,5 @@ def file_to_scipp( mcplfile, skip = 0, limit = None, flt = None,
                  ' (use the limit parameter to change this)')
     if not c._cols:
         #No particles: an empty block gives the columns:
-        c.add_block(mcplfile._empty_block())
+        c.add_block(mcplfile._currentblock[:0])
     return c.data_array(sc)

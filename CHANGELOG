@@ -1,4 +1,8 @@
 v2.2.9  (work in progress)
+      * mcpl-python: blocks without particles now always behave like other
+        blocks, with all fields being arrays of length 0. Previously, selecting
+        or slicing a block which was already empty (e.g. block[mask][:] with
+        an empty selection) gave a block whose fields could not be accessed.
       * mcpl-python: new methods MCPLFile.to_scipp and MCPLFile.scipp_blocks
         (one DataArray per block), giving the particles as a scipp DataArray
         with the weights as data (with variances) and the particle fields as
