@@ -73,11 +73,11 @@ extern "C" {
   ssw_file_t ssw_open_file(const char * filename);
 
   //Query header info:
-  unsigned long ssw_nparticles(ssw_file_t);
+  uint64_t ssw_nparticles(ssw_file_t);
   const char* ssw_srcname(ssw_file_t);//Usually "mcnp" or "mcnpx"
   const char* ssw_srcversion(ssw_file_t);
   const char* ssw_title(ssw_file_t);//Problem title from input deck
-  int32_t ssw_abs_np1(ssw_file_t);//absolute value of np1 field in file.
+  int64_t ssw_abs_np1(ssw_file_t);//absolute value of np1 field in file.
   int ssw_is_mcnp6(ssw_file_t);
   int ssw_is_mcnp5(ssw_file_t);
   int ssw_is_mcnpx(ssw_file_t);
@@ -90,8 +90,12 @@ extern "C" {
   void ssw_close_file(ssw_file_t);
 
   //Advanced info about file layout:
+  //hdrintsize is the size in bytes (4 or 8) of the integers np1, nrss and
+  //niss in the header, which are found at the positions np1pos, nrsspos and
+  //nisspos:
   void ssw_layout(ssw_file_t, int* reclen, int* ssblen, int64_t* hdrlen,
-                  int64_t* np1pos, int64_t* nrsspos);
+                  int* hdrintsize, int64_t* np1pos, int64_t* nrsspos,
+                  int64_t* nisspos);
 
   ////////////////////////////////////////////////////////////////////////////
   //                                                                        //
