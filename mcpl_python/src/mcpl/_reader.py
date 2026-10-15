@@ -189,7 +189,7 @@ class MCPLFile:
         #reuse same block object for whole file (to reuse fixed columns and internal caches)
         self._currentblock = MCPLParticleBlock(self.opt_polarisation,self.opt_userflags,
                                                self.opt_universalweight,self.opt_universalpdgcode,self.version,
-                                               udinfo)
+                                               udinfo,self._pdt)
 
     @property
     def blocklength(self):
@@ -800,12 +800,6 @@ class MCPLFile:
                 raw = p.userdata.tobytes()
                 s += '  ' + raw[:16].hex() + ( '...' if udsize > 16 else '' )
             print(s)
-
-    def _empty_block(self):
-        """Block without particles, with the fields of the file"""
-        b = MCPLParticleBlock(*self._currentblock._ctor_args)
-        b._set_data(np.zeros(0,dtype=self._pdt),0)
-        return b
 
     def to_scipp(self, skip = 0, limit = None, select = None, coords = None,
                  vectors = False, variances = True, dim = 'particle'):

@@ -126,16 +126,18 @@ class MCPLParticleBlock:
     numbers, but otherwise have the same meaning as on the MCPLParticle class."""
 
     def __init__(self,opt_polarisation,opt_userflags,opt_globalw,opt_globalpdg,fmtversion,
-                 udinfo = None):
+                 udinfo = None, pdt = None):
         """For internal use only - users should not normally create MCPLParticle objects themselves"""
         self._ctor_args = (opt_polarisation,opt_userflags,opt_globalw,opt_globalpdg,fmtversion,
-                           udinfo)
+                           udinfo,pdt)
+        #(numpy dtype of the particle data in the file):
+        self._pdt = pdt
         #(userdata layout and dtype, or None):
         self._udinfo = udinfo
         #empty block (set offset to max int to ensure d<0 in contains_ipos and get_by_global:
         self._offset = 9223372036854775807
-        #non-constant columns (never the same in all blocks):
-        self._data = ()
+        #non-constant columns (never the same in all blocks), empty until set:
+        self._data = self._empty_data()
         #potentially constant columns (first entry says whether non-constant, second is cache):
         self._polx = [opt_polarisation,None]
         self._poly = [opt_polarisation,None]
@@ -153,6 +155,8 @@ class MCPLParticleBlock:
         #positions in file of the particles, for selected particles (otherwise
         #given by the offset):
         self._indices = None
+        #initialise the caches:
+        self._set_data(None,None)
 
     def _set_data(self,data,file_offset):
         #always present, but must unpack:
@@ -170,10 +174,15 @@ class MCPLParticleBlock:
 
         if data is None:
             self._offset = 9223372036854775807
-            self._data = ()
+            self._data = self._empty_data()
         else:
             self._data = data
             self._offset = file_offset
+
+    def _empty_data(self):
+        #Particle data without particles, so all fields are arrays of length 0
+        #(an empty tuple if the dtype is not known):
+        return np.zeros(0,dtype=self._pdt) if self._pdt is not None else ()
 
     def contains_ipos(self,ipos):
         """Whether the particle at position ipos in the file is in the block"""
@@ -192,8 +201,6 @@ class MCPLParticleBlock:
                 return MCPLParticle(self,ipos)
             return None
         res = MCPLParticleBlock(*self._ctor_args)
-        if not len(self._data):
-            return res
         data = self._data[ipos]
         offset = 9223372036854775807#no well defined position in file
         if isinstance(ipos,slice):
