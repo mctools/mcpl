@@ -24,12 +24,14 @@ def resolve( frel ):
     return reporoot.joinpath(frel)
 
 def load( frel, ignore_section = None, validate_hdrtypes = True ):
-    from .mdsimpleparser import parse_markdown
+    from .mdsimpleparser import parse_markdown, split_html_preamble
     f = resolve(frel)
     if not f.is_file():
         raise SystemExit(f"File not found: {frel}")
     try:
-        m = parse_markdown(f)
+        #(the HTML block with the logo before the first header is checked
+        #separately by main())
+        m = parse_markdown(split_html_preamble(f.read_text())[1])
     except RuntimeError as e:
         raise SystemExit(f'Problem in {frel} : {e}') from e
     if validate_hdrtypes:
@@ -88,6 +90,19 @@ def main():
     m_extra = load('mcpl_extra/README.md',
                    ignore_section=(variant_section,
                                    'The mcpl-extra package'))
+    #The same HTML block with the logo before the first header in all of them:
+    from .mdsimpleparser import split_html_preamble
+    preambles = { split_html_preamble(resolve(frel).read_text())[0]
+                  for frel in ('README.md','mcpl_core/README.md',
+                               'mcpl_python/README.md','mcpl_metapkg/README.md',
+                               'mcpl_extra/README.md') }
+    if len(preambles) != 1:
+        raise SystemExit('The README.md files do not all start with the'
+                         ' same HTML block (with the logo)')
+    logo_url = 'https://raw.githubusercontent.com/mctools/mcpl-logo/'
+    if logo_url not in preambles.pop():
+        raise SystemExit('The README.md files must start with an HTML block'
+                         ' showing the MCPL logo (from mctools/mcpl-logo)')
     m_ref = m_repo
     m_other_list = [m_repo,m_core,m_py,m_meta,m_extra]
     for m in m_other_list:

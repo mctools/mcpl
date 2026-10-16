@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/mctools/mcpl-logo/main/svg/mcpl-logo-dark.svg">
+    <img alt="MCPL logo" src="https://raw.githubusercontent.com/mctools/mcpl-logo/main/svg/mcpl-logo.svg" width="420">
+  </picture>
+</p>
+
 MCPL - Monte Carlo Particle Lists
 =================================
 
