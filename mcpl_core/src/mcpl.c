@@ -1625,14 +1625,13 @@ MCPL_LOCAL int mcpl_write_header_es( mcpl_outfileinternal_t * f,
   //follow the rules (they might not, when copied from older files):
   if ( f->userdata_layout ) {
     for ( uint32_t i = 0; i < f->nblobs; ++i ) {
-      if ( mcpl_internal_blobkey_problem( f->blobkeys[i] ) )
-        return mcpl_internal_raise_runtime( es, "Files with userdata can not"
-                                            " have blob keys which are not"
-                                            " allowed in MCPL format version"
-                                            " 4 (non-empty, ASCII, no"
-                                            " non-printable characters,"
-                                            " whitespace, backslash, or"
-                                            " quotation marks)." );
+      const char * keyproblem = mcpl_internal_blobkey_problem( f->blobkeys[i] );
+      if ( keyproblem ) {
+        char buf[256];
+        snprintf(buf,sizeof(buf),"The output file would have an invalid"
+                 " blob key copied from an input file (%s).",keyproblem);
+        return mcpl_internal_raise_runtime( es, buf );
+      }
     }
   }
 
@@ -2976,12 +2975,15 @@ MCPL_LOCAL int mcpl_internal_open_file( mcpl_fileinternal_t * f,
     f->nblobs = i + 1;//(entries are now owned by f)
     if (!mcpl_read_string(f,&(f->blobkeys[i]),&current_pos,errmsg,es))
       return 0;
-    if ( f->format_version >= 4
-         && mcpl_internal_blobkey_problem( f->blobkeys[i] ) )
-      MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"invalid blob key (in format"
-                       " version 4: non-empty, ASCII, no non-printable"
-                       " characters, whitespace, backslash, or quotation"
-                       " marks)");
+    if ( f->format_version >= 4 ) {
+      const char * keyproblem = mcpl_internal_blobkey_problem( f->blobkeys[i] );
+      if ( keyproblem ) {
+        char buf[256];
+        snprintf(buf,sizeof(buf),"File has an invalid blob key (%s).",
+                 keyproblem);
+        MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,buf);
+      }
+    }
   }
   for (uint32_t i =0; i < f->nblobs; ++i)
     if (!mcpl_read_buffer(f, &(f->bloblengths[i]), &(f->blobs[i]), &current_pos, errmsg, es))
