@@ -601,7 +601,18 @@ class MCPLFile:
         self._np = nparticles#needs frequent access
         particlesize = int(particlesize)
         opt_universalpdgcode = int(opt_universalpdgcode)
-        opt_userflags = bool(opt_userflags)
+        #The userflags field holds 0x1 if userflags are enabled. In format
+        #version 4, it also holds 0x2 if the particles have userdata (and the
+        #header has a userdata layout), so files in version 4 without userdata
+        #are identical to files in version 3 except for the version number:
+        has_userdata = False
+        if version >= 4:
+            if opt_userflags > 3:
+                raise MCPLError('unexpected value of userflags field')
+            has_userdata = bool( opt_userflags & 0x2 )
+            opt_userflags = bool( opt_userflags & 0x1 )
+        else:
+            opt_userflags = bool(opt_userflags)
         opt_polarisation = bool(opt_polarisation)
         opt_singleprec = bool(opt_singleprec)
         opt_universalweight = float(self._fileread(dtype=np.dtype('f8').newbyteorder(endianness),count=1)[0] if _tmp else 0.0)
@@ -627,8 +638,8 @@ class MCPLFile:
                 raise MCPLError('Errors encountered while attempting to read header')
             return cont.tobytes() if hasattr(cont,'tobytes') else cont.tostring()
 
-        if version >= 4:
-            #Userdata layout (always present in version 4):
+        if has_userdata:
+            #Userdata layout (only in version 4, and only with userdata):
             from ._userdata import userdata_dtype
             layout = readarr().decode('ascii','replace')
             udsize = userdata_dtype(layout).itemsize

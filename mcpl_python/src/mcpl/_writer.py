@@ -557,7 +557,8 @@ class MCPLOutFile:
         out += struct.pack('=8I',
                            len(self._comments),
                            len(self._blobkeys),
-                           int(self._opt_userflags),
+                           ( ( 0x1 if self._opt_userflags else 0 )
+                             | ( 0x2 if self._udlayout is not None else 0 ) ),
                            int(self._opt_polarisation),
                            int(self._opt_singleprec),
                            self._opt_universalpdgcode & 0xFFFFFFFF,
