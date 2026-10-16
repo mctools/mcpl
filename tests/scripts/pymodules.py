@@ -48,6 +48,7 @@ layers = {
     '_physics' : 1,
     '_statsum' : 1,
     '_userdata' : 1,
+    '_scipp' : 1,
     '_blocks' : 2,
     '_expressions' : 2,
     '_reader' : 3,
@@ -75,6 +76,7 @@ allowed_external_imports = {
     'numpy' : ['_numpy'],
     'matplotlib' : ['_plotbackend_mpl'],
     'plotly' : ['_plotbackend_plotly'],
+    'scipp' : ['_scipp'],
 }
 
 def imports_of( path ):
@@ -100,7 +102,7 @@ def imports_of( path ):
 
 #External modules which are slow to import, and which must therefore only be
 #imported inside functions (i.e. on demand, when plots are made):
-on_demand_external_imports = ['matplotlib', 'plotly']
+on_demand_external_imports = ['matplotlib', 'plotly', 'scipp']
 
 def import_time_externals( path ):
     """External top level modules imported when the file is imported (i.e.

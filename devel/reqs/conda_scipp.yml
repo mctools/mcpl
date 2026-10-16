@@ -1,0 +1,12 @@
+name: mcpl_scipp
+channels:
+  - nodefaults
+  - conda-forge
+dependencies:
+  - c-compiler
+  - cmake
+  - make
+  - pip
+  - python
+  - numpy >=1.22
+  - scipp >=26.9

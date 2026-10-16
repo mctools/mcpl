@@ -762,6 +762,32 @@ class ParticleEdit:
     def __repr__( self ):
         return f'ParticleEdit({self._expr!r})'
 
+def _quantity_functions( coords ):
+    """Functions calculating the values of expressions for a block, given as a
+    dictionary of names and expressions. Each function returns the values (an
+    array) and their dimension (powers of length, energy and time, in which
+    the values are in the units of MCPL: cm, MeV and ms, or None for values
+    without units)."""
+    if isinstance(coords,str) or not hasattr(coords,'items'):
+        raise MCPLError('The coords parameter must be a dictionary of'
+                        ' coordinate names and expressions')
+    res = {}
+    for name, expr in coords.items():
+        if not isinstance(name,str) or not name:
+            raise MCPLError('Coordinate names must be non-empty strings')
+        expr = _expr_normalise(expr)
+        tree = _expr_parse(expr)
+        _expr_check(tree,expr)
+        def fct( block, expr = expr, tree = tree ):
+            q = _ExprEvaluator(block,expr)(tree)
+            v = np.asarray(q.v)
+            if v.dtype == bool:
+                v = v.astype(float)
+            return np.broadcast_to(v,(len(block),)), q.d
+        fct(_EmptyBlock())#check units etc.
+        res[name] = fct
+    return res
+
 def _as_filter(select):
     if isinstance(select,str):
         return ParticleFilter(select)
