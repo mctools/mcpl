@@ -375,9 +375,15 @@ class MCPLOutFile:
         self._comments.append(comment)
 
     def hdr_add_data(self, key, data):
-        """Add binary blob (bytes-like object) by key"""
+        """Add binary blob (bytes-like object) by key (keys must be unique, and
+        can only have printable ASCII characters other than whitespace and
+        quotes)"""
         self._check_hdr_notwritten('hdr_add_data')
         key = self._to_bytes(key,'Blob keys')
+        from ._reader import blobkey_problem
+        problem = blobkey_problem(key)
+        if problem:
+            raise MCPLError(f'hdr_add_data got invalid key ({problem}).')
         if key in self._blobs:
             raise MCPLError('hdr_add_data got duplicate key')
         data = bytes(data)

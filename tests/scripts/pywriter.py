@@ -46,12 +46,32 @@ def reference_files():
         if not any(s in f.name for s in ('bad','crash','truncated','statunsupported')):
             yield f
 
+def c_repack(src,tgt):
+    #(module level function, so it can run in a subprocess)
+    lib.mcpltest_repack(src,tgt)
+
+def has_invalid_blobkeys(f):
+    with mcpl.MCPLFile(f, raw_strings=True) as src:
+        return any( mcpl._reader.blobkey_problem(k) for k in src.blobs )
+
 def test_reference_files():
     for f in reference_files():
         name = '/'.join(f.parts[-2:])
         orig = f.read_bytes()
         if not orig.startswith(b'MCPL'):
             orig = gzip.decompress(orig)
+        if has_invalid_blobkeys(f):
+            #(blob keys which are not allowed when writing files)
+            with mcpl.MCPLFile(f, raw_strings=True) as src, \
+                 mcpl.MCPLOutFile('xfer_bad.mcpl') as o:
+                try:
+                    o.transfer_metadata(src)
+                except mcpl.MCPLError as e:
+                    print(f'{name}: Python transfer fails as expected: {e}')
+                else:
+                    raise AssertionError('transfer did not fail')
+            lib.run_fct_expected_to_fail(c_repack,str(f),'repack_bad.mcpl')
+            continue
         with mcpl.MCPLFile(f, raw_strings=True, blocklength=7) as src:
             with mcpl.MCPLOutFile('xfer.mcpl') as o:
                 o.transfer_metadata(src)
@@ -361,11 +381,13 @@ def test_example():
         print(f'pyexample_writemcpl wrote {f.nparticles} particles from'
               f' "{f.sourcename}" with comments {f.comments}')
 
-test_reference_files()
-test_raw_values()
-test_transfers()
-test_api()
-test_api_more()
-test_statsum_syntax()
-test_single_vs_blocks()
-test_example()
+if __name__ == '__main__':
+    #(the guard is needed for the subprocess of run_fct_expected_to_fail)
+    test_reference_files()
+    test_raw_values()
+    test_transfers()
+    test_api()
+    test_api_more()
+    test_statsum_syntax()
+    test_single_vs_blocks()
+    test_example()
