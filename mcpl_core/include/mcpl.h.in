@@ -149,8 +149,8 @@ extern "C" {
   MCPL_API void mcpl_hdr_add_comment(mcpl_outfile_t, const char *);/* Add one or more human-readable comments    */
   MCPL_API void mcpl_hdr_add_data(mcpl_outfile_t, const char * key,
                                   uint32_t ldata, const char * data);/* add binary blobs by key                  */
-  /* (keys must be unique and not empty, and can only have printable ASCII   */
-  /* characters other than whitespace, quotes, backslash and backtick)       */
+  /* (keys: unique, non-empty, ASCII, no non-printable characters,           */
+  /* whitespace, backslash, or quotation marks)                              */
   MCPL_API void mcpl_enable_userflags(mcpl_outfile_t);/* to write the "userflags" info                           */
   MCPL_API void mcpl_enable_polarisation(mcpl_outfile_t);/* to write the "polarisation" info                     */
   MCPL_API void mcpl_enable_doubleprec(mcpl_outfile_t);/* use double precision FP numbers in storage             */

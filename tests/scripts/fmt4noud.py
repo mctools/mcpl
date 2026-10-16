@@ -72,9 +72,8 @@ def particles( fn ):
 def fmt4_problem( fn ):
     """Reason why a file in version 3 can not become a file in version 4 (None
     if it can): NaN or infinite values in the particle fields, or blob keys
-    which are not allowed in version 4 (empty keys, and other characters than
-    printable ASCII ones other than whitespace, quotes, backslash and
-    backtick)."""
+    which are not allowed in version 4 (non-empty, ASCII, no non-printable
+    characters, whitespace, backslash, or quotation marks)."""
     import numpy as np
     with mcpl.MCPLFile(fn) as f:
         for key in f.blobs:
@@ -216,8 +215,8 @@ def check_header_rules():
     fn.write_bytes( data3[0:53] + b'\0' + data3[54:] )
     expect_open_failure( fn, 'unexpected null-byte' )
     print('  Null characters in strings detected (C and Python)')
-    #Blob keys must only have printable ASCII characters other than whitespace
-    #and quotes in version 4:
+    #Blob keys in version 4: non-empty, ASCII, no non-printable characters,
+    #whitespace, backslash, or quotation marks (including backtick):
     src = test_data_dir / 'ref' / 'reffile_encodings.mcpl.gz'
     data3 = gzip.decompress(src.read_bytes())
     fn3 = pathlib.Path('badkeys_v3.mcpl')

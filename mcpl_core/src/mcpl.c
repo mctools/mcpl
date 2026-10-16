@@ -546,19 +546,22 @@ MCPL_LOCAL int mcpl_internal_udlayout_error( const char * layout,
 //never empty):
 MCPL_LOCAL const char * mcpl_internal_blobkey_problem( const char * key )
 {
-  //Blob keys must not be empty, and can only have printable ASCII characters
-  //other than whitespace, quotes, backslash and backtick (required in format
-  //version 4, and when adding keys to new files). Returns NULL if the key is
-  //valid:
+  //Blob keys must be non-empty, ASCII, no non-printable characters,
+  //whitespace, backslash, or quotation marks (including backtick). This is
+  //required in format version 4, and when adding keys to new files. Returns
+  //NULL if the key is valid:
   if ( !*key )
     return "empty keys are not allowed";
   for ( const char * c = key; *c; ++c ) {
     const unsigned char uc = (unsigned char)(*c);
-    if ( uc < 33 || uc > 126 )
-      return "only printable ASCII characters other than whitespace are"
-        " allowed";
+    if ( uc > 127 )
+      return "non-ASCII characters are not allowed";
+    if ( uc == ' ' )
+      return "whitespace is not allowed";
+    if ( uc < 32 || uc == 127 )
+      return "non-printable characters are not allowed";
     if ( uc == '"' || uc == '\'' || uc == '\\' || uc == '`' )
-      return "quotes, backslash and backtick are not allowed";
+      return "quotation marks, backslash and backtick are not allowed";
   }
   return NULL;
 }
@@ -1626,11 +1629,10 @@ MCPL_LOCAL int mcpl_write_header_es( mcpl_outfileinternal_t * f,
         return mcpl_internal_raise_runtime( es, "Files with userdata can not"
                                             " have blob keys which are not"
                                             " allowed in MCPL format version"
-                                            " 4 (keys must not be empty, and"
-                                            " only printable ASCII characters"
-                                            " other than whitespace, quotes,"
-                                            " backslash and backtick are"
-                                            " allowed)." );
+                                            " 4 (non-empty, ASCII, no"
+                                            " non-printable characters,"
+                                            " whitespace, backslash, or"
+                                            " quotation marks)." );
     }
   }
 
@@ -2976,10 +2978,10 @@ MCPL_LOCAL int mcpl_internal_open_file( mcpl_fileinternal_t * f,
       return 0;
     if ( f->format_version >= 4
          && mcpl_internal_blobkey_problem( f->blobkeys[i] ) )
-      MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"invalid blob key (keys must not"
-                       " be empty, and only printable ASCII characters other"
-                       " than whitespace, quotes, backslash and backtick are"
-                       " allowed in format version 4)");
+      MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"invalid blob key (in format"
+                       " version 4: non-empty, ASCII, no non-printable"
+                       " characters, whitespace, backslash, or quotation"
+                       " marks)");
   }
   for (uint32_t i =0; i < f->nblobs; ++i)
     if (!mcpl_read_buffer(f, &(f->bloblengths[i]), &(f->blobs[i]), &current_pos, errmsg, es))
