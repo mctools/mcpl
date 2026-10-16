@@ -19,6 +19,18 @@
 ##                                                                            ##
 ################################################################################
 
+def split_html_preamble( text ):
+    """Splits off an HTML block (like a logo) before the first header, which
+    must start with "<" and end with a blank line. Returns (preamble, rest),
+    where preamble is '' if there is none."""
+    if not text.startswith('<'):
+        return '', text
+    i = text.find('\n\n')
+    if i == -1:
+        raise RuntimeError('HTML block before the first header does not'
+                           ' end with a blank line')
+    return text[:i+2], text[i+2:]
+
 def parse_markdown( f ):
     if hasattr(f,'__fspath__') or '\n' not in f:
         import pathlib
