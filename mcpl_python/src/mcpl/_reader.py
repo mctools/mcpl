@@ -695,11 +695,9 @@ class MCPLFile:
         blobkeys = []#to keep order available to dump_hdr
         for i in range(nblobs):
             blobkeys += [readstr()]
-            if version >= 4 and blobkey_problem(blobkeys[-1]):
-                raise MCPLError('invalid blob key (in format version 4:'
-                                ' non-empty, ASCII, no non-printable'
-                                ' characters, whitespace, backslash, or'
-                                ' quotation marks)')
+            problem = blobkey_problem(blobkeys[-1]) if version >= 4 else None
+            if problem:
+                raise MCPLError(f'File has an invalid blob key ({problem}).')
         for i,bk in enumerate(blobkeys):
             blobs[bk] = readarr()
         headersize = ( 48 + 4 + len(sourcename)

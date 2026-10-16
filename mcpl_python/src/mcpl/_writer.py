@@ -566,12 +566,12 @@ class MCPLOutFile:
         #Files with userdata are in format version 4, where all blob keys must
         #follow the rules (they might not, when copied from older files):
         from ._reader import blobkey_problem
-        if self._udlayout is not None and any( blobkey_problem(k)
-                                               for k in self._blobkeys ):
-            raise MCPLError('Files with userdata can not have blob keys which'
-                            ' are not allowed in MCPL format version 4'
-                            ' (non-empty, ASCII, no non-printable characters,'
-                            ' whitespace, backslash, or quotation marks).')
+        for k in ( self._blobkeys if self._udlayout is not None else [] ):
+            problem = blobkey_problem(k)
+            if problem:
+                raise MCPLError('The output file would have an invalid blob'
+                                ' key copied from an input file'
+                                f' ({problem}).')
         out = bytearray()
         #(files with userdata are in format version 4, others still in 3):
         version = b'004' if self._udlayout is not None else b'003'

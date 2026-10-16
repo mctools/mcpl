@@ -225,7 +225,7 @@ def check_header_rules():
     run_py( '-l0', fn3 )
     fn4 = pathlib.Path('badkeys_v4.mcpl')
     set_version( fn3, fn4, b'004' )
-    expect_open_failure( fn4, 'invalid blob key' )
+    expect_open_failure( fn4, 'File has an invalid blob key' )
     print('  Invalid blob keys accepted in MCPL-3 but not in MCPL-4'
           ' (C and Python)')
     #The Python writer refuses invalid keys, but copies them from the headers
@@ -249,7 +249,7 @@ def check_header_rules():
         try:
             o.close()
         except mcpl.MCPLError as e:
-            assert 'Files with userdata can not have blob keys' in str(e)
+            assert 'invalid blob key copied from an input file' in str(e)
         else:
             raise AssertionError('copied invalid keys accepted with userdata')
     print('  Python writer refuses invalid keys, but copies them from MCPL-3'
