@@ -49,6 +49,10 @@ classifiers = [
 plot = [ 'matplotlib>=3.6' ]
 plotly = [ 'plotly>=5.11' ]
 all = [ 'matplotlib>=3.6', 'plotly>=5.11' ]
+#Conversion to scipp (MCPLFile.to_scipp), not included in "all" since scipp
+#needs a more recent Python and numpy than the rest of mcpl-python:
+scipp = [
+  'scipp>=26.9; python_version >= "3.12" and platform_system != "FreeBSD"' ]
 
 [project.urls]
 "Homepage" = "https://mctools.github.io/mcpl/"

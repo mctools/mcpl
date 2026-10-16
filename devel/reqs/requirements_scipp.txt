@@ -1,0 +1,2 @@
+numpy>=1.22
+scipp>=26.9; python_version >= "3.12" and platform_system != "FreeBSD"

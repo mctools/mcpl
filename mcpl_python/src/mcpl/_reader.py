@@ -801,6 +801,76 @@ class MCPLFile:
                 s += '  ' + raw[:16].hex() + ( '...' if udsize > 16 else '' )
             print(s)
 
+    def _empty_block(self):
+        """Block without particles, with the fields of the file"""
+        b = MCPLParticleBlock(*self._currentblock._ctor_args)
+        b._set_data(np.zeros(0,dtype=self._pdt),0)
+        return b
+
+    def to_scipp(self, skip = 0, limit = None, select = None, coords = None,
+                 vectors = False, variances = True, dim = 'particle'):
+        """Particles of the file as a scipp DataArray. The particles are read
+        from the start of the file (after any select and edit given when
+        opening the file), skipping the first skip of them, and selecting
+        only those matching select if given (an expression or a
+        ParticleFilter, in which case skip applies to the selected
+        particles). At most limit particles are converted: by default at most
+        100 million, with a warning if particles are left out, and limit=0
+        converts all of them. See also scipp_blocks, which converts the
+        particles block by block.
+
+        The result has one entry per particle, along the dimension dim. Its
+        data are the weights (with variances weight^2, unless variances is
+        False), and its coordinates are x, y, z [cm], ux, uy, uz, ekin [MeV],
+        time [ms] and pdgcode, plus polx, poly, polz (if the file has
+        polarisation), userflags (if the file has userflags) and the fields
+        of the userdata (if any, with array fields split into one coordinate
+        per element, e.g. tags_0, tags_1, ..., and a warning and the prefix
+        "userdata_" for fields named like one of the other coordinates). With
+        vectors=True, the positions, directions and polarisations are instead
+        3-vectors named position, direction and polarisation.
+
+        Extra coordinates can be calculated with expressions (see
+        ParticleFilter), given as a dictionary of names and expressions. The
+        units of the values follow from the expressions (in combinations of
+        cm, MeV and ms, which scipp can convert), for instance:
+
+           da = f.to_scipp( coords = { 'wavelength' : 'wavelength',
+                                       'r' : 'hypot(x,y)' } )
+           da.coords['wavelength'] = da.coords['wavelength'].to(unit='angstrom')
+           da.hist( wavelength = 100 ).plot()
+
+        This requires the scipp package (pip install "mcpl-python[scipp]")."""
+        flt, fcts = self._scipp_args(select,coords)
+        from ._scipp import file_to_scipp
+        return file_to_scipp( self, skip = skip, limit = limit, flt = flt,
+                              coord_functions = fcts, vectors = vectors,
+                              variances = variances, dim = dim )
+
+    def scipp_blocks(self, select = None, coords = None, vectors = False,
+                     variances = True, dim = 'particle'):
+        """Iterate over the particles of the file as scipp DataArrays, one for
+        each block of particles (see the particle_blocks property), with the
+        same contents and parameters as for to_scipp. For instance:
+
+           for da in f.scipp_blocks( select = 'pdgcode == neutron' ):
+               print( da.sum().value )
+
+        This requires the scipp package (pip install "mcpl-python[scipp]")."""
+        flt, fcts = self._scipp_args(select,coords)
+        from ._scipp import file_scipp_blocks
+        return file_scipp_blocks( self, flt = flt, coord_functions = fcts,
+                                  vectors = vectors, variances = variances,
+                                  dim = dim )
+
+    def _scipp_args(self, select, coords):
+        flt, fcts = None, None
+        if select is not None or coords is not None:
+            from ._expressions import _as_filter, _quantity_functions
+            flt = _as_filter(select) if select is not None else None
+            fcts = _quantity_functions(coords) if coords is not None else None
+        return flt, fcts
+
 def _selected_particles(mcplfile,select,skip=0):
     """Iterate over selected particles in file, skipping the first skip of
     them."""

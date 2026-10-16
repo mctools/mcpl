@@ -34,6 +34,9 @@ packages:
       all:
         - ADD plot
         - ADD plotly
+      #(not in "all", since scipp needs a more recent Python and numpy):
+      scipp:
+        - scipp
   mcpl-extra:
     tomlfiles:
       - mcpl_extra/pyproject.toml
@@ -54,6 +57,8 @@ packages:
         - mcpl-python[plotly]
       all:
         - mcpl-python[all]
+      scipp:
+        - mcpl-python[scipp]
       devel:
         - pyyaml
         - ruff
@@ -78,6 +83,11 @@ dependencies:
   plotly:
     min_version: "5.11"
     freebsd_pkgname: "{py}-plotly"
+  scipp:
+    min_version: "26.9"
+    min_python: "3.12"
+    #(no FreeBSD package, and no wheels for FreeBSD on PyPI):
+    unavailable_on: [ FreeBSD ]
   ruff:
     min_version: "0.8.1"
     import_check: null

@@ -1,4 +1,19 @@
 v2.2.9  (work in progress)
+      * mcpl-python: new methods MCPLFile.to_scipp and MCPLFile.scipp_blocks
+        (one DataArray per block), giving the particles as a scipp DataArray
+        with the weights as data (with variances) and the particle fields as
+        coordinates with units (x, y, z [cm], ekin [MeV], time [ms], ...),
+        plus polarisation, userflags and userdata fields where present
+        (userdata fields named like other coordinates get the prefix
+        "userdata_", with a warning).
+        Positions, directions and polarisations can also be given as
+        3-vectors, and extra coordinates can be calculated with expressions
+        (with units following from the expressions). For files, skip, limit
+        and select parameters choose the particles, and by default at most
+        100 million particles are converted (with a warning when particles
+        are left out). This needs scipp 26.9 or later, which can be installed
+        with the new "scipp" extra (pip install "mcpl-python[scipp]"), which
+        is not part of the "all" extra since scipp needs Python 3.12 or later.
       * All Python dependencies of the MCPL packages, and of the development
         and testing of MCPL, are now defined in devel/dependency_database.yml
         (as in NCrystal). The developer tool checks that the pyproject.toml

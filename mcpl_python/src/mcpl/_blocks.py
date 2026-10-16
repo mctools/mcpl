@@ -452,7 +452,6 @@ class MCPLParticleBlock:
 
 _block_fields = ( 'x', 'y', 'z', 'ux', 'uy', 'uz', 'polx', 'poly', 'polz',
                   'ekin', 'time', 'weight', 'pdgcode', 'userflags' )
-
 class _EditedParticleBlock(MCPLParticleBlock):
     """Block of particles where some fields have new values (from a
     ParticleEdit). The other fields come from the packed particle data, which

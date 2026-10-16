@@ -4,11 +4,12 @@ Modules of the mcpl package and their imports from the package:
   layer   0 : _numpy               <- -
   layer   0 : constants            <- -
   layer   1 : _physics             <- _common, _numpy, constants
+  layer   1 : _scipp               <- _common, _messages, _numpy
   layer   1 : _statsum             <- _common
   layer   1 : _userdata            <- _common, _numpy
   layer   2 : _blocks              <- _numpy, _physics
   layer   2 : _expressions         <- _common, _numpy, _physics
-  layer   3 : _reader              <- _blocks, _common, _expressions, _messages, _numpy, _statsum, _userdata
+  layer   3 : _reader              <- _blocks, _common, _expressions, _messages, _numpy, _scipp, _statsum, _userdata
   layer   4 : _writer              <- _blocks, _common, _expressions, _messages, _numpy, _physics, _reader, _statsum, _userdata
   layer   5 : _fileops             <- _common, _expressions, _messages, _reader, _statsum, _writer
   layer   6 : _plotbackend         <- _common
@@ -28,7 +29,8 @@ Modules of the mcpl package and their imports from the package:
 numpy is imported by: _numpy
 matplotlib is imported by: _plotbackend_mpl
 plotly is imported by: _plotbackend_plotly
-matplotlib, plotly are only imported inside functions
+scipp is imported by: _scipp
+matplotlib, plotly, scipp are only imported inside functions
 mcpl.__all__ has 34 names, provided by:
   _common              : MCPLError
   _messages            : use_logging
