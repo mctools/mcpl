@@ -64,21 +64,10 @@ jobs:
 
     - name: pip install minimum versions of Python dependencies
       if: matrix.minversions
-      #The minimum versions are taken from the dependencies (and the "all"
-      #extra) of mcpl-python, e.g. "numpy>=1.22" becomes "numpy==1.22.*":
+      #The minimum versions are taken from devel/dependency_database.yml
+      #(e.g. "numpy>=1.22" becomes "numpy==1.22.*"):
       run: |
-        python - > minreqs.txt <<'EOF'
-        import sys
-        if sys.version_info >= (3,11):
-            import tomllib
-        else:
-            import tomli as tomllib
-        with open('./src/mcpl_python/pyproject.toml','rb') as fh:
-            proj = tomllib.load(fh)['project']
-        for req in proj['dependencies'] + proj['optional-dependencies']['all']:
-            name, minversion = req.split('>=')
-            print(f'{name}=={minversion}.*')
-        EOF
+        python ./src/devel/bin/mcpldevtool depdb --mode minversions > minreqs.txt
         cat minreqs.txt
         pip install -r minreqs.txt
         pip check

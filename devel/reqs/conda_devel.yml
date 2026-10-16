@@ -1,0 +1,16 @@
+name: mcpl_devel
+channels:
+  - nodefaults
+  - conda-forge
+dependencies:
+  - c-compiler
+  - cmake
+  - make
+  - pip
+  - python
+  - matplotlib >=3.6
+  - numpy >=1.22
+  - plotly >=5.11
+  - pyyaml >=6.0.0
+  - ruff >=0.8.1
+  - tomli >=2.0.0
