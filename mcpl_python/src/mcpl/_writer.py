@@ -375,13 +375,18 @@ class MCPLOutFile:
         self._comments.append(comment)
 
     def hdr_add_data(self, key, data):
-        """Add binary blob (bytes-like object) by key (keys must be unique, and
-        can only have printable ASCII characters other than whitespace and
-        quotes)"""
+        """Add binary blob (bytes-like object) by key (keys must be unique and
+        not empty, and can only have printable ASCII characters other than
+        whitespace, quotes, backslash and backtick)"""
+        self._hdr_add_data(key, data, lenient = False)
+
+    def _hdr_add_data(self, key, data, lenient):
+        #With lenient, the rules for blob keys are not applied (for keys copied
+        #from files in format versions before 4, where they did not apply):
         self._check_hdr_notwritten('hdr_add_data')
         key = self._to_bytes(key,'Blob keys')
         from ._reader import blobkey_problem
-        problem = blobkey_problem(key)
+        problem = None if lenient else blobkey_problem(key)
         if problem:
             raise MCPLError(f'hdr_add_data got invalid key ({problem}).')
         if key in self._blobs:
@@ -517,7 +522,10 @@ class MCPLOutFile:
             self.hdr_add_comment(c)
         blobs = h.get('blobs_raw',h['blobs'])
         for k in h.get('blobkeys_raw',h['blobkeys']):
-            self.hdr_add_data(k,blobs[k])
+            #(keys from files in format versions before 4 are copied even if
+            #they do not follow the rules of version 4, as long as the new
+            #file does not have userdata):
+            self._hdr_add_data(k,blobs[k],lenient=(source.version < 4))
         if source.opt_userflags:
             self.enable_userflags()
         if source.opt_polarisation:
@@ -555,6 +563,16 @@ class MCPLOutFile:
     def _write_header(self):
         import struct
         assert self._hdr_notwritten
+        #Files with userdata are in format version 4, where all blob keys must
+        #follow the rules (they might not, when copied from older files):
+        from ._reader import blobkey_problem
+        if self._udlayout is not None and any( blobkey_problem(k)
+                                               for k in self._blobkeys ):
+            raise MCPLError('Files with userdata can not have blob keys which'
+                            ' are not allowed in MCPL format version 4 (keys'
+                            ' must not be empty, and only printable ASCII'
+                            ' characters other than whitespace, quotes,'
+                            ' backslash and backtick are allowed).')
         out = bytearray()
         #(files with userdata are in format version 4, others still in 3):
         version = b'004' if self._udlayout is not None else b'003'

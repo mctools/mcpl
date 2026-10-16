@@ -190,6 +190,9 @@ t4.mcpl: format version 3, userdata layout NULL, size 0, particle size 36
   particle 2 x=3 ekin=1.5: no userdata
 Got expected MCPL ERROR: mcpl_transfer_last_read_particle asked to transfer particle without userdata into a file with userdata
 Got expected MCPL ERROR: mcpl_transfer_last_read_particle asked to transfer particle into a file with a different userdata layout
+Copied header with invalid blob keys from MCPL-3 file
+Wrote t8.mcpl with the header of none.mcpl and userdata
+Got expected MCPL ERROR: Files with userdata can not have blob keys which are not allowed in MCPL format version 4 (keys must not be empty, and only printable ASCII characters other than whitespace, quotes, backslash and backtick are allowed).
 === Merging
 can_merge(std.mcpl,std2.mcpl) = 1
 can_merge(std.mcpl,raw.mcpl) = 0

@@ -39,14 +39,16 @@ from ._statsum import _parse_statsum, _parse_statsum_comment, encode_stat_sum
 
 
 def blobkey_problem( key ):
-    """Problem with a blob key (bytes), or None if it is valid: only printable
-    ASCII characters other than whitespace and quotes are allowed (required in
-    format version 4, and always when writing)."""
+    """Problem with a blob key (bytes), or None if it is valid: keys must not
+    be empty, and can only have printable ASCII characters other than
+    whitespace, quotes, backslash and backtick (required in format version 4,
+    and when adding keys to new files)."""
+    if not key:
+        return 'empty keys are not allowed'
     if not all( 33 <= c <= 126 for c in key ):
-        return ( 'only printable ASCII characters other than whitespace and'
-                 ' quotes are allowed' )
-    if b'"' in key or b"'" in key:
-        return 'quotes are not allowed'
+        return 'only printable ASCII characters other than whitespace are allowed'
+    if any( c in key for c in ( b'"', b"'", b'\\', b'`' ) ):
+        return 'quotes, backslash and backtick are not allowed'
     return None
 
 class MCPLFile:
@@ -690,8 +692,9 @@ class MCPLFile:
         for i in range(nblobs):
             blobkeys += [readstr()]
             if version >= 4 and blobkey_problem(blobkeys[-1]):
-                raise MCPLError('invalid blob key (only printable ASCII'
-                                ' characters other than whitespace and quotes'
+                raise MCPLError('invalid blob key (keys must not be empty, and'
+                                ' only printable ASCII characters other than'
+                                ' whitespace, quotes, backslash and backtick'
                                 ' are allowed in format version 4)')
         for i,bk in enumerate(blobkeys):
             blobs[bk] = readarr()

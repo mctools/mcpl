@@ -32,6 +32,9 @@ MCPLTEST_CTYPE_DICTIONARY
     "void mcpltest_ud_read( const char * );"
     "void mcpltest_ud_transfer( const char *, const char *, const char *,"
     "                           unsigned );"
+    "void mcpltest_ud_transfer_meta_with_userdata( const char *,"
+    "                                              const char *,"
+    "                                              const char * );"
     "void mcpltest_ud_merge( const char *, const char *, const char * );"
     "void mcpltest_ud_forcemerge( const char *, const char *, const char * );"
     "void mcpltest_ud_merge_inplace( const char *, const char * );"
@@ -215,6 +218,21 @@ MCPLTEST_CTYPES void mcpltest_ud_transfer( const char * src,
     mcpl_transfer_last_read_particle(fi,fo);
   mcpl_close_file(fi);
   mcpl_close_outfile(fo);
+}
+
+MCPLTEST_CTYPES void mcpltest_ud_transfer_meta_with_userdata( const char * src,
+                                                             const char * dst,
+                                                             const char * layout )
+{
+  //Header of src, with userdata (and no particles):
+  mcpl_file_t fi = mcpl_open_file(src);
+  mcpl_outfile_t fo = mcpl_create_outfile(dst);
+  mcpl_transfer_metadata(fi,fo);
+  mcpl_enable_userdata(fo,layout);
+  mcpl_close_file(fi);
+  mcpl_close_outfile(fo);
+  printf("Wrote %s with the header of %s and userdata\n",dst,src);
+  fflush(stdout);
 }
 
 MCPLTEST_CTYPES void mcpltest_ud_merge( const char * out,

@@ -546,16 +546,19 @@ MCPL_LOCAL int mcpl_internal_udlayout_error( const char * layout,
 //never empty):
 MCPL_LOCAL const char * mcpl_internal_blobkey_problem( const char * key )
 {
-  //Blob keys can only have printable ASCII characters other than whitespace
-  //and quotes (required in format version 4, and always when writing). Returns
-  //NULL if the key is valid:
+  //Blob keys must not be empty, and can only have printable ASCII characters
+  //other than whitespace, quotes, backslash and backtick (required in format
+  //version 4, and when adding keys to new files). Returns NULL if the key is
+  //valid:
+  if ( !*key )
+    return "empty keys are not allowed";
   for ( const char * c = key; *c; ++c ) {
     const unsigned char uc = (unsigned char)(*c);
     if ( uc < 33 || uc > 126 )
-      return "only printable ASCII characters other than whitespace and"
-        " quotes are allowed";
-    if ( uc == '"' || uc == '\'' )
-      return "quotes are not allowed";
+      return "only printable ASCII characters other than whitespace are"
+        " allowed";
+    if ( uc == '"' || uc == '\'' || uc == '\\' || uc == '`' )
+      return "quotes, backslash and backtick are not allowed";
   }
   return NULL;
 }
@@ -1238,11 +1241,15 @@ void mcpl_hdr_add_comment(mcpl_outfile_t of,const char *comment)
   mcpl_hdr_add_comment_es( of, comment, NULL );
 }
 
-void mcpl_hdr_add_data_es( mcpl_outfile_t of, const char * key,
-                           uint32_t ldata, const char * data,
-                           mcpl_errstate_t * es )
+//With lenient, the rules for blob keys are not applied (for keys copied from
+//files in format versions before 4, where they did not apply):
+MCPL_LOCAL void mcpl_internal_hdr_add_data_es( mcpl_outfile_t of,
+                                               const char * key,
+                                               uint32_t ldata,
+                                               const char * data,
+                                               int lenient,
+                                               mcpl_errstate_t * es )
 {
-  MCPLIMP_ES_RESET;
   MCPLIMP_OUTFILEDECODE_ES_VOID;
   if (!f->header_notwritten) {
     mcpl_internal_raise_runtime( es, "mcpl_hdr_add_data called too late." );
@@ -1253,7 +1260,7 @@ void mcpl_hdr_add_data_es( mcpl_outfile_t of, const char * key,
                                  " pointer." );
     return;
   }
-  const char * keyproblem = mcpl_internal_blobkey_problem( key );
+  const char * keyproblem = lenient ? NULL : mcpl_internal_blobkey_problem( key );
   if ( keyproblem ) {
     char buf[256];
     snprintf(buf,sizeof(buf),"mcpl_hdr_add_data got invalid key"
@@ -1302,6 +1309,14 @@ void mcpl_hdr_add_data_es( mcpl_outfile_t of, const char * key,
   f->bloblengths[f->nblobs] = ldata;
   f->nblobs = n;
   f->hdr_memory += nbytes + MCPLIMP_HEADER_ENTRY_OVERHEAD;
+}
+
+void mcpl_hdr_add_data_es( mcpl_outfile_t of, const char * key,
+                           uint32_t ldata, const char * data,
+                           mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  mcpl_internal_hdr_add_data_es( of, key, ldata, data, 0, es );
 }
 
 void mcpl_hdr_add_data(mcpl_outfile_t of, const char * key,
@@ -1603,6 +1618,22 @@ MCPL_LOCAL int mcpl_write_header_es( mcpl_outfileinternal_t * f,
     return mcpl_internal_raise_runtime( es, "Logical error!" );
 
   const char * errmsg="Errors encountered while attempting to write file header.";
+  //Files with userdata are in format version 4, where all blob keys must
+  //follow the rules (they might not, when copied from older files):
+  if ( f->userdata_layout ) {
+    for ( uint32_t i = 0; i < f->nblobs; ++i ) {
+      if ( mcpl_internal_blobkey_problem( f->blobkeys[i] ) )
+        return mcpl_internal_raise_runtime( es, "Files with userdata can not"
+                                            " have blob keys which are not"
+                                            " allowed in MCPL format version"
+                                            " 4 (keys must not be empty, and"
+                                            " only printable ASCII characters"
+                                            " other than whitespace, quotes,"
+                                            " backslash and backtick are"
+                                            " allowed)." );
+    }
+  }
+
   //Always start the file with an unsigned char-array (for endian agnosticity)
   //containing magic word (MCPL), file format version ('001'-'999') and
   //endianness used in the file ('L' or 'B'):
@@ -2254,7 +2285,13 @@ MCPL_LOCAL int mcpl_internal_transfer_metadata_es( mcpl_file_t source,
       if (!res)
         return mcpl_internal_raise_runtime( es, "unexpected key problem in"
                                             " mcpl_transfer_metadata" );
-      MCPLIMP_TMD_CALL(mcpl_hdr_add_data_es(target, blobkeys[ii], ldata, data, es));
+      //(keys from files in format versions before 4 are copied even if they
+      //do not follow the rules of version 4, as long as the new file does
+      //not have userdata):
+      MCPLIMP_TMD_CALL(mcpl_internal_hdr_add_data_es(target, blobkeys[ii],
+                                                     ldata, data,
+                                                     mcpl_hdr_version(source) < 4,
+                                                     es));
     }
   }
   if (mcpl_hdr_has_userflags(source))
@@ -2939,9 +2976,10 @@ MCPL_LOCAL int mcpl_internal_open_file( mcpl_fileinternal_t * f,
       return 0;
     if ( f->format_version >= 4
          && mcpl_internal_blobkey_problem( f->blobkeys[i] ) )
-      MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"invalid blob key (only printable"
-                       " ASCII characters other than whitespace and quotes"
-                       " are allowed in format version 4)");
+      MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"invalid blob key (keys must not"
+                       " be empty, and only printable ASCII characters other"
+                       " than whitespace, quotes, backslash and backtick are"
+                       " allowed in format version 4)");
   }
   for (uint32_t i =0; i < f->nblobs; ++i)
     if (!mcpl_read_buffer(f, &(f->bloblengths[i]), &(f->blobs[i]), &current_pos, errmsg, es))
