@@ -119,9 +119,17 @@ int mcpltests_genisotrop(int argc,char**argv) {
     mcpl_hdr_add_data(f, "asciidata_empty",0, "");//data md5sum d41d8cd98f00b204e9800998ecf8427e
     mcpl_hdr_add_data(f, "utf8data",22, "R\xc3\xb8""dgr\xc3\xb8""d med\nfl\xc3\xb8""de.\n");//data md5sum de7a6d4a3a291d0d67b3657e62ffcb37
     mcpl_hdr_add_data(f, "binarydata",9, "A\x00\x05\n\rBla\x7f");//data md5sum a04637816e7436951f0512d38d48f212
-    mcpl_hdr_add_data(f, "utf8bl\xc3""\xb8""bkey",9, "A\x00\x05\n\rBla\x7f");//same
-    mcpl_hdr_add_data(f, "notutf8key_\xff\xfe""_",9, "A\x00\x05\n\rBla\x7f");//same
-    mcpl_hdr_add_comment(f,"md5sums of blobs: d3475b3d8393e4041df7fa22ade054d3,d41d8cd98f00b204e9800998ecf8427e,de7a6d4a3a291d0d67b3657e62ffcb37,a04637816e7436951f0512d38d48f212(*3)");
+    //Blob keys must only have printable ASCII characters other than
+    //whitespace and quotes:
+    const char * badkeys[] = { "utf8bl\xc3""\xb8""bkey", "notutf8key_\xff\xfe""_",
+                               "with space", "with\ttab", "with\"quote",
+                               "with'quote", "with\x7f""del", NULL };
+    for ( const char ** k = badkeys; *k; ++k ) {
+      mcpl_errstate_t es;
+      mcpl_hdr_add_data_es(f, *k, 9, "A\x00\x05\n\rBla\x7f", &es);
+      printf("Invalid blob key rejected: %s\n", es.code ? "yes" : "NO");
+    }
+    mcpl_hdr_add_comment(f,"md5sums of blobs: d3475b3d8393e4041df7fa22ade054d3,d41d8cd98f00b204e9800998ecf8427e,de7a6d4a3a291d0d67b3657e62ffcb37,a04637816e7436951f0512d38d48f212");
 
   }
   if (opt_updg)

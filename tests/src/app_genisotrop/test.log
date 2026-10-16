@@ -1,3 +1,10 @@
+Invalid blob key rejected: yes
+Invalid blob key rejected: yes
+Invalid blob key rejected: yes
+Invalid blob key rejected: yes
+Invalid blob key rejected: yes
+Invalid blob key rejected: yes
+Invalid blob key rejected: yes
 MCPL: Compressing file out.mcpl
 MCPL: Compressed file into out.mcpl.gz
 Opened MCPL file out.mcpl.gz:
@@ -5,7 +12,7 @@ Opened MCPL file out.mcpl.gz:
   Basic info
     Format             : MCPL-3
     No. of particles   : 100
-    Header storage     : 633 bytes
+    Header storage     : 569 bytes
     Data storage       : 8400 bytes
 
   Custom meta data
@@ -14,14 +21,12 @@ Opened MCPL file out.mcpl.gz:
           -> comment 0 : "A simple file with isotropically generated particles."
           -> comment 1 : "A comment with utf8 chars: rødgrød med fløde."
           -> comment 2 : "A comment which contains bytes not valid in utf8: Bad bytes are "\xff" and "\xfe"."
-          -> comment 3 : "md5sums of blobs: d3475b3d8393e4041df7fa22ade054d3,d41d8cd98f00b204e9800998ecf8427e,de7a6d4a3a291d0d67b3657e62ffcb37,a04637816e7436951f0512d38d48f212(*3)"
-    Number of blobs    : 6
+          -> comment 3 : "md5sums of blobs: d3475b3d8393e4041df7fa22ade054d3,d41d8cd98f00b204e9800998ecf8427e,de7a6d4a3a291d0d67b3657e62ffcb37,a04637816e7436951f0512d38d48f212"
+    Number of blobs    : 4
           -> 31 bytes of data with key "asciidata"
           -> 0 bytes of data with key "asciidata_empty"
           -> 22 bytes of data with key "utf8data"
           -> 9 bytes of data with key "binarydata"
-          -> 9 bytes of data with key "utf8bløbkey"
-          -> 9 bytes of data with key "notutf8key_\xff\xfe_"
 
   Particle data format
     User flags         : yes

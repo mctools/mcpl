@@ -1,4 +1,13 @@
 v2.2.9  (work in progress)
+      * Blob keys can only have printable ASCII characters other than
+        whitespace and quotes. This is required for files in MCPL format
+        version 4 (which are refused otherwise), and the C, C++ and Python
+        APIs refuse such keys when writing files in any format version (also
+        when transferring the header of an older file with such keys).
+      * The flags in the header (userflags, polarisation, single precision
+        and universal weight) must have exactly the values of the format (0
+        or 1, and in version 4 the userflags field can also have 0x2), and
+        files with other values are refused by the C and Python readers.
       * Userdata is optional in MCPL format version 4, signalled by 0x2 in the
         userflags field of the header (which also holds 0x1 if userflags are
         enabled). Only with userdata does the header contain the userdata

@@ -46,7 +46,7 @@ def run_c( *args ):
     rv = subprocess.run( [mcpltool_cmd]+[str(a) for a in args],
                          capture_output = True, check = True )
     assert not rv.stderr
-    return rv.stdout.decode()
+    return rv.stdout.decode('utf-8','replace')
 
 def run_py( *args ):
     import sys
@@ -55,7 +55,7 @@ def run_py( *args ):
     rv = subprocess.run( [sys.executable,'-c',code]+[str(a) for a in args],
                          capture_output = True, check = True )
     assert not rv.stderr
-    return rv.stdout.decode()
+    return rv.stdout.decode('utf-8','replace')
 
 def without_filename_and_version( dump ):
     return [ line for line in dump.splitlines()
@@ -153,6 +153,52 @@ def check_with_userdata():
             assert rv.returncode != 0 and b'userflags field' in rv.stdout+rv.stderr
     print('  0x2 in the userflags field, invalid values detected (C and Python)')
 
+def expect_open_failure( fn, errmsg_part ):
+    try:
+        mcpl.MCPLFile(fn)
+    except mcpl.MCPLError as e:
+        assert errmsg_part in str(e), str(e)
+    else:
+        raise AssertionError(f'Python reader did not refuse {fn}')
+    rv = subprocess.run( [mcpltool_cmd,'-l0',str(fn)],
+                         capture_output = True, check = False )
+    assert rv.returncode != 0 and errmsg_part.encode() in rv.stdout+rv.stderr, rv
+
+def check_header_rules():
+    print('Header rules:')
+    src = test_data_dir / 'ref' / 'reffile_1.mcpl'
+    data3 = src.read_bytes()
+    data4 = b'MCPL004' + data3[7:]
+    #Flags must have exactly the values of the format (and in version 4 the
+    #userflags field can also have 0x2):
+    fields = { 24 : 'userflags field', 28 : 'polarisation field',
+               32 : 'precision field', 44 : 'universal weight field' }
+    for version, data in ( (3, data3), (4, data4) ):
+        for pos, what in fields.items():
+            values = [ 2, 0x100, 0xffffffff ]
+            if version == 4 and pos == 24:
+                values = [ 4, 6, 0x100, 0xffffffff ]
+            for value in values:
+                fn = pathlib.Path(f'badflag_v{version}_{pos}_{value}.mcpl')
+                fn.write_bytes( data[0:pos] + value.to_bytes(4,'little')
+                                + data[pos+4:] )
+                expect_open_failure( fn, f'unexpected value of {what}' )
+    print('  Invalid values of the flags detected in MCPL-3 and MCPL-4'
+          ' (C and Python)')
+    #Blob keys must only have printable ASCII characters other than whitespace
+    #and quotes in version 4:
+    src = test_data_dir / 'ref' / 'reffile_encodings.mcpl.gz'
+    data3 = gzip.decompress(src.read_bytes())
+    fn3 = pathlib.Path('badkeys_v3.mcpl')
+    fn3.write_bytes( data3 )
+    run_c( '-l0', fn3 )
+    run_py( '-l0', fn3 )
+    fn4 = pathlib.Path('badkeys_v4.mcpl')
+    set_version( fn3, fn4, b'004' )
+    expect_open_failure( fn4, 'invalid blob key' )
+    print('  Invalid blob keys accepted in MCPL-3 but not in MCPL-4'
+          ' (C and Python)')
+
 def main():
     #All reference files in version 3 which can be read without problems:
     nchecked = 0
@@ -181,6 +227,7 @@ def main():
         nchecked += 1
     assert nchecked >= 15, nchecked
     check_with_userdata()
+    check_header_rules()
 
 if __name__ == '__main__':
     main()

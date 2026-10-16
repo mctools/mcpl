@@ -38,6 +38,17 @@ from ._numpy import np
 from ._statsum import _parse_statsum, _parse_statsum_comment, encode_stat_sum
 
 
+def blobkey_problem( key ):
+    """Problem with a blob key (bytes), or None if it is valid: only printable
+    ASCII characters other than whitespace and quotes are allowed (required in
+    format version 4, and always when writing)."""
+    if not all( 33 <= c <= 126 for c in key ):
+        return ( 'only printable ASCII characters other than whitespace and'
+                 ' quotes are allowed' )
+    if b'"' in key or b"'" in key:
+        return 'quotes are not allowed'
+    return None
+
 class MCPLFile:
     """Python-only class for reading MCPL files, using numpy and internal caches to
     ensure good efficiency. File access is read-only, and the particles can only
@@ -601,18 +612,22 @@ class MCPLFile:
         self._np = nparticles#needs frequent access
         particlesize = int(particlesize)
         opt_universalpdgcode = int(opt_universalpdgcode)
-        #The userflags field holds 0x1 if userflags are enabled. In format
-        #version 4, it also holds 0x2 if the particles have userdata (and the
-        #header has a userdata layout), so files in version 4 without userdata
-        #are identical to files in version 3 except for the version number:
-        has_userdata = False
-        if version >= 4:
-            if opt_userflags > 3:
-                raise MCPLError('unexpected value of userflags field')
-            has_userdata = bool( opt_userflags & 0x2 )
-            opt_userflags = bool( opt_userflags & 0x1 )
-        else:
-            opt_userflags = bool(opt_userflags)
+        #The flags in the header must have exactly the values of the format:
+        #0x1 or 0x0 (for userflags, polarisation, single precision and
+        #universal weight). In format version 4, the userflags field also holds
+        #0x2 if the particles have userdata (and the header has a userdata
+        #layout), so files in version 4 without userdata are identical to
+        #files in version 3 except for the version number:
+        if opt_userflags > ( 3 if version >= 4 else 1 ):
+            raise MCPLError('unexpected value of userflags field')
+        if opt_polarisation > 1:
+            raise MCPLError('unexpected value of polarisation field')
+        if opt_singleprec > 1:
+            raise MCPLError('unexpected value of precision field')
+        if _tmp > 1:
+            raise MCPLError('unexpected value of universal weight field')
+        has_userdata = bool( opt_userflags & 0x2 )
+        opt_userflags = bool( opt_userflags & 0x1 )
         opt_polarisation = bool(opt_polarisation)
         opt_singleprec = bool(opt_singleprec)
         opt_universalweight = float(self._fileread(dtype=np.dtype('f8').newbyteorder(endianness),count=1)[0] if _tmp else 0.0)
@@ -661,6 +676,10 @@ class MCPLFile:
         blobkeys = []#to keep order available to dump_hdr
         for i in range(nblobs):
             blobkeys += [readarr()]
+            if version >= 4 and blobkey_problem(blobkeys[-1]):
+                raise MCPLError('invalid blob key (only printable ASCII'
+                                ' characters other than whitespace and quotes'
+                                ' are allowed in format version 4)')
         for i,bk in enumerate(blobkeys):
             blobs[bk] = readarr()
         headersize = ( 48 + 4 + len(sourcename)

@@ -544,6 +544,22 @@ MCPL_LOCAL int mcpl_internal_udlayout_error( const char * layout,
 //Validates the layout and returns the number of bytes (with an error in case
 //of invalid layouts, in which case 0 is returned, since valid layouts are
 //never empty):
+MCPL_LOCAL const char * mcpl_internal_blobkey_problem( const char * key )
+{
+  //Blob keys can only have printable ASCII characters other than whitespace
+  //and quotes (required in format version 4, and always when writing). Returns
+  //NULL if the key is valid:
+  for ( const char * c = key; *c; ++c ) {
+    const unsigned char uc = (unsigned char)(*c);
+    if ( uc < 33 || uc > 126 )
+      return "only printable ASCII characters other than whitespace and"
+        " quotes are allowed";
+    if ( uc == '"' || uc == '\'' )
+      return "quotes are not allowed";
+  }
+  return NULL;
+}
+
 MCPL_LOCAL uint32_t mcpl_internal_udlayout_validate( const char * layout,
                                                      mcpl_errstate_t * es )
 {
@@ -1235,6 +1251,14 @@ void mcpl_hdr_add_data_es( mcpl_outfile_t of, const char * key,
   if ( !key || ( ldata && !data ) ) {
     mcpl_internal_raise_runtime( es, "mcpl_hdr_add_data called with null"
                                  " pointer." );
+    return;
+  }
+  const char * keyproblem = mcpl_internal_blobkey_problem( key );
+  if ( keyproblem ) {
+    char buf[256];
+    snprintf(buf,sizeof(buf),"mcpl_hdr_add_data got invalid key"
+             " (%s).",keyproblem);
+    mcpl_internal_raise_runtime( es, buf );
     return;
   }
   //Check that key is unique
@@ -2743,19 +2767,24 @@ MCPL_LOCAL int mcpl_internal_open_file( mcpl_fileinternal_t * f,
   if ( (uint64_t)current_pos + f->hdr_entries_overhead
        > (uint64_t)MCPLIMP_MAX_HEADER_MEMORY )
     MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,MCPLIMP_HEADER_TOO_LARGE_MSG);
-  //The userflags field holds 0x1 if userflags are enabled. In format version
-  //4, it also holds 0x2 if the particles have userdata (and the header has a
-  //userdata layout), so files in version 4 without userdata are identical to
-  //files in version 3 except for the version number:
-  int has_userdata = 0;
-  if ( f->format_version >= 4 ) {
-    if ( arr[2] > 3 )
-      MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"unexpected value of userflags field");
-    has_userdata = ( arr[2] & 0x2 ) ? 1 : 0;
-    f->opt_userflags = arr[2] & 0x1;
-  } else {
-    f->opt_userflags = arr[2];
-  }
+  //The flags in the header must have exactly the values of the format: 0x1 or
+  //0x0 (for userflags, polarisation, single precision and universal weight).
+  //In format version 4, the userflags field also holds 0x2 if the particles
+  //have userdata (and the header has a userdata layout), so files in version
+  //4 without userdata are identical to files in version 3 except for the
+  //version number:
+  if ( arr[2] > ( f->format_version >= 4 ? 3u : 1u ) )
+    MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"unexpected value of userflags field");
+  if ( arr[3] > 1 )
+    MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"unexpected value of polarisation"
+                     " field");
+  if ( arr[4] > 1 )
+    MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"unexpected value of precision field");
+  if ( arr[7] > 1 )
+    MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"unexpected value of universal weight"
+                     " field");
+  const int has_userdata = ( arr[2] & 0x2 ) ? 1 : 0;
+  f->opt_userflags = arr[2] & 0x1;
   f->opt_polarisation = arr[3];
   f->opt_singleprec = arr[4];
   memcpy(&f->opt_universalpdgcode, &arr[5], sizeof(int32_t));
@@ -2904,6 +2933,11 @@ MCPL_LOCAL int mcpl_internal_open_file( mcpl_fileinternal_t * f,
     f->nblobs = i + 1;//(entries are now owned by f)
     if (!mcpl_read_string(f,&(f->blobkeys[i]),&current_pos,errmsg,es))
       return 0;
+    if ( f->format_version >= 4
+         && mcpl_internal_blobkey_problem( f->blobkeys[i] ) )
+      MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"invalid blob key (only printable"
+                       " ASCII characters other than whitespace and quotes"
+                       " are allowed in format version 4)");
   }
   for (uint32_t i =0; i < f->nblobs; ++i)
     if (!mcpl_read_buffer(f, &(f->bloblengths[i]), &(f->blobs[i]), &current_pos, errmsg, es))
