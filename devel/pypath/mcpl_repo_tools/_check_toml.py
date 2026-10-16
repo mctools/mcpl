@@ -114,11 +114,8 @@ def check_metadata():
     assert 'dependencies' in projkeys_meta
     assert 'dependencies' in projkeys_extra
 
-    assert ( set(data_meta['project']['dependencies'])
-             == {f'mcpl-core=={version}',
-                 f'mcpl-python=={version}'} )
-    assert ( set(data_extra['project']['dependencies'])
-             == {f'mcpl-core=={version}'} )
+    #(the dependencies themselves are checked against
+    #devel/dependency_database.yml in _check_deps.py)
     #assert ( projkeys_monolith - projkeys_core ) == set(['dependencies'])
     #assert ( projkeys_core - projkeys_monolith ) == set([])
     assert ( projkeys_core - projkeys_meta ) == {'scripts'}
@@ -127,15 +124,13 @@ def check_metadata():
     assert ( projkeys_extra - projkeys_meta ) == {'scripts'}
     assert ( projkeys_meta - projkeys_extra ) == {'optional-dependencies'}
 
-    #The metapackage must forward all extras of mcpl-python:
+    #The metapackage must forward all extras of mcpl-python (and has the
+    #devel extra in addition):
     extras_py = data_py['project'].get('optional-dependencies',{})
     extras_meta = data_meta['project']['optional-dependencies']
-    assert set(extras_py) == set(extras_meta)
+    assert set(extras_py) | {'devel'} == set(extras_meta)
     for k in extras_py:
         assert extras_meta[k] == [f'mcpl-python[{k}]'], (k,extras_meta[k])
-    assert set(extras_py['all']) == set().union(*( extras_py[k]
-                                                    for k in extras_py
-                                                    if k != 'all' ))
     #assert ( projkeys_py - projkeys_monolith ) == set(['dynamic'])
     #assert ( projkeys_monolith - projkeys_py ) == set(['version'])
     assert ( projkeys_core - projkeys_meta ) == {'scripts'}

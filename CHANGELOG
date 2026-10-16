@@ -1,4 +1,17 @@
 v2.2.9  (work in progress)
+      * All Python dependencies of the MCPL packages, and of the development
+        and testing of MCPL, are now defined in devel/dependency_database.yml
+        (as in NCrystal). The developer tool checks that the pyproject.toml
+        files agree with it, and generates the requirements and conda
+        environment files in devel/reqs/ ("mcpldevtool depdb --mode
+        fixreqfiles"). Dependencies which can not be installed everywhere
+        have conditions there (needed Python version, and systems where they
+        are not available), which become environment markers in the
+        requirements, and tests needing them are not added at all where they
+        can not be installed. The CI with the minimum versions of the
+        dependencies and the FreeBSD CI take their packages from it too. The
+        mcpl package has a new "devel" extra with the development
+        dependencies.
       * The C++ interface (mcplcpp.h) is documented with Doxygen comments,
         from which the developer tool command "mcpldevtool cppapi" generates
         the reference documentation (as Markdown, for the website).

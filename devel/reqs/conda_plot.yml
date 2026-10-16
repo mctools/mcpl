@@ -1,0 +1,12 @@
+name: mcpl_plot
+channels:
+  - nodefaults
+  - conda-forge
+dependencies:
+  - c-compiler
+  - cmake
+  - make
+  - pip
+  - python
+  - matplotlib >=3.6
+  - numpy >=1.22

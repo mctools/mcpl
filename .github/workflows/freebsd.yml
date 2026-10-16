@@ -33,11 +33,17 @@ jobs:
       - name: Enable parallel cmake
         run: python ./src/devel/bin/mcpldevtool nprocs --enable-github-parallel
 
+      - name: FreeBSD packages from devel/dependency_database.yml
+        run: |
+          pip install PyYAML
+          echo "FREEBSD_PKGS=$(python ./src/devel/bin/mcpldevtool depdb --mode freebsdpkgs --pyflavour py312)" >> $GITHUB_ENV
+          cat $GITHUB_ENV
+
       - name: FreeBSD
         uses: cross-platform-actions/action@5ea7e8e4677bd726033a10b094ba1c5762b15dee
 
         with:
-          environment_variables: CMAKE_BUILD_PARALLEL_LEVEL CTEST_PARALLEL_LEVEL
+          environment_variables: CMAKE_BUILD_PARALLEL_LEVEL CTEST_PARALLEL_LEVEL FREEBSD_PKGS
           operating_system: freebsd
           #Increase "memory" from 6G to 10G for bigfile ctests:
           #memory: 10G
@@ -49,7 +55,7 @@ jobs:
             export CTEST_PARALLEL_LEVEL=1
             echo "CMAKE_BUILD_PARALLEL_LEVEL=${CMAKE_BUILD_PARALLEL_LEVEL}"
             echo "CTEST_PARALLEL_LEVEL=${CTEST_PARALLEL_LEVEL}"
-            sudo pkg install -y cmake python3 py312-numpy py312-matplotlib py312-plotly py312-pyyaml ruff
+            sudo pkg install -y cmake python3 ${FREEBSD_PKGS}
             df -h
             sudo pkg autoremove -y
             df -h
@@ -73,16 +79,22 @@ jobs:
       - name: Enable parallel cmake
         run: python ./src/devel/bin/mcpldevtool nprocs --enable-github-parallel
 
+      - name: FreeBSD packages from devel/dependency_database.yml
+        run: |
+          pip install PyYAML
+          echo "FREEBSD_PKGS=$(python ./src/devel/bin/mcpldevtool depdb --mode freebsdpkgs --pyflavour py312)" >> $GITHUB_ENV
+          cat $GITHUB_ENV
+
       - name: FreeBSD
         uses: cross-platform-actions/action@5ea7e8e4677bd726033a10b094ba1c5762b15dee
         with:
-          environment_variables: CMAKE_BUILD_PARALLEL_LEVEL CTEST_PARALLEL_LEVEL
+          environment_variables: CMAKE_BUILD_PARALLEL_LEVEL CTEST_PARALLEL_LEVEL FREEBSD_PKGS
           operating_system: freebsd
           version: '15.1'
           run: |
             echo "CMAKE_BUILD_PARALLEL_LEVEL=${CMAKE_BUILD_PARALLEL_LEVEL}"
             echo "CTEST_PARALLEL_LEVEL=${CTEST_PARALLEL_LEVEL}"
-            sudo pkg install -y cmake python3 py312-pip py312-numpy py312-matplotlib py312-plotly py312-pyyaml py312-setuptools py312-wheel py312-scikit-build-core ruff
+            sudo pkg install -y cmake python3 py312-pip py312-setuptools py312-wheel py312-scikit-build-core ${FREEBSD_PKGS}
             #Make sure pip --user bin dir is in PATH:
             PATH="/home/runner/.local/bin:${PATH}"
             export PATH

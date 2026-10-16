@@ -51,6 +51,25 @@ if ( DEFINED MCTOOLS_REQUIRE_ALL_TEST_DEPS )
   endif()
 endif()
 
+#Information about the dependencies of Python tests (import names and conditions
+#for their availability) can be provided in a file mctools_testdeps.cmake next
+#to this file (in MCPL it is generated from devel/dependency_database.yml). For
+#each dependency DEP it can set the variables:
+#
+#   MCTOOLS_TESTDEP_<DEP>_IMPORT : Python module to import to test for presence.
+#   MCTOOLS_TESTDEP_<DEP>_CMD : Command to run (with --version) instead.
+#   MCTOOLS_TESTDEP_<DEP>_MINPYTHON : Python version needed by the package.
+#   MCTOOLS_TESTDEP_<DEP>_UNAVAILABLE_ON : Systems (CMAKE_SYSTEM_NAME) where the
+#                                          package can not be installed.
+#
+#Tests with dependencies which can not be installed (the last two variables)
+#are not added at all (with a message). Otherwise missing dependencies are an
+#error with MCTOOLS_REQUIRE_ALL_TEST_DEPS=ON, so tests are never silently
+#skipped because of a forgotten installation.
+if ( EXISTS "${CMAKE_CURRENT_LIST_DIR}/mctools_testdeps.cmake" )
+  include( "${CMAKE_CURRENT_LIST_DIR}/mctools_testdeps.cmake" )
+endif()
+
 if ( NOT DEFINED MCTOOLS_TESTUTILS_PYTHON_EXECUTABLE
      AND NOT DEFINED Python3_EXECUTABLE )
   set( MCTOOLS_TESTUTILS_PYTHON_EXECUTABLE "auto" )
@@ -77,6 +96,15 @@ function( mctools_testutils_add_tests_pyscripts scriptsdir envmod )
 
     set(missingdeps "")
     mctools_testutils_internal_detectpydeps( "deplist" "${pyscript}" )
+    if ( deplist )
+      mctools_testutils_internal_unavailablepydeps(
+        "notadded_reason" "${deplist}" "${pyexec}"
+      )
+      if ( notadded_reason )
+        message( STATUS "Not adding py test for ${bn}: ${notadded_reason}" )
+        continue()
+      endif()
+    endif()
     if ( deplist )
       mctools_testutils_internal_missingpydeps( "missingdeps" "${deplist}" )
     endif()
@@ -142,7 +170,13 @@ function( mctools_testutils_internal_haspydep resvar pydep )
 
   set( skip_status_msg OFF )
 
-  if ( "x${pydep}" STREQUAL "xtoml" )
+  if ( DEFINED "MCTOOLS_TESTDEP_${pydep}_IMPORT" )
+    set( pymodtoimport "${MCTOOLS_TESTDEP_${pydep}_IMPORT}" )
+  elseif ( DEFINED "MCTOOLS_TESTDEP_${pydep}_CMD" )
+    set( pymodtoimport "" )
+    set( cmdtocheck "${MCTOOLS_TESTDEP_${pydep}_CMD}" )
+    set( cmdtocheckflags "--version" )
+  elseif ( "x${pydep}" STREQUAL "xtoml" )
     #"tomllib" in python 3.11 and later (where it is ALWAYS present), otherwise
     #require "tomli".
     execute_process(
@@ -398,6 +432,52 @@ endfunction()
 ######################################
 ##### INTERNAL FUNCTIONS FOLLOWS #####
 ######################################
+
+function( mctools_testutils_internal_getpyversion resvar pyexec )
+  #Version of Python as "major.minor":
+  get_property(
+    pyversion
+    GLOBAL PROPERTY mctools_testutils_internal_pyversion
+  )
+  if ( NOT pyversion )
+    execute_process(
+      COMMAND "${pyexec}" "-c"
+      "import sys;print('%i.%i'%sys.version_info[0:2])"
+      OUTPUT_VARIABLE pyversion
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      RESULT_VARIABLE res
+    )
+    if ( NOT "x${res}" STREQUAL "x0" OR NOT pyversion )
+      message( FATAL_ERROR "Could not determine the Python version" )
+    endif()
+    set_property(
+      GLOBAL PROPERTY mctools_testutils_internal_pyversion "${pyversion}"
+    )
+  endif()
+  set( "${resvar}" "${pyversion}" PARENT_SCOPE )
+endfunction()
+
+function( mctools_testutils_internal_unavailablepydeps resvar deplist pyexec )
+  #Reason why one of the dependencies can not be installed in the current
+  #environment (empty if they all can), based on the
+  #MCTOOLS_TESTDEP_<DEP>_MINPYTHON and MCTOOLS_TESTDEP_<DEP>_UNAVAILABLE_ON
+  #variables from mctools_testdeps.cmake:
+  foreach( dep ${deplist} )
+    set( minpy "${MCTOOLS_TESTDEP_${dep}_MINPYTHON}" )
+    if ( minpy )
+      mctools_testutils_internal_getpyversion( "pyversion" "${pyexec}" )
+      if ( "${pyversion}" VERSION_LESS "${minpy}" )
+        set( "${resvar}" "${dep} needs Python ${minpy} or later (found ${pyversion})" PARENT_SCOPE )
+        return()
+      endif()
+    endif()
+    if ( "${CMAKE_SYSTEM_NAME}" IN_LIST "MCTOOLS_TESTDEP_${dep}_UNAVAILABLE_ON" )
+      set( "${resvar}" "${dep} is not available on ${CMAKE_SYSTEM_NAME}" PARENT_SCOPE )
+      return()
+    endif()
+  endforeach()
+  set( "${resvar}" "" PARENT_SCOPE )
+endfunction()
 
 function( mctools_testutils_internal_getpyexec resvar )
   get_property(
