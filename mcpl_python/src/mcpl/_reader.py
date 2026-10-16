@@ -656,10 +656,18 @@ class MCPLFile:
                 raise MCPLError('Errors encountered while attempting to read header')
             return cont.tobytes() if hasattr(cont,'tobytes') else cont.tostring()
 
+        def readstr():
+            #(strings must not contain null characters)
+            res = readarr()
+            if b'\0' in res:
+                raise MCPLError('encountered unexpected null-byte in string'
+                                ' read from file')
+            return res
+
         if has_userdata:
             #Userdata layout (only in version 4, and only with userdata):
             from ._userdata import userdata_dtype
-            layout = readarr().decode('ascii','replace')
+            layout = readstr().decode('ascii','replace')
             udsize = userdata_dtype(layout).itemsize
             h['userdata_layout'] = layout
             h['userdata_size'] = udsize
@@ -672,15 +680,15 @@ class MCPLFile:
                      + ( 4 if opt_userflags else 0 ) + h['userdata_size'] )
         if particlesize != expected:
             raise MCPLError('unexpected particle size')
-        sourcename = readarr()
+        sourcename = readstr()
         comments=[]
         for i in range(ncomments):
-            comments += [readarr()]
+            comments += [readstr()]
         blobs={}
         #blobs_user={}
         blobkeys = []#to keep order available to dump_hdr
         for i in range(nblobs):
-            blobkeys += [readarr()]
+            blobkeys += [readstr()]
             if version >= 4 and blobkey_problem(blobkeys[-1]):
                 raise MCPLError('invalid blob key (only printable ASCII'
                                 ' characters other than whitespace and quotes'

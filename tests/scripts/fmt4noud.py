@@ -205,6 +205,15 @@ def check_header_rules():
         fn.write_bytes( datauw[0:48] + struct.pack('<d',value) + datauw[56:] )
         expect_open_failure( fn, 'invalid universal weight' )
     print('  Invalid universal weights detected (C and Python)')
+    #Strings must not contain null characters (here in the source name, which
+    #starts after the 48 bytes of the first part of the header, with a UINT32
+    #with its length):
+    lsrc = int.from_bytes(data3[48:52],'little')
+    assert lsrc >= 2
+    fn = pathlib.Path('nullchar.mcpl')
+    fn.write_bytes( data3[0:53] + b'\0' + data3[54:] )
+    expect_open_failure( fn, 'unexpected null-byte' )
+    print('  Null characters in strings detected (C and Python)')
     #Blob keys must only have printable ASCII characters other than whitespace
     #and quotes in version 4:
     src = test_data_dir / 'ref' / 'reffile_encodings.mcpl.gz'
