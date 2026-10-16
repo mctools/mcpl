@@ -20,9 +20,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // A small standalone example of how one might use the C++ interface of MCPL
-// (mcplcpp.h, which requires C++17) to read particles from an existing MCPL
-// file, and to write some of them to a new file, along with some custom
-// per-particle data (userdata).
+// (mcplcpp.h, which requires C++17 or later) to read particles from an
+// existing MCPL file, and to write some of them to a new file, along with
+// some custom per-particle data (userdata).
 
 #include "mcplcpp.h"
 #include <cstdint>

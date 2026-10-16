@@ -76,3 +76,25 @@ foreach( extensions ON OFF )
     endforeach()
   endforeach()
 endforeach()
+
+#The C++ interface (mcplcpp.h) requires C++17 or later, so the C++ example is
+#built with C++17 and later standards:
+set( cppsrc "${PROJECT_SOURCE_DIR}/../../../examples/example_cppmcpl.cc" )
+foreach( extensions ON OFF )
+  foreach( std 17;20;23 )
+    set( bn "cppapi_${std}_extensions${extensions}" )
+    add_executable( "test_${bn}" "${cppsrc}" )
+    target_link_libraries( "test_${bn}" MCPL::MCPL )
+    set_target_properties(
+      "test_${bn}" PROPERTIES CXX_STANDARD ${std}
+      CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS ${extensions}
+    )
+    mctools_apply_strict_comp_properties( "test_${bn}" )
+    add_test(
+      NAME "test_${bn}"
+      COMMAND "test_${bn}"
+      "${PROJECT_SOURCE_DIR}/../../../examples/example.mcpl"
+      "${PROJECT_BINARY_DIR}/out_${bn}.mcpl"
+    )
+  endforeach()
+endforeach()
