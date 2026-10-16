@@ -40,7 +40,7 @@ def use_logging( enable = True ):
 
     Calling use_logging(False) switches back to printing. Note that this does
     not affect functions which are meant to print (like dump_file), nor the
-    pymcpltool command, which always prints."""
+    mcpltool command, which always prints."""
     global _logger
     if enable:
         import logging

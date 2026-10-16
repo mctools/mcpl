@@ -62,14 +62,14 @@ jobs:
       run: pip install -r ./src/devel/reqs/requirements_devel.txt
 
     - name: Make test dirs
-      run: mkdir ./testdir_pymcpltool ./testdir_enc
+      run: mkdir ./testdir_mcpltool ./testdir_enc
 
-    - name: pymcpltool from the source tree
-      working-directory: ./testdir_pymcpltool
+    - name: mcpltool from the source tree
+      working-directory: ./testdir_mcpltool
       run: PYTHONPATH=../src/mcpl_python/src python -m mcpl ../src/examples/example.mcpl
 
-    - name: pymcpltool from the source tree
-      working-directory: ./testdir_pymcpltool
+    - name: mcpltool from the source tree
+      working-directory: ./testdir_mcpltool
       run: PYTHONPATH=../src/mcpl_python/src python -m mcpl --stats ../src/examples/example.mcpl
 
     - name: Run encoding test

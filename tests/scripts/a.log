@@ -3,21 +3,17 @@ Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.
 The default behaviour is to display the contents of the FILE in human readable
 format (see Dump Options below for how to modify what is displayed).
 
-This is the python version of the tool, which in addition to the features of
-the compiled mcpltool can show statistics, and select or edit particles based
-on expressions.
-
 This installation supports direct reading of gzipped files (.mcpl.gz).
 
 Usage:
-  pymcpltool [dump-options] FILE
-  pymcpltool --merge [merge-options] FILE1 FILE2
-  pymcpltool --extract [extract-options] FILE1 FILE2
-  pymcpltool --repair FILE
-  pymcpltool --hist EXPR [hist-options] FILE [FILE2 ...]
-  pymcpltool --stats [stat-options] FILE
-  pymcpltool --version
-  pymcpltool --help
+  mcpltool [dump-options] FILE
+  mcpltool --merge [merge-options] FILE1 FILE2
+  mcpltool --extract [extract-options] FILE1 FILE2
+  mcpltool --repair FILE
+  mcpltool --hist EXPR [hist-options] FILE [FILE2 ...]
+  mcpltool --stats [stat-options] FILE
+  mcpltool --version
+  mcpltool --help
 
 Dump options:
   By default include the info in the FILE header plus the first ten contained

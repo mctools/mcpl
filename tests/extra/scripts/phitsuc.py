@@ -79,7 +79,7 @@ def main():
     if rv.stderr or rv.returncode:
         raise SystemExit(1)
 
-    print("Run mcpltool",flush=True)
+    print("Run mcpltool-c",flush=True)
     assert pathlib.Path(f'f{oslash}{oslash}/hell{oslash}2.mcpl.gz').is_file()
     rv = subprocess.run( [ mcpltool_cmd,
                            f'f{oslash}{oslash}/hell{oslash}2.mcpl.gz' ],

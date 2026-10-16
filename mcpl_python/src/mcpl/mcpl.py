@@ -23,8 +23,8 @@
 
 All the names are available directly in the mcpl package (after "import mcpl"),
 which is how they should be used. Using them from mcpl.mcpl gives a
-DeprecationWarning (except for main, which is the entry point of pymcpltool
-in some installations).
+DeprecationWarning (except for main, which is the entry point of the mcpltool command (or
+pymcpltool, as it was called before) in some installations).
 """
 
 __all__ = [

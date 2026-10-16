@@ -96,13 +96,13 @@ jobs:
     - name: Run mcpl-config
       run: ./install/bin/mcpl-config -s
 
-    - name: Run mcpltool
-      run: ./install/bin/mcpltool --help
+    - name: Run mcpltool-c
+      run: ./install/bin/mcpltool-c --help
 
     - name: Setup environment
       run: |
         test -f ./install/bin/mcpl-config
-        test -f ./install/bin/mcpltool
+        test -f ./install/bin/mcpltool-c
         test -d ./install/lib
         echo "PATH=$PWD/install/bin:$PATH" >> $GITHUB_ENV
         echo "LD_LIBRARY_PATH=$PWD/install/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
@@ -111,8 +111,8 @@ jobs:
     - name: Run mcpl-config
       run: mcpl-config -s
 
-    - name: Run mcpltool
-      run: mcpltool --help
+    - name: Run mcpltool-c
+      run: mcpltool-c --help
 
     - name: Cfg downstream
       #For fun, always use Release config here, to test that it works even if

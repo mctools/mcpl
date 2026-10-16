@@ -110,18 +110,18 @@ jobs:
         #Add python modules and cmdline scripts:
         pip install ./src/mcpl_python
         mcpl-config --summary
+        mcpltool-c --help
         mcpltool --help
-        pymcpltool --help
+        mcpltool-c ./src/examples/example.mcpl
         mcpltool ./src/examples/example.mcpl
-        pymcpltool ./src/examples/example.mcpl
-        pymcpltool --stats ./src/examples/example.mcpl
+        mcpltool --stats ./src/examples/example.mcpl
         cp ./src/mcpl_core/tests/src/app_testwritegzip/main.c ./my_c_code.c
         test -f $(mcpl-config --show libpath)
         test -d $(mcpl-config --show libdir)
         cp ./src/examples/example.mcpl bla.mcpl
         gzip bla.mcpl
+        mcpltool-c bla.mcpl.gz
         mcpltool bla.mcpl.gz
-        pymcpltool bla.mcpl.gz
 
         export CC=$(which icx)
         export CXX=$(which icpx)

@@ -1,20 +1,24 @@
 ----------------------------------------------
-Running mcpltool -h
+Running mcpltool-c -h
 ----------------------------------------------
 Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.
 
 The default behaviour is to display the contents of the FILE in human readable
 format (see Dump Options below for how to modify what is displayed).
 
+This is a minimal version (written in C) of the mcpltool command from the
+mcpl-python package, which can in addition show statistics and histograms, and
+select or edit particles with expressions.
+
 This installation supports direct reading of gzipped files (.mcpl.gz).
 
 Usage:
-  mcpltool [dump-options] FILE
-  mcpltool --merge [merge-options] FILE1 FILE2
-  mcpltool --extract [extract-options] FILE1 FILE2
-  mcpltool --repair FILE
-  mcpltool --version
-  mcpltool --help
+  mcpltool-c [dump-options] FILE
+  mcpltool-c --merge [merge-options] FILE1 FILE2
+  mcpltool-c --extract [extract-options] FILE1 FILE2
+  mcpltool-c --repair FILE
+  mcpltool-c --version
+  mcpltool-c --help
 
 Dump options:
   By default include the info in the FILE header plus the first ten contained
@@ -64,22 +68,26 @@ Other options:
   -h, --help      : Display this usage information (ignores all other options).
 
 ----------------------------------------------
-Running mcpltool --help
+Running mcpltool-c --help
 ----------------------------------------------
 Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.
 
 The default behaviour is to display the contents of the FILE in human readable
 format (see Dump Options below for how to modify what is displayed).
 
+This is a minimal version (written in C) of the mcpltool command from the
+mcpl-python package, which can in addition show statistics and histograms, and
+select or edit particles with expressions.
+
 This installation supports direct reading of gzipped files (.mcpl.gz).
 
 Usage:
-  mcpltool [dump-options] FILE
-  mcpltool --merge [merge-options] FILE1 FILE2
-  mcpltool --extract [extract-options] FILE1 FILE2
-  mcpltool --repair FILE
-  mcpltool --version
-  mcpltool --help
+  mcpltool-c [dump-options] FILE
+  mcpltool-c --merge [merge-options] FILE1 FILE2
+  mcpltool-c --extract [extract-options] FILE1 FILE2
+  mcpltool-c --repair FILE
+  mcpltool-c --version
+  mcpltool-c --help
 
 Dump options:
   By default include the info in the FILE header plus the first ten contained
@@ -129,22 +137,26 @@ Other options:
   -h, --help      : Display this usage information (ignores all other options).
 
 ----------------------------------------------
-Running mcpltool --h
+Running mcpltool-c --h
 ----------------------------------------------
 Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.
 
 The default behaviour is to display the contents of the FILE in human readable
 format (see Dump Options below for how to modify what is displayed).
 
+This is a minimal version (written in C) of the mcpltool command from the
+mcpl-python package, which can in addition show statistics and histograms, and
+select or edit particles with expressions.
+
 This installation supports direct reading of gzipped files (.mcpl.gz).
 
 Usage:
-  mcpltool [dump-options] FILE
-  mcpltool --merge [merge-options] FILE1 FILE2
-  mcpltool --extract [extract-options] FILE1 FILE2
-  mcpltool --repair FILE
-  mcpltool --version
-  mcpltool --help
+  mcpltool-c [dump-options] FILE
+  mcpltool-c --merge [merge-options] FILE1 FILE2
+  mcpltool-c --extract [extract-options] FILE1 FILE2
+  mcpltool-c --repair FILE
+  mcpltool-c --version
+  mcpltool-c --help
 
 Dump options:
   By default include the info in the FILE header plus the first ten contained
@@ -194,17 +206,17 @@ Other options:
   -h, --help      : Display this usage information (ignores all other options).
 
 ----------------------------------------------
-Running mcpltool --version
+Running mcpltool-c --version
 ----------------------------------------------
 MCPL version 99.99.99
 
 ----------------------------------------------
-Running mcpltool --v
+Running mcpltool-c --v
 ----------------------------------------------
 MCPL version 99.99.99
 
 ----------------------------------------------
-Running mcpltool rf16cp.mcpl --justhead
+Running mcpltool-c rf16cp.mcpl --justhead
 ----------------------------------------------
 Opened MCPL file rf16cp.mcpl:
 
@@ -230,7 +242,7 @@ Opened MCPL file rf16cp.mcpl:
 
 
 ----------------------------------------------
-Running mcpltool rf16cp.mcpl --ju
+Running mcpltool-c rf16cp.mcpl --ju
 ----------------------------------------------
 Opened MCPL file rf16cp.mcpl:
 
@@ -256,7 +268,7 @@ Opened MCPL file rf16cp.mcpl:
 
 
 ----------------------------------------------
-Running mcpltool rf16cp.mcpl -j
+Running mcpltool-c rf16cp.mcpl -j
 ----------------------------------------------
 Opened MCPL file rf16cp.mcpl:
 
@@ -282,7 +294,7 @@ Opened MCPL file rf16cp.mcpl:
 
 
 ----------------------------------------------
-Running mcpltool rf16cp.mcpl --nohead
+Running mcpltool-c rf16cp.mcpl --nohead
 ----------------------------------------------
 Opened MCPL file rf16cp.mcpl:
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
@@ -293,7 +305,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
 
 ----------------------------------------------
-Running mcpltool rf16cp.mcpl --n
+Running mcpltool-c rf16cp.mcpl --n
 ----------------------------------------------
 Opened MCPL file rf16cp.mcpl:
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
@@ -304,7 +316,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
 
 ----------------------------------------------
-Running mcpltool rf16cp.mcpl --n -m --inplace
+Running mcpltool-c rf16cp.mcpl --n -m --inplace
 ----------------------------------------------
 ERROR: Conflicting options specified.
 
@@ -312,7 +324,7 @@ Run with -h or --help for usage information
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool rf16cp.mcpl --ju -l2
+Running mcpltool-c rf16cp.mcpl --ju -l2
 ----------------------------------------------
 ERROR: Do not specify -l or -s with --justhead
 
@@ -320,7 +332,7 @@ Run with -h or --help for usage information
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool rf16cp.mcpl --ju -s1
+Running mcpltool-c rf16cp.mcpl --ju -s1
 ----------------------------------------------
 ERROR: Do not specify -l or -s with --justhead
 
@@ -328,7 +340,7 @@ Run with -h or --help for usage information
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool rf16cp.mcpl -l2 -r
+Running mcpltool-c rf16cp.mcpl -l2 -r
 ----------------------------------------------
 ERROR: Conflicting options specified.
 
@@ -336,22 +348,26 @@ Run with -h or --help for usage information
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool rf16cp.mcpl --v --h
+Running mcpltool-c rf16cp.mcpl --v --h
 ----------------------------------------------
 Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.
 
 The default behaviour is to display the contents of the FILE in human readable
 format (see Dump Options below for how to modify what is displayed).
 
+This is a minimal version (written in C) of the mcpltool command from the
+mcpl-python package, which can in addition show statistics and histograms, and
+select or edit particles with expressions.
+
 This installation supports direct reading of gzipped files (.mcpl.gz).
 
 Usage:
-  mcpltool [dump-options] FILE
-  mcpltool --merge [merge-options] FILE1 FILE2
-  mcpltool --extract [extract-options] FILE1 FILE2
-  mcpltool --repair FILE
-  mcpltool --version
-  mcpltool --help
+  mcpltool-c [dump-options] FILE
+  mcpltool-c --merge [merge-options] FILE1 FILE2
+  mcpltool-c --extract [extract-options] FILE1 FILE2
+  mcpltool-c --repair FILE
+  mcpltool-c --version
+  mcpltool-c --help
 
 Dump options:
   By default include the info in the FILE header plus the first ten contained
@@ -401,7 +417,7 @@ Other options:
   -h, --help      : Display this usage information (ignores all other options).
 
 ----------------------------------------------
-Running mcpltool rf16cp.mcpl --v --m --inplace
+Running mcpltool-c rf16cp.mcpl --v --m --inplace
 ----------------------------------------------
 ERROR: Conflicting options specified.
 
@@ -409,7 +425,7 @@ Run with -h or --help for usage information
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool rf16cp.mcpl -l0 -s2
+Running mcpltool-c rf16cp.mcpl -l0 -s2
 ----------------------------------------------
 Opened MCPL file rf16cp.mcpl:
 
@@ -439,7 +455,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
 
 ----------------------------------------------
-Running mcpltool rf16cp.mcpl -l2 -s0
+Running mcpltool-c rf16cp.mcpl -l2 -s0
 ----------------------------------------------
 Opened MCPL file rf16cp.mcpl:
 
@@ -468,54 +484,11 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
 
 ----------------------------------------------
-Running mcpltool rf16cp.mcpl -m --inplace '<TESTDATADIR>/ref/reffile_16.mcpl'
+Running mcpltool-c rf16cp.mcpl -m --inplace '<TESTDATADIR>/ref/reffile_16.mcpl'
 ----------------------------------------------
 
 ----------------------------------------------
-Running mcpltool rf16cp.mcpl -l0
-----------------------------------------------
-Opened MCPL file rf16cp.mcpl:
-
-  Basic info
-    Format             : MCPL-3
-    No. of particles   : 10
-    Header storage     : 59 bytes
-    Data storage       : 480 bytes
-
-  Custom meta data
-    Source             : "MyMCApp"
-    Number of comments : 0
-    Number of blobs    : 0
-
-  Particle data format
-    User flags         : yes
-    Polarisation info  : yes
-    Fixed part. type   : yes (pdgcode 2112)
-    Fixed part. weight : no
-    FP precision       : single
-    Endianness         : little
-    Storage            : 48 bytes/particle
-
-index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
-    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
-    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
-    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
-    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
-    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
-    5        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
-    6        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
-    7        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
-    8        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
-    9        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
-
-----------------------------------------------
-Running mcpltool rf16cp.mcpl --mer --inpl rf16cp.mcpl
-----------------------------------------------
-MCPL ERROR: Merging file with itself
-
-===> Command failed!
-----------------------------------------------
-Running mcpltool rf16cp.mcpl -l0
+Running mcpltool-c rf16cp.mcpl -l0
 ----------------------------------------------
 Opened MCPL file rf16cp.mcpl:
 
@@ -552,13 +525,13 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     9        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
 
 ----------------------------------------------
-Running mcpltool rf16cp.mcpl --m --inplac rf16cp.mcpl
+Running mcpltool-c rf16cp.mcpl --mer --inpl rf16cp.mcpl
 ----------------------------------------------
 MCPL ERROR: Merging file with itself
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool rf16cp.mcpl -l0
+Running mcpltool-c rf16cp.mcpl -l0
 ----------------------------------------------
 Opened MCPL file rf16cp.mcpl:
 
@@ -595,31 +568,74 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     9        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
 
 ----------------------------------------------
-Running mcpltool rf16cp.mcpl --merge --inplace rf16cp.mcpl
+Running mcpltool-c rf16cp.mcpl --m --inplac rf16cp.mcpl
 ----------------------------------------------
 MCPL ERROR: Merging file with itself
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool -m dupmerge.mcpl rf16cp.mcpl ./rf16cp.mcpl ../tmprundir/rf16cp.mcpl rf16cp_sl.mcpl rf16cp_hl.mcpl rf16_sl.mcpl rf16_sl.mcpl
+Running mcpltool-c rf16cp.mcpl -l0
+----------------------------------------------
+Opened MCPL file rf16cp.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 10
+    Header storage     : 59 bytes
+    Data storage       : 480 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 48 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+    5        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    6        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+    7        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+    8        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    9        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+
+----------------------------------------------
+Running mcpltool-c rf16cp.mcpl --merge --inplace rf16cp.mcpl
 ----------------------------------------------
 MCPL ERROR: Merging file with itself
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool -m --inplace dupmerge.mcpl ./dupmerge.mcpl
+Running mcpltool-c -m dupmerge.mcpl rf16cp.mcpl ./rf16cp.mcpl ../tmprundir/rf16cp.mcpl rf16cp_sl.mcpl rf16cp_hl.mcpl rf16_sl.mcpl rf16_sl.mcpl
+----------------------------------------------
+MCPL ERROR: Merging file with itself
+
+===> Command failed!
+----------------------------------------------
+Running mcpltool-c -m --inplace dupmerge.mcpl ./dupmerge.mcpl
 ----------------------------------------------
 MCPL ERROR: Unable to open file!
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool -m --inplace dupmerge.mcpl dupmerge.mcpl
+Running mcpltool-c -m --inplace dupmerge.mcpl dupmerge.mcpl
 ----------------------------------------------
 MCPL ERROR: Unable to open file!
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool rf16cp.mcpl -l0
+Running mcpltool-c rf16cp.mcpl -l0
 ----------------------------------------------
 Opened MCPL file rf16cp.mcpl:
 
@@ -656,7 +672,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     9        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
 
 ----------------------------------------------
-Running mcpltool -l0 -s2 '<TESTDATADIR>/ref/reffile_5.mcpl.gz'
+Running mcpltool-c -l0 -s2 '<TESTDATADIR>/ref/reffile_5.mcpl.gz'
 ----------------------------------------------
 Opened MCPL file reffile_5.mcpl.gz:
 
@@ -687,7 +703,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1 0xdeadbeef
 
 ----------------------------------------------
-Running mcpltool -l0 -s2 '<TESTDATADIR>/ref/reffile_5.mcpl'
+Running mcpltool-c -l0 -s2 '<TESTDATADIR>/ref/reffile_5.mcpl'
 ----------------------------------------------
 Opened MCPL file reffile_5.mcpl:
 
@@ -718,7 +734,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1 0xdeadbeef
 
 ----------------------------------------------
-Running mcpltool -l0 -s2 '<TESTDATADIR>/ref/reffile_empty.mcpl'
+Running mcpltool-c -l0 -s2 '<TESTDATADIR>/ref/reffile_empty.mcpl'
 ----------------------------------------------
 Opened MCPL file reffile_empty.mcpl:
 
@@ -746,7 +762,7 @@ Opened MCPL file reffile_empty.mcpl:
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
 
 ----------------------------------------------
-Running mcpltool -l0 -s2 '<TESTDATADIR>/ref/reffile_empty.mcpl.gz'
+Running mcpltool-c -l0 -s2 '<TESTDATADIR>/ref/reffile_empty.mcpl.gz'
 ----------------------------------------------
 Opened MCPL file reffile_empty.mcpl.gz:
 
@@ -774,23 +790,23 @@ Opened MCPL file reffile_empty.mcpl.gz:
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
 
 ----------------------------------------------
-Running mcpltool -m --inplace rf5cp.mcpl '<TESTDATADIR>/ref/reffile_5.mcpl.gz'
+Running mcpltool-c -m --inplace rf5cp.mcpl '<TESTDATADIR>/ref/reffile_5.mcpl.gz'
 ----------------------------------------------
 
 ----------------------------------------------
-Running mcpltool -m --inpla rf5cp.mcpl.gz '<TESTDATADIR>/ref/reffile_5.mcpl'
+Running mcpltool-c -m --inpla rf5cp.mcpl.gz '<TESTDATADIR>/ref/reffile_5.mcpl'
 ----------------------------------------------
 MCPL ERROR: direct modification of gzipped files is not supported.
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool -m --inplac rf5cp.mcpl.gz '<TESTDATADIR>/ref/reffile_5.mcpl.gz'
+Running mcpltool-c -m --inplac rf5cp.mcpl.gz '<TESTDATADIR>/ref/reffile_5.mcpl.gz'
 ----------------------------------------------
 MCPL ERROR: direct modification of gzipped files is not supported.
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool rfcrash.mcpl
+Running mcpltool-c rfcrash.mcpl
 ----------------------------------------------
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 Opened MCPL file rfcrash.mcpl:
@@ -827,12 +843,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
 
 ----------------------------------------------
-Running mcpltool --repair rfcrash.mcpl
+Running mcpltool-c --repair rfcrash.mcpl
 ----------------------------------------------
 MCPL: Successfully repaired file with 4 particles.
 
 ----------------------------------------------
-Running mcpltool rfcrash.mcpl
+Running mcpltool-c rfcrash.mcpl
 ----------------------------------------------
 Opened MCPL file rfcrash.mcpl:
 
@@ -868,13 +884,13 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
 
 ----------------------------------------------
-Running mcpltool --r rfcrash.mcpl
+Running mcpltool-c --r rfcrash.mcpl
 ----------------------------------------------
 MCPL ERROR: File does not appear to be broken.
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool rfcrash.mcpl
+Running mcpltool-c rfcrash.mcpl
 ----------------------------------------------
 Opened MCPL file rfcrash.mcpl:
 
@@ -910,13 +926,13 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
 
 ----------------------------------------------
-Running mcpltool -r rfcrash.mcpl.gz
+Running mcpltool-c -r rfcrash.mcpl.gz
 ----------------------------------------------
 MCPL ERROR: Input file is indeed broken, but must be gunzipped before it can be repaired.
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool rfcrash.mcpl
+Running mcpltool-c rfcrash.mcpl
 ----------------------------------------------
 Opened MCPL file rfcrash.mcpl:
 
@@ -952,13 +968,13 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1
 
 ----------------------------------------------
-Running mcpltool -r rf16cp.mcpl
+Running mcpltool-c -r rf16cp.mcpl
 ----------------------------------------------
 MCPL ERROR: File does not appear to be broken.
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool rfempty.mcpl
+Running mcpltool-c rfempty.mcpl
 ----------------------------------------------
 Opened MCPL file rfempty.mcpl:
 
@@ -986,13 +1002,13 @@ Opened MCPL file rfempty.mcpl:
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
 
 ----------------------------------------------
-Running mcpltool -r rfempty.mcpl
+Running mcpltool-c -r rfempty.mcpl
 ----------------------------------------------
 MCPL ERROR: File does not appear to be broken.
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool rfempty.mcpl
+Running mcpltool-c rfempty.mcpl
 ----------------------------------------------
 Opened MCPL file rfempty.mcpl:
 
@@ -1020,7 +1036,7 @@ Opened MCPL file rfempty.mcpl:
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
 
 ----------------------------------------------
-Running mcpltool rfempty.mcpl.gz
+Running mcpltool-c rfempty.mcpl.gz
 ----------------------------------------------
 Opened MCPL file rfempty.mcpl.gz:
 
@@ -1048,13 +1064,13 @@ Opened MCPL file rfempty.mcpl.gz:
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
 
 ----------------------------------------------
-Running mcpltool -r rfempty.mcpl.gz
+Running mcpltool-c -r rfempty.mcpl.gz
 ----------------------------------------------
 MCPL ERROR: File does not appear to be broken.
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool rfempty.mcpl.gz
+Running mcpltool-c rfempty.mcpl.gz
 ----------------------------------------------
 Opened MCPL file rfempty.mcpl.gz:
 
@@ -1082,7 +1098,7 @@ Opened MCPL file rfempty.mcpl.gz:
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
 
 ----------------------------------------------
-Running mcpltool rfcrash_0p4.mcpl
+Running mcpltool-c rfcrash_0p4.mcpl
 ----------------------------------------------
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 0 particles.
 Opened MCPL file rfcrash_0p4.mcpl:
@@ -1110,12 +1126,12 @@ Opened MCPL file rfcrash_0p4.mcpl:
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
 
 ----------------------------------------------
-Running mcpltool -r rfcrash_0p4.mcpl
+Running mcpltool-c -r rfcrash_0p4.mcpl
 ----------------------------------------------
 MCPL: Successfully repaired file with 0 particles.
 
 ----------------------------------------------
-Running mcpltool rfcrash_0p4.mcpl
+Running mcpltool-c rfcrash_0p4.mcpl
 ----------------------------------------------
 Opened MCPL file rfcrash_0p4.mcpl:
 
@@ -1142,13 +1158,13 @@ Opened MCPL file rfcrash_0p4.mcpl:
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
 
 ----------------------------------------------
-Running mcpltool -r rfcrash_0p4.mcpl
+Running mcpltool-c -r rfcrash_0p4.mcpl
 ----------------------------------------------
 MCPL ERROR: File does not appear to be broken.
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool rfcrash_8p7.mcpl
+Running mcpltool-c rfcrash_8p7.mcpl
 ----------------------------------------------
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 8 particles.
 Opened MCPL file rfcrash_8p7.mcpl:
@@ -1184,12 +1200,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     7        2112           0           0           0        0.07        0.07           0    -0.99755           0           1
 
 ----------------------------------------------
-Running mcpltool -r rfcrash_8p7.mcpl
+Running mcpltool-c -r rfcrash_8p7.mcpl
 ----------------------------------------------
 MCPL: Successfully repaired file with 8 particles.
 
 ----------------------------------------------
-Running mcpltool rfcrash_8p7.mcpl
+Running mcpltool-c rfcrash_8p7.mcpl
 ----------------------------------------------
 Opened MCPL file rfcrash_8p7.mcpl:
 
@@ -1224,13 +1240,13 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     7        2112           0           0           0        0.07        0.07           0    -0.99755           0           1
 
 ----------------------------------------------
-Running mcpltool -r rfcrash_8p7.mcpl
+Running mcpltool-c -r rfcrash_8p7.mcpl
 ----------------------------------------------
 MCPL ERROR: File does not appear to be broken.
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool f_statsum_crash.mcpl
+Running mcpltool-c f_statsum_crash.mcpl
 ----------------------------------------------
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
 MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
@@ -1273,14 +1289,14 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     8          22      2.3836     -95.995     -8.4597     -87.381           0           0           1      97.063      9.0231
 
 ----------------------------------------------
-Running mcpltool -r f_statsum_crash.mcpl
+Running mcpltool-c -r f_statsum_crash.mcpl
 ----------------------------------------------
 MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
 MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
 MCPL: Successfully repaired file with 9 particles.
 
 ----------------------------------------------
-Running mcpltool f_statsum_crash.mcpl
+Running mcpltool-c f_statsum_crash.mcpl
 ----------------------------------------------
 Opened MCPL file f_statsum_crash.mcpl:
 
@@ -1320,7 +1336,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     8          22      2.3836     -95.995     -8.4597     -87.381           0           0           1      97.063      9.0231
 
 ----------------------------------------------
-Running mcpltool statsum_copy_a.mcpl
+Running mcpltool-c statsum_copy_a.mcpl
 ----------------------------------------------
 Opened MCPL file statsum_copy_a.mcpl:
 
@@ -1361,7 +1377,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     9        2112      7.6027     -46.667      7.9521     -24.959           0           0           1      51.254      6.6806
 
 ----------------------------------------------
-Running mcpltool statsum_copy_b.mcpl
+Running mcpltool-c statsum_copy_b.mcpl
 ----------------------------------------------
 Opened MCPL file statsum_copy_b.mcpl:
 
@@ -1402,11 +1418,11 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     9        2112      7.6027     -46.667      7.9521     -24.959           0           0           1      51.254      6.6806
 
 ----------------------------------------------
-Running mcpltool --merge --inplace statsum_copy_a.mcpl statsum_copy_b.mcpl
+Running mcpltool-c --merge --inplace statsum_copy_a.mcpl statsum_copy_b.mcpl
 ----------------------------------------------
 
 ----------------------------------------------
-Running mcpltool statsum_copy_a.mcpl
+Running mcpltool-c statsum_copy_a.mcpl
 ----------------------------------------------
 Opened MCPL file statsum_copy_a.mcpl:
 
@@ -1447,7 +1463,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     9        2112      7.6027     -46.667      7.9521     -24.959           0           0           1      51.254      6.6806
 
 ----------------------------------------------
-Running mcpltool statsum_copy_b.mcpl
+Running mcpltool-c statsum_copy_b.mcpl
 ----------------------------------------------
 Opened MCPL file statsum_copy_b.mcpl:
 
@@ -1488,18 +1504,18 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     9        2112      7.6027     -46.667      7.9521     -24.959           0           0           1      51.254      6.6806
 
 ----------------------------------------------
-Running mcpltool -r rftrunc.mcpl.gz
+Running mcpltool-c -r rftrunc.mcpl.gz
 ----------------------------------------------
 MCPL ERROR: File must be gunzipped before it can be checked and possibly repaired.
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool -r rftrunc.mcpl
+Running mcpltool-c -r rftrunc.mcpl
 ----------------------------------------------
 MCPL: Successfully repaired file with 7 particles.
 
 ----------------------------------------------
-Running mcpltool rftrunc.mcpl
+Running mcpltool-c rftrunc.mcpl
 ----------------------------------------------
 Opened MCPL file rftrunc.mcpl:
 
@@ -1534,30 +1550,30 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     6        2112           0           0           0           0     0.93106    0.033764    -0.36331           0
 
 ----------------------------------------------
-Running mcpltool fake.mcpl
+Running mcpltool-c fake.mcpl
 ----------------------------------------------
 MCPL ERROR: File is not an MCPL file!
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool fake.mcpl.gz
+Running mcpltool-c fake.mcpl.gz
 ----------------------------------------------
 MCPL ERROR: File is not an MCPL file!
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool fake2.mcpl.gz
+Running mcpltool-c fake2.mcpl.gz
 ----------------------------------------------
 MCPL ERROR: File is not an MCPL file!
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool -e miscphys.mcpl.gz extracted_0
+Running mcpltool-c -e miscphys.mcpl.gz extracted_0
 ----------------------------------------------
 MCPL: Successfully extracted 195 / 195 particles from miscphys.mcpl.gz into extracted_0.mcpl
 
 ----------------------------------------------
-Running mcpltool -e miscphys.mcpl.gz extracted_0
+Running mcpltool-c -e miscphys.mcpl.gz extracted_0
 ----------------------------------------------
 ERROR: Requested output file already exists (with .mcpl extension).
 
@@ -1565,42 +1581,42 @@ Run with -h or --help for usage information
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool --extract -p2112 --no-comment miscphys.mcpl.gz extracted_1.mcpl.gz
+Running mcpltool-c --extract -p2112 --no-comment miscphys.mcpl.gz extracted_1.mcpl.gz
 ----------------------------------------------
 MCPL: Compressing file extracted_1.mcpl
 MCPL: Compressed file into extracted_1.mcpl.gz
 MCPL: Successfully extracted 15 / 195 particles from miscphys.mcpl.gz into extracted_1.mcpl.gz
 
 ----------------------------------------------
-Running mcpltool --extract -p-11 --no-comment miscphys.mcpl.gz extracted_2.mcpl.gz
+Running mcpltool-c --extract -p-11 --no-comment miscphys.mcpl.gz extracted_2.mcpl.gz
 ----------------------------------------------
 MCPL: Compressing file extracted_2.mcpl
 MCPL: Compressed file into extracted_2.mcpl.gz
 MCPL: Successfully extracted 10 / 195 particles from miscphys.mcpl.gz into extracted_2.mcpl.gz
 
 ----------------------------------------------
-Running mcpltool -ep-1000020040 --no-comment miscphysnogz.mcpl extracted_3.mcpl.gz
+Running mcpltool-c -ep-1000020040 --no-comment miscphysnogz.mcpl extracted_3.mcpl.gz
 ----------------------------------------------
 MCPL: Compressing file extracted_3.mcpl
 MCPL: Compressed file into extracted_3.mcpl.gz
 MCPL: Successfully extracted 5 / 195 particles from miscphysnogz.mcpl into extracted_3.mcpl.gz
 
 ----------------------------------------------
-Running mcpltool -e -p1000922350 --no-comment miscphys.mcpl.gz extracted_4.mcpl.gz
+Running mcpltool-c -e -p1000922350 --no-comment miscphys.mcpl.gz extracted_4.mcpl.gz
 ----------------------------------------------
 MCPL: Compressing file extracted_4.mcpl
 MCPL: Compressed file into extracted_4.mcpl.gz
 MCPL: Successfully extracted 5 / 195 particles from miscphys.mcpl.gz into extracted_4.mcpl.gz
 
 ----------------------------------------------
-Running mcpltool -e -p111 -l999999 -s150 --no-comment miscphysnogz.mcpl extracted_5.mcpl.gz
+Running mcpltool-c -e -p111 -l999999 -s150 --no-comment miscphysnogz.mcpl extracted_5.mcpl.gz
 ----------------------------------------------
 MCPL: Compressing file extracted_5.mcpl
 MCPL: Compressed file into extracted_5.mcpl.gz
 MCPL: Successfully extracted 5 / 195 particles from miscphysnogz.mcpl into extracted_5.mcpl.gz
 
 ----------------------------------------------
-Running mcpltool -e -p0 miscphysnogz.mcpl badpdg.mcpl
+Running mcpltool-c -e -p0 miscphysnogz.mcpl badpdg.mcpl
 ----------------------------------------------
 ERROR: Must specify non-zero 32bit integer or particle name as argument to -p.
 
@@ -1608,7 +1624,7 @@ Run with -h or --help for usage information
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool -e -pabc miscphysnogz.mcpl badpdg.mcpl
+Running mcpltool-c -e -pabc miscphysnogz.mcpl badpdg.mcpl
 ----------------------------------------------
 ERROR: Must specify non-zero 32bit integer or particle name as argument to -p.
 
@@ -1616,7 +1632,7 @@ Run with -h or --help for usage information
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool -e -pNeutron miscphysnogz.mcpl badpdg.mcpl
+Running mcpltool-c -e -pNeutron miscphysnogz.mcpl badpdg.mcpl
 ----------------------------------------------
 ERROR: Must specify non-zero 32bit integer or particle name as argument to -p.
 
@@ -1624,32 +1640,32 @@ Run with -h or --help for usage information
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool -e -pneutron miscphysnogz.mcpl extracted_names_1.mcpl
+Running mcpltool-c -e -pneutron miscphysnogz.mcpl extracted_names_1.mcpl
 ----------------------------------------------
 MCPL: Successfully extracted 15 / 195 particles from miscphysnogz.mcpl into extracted_names_1.mcpl
 
 ----------------------------------------------
-Running mcpltool -e -pantiproton -l200 miscphysnogz.mcpl extracted_names_2.mcpl
+Running mcpltool-c -e -pantiproton -l200 miscphysnogz.mcpl extracted_names_2.mcpl
 ----------------------------------------------
 MCPL: Successfully extracted 5 / 195 particles from miscphysnogz.mcpl into extracted_names_2.mcpl
 
 ----------------------------------------------
-Running mcpltool -e -pphoton miscphysnogz.mcpl extracted_names_3.mcpl
+Running mcpltool-c -e -pphoton miscphysnogz.mcpl extracted_names_3.mcpl
 ----------------------------------------------
 MCPL: Successfully extracted 15 / 195 particles from miscphysnogz.mcpl into extracted_names_3.mcpl
 
 ----------------------------------------------
-Running mcpltool -e -pantielectron miscphysnogz.mcpl extracted_names_4.mcpl
+Running mcpltool-c -e -pantielectron miscphysnogz.mcpl extracted_names_4.mcpl
 ----------------------------------------------
 MCPL: Successfully extracted 10 / 195 particles from miscphysnogz.mcpl into extracted_names_4.mcpl
 
 ----------------------------------------------
-Running mcpltool -e -p-11 miscphysnogz.mcpl extracted_names_5.mcpl
+Running mcpltool-c -e -p-11 miscphysnogz.mcpl extracted_names_5.mcpl
 ----------------------------------------------
 MCPL: Successfully extracted 10 / 195 particles from miscphysnogz.mcpl into extracted_names_5.mcpl
 
 ----------------------------------------------
-Running mcpltool -n -l3 extracted_names_3.mcpl
+Running mcpltool-c -n -l3 extracted_names_3.mcpl
 ----------------------------------------------
 Opened MCPL file extracted_names_3.mcpl:
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
@@ -1658,7 +1674,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     2          22         0.5           0          10           0           1           0           0       60000           1           0           0           0 0x00000000
 
 ----------------------------------------------
-Running mcpltool -l0 extracted_1.mcpl.gz
+Running mcpltool-c -l0 extracted_1.mcpl.gz
 ----------------------------------------------
 Opened MCPL file extracted_1.mcpl.gz:
 
@@ -1701,7 +1717,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
    14        2112     2.5e-08          10           0           0           0           0           1           0           1           0           0           0 0xdeadbeef
 
 ----------------------------------------------
-Running mcpltool -l0 extracted_2.mcpl.gz
+Running mcpltool-c -l0 extracted_2.mcpl.gz
 ----------------------------------------------
 Opened MCPL file extracted_2.mcpl.gz:
 
@@ -1739,7 +1755,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     9         -11        6000          10           0           0           0           0           1           0           1           0           0           0 0xdeadbeef
 
 ----------------------------------------------
-Running mcpltool -l0 extracted_3.mcpl.gz
+Running mcpltool-c -l0 extracted_3.mcpl.gz
 ----------------------------------------------
 Opened MCPL file extracted_3.mcpl.gz:
 
@@ -1772,7 +1788,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     4 -1000020040        6000          10           0           0           0           0           1           0           1           0           0           0 0xdeadbeef
 
 ----------------------------------------------
-Running mcpltool -l0 extracted_4.mcpl.gz
+Running mcpltool-c -l0 extracted_4.mcpl.gz
 ----------------------------------------------
 Opened MCPL file extracted_4.mcpl.gz:
 
@@ -1805,7 +1821,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     4  1000922350        6000           0          10           0           1           0           0           0           1           0           0           0 0xdeadbeef
 
 ----------------------------------------------
-Running mcpltool -l0 extracted_5.mcpl.gz
+Running mcpltool-c -l0 extracted_5.mcpl.gz
 ----------------------------------------------
 Opened MCPL file extracted_5.mcpl.gz:
 
@@ -1838,24 +1854,24 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     4         111        6000           0           0          10           0           1           0           0           1           0           0           0 0xdeadbeef
 
 ----------------------------------------------
-Running mcpltool --merge merged_new_file.mcpl extracted_1.mcpl.gz extracted_2.mcpl.gz
+Running mcpltool-c --merge merged_new_file.mcpl extracted_1.mcpl.gz extracted_2.mcpl.gz
 ----------------------------------------------
 
 ----------------------------------------------
-Running mcpltool --merge merged_1to5_new_filea.mcpl extracted_1.mcpl.gz extracted_2.mcpl.gz extracted_3.mcpl.gz extracted_4.mcpl.gz extracted_5.mcpl.gz
+Running mcpltool-c --merge merged_1to5_new_filea.mcpl extracted_1.mcpl.gz extracted_2.mcpl.gz extracted_3.mcpl.gz extracted_4.mcpl.gz extracted_5.mcpl.gz
 ----------------------------------------------
 
 ----------------------------------------------
-Running mcpltool --merge merged_1to5_new_fileb.mcpl extracted_1.mcpl extracted_2.mcpl extracted_3.mcpl.gz extracted_4.mcpl.gz extracted_5.mcpl.gz
+Running mcpltool-c --merge merged_1to5_new_fileb.mcpl extracted_1.mcpl extracted_2.mcpl extracted_3.mcpl.gz extracted_4.mcpl.gz extracted_5.mcpl.gz
 ----------------------------------------------
 
 ===> Checking that merged_1to5_new_filea.mcpl and merged_1to5_new_fileb.mcpl have identical contents.
 ----------------------------------------------
-Running mcpltool --merge --inplace extracted_1.mcpl extracted_2.mcpl
+Running mcpltool-c --merge --inplace extracted_1.mcpl extracted_2.mcpl
 ----------------------------------------------
 
 ----------------------------------------------
-Running mcpltool extracted_1.mcpl
+Running mcpltool-c extracted_1.mcpl
 ----------------------------------------------
 Opened MCPL file extracted_1.mcpl:
 
@@ -1895,31 +1911,31 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 ===> Checking that merged_new_file.mcpl and extracted_1.mcpl have identical contents.
 ===> Checking that miscphys.mcpl.gz and miscphysnogz.mcpl have identical contents.
 ----------------------------------------------
-Running mcpltool --merge --inplace extracted_1.mcpl extracted_3.mcpl.gz extracted_4.mcpl.gz extracted_5.mcpl.gz
+Running mcpltool-c --merge --inplace extracted_1.mcpl extracted_3.mcpl.gz extracted_4.mcpl.gz extracted_5.mcpl.gz
 ----------------------------------------------
 
 ===> Checking that extracted_1.mcpl and merged_1to5_new_fileb.mcpl have identical contents.
 ----------------------------------------------
-Running mcpltool --extract -p2112 --no-comment miscphysnogz.mcpl extracted_1_new.mcpl
+Running mcpltool-c --extract -p2112 --no-comment miscphysnogz.mcpl extracted_1_new.mcpl
 ----------------------------------------------
 MCPL: Successfully extracted 15 / 195 particles from miscphysnogz.mcpl into extracted_1_new.mcpl
 
 ----------------------------------------------
-Running mcpltool --extract -p-11 --no-comment miscphysnogz.mcpl extracted_2_new.mcpl
+Running mcpltool-c --extract -p-11 --no-comment miscphysnogz.mcpl extracted_2_new.mcpl
 ----------------------------------------------
 MCPL: Successfully extracted 10 / 195 particles from miscphysnogz.mcpl into extracted_2_new.mcpl
 
 ----------------------------------------------
-Running mcpltool -e -p1000922350 --no-comment miscphysnogz.mcpl extracted_4_new.mcpl
+Running mcpltool-c -e -p1000922350 --no-comment miscphysnogz.mcpl extracted_4_new.mcpl
 ----------------------------------------------
 MCPL: Successfully extracted 5 / 195 particles from miscphysnogz.mcpl into extracted_4_new.mcpl
 
 ----------------------------------------------
-Running mcpltool --merge merged_1to5_new_filec.mcpl extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
+Running mcpltool-c --merge merged_1to5_new_filec.mcpl extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
 ----------------------------------------------
 
 ----------------------------------------------
-Running mcpltool --merge merged_1to5_new_filec.mcpl.gz extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
+Running mcpltool-c --merge merged_1to5_new_filec.mcpl.gz extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
 ----------------------------------------------
 ERROR: Requested output file already exists (without .gz extension).
 
@@ -1927,7 +1943,7 @@ Run with -h or --help for usage information
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool --merge merged_1to5_new_filec.gz extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
+Running mcpltool-c --merge merged_1to5_new_filec.gz extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
 ----------------------------------------------
 ERROR: Requested output file should not have .gz extension (unless it is .mcpl.gz).
 
@@ -1935,20 +1951,20 @@ Run with -h or --help for usage information
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool --merge merged_1to5_new_filec_unique.mcpl.gz extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
+Running mcpltool-c --merge merged_1to5_new_filec_unique.mcpl.gz extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
 ----------------------------------------------
 MCPL: Compressing file merged_1to5_new_filec_unique.mcpl
 MCPL: Compressed file into merged_1to5_new_filec_unique.mcpl.gz
 
 ===> Checking that merged_1to5_new_filec.mcpl and merged_1to5_new_filec_unique.mcpl.gz have identical contents.
 ----------------------------------------------
-Running mcpltool --merge --inplace extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
+Running mcpltool-c --merge --inplace extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
 ----------------------------------------------
 
 ===> Checking that merged_1to5_new_filec.mcpl and extracted_1_new.mcpl have identical contents.
 ===> Checking that merged_1to5_new_filea.mcpl and merged_1to5_new_filec.mcpl have identical contents.
 ----------------------------------------------
-Running mcpltool --merge extracted_1.mcpl extracted_2.mcpl
+Running mcpltool-c --merge extracted_1.mcpl extracted_2.mcpl
 ----------------------------------------------
 ERROR: Requested output file already exists.
 
@@ -1956,7 +1972,7 @@ Run with -h or --help for usage information
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool --merge --inplace extracted_1.mcpl
+Running mcpltool-c --merge --inplace extracted_1.mcpl
 ----------------------------------------------
 ERROR: Too few arguments for --merge.
 
@@ -1964,7 +1980,7 @@ Run with -h or --help for usage information
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool --merge newfile.mcpl
+Running mcpltool-c --merge newfile.mcpl
 ----------------------------------------------
 ERROR: Too few arguments for --merge.
 
@@ -1972,24 +1988,24 @@ Run with -h or --help for usage information
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool --merge --inplace rf16cp_fmt2.mcpl '<TESTDATADIR>/ref/reffile_16.mcpl'
+Running mcpltool-c --merge --inplace rf16cp_fmt2.mcpl '<TESTDATADIR>/ref/reffile_16.mcpl'
 ----------------------------------------------
 MCPL ERROR: Attempting to merge incompatible files (can not mix MCPL format versions when merging inplace)
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool --merge --inplace '<TESTDATADIR>/ref/reffile_16.mcpl' rf16cp_fmt2.mcpl
+Running mcpltool-c --merge --inplace '<TESTDATADIR>/ref/reffile_16.mcpl' rf16cp_fmt2.mcpl
 ----------------------------------------------
 MCPL ERROR: Attempting to merge incompatible files (can not mix MCPL format versions when merging inplace)
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool --merge mix.mcpl rf16cp_fmt2.mcpl '<TESTDATADIR>/ref/reffile_16.mcpl'
+Running mcpltool-c --merge mix.mcpl rf16cp_fmt2.mcpl '<TESTDATADIR>/ref/reffile_16.mcpl'
 ----------------------------------------------
 MCPL WARNING: Merging files from older MCPL format. Output will be in latest format.
 
 ----------------------------------------------
-Running mcpltool -l0 mix.mcpl
+Running mcpltool-c -l0 mix.mcpl
 ----------------------------------------------
 Opened MCPL file mix.mcpl:
 
@@ -2026,37 +2042,37 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     9        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
 
 ----------------------------------------------
-Running mcpltool -e difficult_unitvector.mcpl extracted_all -l0 --preventcomment
+Running mcpltool-c -e difficult_unitvector.mcpl extracted_all -l0 --preventcomment
 ----------------------------------------------
 MCPL: Successfully extracted 10 / 10 particles from difficult_unitvector.mcpl into extracted_all.mcpl
 
 ----------------------------------------------
-Running mcpltool -e difficult_unitvector.mcpl extracted_none -s999999999 --preventcomment
+Running mcpltool-c -e difficult_unitvector.mcpl extracted_none -s999999999 --preventcomment
 ----------------------------------------------
 MCPL: Successfully extracted 0 / 10 particles from difficult_unitvector.mcpl into extracted_none.mcpl
 
 ----------------------------------------------
-Running mcpltool -e -l3 -s2 -pneutron miscphysnogz.mcpl extracted_comment_1.mcpl
+Running mcpltool-c -e -l3 -s2 -pneutron miscphysnogz.mcpl extracted_comment_1.mcpl
 ----------------------------------------------
 MCPL: Successfully extracted 3 / 195 particles from miscphysnogz.mcpl into extracted_comment_1.mcpl
 
 ----------------------------------------------
-Running mcpltool -e -p-11 miscphysnogz.mcpl extracted_comment_2.mcpl
+Running mcpltool-c -e -p-11 miscphysnogz.mcpl extracted_comment_2.mcpl
 ----------------------------------------------
 MCPL: Successfully extracted 10 / 195 particles from miscphysnogz.mcpl into extracted_comment_2.mcpl
 
 ----------------------------------------------
-Running mcpltool -e miscphysnogz.mcpl extracted_comment_3.mcpl
+Running mcpltool-c -e miscphysnogz.mcpl extracted_comment_3.mcpl
 ----------------------------------------------
 MCPL: Successfully extracted 195 / 195 particles from miscphysnogz.mcpl into extracted_comment_3.mcpl
 
 ----------------------------------------------
-Running mcpltool -e --no-comment -p22 miscphysnogz.mcpl extracted_comment_4.mcpl
+Running mcpltool-c -e --no-comment -p22 miscphysnogz.mcpl extracted_comment_4.mcpl
 ----------------------------------------------
 MCPL: Successfully extracted 15 / 195 particles from miscphysnogz.mcpl into extracted_comment_4.mcpl
 
 ----------------------------------------------
-Running mcpltool -j extracted_comment_1.mcpl
+Running mcpltool-c -j extracted_comment_1.mcpl
 ----------------------------------------------
 Opened MCPL file extracted_comment_1.mcpl:
 
@@ -2084,7 +2100,7 @@ Opened MCPL file extracted_comment_1.mcpl:
 
 
 ----------------------------------------------
-Running mcpltool -j extracted_comment_2.mcpl
+Running mcpltool-c -j extracted_comment_2.mcpl
 ----------------------------------------------
 Opened MCPL file extracted_comment_2.mcpl:
 
@@ -2112,7 +2128,7 @@ Opened MCPL file extracted_comment_2.mcpl:
 
 
 ----------------------------------------------
-Running mcpltool -j extracted_comment_3.mcpl
+Running mcpltool-c -j extracted_comment_3.mcpl
 ----------------------------------------------
 Opened MCPL file extracted_comment_3.mcpl:
 
@@ -2140,7 +2156,7 @@ Opened MCPL file extracted_comment_3.mcpl:
 
 
 ----------------------------------------------
-Running mcpltool -j extracted_comment_4.mcpl
+Running mcpltool-c -j extracted_comment_4.mcpl
 ----------------------------------------------
 Opened MCPL file extracted_comment_4.mcpl:
 
@@ -2167,7 +2183,7 @@ Opened MCPL file extracted_comment_4.mcpl:
 
 
 ----------------------------------------------
-Running mcpltool --no-comment miscphysnogz.mcpl
+Running mcpltool-c --no-comment miscphysnogz.mcpl
 ----------------------------------------------
 ERROR: --no-comment can only be used with --extract.
 
@@ -2175,22 +2191,22 @@ Run with -h or --help for usage information
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool -e -pneutron -s5 miscphysnogz.mcpl extracted_comment_5.mcpl
+Running mcpltool-c -e -pneutron -s5 miscphysnogz.mcpl extracted_comment_5.mcpl
 ----------------------------------------------
 MCPL: Successfully extracted 10 / 195 particles from miscphysnogz.mcpl into extracted_comment_5.mcpl
 
 ----------------------------------------------
-Running mcpltool -e -pneutron -l5 miscphysnogz.mcpl extracted_comment_6.mcpl
+Running mcpltool-c -e -pneutron -l5 miscphysnogz.mcpl extracted_comment_6.mcpl
 ----------------------------------------------
 MCPL: Successfully extracted 5 / 195 particles from miscphysnogz.mcpl into extracted_comment_6.mcpl
 
 ----------------------------------------------
-Running mcpltool -e -p2112 miscphys.mcpl.gz extracted_comment_7.mcpl
+Running mcpltool-c -e -p2112 miscphys.mcpl.gz extracted_comment_7.mcpl
 ----------------------------------------------
 MCPL: Successfully extracted 15 / 195 particles from miscphys.mcpl.gz into extracted_comment_7.mcpl
 
 ----------------------------------------------
-Running mcpltool --merge merged_comment_1.mcpl extracted_comment_1.mcpl extracted_comment_5.mcpl
+Running mcpltool-c --merge merged_comment_1.mcpl extracted_comment_1.mcpl extracted_comment_5.mcpl
 ----------------------------------------------
 ERROR: Requested files are incompatible for merge as they have different header info (comment 1 differs).
 
@@ -2198,7 +2214,7 @@ Run with -h or --help for usage information
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool --merge merged_comment_2.mcpl extracted_comment_7.mcpl extracted_comment_6.mcpl
+Running mcpltool-c --merge merged_comment_2.mcpl extracted_comment_7.mcpl extracted_comment_6.mcpl
 ----------------------------------------------
 ERROR: Requested files are incompatible for merge as they have different header info (comment 1 differs).
 
@@ -2206,16 +2222,16 @@ Run with -h or --help for usage information
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool -e -pneutron miscphys.mcpl.gz extracted_comment_8.mcpl
+Running mcpltool-c -e -pneutron miscphys.mcpl.gz extracted_comment_8.mcpl
 ----------------------------------------------
 MCPL: Successfully extracted 15 / 195 particles from miscphys.mcpl.gz into extracted_comment_8.mcpl
 
 ----------------------------------------------
-Running mcpltool --merge merged_comment_3.mcpl extracted_comment_7.mcpl extracted_comment_8.mcpl
+Running mcpltool-c --merge merged_comment_3.mcpl extracted_comment_7.mcpl extracted_comment_8.mcpl
 ----------------------------------------------
 
 ----------------------------------------------
-Running mcpltool -j merged_comment_3.mcpl
+Running mcpltool-c -j merged_comment_3.mcpl
 ----------------------------------------------
 Opened MCPL file merged_comment_3.mcpl:
 
@@ -2243,23 +2259,23 @@ Opened MCPL file merged_comment_3.mcpl:
 
 
 ----------------------------------------------
-Running mcpltool -m extracted_recombined extracted_none.mcpl extracted_all.mcpl
+Running mcpltool-c -m extracted_recombined extracted_none.mcpl extracted_all.mcpl
 ----------------------------------------------
 
 ----------------------------------------------
-Running mcpltool -m --inplace extracted_none.mcpl extracted_all.mcpl
+Running mcpltool-c -m --inplace extracted_none.mcpl extracted_all.mcpl
 ----------------------------------------------
 
 ===> Checking that difficult_unitvector.mcpl and extracted_recombined.mcpl have identical contents.
 ===> Checking that difficult_unitvector.mcpl and extracted_none.mcpl have identical contents.
 ===> Checking that extracted_recombined.mcpl and extracted_none.mcpl have identical contents.
 ----------------------------------------------
-Running mcpltool --extract statsum_copy.mcpl.gz statsum_extract1.mcpl
+Running mcpltool-c --extract statsum_copy.mcpl.gz statsum_extract1.mcpl
 ----------------------------------------------
 MCPL: Successfully extracted 100 / 100 particles from statsum_copy.mcpl.gz into statsum_extract1.mcpl
 
 ----------------------------------------------
-Running mcpltool statsum_extract1.mcpl
+Running mcpltool-c statsum_extract1.mcpl
 ----------------------------------------------
 Opened MCPL file statsum_extract1.mcpl:
 
@@ -2301,13 +2317,13 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     9        2112      7.6027     -46.667      7.9521     -24.959           0           0           1      51.254      6.6806
 
 ----------------------------------------------
-Running mcpltool --extract -l7 statsum_copy.mcpl.gz statsum_extract2.mcpl
+Running mcpltool-c --extract -l7 statsum_copy.mcpl.gz statsum_extract2.mcpl
 ----------------------------------------------
 MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
 MCPL: Successfully extracted 7 / 100 particles from statsum_copy.mcpl.gz into statsum_extract2.mcpl
 
 ----------------------------------------------
-Running mcpltool statsum_extract2.mcpl
+Running mcpltool-c statsum_extract2.mcpl
 ----------------------------------------------
 Opened MCPL file statsum_extract2.mcpl:
 
@@ -2346,13 +2362,13 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     6        2112      8.0774      78.306     -43.337     -29.508           0           0           1      91.903     0.70686
 
 ----------------------------------------------
-Running mcpltool --extract -s30 statsum_copy.mcpl.gz statsum_extract3.mcpl
+Running mcpltool-c --extract -s30 statsum_copy.mcpl.gz statsum_extract3.mcpl
 ----------------------------------------------
 MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
 MCPL: Successfully extracted 70 / 100 particles from statsum_copy.mcpl.gz into statsum_extract3.mcpl
 
 ----------------------------------------------
-Running mcpltool statsum_extract3.mcpl
+Running mcpltool-c statsum_extract3.mcpl
 ----------------------------------------------
 Opened MCPL file statsum_extract3.mcpl:
 
@@ -2394,13 +2410,13 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     9        2112      2.8845      33.311     -42.244      55.153           0           0           1      32.964      1.9056
 
 ----------------------------------------------
-Running mcpltool --extract -l4 -s20 statsum_copy.mcpl.gz statsum_extract4.mcpl
+Running mcpltool-c --extract -l4 -s20 statsum_copy.mcpl.gz statsum_extract4.mcpl
 ----------------------------------------------
 MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
 MCPL: Successfully extracted 4 / 100 particles from statsum_copy.mcpl.gz into statsum_extract4.mcpl
 
 ----------------------------------------------
-Running mcpltool statsum_extract4.mcpl
+Running mcpltool-c statsum_extract4.mcpl
 ----------------------------------------------
 Opened MCPL file statsum_extract4.mcpl:
 
@@ -2436,12 +2452,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     3          22      2.0441     -89.612     -68.439      99.999           0           0           1      88.996      1.2634
 
 ----------------------------------------------
-Running mcpltool --extract -l300 statsum_copy.mcpl.gz statsum_extract_all.mcpl
+Running mcpltool-c --extract -l300 statsum_copy.mcpl.gz statsum_extract_all.mcpl
 ----------------------------------------------
 MCPL: Successfully extracted 100 / 100 particles from statsum_copy.mcpl.gz into statsum_extract_all.mcpl
 
 ----------------------------------------------
-Running mcpltool statsum_extract_all.mcpl
+Running mcpltool-c statsum_extract_all.mcpl
 ----------------------------------------------
 Opened MCPL file statsum_extract_all.mcpl:
 
@@ -2483,13 +2499,13 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     9        2112      7.6027     -46.667      7.9521     -24.959           0           0           1      51.254      6.6806
 
 ----------------------------------------------
-Running mcpltool --extract -l40 -s1 statsum_copy.mcpl.gz statsum_extract5.mcpl
+Running mcpltool-c --extract -l40 -s1 statsum_copy.mcpl.gz statsum_extract5.mcpl
 ----------------------------------------------
 MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
 MCPL: Successfully extracted 40 / 100 particles from statsum_copy.mcpl.gz into statsum_extract5.mcpl
 
 ----------------------------------------------
-Running mcpltool statsum_extract5.mcpl
+Running mcpltool-c statsum_extract5.mcpl
 ----------------------------------------------
 Opened MCPL file statsum_extract5.mcpl:
 
@@ -2531,13 +2547,13 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     9          22      9.3082     -92.144     -12.472      86.367           0           0           1      72.095      2.8501
 
 ----------------------------------------------
-Running mcpltool -e -l40 -s1 -p22 statsum_copy.mcpl.gz statsum_extract5photons.mcpl
+Running mcpltool-c -e -l40 -s1 -p22 statsum_copy.mcpl.gz statsum_extract5photons.mcpl
 ----------------------------------------------
 MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
 MCPL: Successfully extracted 21 / 100 particles from statsum_copy.mcpl.gz into statsum_extract5photons.mcpl
 
 ----------------------------------------------
-Running mcpltool statsum_extract5photons.mcpl
+Running mcpltool-c statsum_extract5photons.mcpl
 ----------------------------------------------
 Opened MCPL file statsum_extract5photons.mcpl:
 
@@ -2579,12 +2595,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     9          22      1.7629      90.021     -89.494      4.3127           0           0           1      24.006        7.98
 
 ----------------------------------------------
-Running mcpltool --extract -p22 statsum_copy.mcpl.gz statsum_extractphotons_all.mcpl
+Running mcpltool-c --extract -p22 statsum_copy.mcpl.gz statsum_extractphotons_all.mcpl
 ----------------------------------------------
 MCPL: Successfully extracted 50 / 100 particles from statsum_copy.mcpl.gz into statsum_extractphotons_all.mcpl
 
 ----------------------------------------------
-Running mcpltool statsum_extractphotons_all.mcpl
+Running mcpltool-c statsum_extractphotons_all.mcpl
 ----------------------------------------------
 Opened MCPL file statsum_extractphotons_all.mcpl:
 
@@ -2626,12 +2642,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     9          22      1.7629      90.021     -89.494      4.3127           0           0           1      24.006        7.98
 
 ----------------------------------------------
-Running mcpltool --extract -p22 -l400 statsum_copy.mcpl.gz statsum_extractphotons_all2.mcpl
+Running mcpltool-c --extract -p22 -l400 statsum_copy.mcpl.gz statsum_extractphotons_all2.mcpl
 ----------------------------------------------
 MCPL: Successfully extracted 50 / 100 particles from statsum_copy.mcpl.gz into statsum_extractphotons_all2.mcpl
 
 ----------------------------------------------
-Running mcpltool statsum_extractphotons_all2.mcpl
+Running mcpltool-c statsum_extractphotons_all2.mcpl
 ----------------------------------------------
 Opened MCPL file statsum_extractphotons_all2.mcpl:
 
@@ -2673,67 +2689,67 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     9          22      1.7629      90.021     -89.494      4.3127           0           0           1      24.006        7.98
 
 ----------------------------------------------
-Running mcpltool '<TESTDATADIR>/ref/reffile_bad1.mcpl'
+Running mcpltool-c '<TESTDATADIR>/ref/reffile_bad1.mcpl'
 ----------------------------------------------
 MCPL ERROR: File is not an MCPL file!
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool '<TESTDATADIR>/ref/reffile_bad2.mcpl'
+Running mcpltool-c '<TESTDATADIR>/ref/reffile_bad2.mcpl'
 ----------------------------------------------
 MCPL ERROR: File is in an unsupported MCPL version!
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool '<TESTDATADIR>/ref/reffile_bad3.mcpl'
+Running mcpltool-c '<TESTDATADIR>/ref/reffile_bad3.mcpl'
 ----------------------------------------------
 MCPL ERROR: File is in an unsupported MCPL version!
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool '<TESTDATADIR>/ref/reffile_bad4.mcpl'
+Running mcpltool-c '<TESTDATADIR>/ref/reffile_bad4.mcpl'
 ----------------------------------------------
 MCPL ERROR: Unexpected value in endianness field!
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool '<TESTDATADIR>/ref/reffile_bad1.mcpl.gz'
+Running mcpltool-c '<TESTDATADIR>/ref/reffile_bad1.mcpl.gz'
 ----------------------------------------------
 MCPL ERROR: File is not an MCPL file!
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool '<TESTDATADIR>/ref/reffile_bad2.mcpl.gz'
+Running mcpltool-c '<TESTDATADIR>/ref/reffile_bad2.mcpl.gz'
 ----------------------------------------------
 MCPL ERROR: File is in an unsupported MCPL version!
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool '<TESTDATADIR>/ref/reffile_bad3.mcpl.gz'
+Running mcpltool-c '<TESTDATADIR>/ref/reffile_bad3.mcpl.gz'
 ----------------------------------------------
 MCPL ERROR: File is in an unsupported MCPL version!
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool '<TESTDATADIR>/ref/reffile_bad4.mcpl.gz'
+Running mcpltool-c '<TESTDATADIR>/ref/reffile_bad4.mcpl.gz'
 ----------------------------------------------
 MCPL ERROR: Unexpected value in endianness field!
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool bla.txt
+Running mcpltool-c bla.txt
 ----------------------------------------------
 MCPL ERROR: Unable to open file!
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool bla.txt
+Running mcpltool-c bla.txt
 ----------------------------------------------
 MCPL ERROR: File is not an MCPL file!
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool '<TESTDATADIR>/ref/reffile_truncated.mcpl.gz'
+Running mcpltool-c '<TESTDATADIR>/ref/reffile_truncated.mcpl.gz'
 ----------------------------------------------
 Opened MCPL file reffile_truncated.mcpl.gz:
 
@@ -2767,7 +2783,7 @@ MCPL ERROR: Errors encountered while attempting to read particle data.
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool '<TESTDATADIR>/ref/reffile_truncated.mcpl'
+Running mcpltool-c '<TESTDATADIR>/ref/reffile_truncated.mcpl'
 ----------------------------------------------
 Opened MCPL file reffile_truncated.mcpl:
 
@@ -2804,7 +2820,7 @@ MCPL ERROR: Errors encountered while attempting to read particle data.
 
 ===> Command failed!
 ----------------------------------------------
-Running mcpltool '<TESTDATADIR>/ref/reffile_notreallygz.mcpl.gz'
+Running mcpltool-c '<TESTDATADIR>/ref/reffile_notreallygz.mcpl.gz'
 ----------------------------------------------
 Opened MCPL file reffile_notreallygz.mcpl.gz:
 
@@ -2836,7 +2852,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1
 
 ----------------------------------------------
-Running mcpltool '<TESTDATADIR>/ref/reffile_uw.mcpl.gz'
+Running mcpltool-c '<TESTDATADIR>/ref/reffile_uw.mcpl.gz'
 ----------------------------------------------
 Opened MCPL file reffile_uw.mcpl.gz:
 
@@ -2874,7 +2890,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     9          22           0           0           0           0    -0.37821     0.14513     0.91427           0
 
 ----------------------------------------------
-Running mcpltool '<TESTDATADIR>/ref/reffile_encodings.mcpl.gz'
+Running mcpltool-c '<TESTDATADIR>/ref/reffile_encodings.mcpl.gz'
 ----------------------------------------------
 Opened MCPL file reffile_encodings.mcpl.gz:
 
@@ -2914,35 +2930,35 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 
 ====> extracting and calculating md5sum of blob with key "asciidata":
 ----------------------------------------------
-Running mcpltool '<TESTDATADIR>/ref/reffile_encodings.mcpl.gz' -basciidata
+Running mcpltool-c '<TESTDATADIR>/ref/reffile_encodings.mcpl.gz' -basciidata
 ----------------------------------------------
 >>>Just plain ascii.<LF>Second line.<LF><<<
 d3475b3d8393e4041df7fa22ade054d3
 
 ====> extracting and calculating md5sum of blob with key "asciidata_empty":
 ----------------------------------------------
-Running mcpltool '<TESTDATADIR>/ref/reffile_encodings.mcpl.gz' -basciidata_empty
+Running mcpltool-c '<TESTDATADIR>/ref/reffile_encodings.mcpl.gz' -basciidata_empty
 ----------------------------------------------
 >>><<<
 d41d8cd98f00b204e9800998ecf8427e
 
 ====> extracting and calculating md5sum of blob with key "utf8data":
 ----------------------------------------------
-Running mcpltool '<TESTDATADIR>/ref/reffile_encodings.mcpl.gz' -butf8data
+Running mcpltool-c '<TESTDATADIR>/ref/reffile_encodings.mcpl.gz' -butf8data
 ----------------------------------------------
 >>>R\xc3\xb8dgr\xc3\xb8d med<LF>fl\xc3\xb8de.<LF><<<
 de7a6d4a3a291d0d67b3657e62ffcb37
 
 ====> extracting and calculating md5sum of blob with key "binarydata":
 ----------------------------------------------
-Running mcpltool '<TESTDATADIR>/ref/reffile_encodings.mcpl.gz' -bbinarydata
+Running mcpltool-c '<TESTDATADIR>/ref/reffile_encodings.mcpl.gz' -bbinarydata
 ----------------------------------------------
 >>>A <LF><CR>Bla<<<
 a04637816e7436951f0512d38d48f212
 
 ====> extracting and calculating md5sum of blob with key "utf8bløbkey":
 ----------------------------------------------
-Running mcpltool '<TESTDATADIR>/ref/reffile_encodings.mcpl.gz' '-butf8bløbkey'
+Running mcpltool-c '<TESTDATADIR>/ref/reffile_encodings.mcpl.gz' '-butf8bløbkey'
 ----------------------------------------------
 >>>A <LF><CR>Bla<<<
 a04637816e7436951f0512d38d48f212

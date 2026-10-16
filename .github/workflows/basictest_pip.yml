@@ -48,8 +48,8 @@ jobs:
     - name: mcpl-config summary
       run: mcpl-config --summary
 
-    - name: mcpltool
-      run: mcpltool ./src/examples/example.mcpl
+    - name: mcpltool-c
+      run: mcpltool-c ./src/examples/example.mcpl
 
     - name: Check client C/CXX standards (cfg)
       run: cmake -S "./src/devel/misc/test_standards" -B bldstd

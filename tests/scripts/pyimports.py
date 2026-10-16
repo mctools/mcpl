@@ -23,10 +23,10 @@
 # NEEDS: numpy
 
 # Test that the optional parts of the mcpl package (expressions, statistics,
-# histograms, plotting, and the pymcpltool command), and the packages used for plotting
+# histograms, plotting, and the mcpltool command), and the packages used for plotting
 # (matplotlib, plotly, ...), are only imported when they are used, and not by
 # "import mcpl" or when using the other functionality of the Python API or of
-# pymcpltool. Each case runs in a new Python process, which reports the
+# mcpltool. Each case runs in a new Python process, which reports the
 # modules it imported.
 
 import gzip
@@ -76,7 +76,7 @@ optional_modules = ( '_expressions', '_stats', '_statsplot', '_histogram',
                      '_plotbackend_plotly', '_plotbackend_test', '_plotbackend_text' )
 
 def tool(*args):
-    return f"mcpl.app_pymcpltool(['pymcpltool',{','.join(repr(a) for a in args)}])"
+    return f"mcpl.app_mcpltool(['mcpltool',{','.join(repr(a) for a in args)}])"
 
 cases = [
     #Core functionality, which must not import any of the optional modules:
@@ -108,23 +108,23 @@ cases = [
       "mcpl.dump_stats(mcpl.collect_stats('example.mcpl', select='x > 0cm'))" ),
     ( 'histogram as text', '_expressions _histogram',
       "print(mcpl.histogram('example.mcpl','ekin/MeV',bins=4).to_text())" ),
-    ( 'pymcpltool FILE', '_cli', tool('example.mcpl') ),
-    ( 'pymcpltool --select', '_cli _expressions',
+    ( 'mcpltool FILE', '_cli', tool('example.mcpl') ),
+    ( 'mcpltool --select', '_cli _expressions',
       tool('-l3','--select','pdgcode == gamma','example.mcpl') ),
-    ( 'pymcpltool --stats', '_cli _clistats _stats', tool('--stats','example.mcpl') ),
-    ( 'pymcpltool --hist --print', '_cli _clistats _expressions _histogram',
+    ( 'mcpltool --stats', '_cli _clistats _stats', tool('--stats','example.mcpl') ),
+    ( 'mcpltool --hist --print', '_cli _clistats _expressions _histogram',
       tool('--hist','ekin/MeV','--print','example.mcpl') ),
-    ( 'pymcpltool --extract', '_cli', tool('--extract','example.mcpl','e1.mcpl') ),
-    ( 'pymcpltool --extract --edit', '_cli _expressions',
+    ( 'mcpltool --extract', '_cli', tool('--extract','example.mcpl','e1.mcpl') ),
+    ( 'mcpltool --extract --edit', '_cli _expressions',
       tool('--extract','example.mcpl','e2.mcpl','--edit','z += 1m') ),
-    ( 'pymcpltool --merge', '_cli', tool('--merge','m.mcpl','example.mcpl','example2.mcpl') ),
-    ( 'pymcpltool --repair', '_cli', tool('--repair','torepair2.mcpl') ),
-    ( 'pymcpltool --text', '_cli', tool('--text','example.mcpl','t.txt') ),
+    ( 'mcpltool --merge', '_cli', tool('--merge','m.mcpl','example.mcpl','example2.mcpl') ),
+    ( 'mcpltool --repair', '_cli', tool('--repair','torepair2.mcpl') ),
+    ( 'mcpltool --text', '_cli', tool('--text','example.mcpl','t.txt') ),
     #Plotting with the test backend loads only that backend:
     ( 'plot with the test backend',
       '_expressions _histogram plotting _plotbackend _plotbackend_test',
       "mcpl.histogram('example.mcpl','ekin/MeV',bins=4).plot(backend='test')" ),
-    ( 'pymcpltool --hist with the test backend',
+    ( 'mcpltool --hist with the test backend',
       '_cli _clistats _expressions _histogram plotting _plotbackend _plotbackend_test',
       tool('--hist','ekin/MeV','--backend','test','example.mcpl') ),
 ]

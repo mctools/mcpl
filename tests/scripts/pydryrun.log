@@ -1,53 +1,53 @@
 MCPL: Compressing file a3.mcpl
 MCPL: Compressed file into a3.mcpl.gz
-=== pymcpltool --dry-run
-pymcpltool --dry-run --extract a1.mcpl out.mcpl: exit code 0, real run changed files
+=== mcpltool --dry-run
+mcpltool --dry-run --extract a1.mcpl out.mcpl: exit code 0, real run changed files
    | MCPL: Would extract 30 / 30 particles from a1.mcpl into out.mcpl
    | MCPL: dry run, nothing was written
-pymcpltool --dry-run --extract a1.mcpl out.mcpl.gz: exit code 0, real run changed files
+mcpltool --dry-run --extract a1.mcpl out.mcpl.gz: exit code 0, real run changed files
    | MCPL: Would extract 30 / 30 particles from a1.mcpl into out.mcpl.gz
    | MCPL: dry run, nothing was written
-pymcpltool --dry-run --extract -l5 -s3 a1.mcpl out.mcpl: exit code 0, real run changed files
+mcpltool --dry-run --extract -l5 -s3 a1.mcpl out.mcpl: exit code 0, real run changed files
    | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
    | MCPL: Would extract 5 / 30 particles from a1.mcpl into out.mcpl
    | MCPL: dry run, nothing was written
-pymcpltool --dry-run --extract -p2112 --select ekin > 5keV a3.mcpl.gz out.mcpl: exit code 0, real run changed files
+mcpltool --dry-run --extract -p2112 --select ekin > 5keV a3.mcpl.gz out.mcpl: exit code 0, real run changed files
    | MCPL: Would extract 0 / 5 particles from a3.mcpl.gz into out.mcpl
    | MCPL: dry run, nothing was written
-pymcpltool --dry-run --extract --edit weight *= 2 a1.mcpl out.mcpl: exit code 0, real run changed files
+mcpltool --dry-run --extract --edit weight *= 2 a1.mcpl out.mcpl: exit code 0, real run changed files
    | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when editing particle weights (use --keep-statsum to keep them)
    | MCPL: Would extract 30 / 30 particles from a1.mcpl into out.mcpl
    | MCPL: dry run, nothing was written
-pymcpltool --dry-run --extract --edit weight *= 2 --keep-statsum a1.mcpl out.mcpl: exit code 0, real run changed files
+mcpltool --dry-run --extract --edit weight *= 2 --keep-statsum a1.mcpl out.mcpl: exit code 0, real run changed files
    | MCPL: Would extract 30 / 30 particles from a1.mcpl into out.mcpl
    | MCPL: dry run, nothing was written
-pymcpltool --dry-run --extract --select ekin < 1 meV + a1.mcpl out.mcpl: exit code 1, real run did not change files
+mcpltool --dry-run --extract --select ekin < 1 meV + a1.mcpl out.mcpl: exit code 1, real run did not change files
    | ERROR: Syntax error in expression "ekin < 1 meV +"
    | 
    | Run with -h or --help for usage information
-pymcpltool --dry-run --extract a1.mcpl a2.mcpl: exit code 1, real run did not change files
+mcpltool --dry-run --extract a1.mcpl a2.mcpl: exit code 1, real run did not change files
    | ERROR: Requested output file already exists.
    | 
    | Run with -h or --help for usage information
-pymcpltool --dry-run --extract nosuch.mcpl out.mcpl: exit code 1, real run did not change files
+mcpltool --dry-run --extract nosuch.mcpl out.mcpl: exit code 1, real run did not change files
    | MCPL ERROR: Unable to open file!
-pymcpltool --dry-run --merge out.mcpl a1.mcpl a2.mcpl a3.mcpl.gz: exit code 0, real run changed files
+mcpltool --dry-run --merge out.mcpl a1.mcpl a2.mcpl a3.mcpl.gz: exit code 0, real run changed files
    | MCPL: dry run, nothing was written
-pymcpltool --dry-run --merge out.mcpl.gz a1.mcpl a2.mcpl: exit code 0, real run changed files
+mcpltool --dry-run --merge out.mcpl.gz a1.mcpl a2.mcpl: exit code 0, real run changed files
    | MCPL: dry run, nothing was written
-pymcpltool --dry-run --merge out.mcpl a1.mcpl b_dp.mcpl: exit code 1, real run did not change files
+mcpltool --dry-run --merge out.mcpl a1.mcpl b_dp.mcpl: exit code 1, real run did not change files
    | ERROR: Requested files are incompatible for merge as they have different header info (source name: "MySim" vs "Other").
    | 
    | Run with -h or --help for usage information
-pymcpltool --dry-run --merge a2.mcpl a1.mcpl a3.mcpl.gz: exit code 1, real run did not change files
+mcpltool --dry-run --merge a2.mcpl a1.mcpl a3.mcpl.gz: exit code 1, real run did not change files
    | ERROR: Requested output file already exists.
    | 
    | Run with -h or --help for usage information
-pymcpltool --dry-run --merge --inplace a1.mcpl a2.mcpl a3.mcpl.gz: exit code 0, real run changed files
+mcpltool --dry-run --merge --inplace a1.mcpl a2.mcpl a3.mcpl.gz: exit code 0, real run changed files
    | MCPL: dry run, nothing was written
-pymcpltool --dry-run --merge --inplace a3.mcpl.gz a1.mcpl: exit code 1, real run did not change files
+mcpltool --dry-run --merge --inplace a3.mcpl.gz a1.mcpl: exit code 1, real run did not change files
    | MCPL ERROR: direct modification of gzipped files is not supported.
-pymcpltool --dry-run --forcemerge out.mcpl a1.mcpl b_dp.mcpl b_pol.mcpl: exit code 0, real run changed files
+mcpltool --dry-run --forcemerge out.mcpl a1.mcpl b_dp.mcpl b_pol.mcpl: exit code 0, real run changed files
    | MCPL force-merge: Files have different FP precision (single and double), using double
    | MCPL force-merge: Files have different polarisation info (no and yes), enabling it
    | MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
@@ -57,7 +57,7 @@ pymcpltool --dry-run --forcemerge out.mcpl a1.mcpl b_dp.mcpl b_pol.mcpl: exit co
    | MCPL force-merge: Transferring 7 particles from file b_pol.mcpl
    | MCPL force-merge: Would transfer a total of 49 particles to new file out.mcpl
    | MCPL: dry run, nothing was written
-pymcpltool --dry-run --forcemerge --keepuserflags out.mcpl.gz b_dp.mcpl b_pol.mcpl: exit code 0, real run changed files
+mcpltool --dry-run --forcemerge --keepuserflags out.mcpl.gz b_dp.mcpl b_pol.mcpl: exit code 0, real run changed files
    | MCPL force-merge: Files have different FP precision (single and double), using double
    | MCPL force-merge: Files have different polarisation info (no and yes), enabling it
    | MCPL force-merge: Files have different userflags (no and yes), enabling them (zero for particles without)
@@ -65,27 +65,27 @@ pymcpltool --dry-run --forcemerge --keepuserflags out.mcpl.gz b_dp.mcpl b_pol.mc
    | MCPL force-merge: Transferring 7 particles from file b_pol.mcpl
    | MCPL force-merge: Would transfer a total of 19 particles to new file out.mcpl
    | MCPL: dry run, nothing was written
-pymcpltool --dry-run --forcemerge out.mcpl a1.mcpl a2.mcpl: exit code 0, real run changed files
+mcpltool --dry-run --forcemerge out.mcpl a1.mcpl a2.mcpl: exit code 0, real run changed files
    | MCPL forcemerge_files called with 2 files that are compatible for a standard merge => falling back to standard merge_files function
    | MCPL: dry run, nothing was written
-pymcpltool --dry-run --repair trunc.mcpl: exit code 0, real run changed files
+mcpltool --dry-run --repair trunc.mcpl: exit code 0, real run changed files
    | MCPL WARNING: Marking stat:sum:nsim entry as not available (-1) since file not closed properly.
    | MCPL: Would repair file with 29 particles.
    | MCPL: dry run, nothing was written
-pymcpltool --dry-run --repair crash.mcpl: exit code 0, real run changed files
+mcpltool --dry-run --repair crash.mcpl: exit code 0, real run changed files
    | MCPL: Would repair file with 4 particles.
    | MCPL: dry run, nothing was written
-pymcpltool --dry-run --repair a1.mcpl: exit code 1, real run did not change files
+mcpltool --dry-run --repair a1.mcpl: exit code 1, real run did not change files
    | MCPL ERROR: File does not appear to be broken.
-pymcpltool --dry-run --repair a3.mcpl.gz: exit code 1, real run did not change files
+mcpltool --dry-run --repair a3.mcpl.gz: exit code 1, real run did not change files
    | MCPL ERROR: File must be gunzipped before it can be checked and possibly repaired.
-pymcpltool --dry-run --text a1.mcpl out.txt: exit code 0, real run changed files
+mcpltool --dry-run --text a1.mcpl out.txt: exit code 0, real run changed files
    | MCPL: dry run, nothing was written
-pymcpltool --dry-run --text a1.mcpl a2.mcpl: exit code 1, real run did not change files
+mcpltool --dry-run --text a1.mcpl a2.mcpl: exit code 1, real run did not change files
    | ERROR: Requested output file already exists.
    | 
    | Run with -h or --help for usage information
-pymcpltool --dry-run a1.mcpl: exit code 0, real run did not change files
+mcpltool --dry-run a1.mcpl: exit code 0, real run did not change files
    | Opened MCPL file a1.mcpl:
    | 
    |   Basic info
@@ -122,7 +122,7 @@ pymcpltool --dry-run a1.mcpl: exit code 0, real run did not change files
    |     7          22       0.008        10.5         -14         0.7         0.6           0         0.8        0.07         4.5
    |     8          11       0.009          12         -16         0.8        -0.8           0         0.6        0.08           5
    |     9        2112        0.01        13.5         -18         0.9         0.6           0         0.8        0.09         5.5
-pymcpltool --dry-run -j a1.mcpl: exit code 0, real run did not change files
+mcpltool --dry-run -j a1.mcpl: exit code 0, real run did not change files
    | Opened MCPL file a1.mcpl:
    | 
    |   Basic info
@@ -148,13 +148,13 @@ pymcpltool --dry-run -j a1.mcpl: exit code 0, real run did not change files
    |     Endianness         : little
    |     Storage            : 36 bytes/particle
    | 
-pymcpltool --dry-run -n -l3 -s2 a1.mcpl: exit code 0, real run did not change files
+mcpltool --dry-run -n -l3 -s2 a1.mcpl: exit code 0, real run did not change files
    | Opened MCPL file a1.mcpl:
    | index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
    |     2          11       0.003           3          -4         0.2        -0.8           0         0.6        0.02           2
    |     3        2112       0.004         4.5          -6         0.3         0.6           0         0.8        0.03         2.5
    |     4          22       0.005           6          -8         0.4        -0.8           0         0.6        0.04           3
-pymcpltool --dry-run --stats a1.mcpl: exit code 0, real run did not change files
+mcpltool --dry-run --stats a1.mcpl: exit code 0, real run did not change files
    | ------------------------------------------------------------------------------
    | nparticles   : 30
    | sum(weights) : 247.5
@@ -183,7 +183,7 @@ pymcpltool --dry-run --stats a1.mcpl: exit code 0, real run did not change files
    | userflags    :           0 (0x00000000)        247.5 (100.00%)
    |                      [ values ]             [ weighted counts ]
    | ------------------------------------------------------------------------------
-pymcpltool --dry-run --hist ekin/MeV --print a1.mcpl: exit code 0, real run did not change files
+mcpltool --dry-run --hist ekin/MeV --print a1.mcpl: exit code 0, real run did not change files
    | # histogram of: ekin/MeV
    | # values: weights per bin
    | # lower edge | upper edge | value
@@ -197,17 +197,17 @@ pymcpltool --dry-run --hist ekin/MeV --print a1.mcpl: exit code 0, real run did 
    | 0.0213 0.024199999 36
    | 0.024199999 0.027099999 40.5
    | 0.027099999 0.029999999 45
-pymcpltool --dry-run --version: exit code 0, real run did not change files
+mcpltool --dry-run --version: exit code 0, real run did not change files
    | MCPL version 2.2.9
-pymcpltool --dry-run --bkey1 a1.mcpl: exit code 1, real run did not change files
+mcpltool --dry-run --bkey1 a1.mcpl: exit code 1, real run did not change files
    | ERROR: Unrecognised option : --bkey1
    | 
    | Run with -h or --help for usage information
-pymcpltool -d --extract -l2 a1.mcpl out.mcpl: exit code 0
+mcpltool -d --extract -l2 a1.mcpl out.mcpl: exit code 0
    | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
    | MCPL: Would extract 2 / 30 particles from a1.mcpl into out.mcpl
    | MCPL: dry run, nothing was written
-pymcpltool -jd a1.mcpl: exit code 0
+mcpltool -jd a1.mcpl: exit code 0
    | Opened MCPL file a1.mcpl:
    | 
    |   Basic info
@@ -233,11 +233,11 @@ pymcpltool -jd a1.mcpl: exit code 0
    |     Endianness         : little
    |     Storage            : 36 bytes/particle
    | 
-pymcpltool -d --stats --pdf a1.mcpl: exit code 1
+mcpltool -d --stats --pdf a1.mcpl: exit code 1
    | ERROR: --dry-run can not be used with --pdf or --output (which save plots in files).
    | 
    | Run with -h or --help for usage information
-pymcpltool --dry-run --hist ekin/MeV --output h.txt a1.mcpl: exit code 1
+mcpltool --dry-run --hist ekin/MeV --output h.txt a1.mcpl: exit code 1
    | ERROR: --dry-run can not be used with --pdf or --output (which save plots in files).
    | 
    | Run with -h or --help for usage information

@@ -5326,7 +5326,7 @@ char* mcpl_usage_progname( const char * argv0 )
 MCPL_LOCAL int32_t mcpl_internal_pdgcode_from_name( const char * name )
 {
   //Names of a few common particles which can be used instead of PDG codes in
-  //"mcpltool -p" (pymcpltool has an identical list):
+  //"mcpltool-c -p" (mcpltool has an identical list):
   static const struct { const char * name; int32_t pdgcode; } names[] = {
     { "neutron", 2112 }, { "antineutron", -2112 },
     { "proton", 2212 }, { "antiproton", -2212 },
@@ -5358,6 +5358,10 @@ MCPL_LOCAL int mcpl_tool_usage( char** argv, const char * errmsg ) {
   mcpl_print("\n");
   mcpl_print("The default behaviour is to display the contents of the FILE in human readable\n");
   mcpl_print("format (see Dump Options below for how to modify what is displayed).\n");
+  mcpl_print("\n");
+  mcpl_print("This is a minimal version (written in C) of the mcpltool command from the\n");
+  mcpl_print("mcpl-python package, which can in addition show statistics and histograms, and\n");
+  mcpl_print("select or edit particles with expressions.\n");
   mcpl_print("\n");
   mcpl_print("This installation supports direct reading of gzipped files (.mcpl.gz).\n");
   mcpl_print("\n");

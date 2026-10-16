@@ -19,7 +19,7 @@
 ##                                                                            ##
 ################################################################################
 
-"""The --stats and --hist modes of pymcpltool, separate from _cli so that the
+"""The --stats and --hist modes of mcpltool, separate from _cli so that the
 other modes do not load the code for statistics, histograms and plots."""
 
 __all__ = []
@@ -30,7 +30,7 @@ from ._common import MCPLError
 from ._reader import MCPLFile
 
 
-def pymcpltool_stats(filename,opt_select,opt_pdf,opt_gui,vopts,bad):
+def mcpltool_stats(filename,opt_select,opt_pdf,opt_gui,vopts,bad):
     from ._stats import _SelectedFile, dump_stats
     f=MCPLFile(filename)
     if f.nparticles==0:
@@ -52,7 +52,7 @@ def pymcpltool_stats(filename,opt_select,opt_pdf,opt_gui,vopts,bad):
     else:
         dump_stats(f)
 
-def pymcpltool_hist(filelist,expr,select,vopts,hflags,bad):
+def mcpltool_hist(filelist,expr,select,vopts,hflags,bad):
     from ._histogram import histogram, histogram2d
     if not filelist:
         bad("No input file specified")

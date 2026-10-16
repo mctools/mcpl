@@ -29,10 +29,10 @@ from MCPLTestUtils.dirs import test_data_dir
 
 
 def run_pymcpltool(*args):
-    from mcpldev import app_pymcpltool
+    from mcpldev import app_mcpltool
     ec = None
     try:
-        app_pymcpltool(['pymcpltool']+[str(e) for e in args])
+        app_mcpltool(['mcpltool']+[str(e) for e in args])
     except SystemExit as e:
         if str(e).isdigit():
             ec = int(str(e))

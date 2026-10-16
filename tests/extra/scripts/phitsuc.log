@@ -10,7 +10,7 @@ Run phits2mcpl
 MCPL: Compressing file hellø2.mcpl
 MCPL: Compressed file into hellø2.mcpl.gz
 Created føø/hellø2.mcpl.gz
-Run mcpltool
+Run mcpltool-c
 Opened MCPL file hellø2.mcpl.gz:
 
   Basic info

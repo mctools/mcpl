@@ -98,11 +98,11 @@ jobs:
       - name: Pip install mcpl
         run: pip install ./src/mcpl_metapkg
 
+      - name: mcpltool-c simple test
+        run: mcpltool-c "./src/examples/example.mcpl"
+
       - name: mcpltool simple test
         run: mcpltool "./src/examples/example.mcpl"
-
-      - name: pymcpltool simple test
-        run: pymcpltool "./src/examples/example.mcpl"
 
       - name: python module test
         run: python -c 'import mcpl'
@@ -605,7 +605,7 @@ jobs:
                   validate_wheel(f,exceptions)
           val( 'mcpl_core-*.whl',
                ['libmcpl.so','libmcpl.dylib','mcpl.lib','mcpl.dll',
-                'mcpl-config.exe','mcpltool.exe'] )
+                'mcpl-config.exe','mcpltool-c.exe'] )
           val( 'mcpl_extra-*.whl',
                [ 'ssw2mcpl.exe','mcpl2ssw.exe','phits2mcpl.exe','mcpl2phits.exe'] )
           val( 'mcpl-*.whl')
@@ -619,8 +619,8 @@ jobs:
         run: pip install "mcpl==${{ needs.preparations.outputs.mcplversion }}" "mcpl-extra==${{ needs.preparations.outputs.mcplversion }}"
 
       - run: mcpl-config -s
+      - run: mcpltool-c --help
       - run: mcpltool --help
-      - run: pymcpltool --help
       - run: ssw2mcpl --help
       - run: mcpl2ssw --help
       - run: phits2mcpl --help
@@ -631,8 +631,8 @@ jobs:
         with:
           path: src
 
+      - run: mcpltool-c "./src/examples/example.mcpl"
       - run: mcpltool "./src/examples/example.mcpl"
-      - run: pymcpltool "./src/examples/example.mcpl"
       - run: mcpl2phits "./src/examples/example.mcpl" "myphits.dmp"
       - run: phits2mcpl "myphits.dmp" "dummy.mcpl"
 

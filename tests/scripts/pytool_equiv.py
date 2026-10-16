@@ -22,9 +22,9 @@
 
 # NEEDS: numpy
 
-# Check that pymcpltool gives the same results and printouts as mcpltool for
+# Check that mcpltool gives the same results and printouts as mcpltool-c for
 # the operations they share, and test the --select, --edit and --keep-statsum
-# options of pymcpltool, and -p outside --extract.
+# options of mcpltool, and -p outside --extract.
 
 import gzip
 import pathlib
@@ -104,13 +104,13 @@ def compare(*args):
     if c[1] != p[1]:
         problems.append(f'printouts differ:\n      C: {c[1]!r}\n     Py: {p[1]!r}')
     if p[2]:
-        problems.append(f'pymcpltool stderr: {p[2]!r}')
+        problems.append(f'mcpltool stderr: {p[2]!r}')
     dc, dp = dir_contents('c'), dir_contents('py')
     if set(dc) != set(dp):
         problems.append(f'different files: C: {sorted(dc)} Py: {sorted(dp)}')
     else:
         problems += [ f'file {k} differs' for k in dc if dc[k] != dp[k] ]
-    print(f'mcpltool {" ".join(args)}: exit code {c[0]}')
+    print(f'mcpltool-c {" ".join(args)}: exit code {c[0]}')
     for line in c[1].splitlines():
         print(f'   | {line}')
     for problem in problems:
@@ -196,16 +196,16 @@ def test_compare_with_mcpltool():
     return ok
 
 def py_extract(infile, outfile, select = None, edit = None):
-    """Do the same as pymcpltool --extract --select --edit with the API"""
+    """Do the same as mcpltool --extract --select --edit with the API"""
     flt = mcpl.ParticleFilter(select) if select else None
     edt = mcpl.ParticleEdit(edit) if edit else None
     with mcpl.MCPLFile(infile) as fi, mcpl.MCPLOutFile(outfile) as fo:
         fo.transfer_metadata(fi)
         fo.hdr_add_comment('mcpltool: extracted particles')
         if select:
-            fo.hdr_add_comment(f'pymcpltool: selected particles with: {select}')
+            fo.hdr_add_comment(f'mcpltool: selected particles with: {select}')
         if edit:
-            fo.hdr_add_comment(f'pymcpltool: edited particles with: {edit}')
+            fo.hdr_add_comment(f'mcpltool: edited particles with: {edit}')
             if 'weight' in edt.modified_fields:
                 fo.hdr_scale_stat_sums(-1.0)
         for b in fi.particle_blocks:
@@ -239,7 +239,7 @@ def test_select_edit():
                  and pathlib.Path('py/out.mcpl').read_bytes() == pathlib.Path('py/ref.mcpl').read_bytes() )
         with mcpl.MCPLFile('py/out.mcpl') as f:
             n = f.nparticles
-        print(f'pymcpltool {" ".join(args)}: {out.strip()}')
+        print(f'mcpltool {" ".join(args)}: {out.strip()}')
         print(f'   same as with the Python API: {same}')
         ok &= same
     #Check some of the results directly:
@@ -278,14 +278,14 @@ def test_select_edit():
                   ['--stats','--keep-statsum','a1.mcpl'] ):
         fresh('py')
         rc, out, err = run([sys.executable, '-m', 'mcpldev', *args], 'py')
-        print(f'pymcpltool {" ".join(args)}: exit code {rc}')
+        print(f'mcpltool {" ".join(args)}: exit code {rc}')
         for line in out.splitlines():
             print(f'   | {line}')
         ok &= ( rc != 0 and not err and not pathlib.Path('py/out.mcpl').exists() )
     return ok
 
 def test_p_option():
-    #Outside --extract, -pNAME (pymcpltool only) is the same as a selection:
+    #Outside --extract, -pNAME (mcpltool only) is the same as a selection:
     ok = True
     for pargs, sargs in ( (['-pgamma','-l3'], ['--select','pdgcode == gamma','-l3']),
                           (['-p11','-n'], ['--select','pdgcode == 11','-n']),
@@ -296,7 +296,7 @@ def test_p_option():
         rp = run([sys.executable, '-m', 'mcpldev', *pargs, 'a1.mcpl'], 'py')
         rs = run([sys.executable, '-m', 'mcpldev', *sargs, 'a1.mcpl'], 'py')
         same = rp == rs and rp[0] == 0
-        print(f'pymcpltool {" ".join(pargs)}: same as {" ".join(sargs)}: {same}')
+        print(f'mcpltool {" ".join(pargs)}: same as {" ".join(sargs)}: {same}')
         ok &= same
     return ok
 
@@ -320,7 +320,7 @@ def test_statsum():
                             'out.mcpl', *args], 'py')
         with mcpl.MCPLFile('py/out.mcpl') as f:
             v = f.stat_sum['nsim']
-        print(f'pymcpltool --extract {" ".join(args)}: stat:sum:nsim = {v}')
+        print(f'mcpltool --extract {" ".join(args)}: stat:sum:nsim = {v}')
         for line in out.splitlines():
             print(f'   | {line}')
         ok &= ( rc == 0 and not err and v == expected )
@@ -330,7 +330,7 @@ def main():
     make_inputs()
     results = [ test_compare_with_mcpltool(), test_select_edit(), test_p_option(),
                 test_statsum() ]
-    print(f'Compared {ncases} command lines with mcpltool')
+    print(f'Compared {ncases} command lines with mcpltool-c')
     assert all(results), 'Problems found'
 
 if __name__ == '__main__':

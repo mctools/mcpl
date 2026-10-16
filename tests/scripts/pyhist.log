@@ -219,7 +219,7 @@ Figure 1 (1x1): None
 plot_histograms(overlay=True) with 0 histograms {}: No histograms to plot
 plot_histograms(overlay=True) with 2 histograms {}: Only 1D histograms can be overlaid
 plot_histograms(overlay=True) with 2 histograms {'labels': ['a']}: The number of labels must be the number of histograms
-pymcpltool --hist ekin/MeV --logx --split pdgcode --backend test example.mcpl: exit code 0
+mcpltool --hist ekin/MeV --logx --split pdgcode --backend test example.mcpl: exit code 0
    | Figure 1 (1x1): None
    |   Panel None xlabel='ekin/MeV' ylabel='weights per bin' logx xlim=[0.00139345,9724.96]
    |     StepHist label='n (2112)' color=0 bins=30 edges=[0.00139345,9724.96] sum=726 max=106 nonzero_bins=26
@@ -230,7 +230,7 @@ pymcpltool --hist ekin/MeV --logx --split pdgcode --backend test example.mcpl: e
    |     StepHist label='pi+ (211)' color=5 bins=30 edges=[0.00139345,9724.96] sum=5 max=1 nonzero_bins=5
    |     StepHist label='pi- (-211)' color=6 bins=30 edges=[0.00139345,9724.96] sum=2 max=1 nonzero_bins=2
    |     StepHist label='nu_mu (14)' color=7 bins=30 edges=[0.00139345,9724.96] sum=1 max=1 nonzero_bins=1
-pymcpltool --hist ekin/eV --lethargy -pneutron --bins 5 --print example.mcpl: exit code 0
+mcpltool --hist ekin/eV --lethargy -pneutron --bins 5 --print example.mcpl: exit code 0
    | # histogram of: ekin/eV
    | # selection: pdgcode == neutron
    | # values: weights per unit lethargy
@@ -240,7 +240,7 @@ pymcpltool --hist ekin/eV --lethargy -pneutron --bins 5 --print example.mcpl: ex
    | 435758.52 7705899.2 119.40181
    | 7705899.2 1.3627016e+08 20.886614
    | 1.3627016e+08 2.4097844e+09 5.2216536
-pymcpltool --hist x/cm : y/cm --bins 4 --select pdgcode == gamma --print example.mcpl: exit code 0
+mcpltool --hist x/cm : y/cm --bins 4 --select pdgcode == gamma --print example.mcpl: exit code 0
    | # 2D histogram of: x/cm : y/cm
    | # values: weights per bin
    | # x lower edge | x upper edge | y lower edge | y upper edge | value
@@ -260,7 +260,7 @@ pymcpltool --hist x/cm : y/cm --bins 4 --select pdgcode == gamma --print example
    | 11.896589 24.668766 -25.905695 -7.0349731 0
    | 11.896589 24.668766 -7.0349731 11.835749 0
    | 11.896589 24.668766 11.835749 30.70647 0
-pymcpltool --hist x/cm : y/cm --bins 2 --range -10:10,0:5 --print example.mcpl: exit code 0
+mcpltool --hist x/cm : y/cm --bins 2 --range -10:10,0:5 --print example.mcpl: exit code 0
    | # 2D histogram of: x/cm : y/cm
    | # values: weights per bin
    | # x lower edge | x upper edge | y lower edge | y upper edge | value
@@ -268,75 +268,75 @@ pymcpltool --hist x/cm : y/cm --bins 2 --range -10:10,0:5 --print example.mcpl: 
    | -10 0 2.5 5 33
    | 0 10 0 2.5 75
    | 0 10 2.5 5 36
-pymcpltool --hist x/cm --range -10:10 --bins 4 --backend test example.mcpl reffile_1.mcpl: exit code 0
+mcpltool --hist x/cm --range -10:10 --bins 4 --backend test example.mcpl reffile_1.mcpl: exit code 0
    | Figure 1 (1x1): None
    |   Panel None xlabel='x/cm\n(27.3% of weights outside plot range)' ylabel='weights per bin' xlim=[-10,10]
    |     StepHist label='example.mcpl' color=0 bins=4 edges=[-10,10] sum=730 max=294 nonzero_bins=4
    |     StepHist label='reffile_1.mcpl' color=1 bins=4 edges=[-10,10] sum=5 max=5 nonzero_bins=1
-pymcpltool --hist time/ms --logx --logy --unweighted --backend test example.mcpl: exit code 0
+mcpltool --hist time/ms --logx --logy --unweighted --backend test example.mcpl: exit code 0
    | Figure 1 (1x1): None
    |   Panel None xlabel='time/ms' ylabel='particles per bin' logx logy xlim=[7.01658e-07,0.00166018]
    |     StepHist label=None color=0 bins=30 edges=[7.01658e-07,0.00166018] sum=1006 max=247 nonzero_bins=29
-pymcpltool --hist ekin/MeV --split pdgcode --range 0:10 --bins 2 --select x > 1km --print example.mcpl: exit code 0
+mcpltool --hist ekin/MeV --split pdgcode --range 0:10 --bins 2 --select x > 1km --print example.mcpl: exit code 0
    | # histogram of: ekin/MeV
    | # selection: x > 1km
    | # values: weights per bin
    | # lower edge | upper edge | value
    | 0 5 0
    | 5 10 0
-pymcpltool --hist ekin example.mcpl: exit code 1
+mcpltool --hist ekin example.mcpl: exit code 1
    | ERROR: Expression "ekin" has units (energy), so divide it by a unit, e.g. ekin/MeV
    | 
    | Run with -h or --help for usage information
-pymcpltool --hist ekin/MeV --bins 0 example.mcpl: exit code 1
+mcpltool --hist ekin/MeV --bins 0 example.mcpl: exit code 1
    | ERROR: --bins must be a positive integer
    | 
    | Run with -h or --help for usage information
-pymcpltool --hist ekin/MeV --range 1 example.mcpl: exit code 1
+mcpltool --hist ekin/MeV --range 1 example.mcpl: exit code 1
    | ERROR: --range must be given as LOW:HIGH (or XLOW:XHIGH,YLOW:YHIGH for 2D histograms), with numbers in the units of the expression
    | 
    | Run with -h or --help for usage information
-pymcpltool --hist ekin/MeV --range 2:1 example.mcpl: exit code 1
+mcpltool --hist ekin/MeV --range 2:1 example.mcpl: exit code 1
    | ERROR: --range must be given as LOW:HIGH (or XLOW:XHIGH,YLOW:YHIGH for 2D histograms), with numbers in the units of the expression
    | 
    | Run with -h or --help for usage information
-pymcpltool --hist ekin/MeV --range 1:2,3:4 example.mcpl: exit code 1
+mcpltool --hist ekin/MeV --range 1:2,3:4 example.mcpl: exit code 1
    | ERROR: --range must be given as LOW:HIGH (or XLOW:XHIGH,YLOW:YHIGH for 2D histograms), with numbers in the units of the expression
    | 
    | Run with -h or --help for usage information
-pymcpltool --hist x/cm : y/cm --logx example.mcpl: exit code 1
+mcpltool --hist x/cm : y/cm --logx example.mcpl: exit code 1
    | ERROR: --logx can not be used with 2D histograms
    | 
    | Run with -h or --help for usage information
-pymcpltool --hist x/cm : y/cm : z/cm example.mcpl: exit code 1
+mcpltool --hist x/cm : y/cm : z/cm example.mcpl: exit code 1
    | ERROR: --hist takes an expression, or two expressions separated by " : " (with spaces) for 2D histograms
    | 
    | Run with -h or --help for usage information
-pymcpltool --hist x/cm --backend foo example.mcpl: exit code 1
+mcpltool --hist x/cm --backend foo example.mcpl: exit code 1
    | ERROR: Unknown plotting backend "foo". The plotting backends are: matplotlib, plotly, unicode, ascii
    | 
    | Run with -h or --help for usage information
-pymcpltool --logx example.mcpl: exit code 1
+mcpltool --logx example.mcpl: exit code 1
    | ERROR: --logx can only be used with --hist.
    | 
    | Run with -h or --help for usage information
-pymcpltool --bins 10 example.mcpl: exit code 1
+mcpltool --bins 10 example.mcpl: exit code 1
    | ERROR: --bins can only be used with --hist.
    | 
    | Run with -h or --help for usage information
-pymcpltool --output a.pdf example.mcpl: exit code 1
+mcpltool --output a.pdf example.mcpl: exit code 1
    | ERROR: --output can only be used with --hist or --stats.
    | 
    | Run with -h or --help for usage information
-pymcpltool --hist x/cm --extract example.mcpl out.mcpl: exit code 1
+mcpltool --hist x/cm --extract example.mcpl out.mcpl: exit code 1
    | ERROR: Conflicting options specified.
    | 
    | Run with -h or --help for usage information
-pymcpltool --hist x/cm: exit code 1
+mcpltool --hist x/cm: exit code 1
    | ERROR: No input file specified
    | 
    | Run with -h or --help for usage information
-pymcpltool --stats --gui --backend test -pgamma example.mcpl: exit code 0
+mcpltool --stats --gui --backend test -pgamma example.mcpl: exit code 0
    | Figure 1 (2x3): 'example.mcpl: 239 particles, sum(weights) = 239\nselection: pdgcode == gamma'
    |   Panel 'Kinetic energy (weighted)' xlabel='ekin [MeV]' ylabel=None logx logy xlim=[0.249474,182.253]
    |     StepHist label='gamma (22)' color=0 bins=100 edges=[0.249474,182.253] sum=239 max=14 nonzero_bins=68
@@ -392,61 +392,61 @@ pymcpltool --stats --gui --backend test -pgamma example.mcpl: exit code 0
    | Figure 15 (1x1): None
    |   Panel 'polz (weighted)' xlabel='min=0, max=0, mean=0, rms=0, integral=239' ylabel=None xlim=[-1,1]
    |     StepHist label=None color=None bins=101 edges=[-1,1] sum=239 max=239 nonzero_bins=1
-pymcpltool --stats --pdf --backend test example.mcpl: exit code 0
+mcpltool --stats --pdf --backend test example.mcpl: exit code 0
    | Created mcpl.pdf
-pymcpltool --stats --output stats.txt --backend test example.mcpl: exit code 0
+mcpltool --stats --output stats.txt --backend test example.mcpl: exit code 0
    | Created stats.txt
-pymcpltool --hist x/cm --bins 3 --output hist.txt --backend test example.mcpl: exit code 0
+mcpltool --hist x/cm --bins 3 --output hist.txt --backend test example.mcpl: exit code 0
    | Created hist.txt
-pymcpltool -p2112 -p22 example.mcpl: exit code 1
+mcpltool -p2112 -p22 example.mcpl: exit code 1
    | ERROR: -p specified more than once
    | 
    | Run with -h or --help for usage information
-pymcpltool -p: exit code 1
+mcpltool -p: exit code 1
    | ERROR: Missing argument for -p
    | 
    | Run with -h or --help for usage information
-pymcpltool -lX example.mcpl: exit code 1
+mcpltool -lX example.mcpl: exit code 1
    | ERROR: Bad option: expected number
    | 
    | Run with -h or --help for usage information
-pymcpltool -l example.mcpl: exit code 1
+mcpltool -l example.mcpl: exit code 1
    | ERROR: Bad option: missing number
    | 
    | Run with -h or --help for usage information
-pymcpltool --edit z += 1m example.mcpl: exit code 1
+mcpltool --edit z += 1m example.mcpl: exit code 1
    | ERROR: --edit can only be used with --extract.
    | 
    | Run with -h or --help for usage information
-pymcpltool --pdf example.mcpl: exit code 1
+mcpltool --pdf example.mcpl: exit code 1
    | ERROR: Do not specify --pdf without --stats
    | 
    | Run with -h or --help for usage information
-pymcpltool --gui example.mcpl: exit code 1
+mcpltool --gui example.mcpl: exit code 1
    | ERROR: Do not specify --gui without --stats
    | 
    | Run with -h or --help for usage information
-pymcpltool --stats --pdf --gui example.mcpl: exit code 1
+mcpltool --stats --pdf --gui example.mcpl: exit code 1
    | ERROR: Do not specify both --pdf and --gui
    | 
    | Run with -h or --help for usage information
-pymcpltool example.mcpl example.mcpl example.mcpl: exit code 1
+mcpltool example.mcpl example.mcpl example.mcpl: exit code 1
    | ERROR: Too many arguments.
    | 
    | Run with -h or --help for usage information
-pymcpltool --text example.mcpl: exit code 1
+mcpltool --text example.mcpl: exit code 1
    | ERROR: Must specify both input and output files with --text.
    | 
    | Run with -h or --help for usage information
-pymcpltool --text example.mcpl hist.txt: exit code 1
+mcpltool --text example.mcpl hist.txt: exit code 1
    | ERROR: Requested output file already exists.
    | 
    | Run with -h or --help for usage information
-pymcpltool --hist x/cm : y/cm --split pdgcode example.mcpl: exit code 1
+mcpltool --hist x/cm : y/cm --split pdgcode example.mcpl: exit code 1
    | ERROR: --split can not be used with 2D histograms
    | 
    | Run with -h or --help for usage information
-pymcpltool --hist x/cm --output hist.txt --backend test example.mcpl: exit code 1
+mcpltool --hist x/cm --output hist.txt --backend test example.mcpl: exit code 1
    | ERROR: Requested output file already exists.
    | 
    | Run with -h or --help for usage information

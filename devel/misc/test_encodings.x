@@ -3,7 +3,7 @@ set -e
 set -u
 export REPOROOT="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 
-function pymcpltool {
+function mcpltool {
     PYTHONPATH="${REPOROOT}/mcpl_python/src" python3 -m mcpl "$@"
 }
 function md5sum {
@@ -29,7 +29,7 @@ for pyio in none ascii utf8; do
             export LANG=$loc
             export LANGUAGE=$loc
         fi
-        cmd="pymcpltool ${REPOROOT}/tests/data/ref/reffile_encodings.mcpl.gz" > $log
+        cmd="mcpltool ${REPOROOT}/tests/data/ref/reffile_encodings.mcpl.gz" > $log
         $cmd >> $log
         $cmd -nl3 >> $log
         for bk in asciidata asciidata_empty utf8data binarydata 'utf8bløbkey' `echo -ne "notutf8key_\xff\xfe_"`; do

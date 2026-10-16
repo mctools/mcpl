@@ -79,17 +79,17 @@ def test_png():
     for f in files:
         assert pathlib.Path(f).read_bytes()[:4] == b'\x89PNG'
     print(f'Created {files}')
-    #pymcpltool with the default backend (matplotlib, which then uses its agg
+    #mcpltool with the default backend (matplotlib, which then uses its agg
     #backend for saving files):
     rc = 0
     try:
-        mcpl.app_pymcpltool(['pymcpltool','--stats','--output','tool.png',str(example_file)])
+        mcpl.app_mcpltool(['mcpltool','--stats','--output','tool.png',str(example_file)])
     except SystemExit as e:
         rc = e.code
     created = sorted(f.name for f in pathlib.Path('.').glob('tool_*.png'))
     assert rc == 0 and created and all(
         pathlib.Path(f).read_bytes()[:4] == b'\x89PNG' for f in created )
-    print(f'pymcpltool --stats --output tool.png created {len(created)} PNG files')
+    print(f'mcpltool --stats --output tool.png created {len(created)} PNG files')
 
 check_overview(example_file)
 check_overview(example_file, 'pdgcode == neutron && ekin < 1MeV')

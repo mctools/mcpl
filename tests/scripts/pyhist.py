@@ -23,7 +23,7 @@
 # NEEDS: numpy
 
 # Test histograms (mcpl.histogram, mcpl.histogram2d, mcpl.plot_histograms),
-# the figures of plot_stats, and pymcpltool --hist, using the plotting backend
+# the figures of plot_stats, and mcpltool --hist, using the plotting backend
 # for tests (which prints descriptions of the figures).
 
 import contextlib
@@ -163,10 +163,10 @@ def tool(*args):
     rc = 0
     with contextlib.redirect_stdout(out):
         try:
-            mcpl.app_pymcpltool(['pymcpltool',*args])
+            mcpl.app_mcpltool(['mcpltool',*args])
         except SystemExit as e:
             rc = e.code
-    print(f'pymcpltool {" ".join(args)}: exit code {rc}')
+    print(f'mcpltool {" ".join(args)}: exit code {rc}')
     for line in out.getvalue().splitlines():
         print(f'   | {line}')
 

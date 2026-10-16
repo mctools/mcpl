@@ -31,7 +31,7 @@ matplotlib is imported by: _plotbackend_mpl
 plotly is imported by: _plotbackend_plotly
 scipp is imported by: _scipp
 matplotlib, plotly, scipp are only imported inside functions
-mcpl.__all__ has 34 names, provided by:
+mcpl.__all__ has 35 names, provided by:
   _common              : MCPLError
   _messages            : use_logging
   _statsum             : encode_stat_sum, is_valid_stat_sum_key
@@ -43,4 +43,4 @@ mcpl.__all__ has 34 names, provided by:
   _stats               : collect_stats, dump_stats
   _histogram           : Histogram, Histogram2D, histogram, histogram2d, plot_histograms
   _statsplot           : plot_stats, stats_figures
-  _cli                 : app_pymcpltool
+  _cli                 : app_mcpltool, app_pymcpltool

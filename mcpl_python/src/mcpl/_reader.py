@@ -721,7 +721,7 @@ class MCPLFile:
         if self._str_decode:
             #attributes return python strings since raw_strings was not set, so
             #we must decode these before returning to the user. But for output
-            #compatibility with the C-mcpltool, dump_hdr() will use original
+            #compatibility with mcpltool-c, dump_hdr() will use original
             #ones above.
             h['sourcename_raw'] = sourcename
             h['comments_raw'] = comments
@@ -750,8 +750,7 @@ class MCPLFile:
                      " too old.")
 
     def dump_hdr(self):
-        """Dump file header to stdout (using a format identical to the one from
-        the compiled mcpltool)"""
+        """Dump file header to stdout (like the mcpltool command)"""
         h=self._hdr
         def print_datastring(prefix,s,postfix):
             print(prefix,end='')
@@ -799,8 +798,7 @@ class MCPLFile:
         print()
 
     def dump_particles(self,limit=10,skip=0,select=None):
-        """Dump a list of particles to stdout (using a format identical to the one from
-        the compiled mcpltool). The limit and skip parameters can be used to
+        """Dump a list of particles to stdout (like the mcpltool command). The limit and skip parameters can be used to
         respectively limit the number of particles printed and to skip past
         particles at the head of the file. Use limit=0 to disable the limit.
         If select is given (an expression or a ParticleFilter), only the
