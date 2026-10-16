@@ -597,38 +597,43 @@ def _pymcpltool_extract(filelist, limit, skip, pdgcode_str, select, edit,
         #particles in the range given by -s and -l:
         fi._check_nonfinite = False
         fo = MCPLOutFile(outfn, _dry_run = dry_run)
-        fo.transfer_metadata(fi)
-        n_in = fi.nparticles
-        if not preventcomment:
-            #Describe which particles were extracted (but nothing specific to
-            #the input file, to keep files extracted in the same way mergeable):
-            opts = ( ( [ f'-l{limit}' ] if limit > 0 else [] )
-                     + ( [ f'-s{skip}' ] if skip > 0 else [] )
-                     + ( [ f'-p{pdgcode}' ] if pdgcode else [] ) )
-            fo.hdr_add_comment('mcpltool: extracted particles'
-                               + ( ' with ' + ' '.join(opts) if opts else '' ))
-        if select is not None:
-            fo.hdr_add_comment(f'pymcpltool: selected particles with: {select}')
-        if edit is not None:
-            fo.hdr_add_comment(f'pymcpltool: edited particles with: {edit}')
-        #As in mcpltool, stat:sum entries are marked as not available when
-        #selecting particles based on their positions in the file, and also
-        #when editing their weights unless --keep-statsum was used (see the
-        #guidelines for stat:sum entries):
-        has_statsum = any( v is not None for v in fi.stat_sum.values() )
-        if has_statsum and n_in > 0 and ( skip > 0 or 0 < limit < n_in ):
-            _warning("Marking stat:sum entries in output file as "
-                     "not available (-1) when filtering based on particle "
-                     "positions")
-            fo.hdr_scale_stat_sums(-1.0)
-        elif ( has_statsum and not keepstatsum and edt is not None
-               and 'weight' in edt.modified_fields ):
-            _warning("Marking stat:sum entries in output file as "
-                     "not available (-1) when editing particle weights"
-                     " (use --keep-statsum to keep them)")
-            fo.hdr_scale_stat_sums(-1.0)
-        iend = skip + limit if limit > 0 else n_in
+        #(a failed extraction must not leave an output file behind)
         try:
+            fo.transfer_metadata(fi)
+            n_in = fi.nparticles
+            if not preventcomment:
+                #Describe which particles were extracted (but nothing specific
+                #to the input file, to keep files extracted in the same way
+                #mergeable):
+                opts = ( ( [ f'-l{limit}' ] if limit > 0 else [] )
+                         + ( [ f'-s{skip}' ] if skip > 0 else [] )
+                         + ( [ f'-p{pdgcode}' ] if pdgcode else [] ) )
+                fo.hdr_add_comment('mcpltool: extracted particles'
+                                   + ( ' with ' + ' '.join(opts)
+                                       if opts else '' ))
+            if select is not None:
+                fo.hdr_add_comment('pymcpltool: selected particles with:'
+                                   f' {select}')
+            if edit is not None:
+                fo.hdr_add_comment('pymcpltool: edited particles with:'
+                                   f' {edit}')
+            #As in mcpltool, stat:sum entries are marked as not available
+            #when selecting particles based on their positions in the file,
+            #and also when editing their weights unless --keep-statsum was
+            #used (see the guidelines for stat:sum entries):
+            has_statsum = any( v is not None for v in fi.stat_sum.values() )
+            if has_statsum and n_in > 0 and ( skip > 0 or 0 < limit < n_in ):
+                _warning("Marking stat:sum entries in output file as "
+                         "not available (-1) when filtering based on particle "
+                         "positions")
+                fo.hdr_scale_stat_sums(-1.0)
+            elif ( has_statsum and not keepstatsum and edt is not None
+                   and 'weight' in edt.modified_fields ):
+                _warning("Marking stat:sum entries in output file as "
+                         "not available (-1) when editing particle weights"
+                         " (use --keep-statsum to keep them)")
+                fo.hdr_scale_stat_sums(-1.0)
+            iend = skip + limit if limit > 0 else n_in
             for b in fi.particle_blocks:
                 off = b.file_offset
                 if off + len(b) <= skip:
@@ -645,11 +650,11 @@ def _pymcpltool_extract(filelist, limit, skip, pdgcode_str, select, edit,
                     fo.add_particles(b,**edt(b))
                 else:
                     fo.add_particles(b)
-        except MCPLError:
+            n_added = fo.nparticles
+            outname = _pymcpltool_close(fo,attempt_gzip)
+        except BaseException:
             fo._abort()
             raise
-        n_added = fo.nparticles
-        outname = _pymcpltool_close(fo,attempt_gzip)
     _info(f"{'Would extract' if dry_run else 'Successfully extracted'}"
           f" {n_added} / {n_in} particles from {filelist[0]} into {outname}")
 

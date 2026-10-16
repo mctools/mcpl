@@ -1,4 +1,7 @@
 v2.2.9  (work in progress)
+      * mcpltool and pymcpltool no longer leave output files behind when
+        --merge, --forcemerge or --extract fail (mcpltool left an empty file,
+        and pymcpltool --extract a file with an incomplete header).
       * ssw2mcpl and mcpl2ssw read and write the numbers of histories (np1),
         particles (nrss) and histories with particles (niss) in the headers
         of MCNP5 and MCNP6 SSW files as the 64 bit integers they are (issue
