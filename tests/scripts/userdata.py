@@ -26,6 +26,7 @@
 import pathlib
 
 import mcpldev as mcpl
+from MCPLTestUtils.dirs import test_data_dir
 from MCPLTestUtils.loadlib import getlib
 
 lib = getlib('userdata')
@@ -118,6 +119,13 @@ def test_transfer():
     #targets with userdata:
     fail('transfer','none.mcpl','t5.mcpl','x:int16[2]',0)
     fail('transfer','std.mcpl','t6.mcpl','data:uint8[27]',0)
+    #The header of an MCPL-3 file with blob keys which are not allowed in
+    #MCPL-4 can be copied, but not to files with userdata (MCPL-4):
+    enc = str(test_data_dir / 'ref' / 'reffile_encodings.mcpl.gz')
+    run('transfer',enc,'t7.mcpl','<META>',0)
+    print('Copied header with invalid blob keys from MCPL-3 file')
+    run('transfer_meta_with_userdata','none.mcpl','t8.mcpl','x:int8')
+    fail('transfer_meta_with_userdata',enc,'t9.mcpl','x:int8')
 
 def test_merge():
     print('=== Merging')

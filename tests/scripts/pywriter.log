@@ -22,8 +22,7 @@ ref/reffile_8.mcpl (MCPL-3): exact transfer reproduces file: True, repacking ide
 ref/reffile_9.mcpl (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
 ref/reffile_empty.mcpl (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
 ref/reffile_empty.mcpl.gz (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
-ref/reffile_encodings.mcpl.gz: Python transfer fails as expected: hdr_add_data got invalid key (only printable ASCII characters other than whitespace and quotes are allowed).
-Got expected MCPL ERROR: mcpl_hdr_add_data got invalid key (only printable ASCII characters other than whitespace and quotes are allowed).
+ref/reffile_encodings.mcpl.gz (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
 ref/reffile_notreallygz.mcpl.gz (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
 ref/reffile_skip123.mcpl (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True
 ref/reffile_skip123.mcpl.gz (MCPL-3): exact transfer reproduces file: True, repacking identical to C: True

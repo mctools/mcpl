@@ -123,7 +123,8 @@ int mcpltests_genisotrop(int argc,char**argv) {
     //whitespace and quotes:
     const char * badkeys[] = { "utf8bl\xc3""\xb8""bkey", "notutf8key_\xff\xfe""_",
                                "with space", "with\ttab", "with\"quote",
-                               "with'quote", "with\x7f""del", NULL };
+                               "with'quote", "with\x7f""del", "",
+                               "with\\backslash", "with`backtick", NULL };
     for ( const char ** k = badkeys; *k; ++k ) {
       mcpl_errstate_t es;
       mcpl_hdr_add_data_es(f, *k, 9, "A\x00\x05\n\rBla\x7f", &es);

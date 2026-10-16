@@ -72,13 +72,15 @@ def particles( fn ):
 def fmt4_problem( fn ):
     """Reason why a file in version 3 can not become a file in version 4 (None
     if it can): NaN or infinite values in the particle fields, or blob keys
-    which are not allowed in version 4 (only printable ASCII characters other
-    than whitespace and quotes)."""
+    which are not allowed in version 4 (empty keys, and other characters than
+    printable ASCII ones other than whitespace, quotes, backslash and
+    backtick)."""
     import numpy as np
     with mcpl.MCPLFile(fn) as f:
         for key in f.blobs:
             k = key.encode() if isinstance(key,str) else key
-            if not all( 33 <= c <= 126 and c not in b'"\'' for c in k ):
+            if not k or not all( 33 <= c <= 126 and c not in b'"\'\\`'
+                                 for c in k ):
                 return f'blob key {key!r} not allowed in MCPL-4'
         for b in f.particle_blocks:
             for a in ( b.position, b.direction, b.ekin, b.time, b.weight,
@@ -227,6 +229,42 @@ def check_header_rules():
     expect_open_failure( fn4, 'invalid blob key' )
     print('  Invalid blob keys accepted in MCPL-3 but not in MCPL-4'
           ' (C and Python)')
+    #The Python writer refuses invalid keys, but copies them from the headers
+    #of MCPL-3 files, except to files with userdata (MCPL-4). The C writer is
+    #tested in the same way in the genisotrop and userdata tests:
+    for key in ( '', 'a b', 'a"b', "a'b", 'a\\b', 'a`b', 'a\tb', 'bl\u00f8b' ):
+        with mcpl.MCPLOutFile('pybadkey.mcpl') as o:
+            try:
+                o.hdr_add_data(key,b'data')
+            except mcpl.MCPLError as e:
+                assert 'invalid key' in str(e)
+            else:
+                raise AssertionError(f'key {key!r} not refused')
+    with mcpl.MCPLFile(fn3, raw_strings=True) as src, \
+         mcpl.MCPLOutFile('pycopiedkeys.mcpl') as o:
+        o.transfer_metadata(src)
+    with mcpl.MCPLFile(fn3, raw_strings=True) as src:
+        o = mcpl.MCPLOutFile('pycopiedkeys_ud.mcpl')
+        o.transfer_metadata(src)
+        o.enable_userdata('x:int8')
+        try:
+            o.close()
+        except mcpl.MCPLError as e:
+            assert 'Files with userdata can not have blob keys' in str(e)
+        else:
+            raise AssertionError('copied invalid keys accepted with userdata')
+    print('  Python writer refuses invalid keys, but copies them from MCPL-3'
+          ' files without userdata')
+    #The Python writer refuses null characters in strings:
+    for fct, arg in ( ('hdr_set_srcname','a\0b'), ('hdr_add_comment','a\0b') ):
+        with mcpl.MCPLOutFile('pynullchar.mcpl') as o:
+            try:
+                getattr(o,fct)(arg)
+            except mcpl.MCPLError as e:
+                assert 'null characters' in str(e)
+            else:
+                raise AssertionError(f'{fct} accepted null character')
+    print('  Python writer refuses null characters in strings')
 
 def main():
     #All reference files in version 3 which can be read without problems:
