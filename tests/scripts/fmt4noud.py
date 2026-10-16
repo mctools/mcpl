@@ -185,6 +185,26 @@ def check_header_rules():
                 expect_open_failure( fn, f'unexpected value of {what}' )
     print('  Invalid values of the flags detected in MCPL-3 and MCPL-4'
           ' (C and Python)')
+    #The particle size must be consistent with the other fields:
+    psize = int.from_bytes(data3[40:44],'little')
+    for version, data in ( (3, data3), (4, data4) ):
+        for value in ( 0, psize - 1, psize + 1, psize + 4 ):
+            fn = pathlib.Path(f'badpsize_v{version}_{value}.mcpl')
+            fn.write_bytes( data[0:40] + value.to_bytes(4,'little')
+                            + data[44:] )
+            expect_open_failure( fn, 'unexpected particle size' )
+    print('  Inconsistent particle sizes detected in MCPL-3 and MCPL-4'
+          ' (C and Python)')
+    #The universal weight must be positive and finite:
+    import struct
+    src = test_data_dir / 'ref' / 'reffile_uw.mcpl.gz'
+    datauw = gzip.decompress(src.read_bytes())
+    assert int.from_bytes(datauw[44:48],'little') == 1
+    for value in ( 0.0, -0.0, -1.0, float('inf'), float('nan') ):
+        fn = pathlib.Path(f'baduw_{value}.mcpl')
+        fn.write_bytes( datauw[0:48] + struct.pack('<d',value) + datauw[56:] )
+        expect_open_failure( fn, 'invalid universal weight' )
+    print('  Invalid universal weights detected (C and Python)')
     #Blob keys must only have printable ASCII characters other than whitespace
     #and quotes in version 4:
     src = test_data_dir / 'ref' / 'reffile_encodings.mcpl.gz'
