@@ -8,6 +8,7 @@ Monte Carlo simulation applications. The format itself is formally described in:
 
    T. Kittelmann, et al., Monte Carlo Particle Lists: MCPL, Computer Physics
    Communications 218, 17-42 (2017), https://doi.org/10.1016/j.cpc.2017.04.012
+   (open access)
 
 All MCPL code is provided under the highly liberal open source Apache 2.0
 license (http://www.apache.org/licenses/LICENSE-2.0), and further instructions
@@ -49,6 +50,7 @@ would appreciate it if you would use the following reference in your work:
 
    T. Kittelmann, et al., Monte Carlo Particle Lists: MCPL, Computer Physics
    Communications 218, 17-42 (2017), https://doi.org/10.1016/j.cpc.2017.04.012
+   (open access)
 
 
 
