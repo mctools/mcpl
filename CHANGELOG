@@ -5,8 +5,8 @@ v2.2.9  (work in progress)
         zero), and files with a universal weight which is not positive and
         finite (as required when writing; the C reader could otherwise read
         beyond the particle data, when the universal weight was 0).
-      * Blob keys must not be empty, and can only have printable ASCII
-        characters other than whitespace, quotes, backslash and backtick.
+      * Blob keys must be unique, non-empty, ASCII, with no non-printable
+        characters, whitespace, backslash, or quotation marks.
         This is required for files in MCPL format version 4 (which are
         refused otherwise), and the C, C++ and Python APIs refuse other keys
         when they are added to new files. Keys copied from the headers of

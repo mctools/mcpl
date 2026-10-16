@@ -375,9 +375,9 @@ class MCPLOutFile:
         self._comments.append(comment)
 
     def hdr_add_data(self, key, data):
-        """Add binary blob (bytes-like object) by key (keys must be unique and
-        not empty, and can only have printable ASCII characters other than
-        whitespace, quotes, backslash and backtick)"""
+        """Add binary blob (bytes-like object) by key (unique, non-empty,
+        ASCII, no non-printable characters, whitespace, backslash, or
+        quotation marks)"""
         self._hdr_add_data(key, data, lenient = False)
 
     def _hdr_add_data(self, key, data, lenient):
@@ -569,10 +569,9 @@ class MCPLOutFile:
         if self._udlayout is not None and any( blobkey_problem(k)
                                                for k in self._blobkeys ):
             raise MCPLError('Files with userdata can not have blob keys which'
-                            ' are not allowed in MCPL format version 4 (keys'
-                            ' must not be empty, and only printable ASCII'
-                            ' characters other than whitespace, quotes,'
-                            ' backslash and backtick are allowed).')
+                            ' are not allowed in MCPL format version 4'
+                            ' (non-empty, ASCII, no non-printable characters,'
+                            ' whitespace, backslash, or quotation marks).')
         out = bytearray()
         #(files with userdata are in format version 4, others still in 3):
         version = b'004' if self._udlayout is not None else b'003'

@@ -119,8 +119,8 @@ int mcpltests_genisotrop(int argc,char**argv) {
     mcpl_hdr_add_data(f, "asciidata_empty",0, "");//data md5sum d41d8cd98f00b204e9800998ecf8427e
     mcpl_hdr_add_data(f, "utf8data",22, "R\xc3\xb8""dgr\xc3\xb8""d med\nfl\xc3\xb8""de.\n");//data md5sum de7a6d4a3a291d0d67b3657e62ffcb37
     mcpl_hdr_add_data(f, "binarydata",9, "A\x00\x05\n\rBla\x7f");//data md5sum a04637816e7436951f0512d38d48f212
-    //Blob keys must only have printable ASCII characters other than
-    //whitespace and quotes:
+    //Blob keys must be non-empty, ASCII, no non-printable characters,
+    //whitespace, backslash, or quotation marks (including backtick):
     const char * badkeys[] = { "utf8bl\xc3""\xb8""bkey", "notutf8key_\xff\xfe""_",
                                "with space", "with\ttab", "with\"quote",
                                "with'quote", "with\x7f""del", "",

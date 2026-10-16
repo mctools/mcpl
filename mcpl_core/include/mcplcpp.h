@@ -1533,9 +1533,8 @@ namespace mcpl {
     /**
      * @brief Add binary data under a key.
      *
-     * @param key The key (unique and not empty, and with only printable
-     *            ASCII characters other than whitespace, quotes, backslash
-     *            and backtick).
+     * @param key The key (unique, non-empty, ASCII, no non-printable
+     *            characters, whitespace, backslash, or quotation marks).
      * @param data The data.
      * @param size Number of bytes.
      */
@@ -1548,9 +1547,8 @@ namespace mcpl {
     /**
      * @brief Add binary data under a key.
      *
-     * @param key The key (unique and not empty, and with only printable
-     *            ASCII characters other than whitespace, quotes, backslash
-     *            and backtick).
+     * @param key The key (unique, non-empty, ASCII, no non-printable
+     *            characters, whitespace, backslash, or quotation marks).
      * @param data The data.
      */
     void add_blob( std::string_view key, const std::vector<std::uint8_t>& data )
@@ -1560,9 +1558,8 @@ namespace mcpl {
     /**
      * @brief Add binary data under a key.
      *
-     * @param key The key (unique and not empty, and with only printable
-     *            ASCII characters other than whitespace, quotes, backslash
-     *            and backtick).
+     * @param key The key (unique, non-empty, ASCII, no non-printable
+     *            characters, whitespace, backslash, or quotation marks).
      * @param data The data.
      */
     void add_blob( std::string_view key, std::string_view data )
