@@ -1,4 +1,12 @@
 v2.2.9  (work in progress)
+      * Userdata is optional in MCPL format version 4, signalled by 0x2 in the
+        userflags field of the header (which also holds 0x1 if userflags are
+        enabled). Only with userdata does the header contain the userdata
+        layout. Files in version 4 without userdata are thus identical to
+        files in version 3 except for the version number, so any such file
+        can be turned into the other by changing the version number (for
+        version 3 files without NaN or infinite values). MCPL itself still
+        writes files without userdata in version 3.
       * mcpl-python: blocks without particles now always behave like other
         blocks, with all fields being arrays of length 0. Previously, selecting
         or slicing a block which was already empty (e.g. block[mask][:] with

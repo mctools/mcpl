@@ -47,11 +47,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 //  MCPL_FORMATVERSION history:                                               //
 //                                                                            //
-//  4: Current version. Like version 3, but with per-particle userdata: the   //
-//     header contains the userdata layout string (after the universal        //
-//     weight, if any), and the userdata bytes are at the end of each         //
-//     particle. Only used for files with userdata, all other files are       //
-//     still written as version 3.                                            //
+//  4: Current version. Like version 3, but with optional per-particle        //
+//     userdata, signalled by 0x2 in the userflags field of the header. With  //
+//     userdata, the header contains the userdata layout string (after the    //
+//     universal weight, if any), and the userdata bytes are at the end of    //
+//     each particle. Without userdata, files are identical to version 3      //
+//     files, except for the version number. MCPL currently only writes files //
+//     with userdata in version 4, and other files in version 3.              //
 //  3: Changed packing of unit vectors from octahedral to the better          //
 //     performing "Adaptive Projection Packing".                              //
 //  2: First public release.                                                  //
@@ -1606,7 +1608,7 @@ MCPL_LOCAL int mcpl_write_header_es( mcpl_outfileinternal_t * f,
   uint32_t arr[8];
   arr[0] = f->ncomments;
   arr[1] = f->nblobs;
-  arr[2] = f->opt_userflags;
+  arr[2] = ( f->opt_userflags ? 0x1 : 0 ) | ( f->userdata_layout ? 0x2 : 0 );
   arr[3] = f->opt_polarisation;
   arr[4] = f->opt_singleprec;
   arr[5] = (uint32_t)f->opt_universalpdgcode;
@@ -1624,7 +1626,7 @@ MCPL_LOCAL int mcpl_write_header_es( mcpl_outfileinternal_t * f,
       return mcpl_internal_raise_io( es, errmsg );
   }
 
-  //Userdata layout (only in version 4):
+  //Userdata layout (only in version 4, and only with userdata):
   if (f->userdata_layout
       && !mcpl_write_string_es(f->file,f->userdata_layout,errmsg,es) )
     return 0;
@@ -2741,7 +2743,19 @@ MCPL_LOCAL int mcpl_internal_open_file( mcpl_fileinternal_t * f,
   if ( (uint64_t)current_pos + f->hdr_entries_overhead
        > (uint64_t)MCPLIMP_MAX_HEADER_MEMORY )
     MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,MCPLIMP_HEADER_TOO_LARGE_MSG);
-  f->opt_userflags = arr[2];
+  //The userflags field holds 0x1 if userflags are enabled. In format version
+  //4, it also holds 0x2 if the particles have userdata (and the header has a
+  //userdata layout), so files in version 4 without userdata are identical to
+  //files in version 3 except for the version number:
+  int has_userdata = 0;
+  if ( f->format_version >= 4 ) {
+    if ( arr[2] > 3 )
+      MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"unexpected value of userflags field");
+    has_userdata = ( arr[2] & 0x2 ) ? 1 : 0;
+    f->opt_userflags = arr[2] & 0x1;
+  } else {
+    f->opt_userflags = arr[2];
+  }
   f->opt_polarisation = arr[3];
   f->opt_singleprec = arr[4];
   memcpy(&f->opt_universalpdgcode, &arr[5], sizeof(int32_t));
@@ -2760,8 +2774,8 @@ MCPL_LOCAL int mcpl_internal_open_file( mcpl_fileinternal_t * f,
     current_pos += nb;
   }
 
-  if (f->format_version>=4) {
-    //Userdata layout (always present in version 4):
+  if ( has_userdata ) {
+    //Userdata layout (only in version 4, and only with userdata):
     if (!mcpl_read_string(f,&f->userdata_layout,&current_pos,errmsg,es))
       return 0;
     f->userdata_size = mcpl_internal_udlayout_validate( f->userdata_layout, es );
