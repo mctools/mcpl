@@ -45,7 +45,7 @@ def main():
     assert mcpltool_cmd_ref == mcpltool_cmd
     for cmdname, cmd in [ ('mcpl2ssw',mcpl2ssw_cmd),
                           ('ssw2mcpl',ssw2mcpl_cmd),
-                          ('mcpltool',mcpltool_cmd) ]:
+                          ('mcpltool-c',mcpltool_cmd) ]:
         print(f"\n\nLAUNCHING {cmdname} --help:\n\n")
         rv = subprocess.run([cmd,'--help'],check=True,capture_output=True)
         assert not rv.stderr

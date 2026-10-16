@@ -9,14 +9,14 @@ read with select and edit               : _expressions
 statistics                              : _stats
 statistics with selection               : _expressions _stats
 histogram as text                       : _expressions _histogram
-pymcpltool FILE                         : _cli
-pymcpltool --select                     : _cli _expressions
-pymcpltool --stats                      : _cli _clistats _stats
-pymcpltool --hist --print               : _cli _clistats _expressions _histogram
-pymcpltool --extract                    : _cli
-pymcpltool --extract --edit             : _cli _expressions
-pymcpltool --merge                      : _cli
-pymcpltool --repair                     : _cli
-pymcpltool --text                       : _cli
+mcpltool FILE                           : _cli
+mcpltool --select                       : _cli _expressions
+mcpltool --stats                        : _cli _clistats _stats
+mcpltool --hist --print                 : _cli _clistats _expressions _histogram
+mcpltool --extract                      : _cli
+mcpltool --extract --edit               : _cli _expressions
+mcpltool --merge                        : _cli
+mcpltool --repair                       : _cli
+mcpltool --text                         : _cli
 plot with the test backend              : _expressions _histogram _plotbackend _plotbackend_test plotting
-pymcpltool --hist with the test backend : _cli _clistats _expressions _histogram _plotbackend _plotbackend_test plotting
+mcpltool --hist with the test backend   : _cli _clistats _expressions _histogram _plotbackend _plotbackend_test plotting

@@ -51,7 +51,7 @@ def cmd(*args, print_md5sum_of_output = False,fail=False):
             a = a.replace('\\','/')
         return a
     args_print = shlex.join( argfmt(a) for a in args )
-    print(f"Running mcpltool {args_print}")
+    print(f"Running mcpltool-c {args_print}")
     print("----------------------------------------------")
     flush()
     fullcmd = [mcpltool_cmd]+[str(e) for e in args]

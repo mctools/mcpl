@@ -356,7 +356,7 @@ def histogram( files, expression, select = None, bins = 'auto', range = None,
                 a[0] = a[0].reshape(-1,k).sum(axis=1)
                 a[1] = a[1].reshape(-1,k).sum(axis=1)
     h = Histogram(vals.expression,edges,logx,weighted,lethargy,title)
-    #(number of columns needed to draw the bins exactly, see pymcpltool):
+    #(number of columns needed to draw the bins exactly, see mcpltool):
     h._display_bins = nbins if auto else None
     #Order curves by total weight (per file), and combine the smallest ones:
     multifile = len(files) > 1

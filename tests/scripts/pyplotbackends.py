@@ -128,14 +128,14 @@ def test_default():
     os.environ.pop('MCPL_PLOT_BACKEND')
 
 def test_tool_environment():
-    #pymcpltool uses the environment variable (unless --backend is given):
+    #mcpltool uses the environment variable (unless --backend is given):
     for env, args in ( ('test', []), ('test', ['--backend','foo']), ('foo', []) ):
         sys.stdout.flush()
         rv = subprocess.run([sys.executable, '-m', 'mcpldev', '--hist', 'ekin/MeV',
                              '--bins', '3', *args, str(example_file)],
                             capture_output=True, text=True, check=False,
                             env=dict(os.environ, MCPL_PLOT_BACKEND=env))
-        print(f'==> MCPL_PLOT_BACKEND={env} pymcpltool --hist ... {" ".join(args)}:'
+        print(f'==> MCPL_PLOT_BACKEND={env} mcpltool --hist ... {" ".join(args)}:'
               f' exit code {rv.returncode}')
         for line in rv.stdout.splitlines()[:4]:
             print(f'   | {line}')

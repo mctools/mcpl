@@ -57,6 +57,7 @@ __all__ = [
             'ParticleEdit',
             'ParticleFilter',
             'ParticleValue',
+            'app_mcpltool',
             'app_pymcpltool',
             'can_merge',
             'collect_stats',
@@ -105,7 +106,7 @@ from ._reader import MCPLFile
 from ._statsum import encode_stat_sum, is_valid_stat_sum_key
 from ._writer import MCPLOutFile, gzip_file
 
-#Expressions, statistics, histograms, plotting and the pymcpltool command are
+#Expressions, statistics, histograms, plotting and the mcpltool command are
 #only imported when used (so the code for reading and writing files does not
 #depend on them in any way):
 _on_demand = {
@@ -114,6 +115,7 @@ _on_demand = {
     'ParticleFilter' : '_expressions',
     'ParticleValue' : '_expressions',
     'Histogram2D' : '_histogram',
+    'app_mcpltool' : '_cli',
     'app_pymcpltool' : '_cli',
     'collect_stats' : '_stats',
     'dump_stats' : '_stats',

@@ -1,5 +1,5 @@
-=== Comparison with mcpltool
-mcpltool std.mcpl: exit code 0
+=== Comparison with mcpltool-c
+mcpltool-c std.mcpl: exit code 0
    | Opened MCPL file std.mcpl:
    | 
    |   Basic info
@@ -27,7 +27,7 @@ mcpltool std.mcpl: exit code 0
    |     0        2112         0.5           1           0           0           0           0           1           0           1  33939243000000000001029c7500883c...
    |     1        2112           1           2           0           0           0           0           1           0           1  3313934318fcffff0a0b0c9c7500883c...
    |     2        2112         1.5           3           0           0           0           0           1           0           1  3393934330f8ffff141516355800662d...
-mcpltool -l0 raw.mcpl: exit code 0
+mcpltool-c -l0 raw.mcpl: exit code 0
    | Opened MCPL file raw.mcpl:
    | 
    |   Basic info
@@ -56,13 +56,13 @@ mcpltool -l0 raw.mcpl: exit code 0
    |     1        2112           1           2           0           0           0           0           1           0           1  00000000000000000000000000000000...
    |     2        2112         1.5           3           0           0           0           0           1           0           1  0e0f101112131415161718191a1b1c1d...
    |     3        2112           2           4           0           0           0           0           1           0           1  00000000000000000000000000000000...
-mcpltool -n stddp.mcpl: exit code 0
+mcpltool-c -n stddp.mcpl: exit code 0
    | Opened MCPL file stddp.mcpl:
    | index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userdata
    |     0        2112         0.5           1           0           0           0           0           1           0           1           0         0.5           0  33939243000000000001029c7500883c...
    |     1        2112           1           2           0           0           0           0           1           0           1           0         0.5           0  3313934318fcffff0a0b0c9c7500883c...
    |     2        2112         1.5           3           0           0           0           0           1           0           1           0         0.5           0  3393934330f8ffff141516355800662d...
-mcpltool -j big.mcpl: exit code 0
+mcpltool-c -j big.mcpl: exit code 0
    | Opened MCPL file big.mcpl:
    | 
    |   Basic info
@@ -86,7 +86,7 @@ mcpltool -j big.mcpl: exit code 0
    |     Endianness         : little
    |     Storage            : 65571 bytes/particle
    | 
-mcpltool -l1 big.mcpl: exit code 0
+mcpltool-c -l1 big.mcpl: exit code 0
    | Opened MCPL file big.mcpl:
    | 
    |   Basic info
@@ -112,7 +112,7 @@ mcpltool -l1 big.mcpl: exit code 0
    | 
    | index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userdata
    |     0        2112         0.5           1           0           0           0           0           1           0           1  000102030405060708090a0b0c0d0e0f...
-mcpltool empty.mcpl: exit code 0
+mcpltool-c empty.mcpl: exit code 0
    | Opened MCPL file empty.mcpl:
    | 
    |   Basic info
@@ -137,33 +137,33 @@ mcpltool empty.mcpl: exit code 0
    |     Storage            : 37 bytes/particle
    | 
    | index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userdata
-mcpltool --merge out.mcpl std.mcpl std2.mcpl: exit code 0
+mcpltool-c --merge out.mcpl std.mcpl std2.mcpl: exit code 0
 c/out.mcpl: format version 4, userdata layout "temp:float32,origin:int32,tags:uint8[3],big:float64,id:uint64,s:int16", size 29, particle size 65
   particle 0 x=1 ekin=0.5: temp=293.15 origin=0 tags=0,1,2 big=1e+300 id=18446744073709551615 s=-32768
   particle 1 x=2 ekin=1: temp=294.15 origin=-1000 tags=10,11,12 big=2e+300 id=18446744073709551614 s=-32767
   particle 2 x=3 ekin=1.5: temp=295.15 origin=-2000 tags=20,21,22 big=3e+300 id=18446744073709551613 s=-32766
   particle 3 x=1 ekin=0.5: temp=293.15 origin=0 tags=0,1,2 big=1e+300 id=18446744073709551615 s=-32768
   particle 4 x=2 ekin=1: temp=294.15 origin=-1000 tags=10,11,12 big=2e+300 id=18446744073709551614 s=-32767
-mcpltool --merge out.mcpl std.mcpl raw33.mcpl: exit code 1
+mcpltool-c --merge out.mcpl std.mcpl raw33.mcpl: exit code 1
    | ERROR: Requested files are incompatible for merge as they have different header info (userdata layout: "temp:float32,origin:int32,tags:uint8[3],big:float64,id:uint64,s:int16" vs "data:uint8[33]").
    | 
    | Run with -h or --help for usage information
-mcpltool --merge out.mcpl std.mcpl none.mcpl: exit code 1
+mcpltool-c --merge out.mcpl std.mcpl none.mcpl: exit code 1
    | ERROR: Requested files are incompatible for merge as they have different header info (userdata layout: "temp:float32,origin:int32,tags:uint8[3],big:float64,id:uint64,s:int16" vs none).
    | 
    | Run with -h or --help for usage information
-mcpltool --merge --inplace std2.mcpl std.mcpl: exit code 0
+mcpltool-c --merge --inplace std2.mcpl std.mcpl: exit code 0
 c/std2.mcpl: format version 4, userdata layout "temp:float32,origin:int32,tags:uint8[3],big:float64,id:uint64,s:int16", size 29, particle size 65
   particle 0 x=1 ekin=0.5: temp=293.15 origin=0 tags=0,1,2 big=1e+300 id=18446744073709551615 s=-32768
   particle 1 x=2 ekin=1: temp=294.15 origin=-1000 tags=10,11,12 big=2e+300 id=18446744073709551614 s=-32767
   particle 2 x=1 ekin=0.5: temp=293.15 origin=0 tags=0,1,2 big=1e+300 id=18446744073709551615 s=-32768
   particle 3 x=2 ekin=1: temp=294.15 origin=-1000 tags=10,11,12 big=2e+300 id=18446744073709551614 s=-32767
   particle 4 x=3 ekin=1.5: temp=295.15 origin=-2000 tags=20,21,22 big=3e+300 id=18446744073709551613 s=-32766
-mcpltool --merge --inplace std2.mcpl raw33.mcpl: exit code 1
+mcpltool-c --merge --inplace std2.mcpl raw33.mcpl: exit code 1
    | ERROR: Requested files are incompatible for merge as they have different header info (userdata layout: "temp:float32,origin:int32,tags:uint8[3],big:float64,id:uint64,s:int16" vs "data:uint8[33]").
    | 
    | Run with -h or --help for usage information
-mcpltool --forcemerge out.mcpl std.mcpl stddp.mcpl: exit code 0
+mcpltool-c --forcemerge out.mcpl std.mcpl stddp.mcpl: exit code 0
    | MCPL force-merge: Files have different FP precision (single and double), using double
    | MCPL force-merge: Files have different polarisation info (no and yes), enabling it
    | MCPL force-merge: Transferring 3 particles from file std.mcpl
@@ -176,7 +176,7 @@ c/out.mcpl: format version 4, userdata layout "temp:float32,origin:int32,tags:ui
   particle 3 x=1 ekin=0.5: temp=293.15 origin=0 tags=0,1,2 big=1e+300 id=18446744073709551615 s=-32768
   particle 4 x=2 ekin=1: temp=294.15 origin=-1000 tags=10,11,12 big=2e+300 id=18446744073709551614 s=-32767
   particle 5 x=3 ekin=1.5: temp=295.15 origin=-2000 tags=20,21,22 big=3e+300 id=18446744073709551613 s=-32766
-mcpltool --forcemerge out.mcpl std.mcpl raw33.mcpl: exit code 0
+mcpltool-c --forcemerge out.mcpl std.mcpl raw33.mcpl: exit code 0
    | MCPL WARNING: Discarding userdata in forced merge, since not all files have the same userdata layout.
    | MCPL force-merge: Transferring 3 particles from file std.mcpl
    | MCPL force-merge: Transferring 2 particles from file raw33.mcpl
@@ -187,7 +187,7 @@ c/out.mcpl: format version 3, userdata layout NULL, size 0, particle size 36
   particle 2 x=3 ekin=1.5: no userdata
   particle 3 x=1 ekin=0.5: no userdata
   particle 4 x=2 ekin=1: no userdata
-mcpltool --forcemerge out.mcpl none.mcpl std.mcpl: exit code 0
+mcpltool-c --forcemerge out.mcpl none.mcpl std.mcpl: exit code 0
    | MCPL WARNING: Discarding userdata in forced merge, since not all files have the same userdata layout.
    | MCPL force-merge: Transferring 2 particles from file none.mcpl
    | MCPL force-merge: Transferring 3 particles from file std.mcpl
@@ -198,7 +198,7 @@ c/out.mcpl: format version 3, userdata layout NULL, size 0, particle size 36
   particle 2 x=1 ekin=0.5: no userdata
   particle 3 x=2 ekin=1: no userdata
   particle 4 x=3 ekin=1.5: no userdata
-mcpltool --forcemerge out.mcpl empty.mcpl raw.mcpl: exit code 0
+mcpltool-c --forcemerge out.mcpl empty.mcpl raw.mcpl: exit code 0
    | MCPL force-merge: Transferring 0 particles from file empty.mcpl
    | MCPL force-merge: Transferring 4 particles from file raw.mcpl
    | MCPL force-merge: Transferred a total of 4 particles to new file out.mcpl
@@ -207,26 +207,26 @@ c/out.mcpl: format version 4, userdata layout "data:uint8[27]", size 27, particl
   particle 1 x=2 ekin=1: 000000000000000000000000...
   particle 2 x=3 ekin=1.5: 0e0f10111213141516171819...
   particle 3 x=4 ekin=2: 000000000000000000000000...
-mcpltool --extract std.mcpl out.mcpl: exit code 0
+mcpltool-c --extract std.mcpl out.mcpl: exit code 0
    | MCPL: Successfully extracted 3 / 3 particles from std.mcpl into out.mcpl
 c/out.mcpl: format version 4, userdata layout "temp:float32,origin:int32,tags:uint8[3],big:float64,id:uint64,s:int16", size 29, particle size 65
   particle 0 x=1 ekin=0.5: temp=293.15 origin=0 tags=0,1,2 big=1e+300 id=18446744073709551615 s=-32768
   particle 1 x=2 ekin=1: temp=294.15 origin=-1000 tags=10,11,12 big=2e+300 id=18446744073709551614 s=-32767
   particle 2 x=3 ekin=1.5: temp=295.15 origin=-2000 tags=20,21,22 big=3e+300 id=18446744073709551613 s=-32766
-mcpltool --extract -l2 -s1 stddp.mcpl out.mcpl: exit code 0
+mcpltool-c --extract -l2 -s1 stddp.mcpl out.mcpl: exit code 0
    | MCPL: Successfully extracted 2 / 3 particles from stddp.mcpl into out.mcpl
 c/out.mcpl: format version 4, userdata layout "temp:float32,origin:int32,tags:uint8[3],big:float64,id:uint64,s:int16", size 29, particle size 121
   particle 0 x=2 ekin=1: temp=294.15 origin=-1000 tags=10,11,12 big=2e+300 id=18446744073709551614 s=-32767
   particle 1 x=3 ekin=1.5: temp=295.15 origin=-2000 tags=20,21,22 big=3e+300 id=18446744073709551613 s=-32766
-mcpltool --extract -p2112 raw.mcpl out.mcpl: exit code 0
+mcpltool-c --extract -p2112 raw.mcpl out.mcpl: exit code 0
    | MCPL: Successfully extracted 4 / 4 particles from raw.mcpl into out.mcpl
 c/out.mcpl: format version 4, userdata layout "data:uint8[27]", size 27, particle size 63
   particle 0 x=1 ekin=0.5: 000102030405060708090a0b...
   particle 1 x=2 ekin=1: 000000000000000000000000...
   particle 2 x=3 ekin=1.5: 0e0f10111213141516171819...
   particle 3 x=4 ekin=2: 000000000000000000000000...
-mcpltool --text std.mcpl out.txt: exit code 0
-mcpltool --repair trunc.mcpl: exit code 0
+mcpltool-c --text std.mcpl out.txt: exit code 0
+mcpltool-c --repair trunc.mcpl: exit code 0
    | MCPL: Successfully repaired file with 3 particles.
 === Python API
 version=4 layout='temp:float32,origin:int32,tags:uint8[3],big:float64,id:uint64,s:int16' size=29 particlesize=65
@@ -258,7 +258,7 @@ api/w3.mcpl: format version 3, userdata layout NULL, size 0, particle size 36
   particle 0 x=1 ekin=0.5: no userdata
   particle 1 x=2 ekin=1: no userdata
   particle 2 x=3 ekin=1.5: no userdata
-pymcpltool --extract --select --edit: 0
+mcpltool --extract --select --edit: 0
 api/w4.mcpl: format version 4, userdata layout "temp:float32,origin:int32,tags:uint8[3],big:float64,id:uint64,s:int16", size 29, particle size 65
   particle 0 x=2 ekin=1: temp=294.15 origin=-1000 tags=10,11,12 big=2e+300 id=18446744073709551614 s=-32767
   particle 1 x=3 ekin=1.5: temp=295.15 origin=-2000 tags=20,21,22 big=3e+300 id=18446744073709551613 s=-32766

@@ -1,4 +1,15 @@
 v2.2.9  (work in progress)
+      * The command-line tools are renamed: the Python tool from the
+        mcpl-python package (pymcpltool) is now mcpltool, and the compiled
+        tool from the mcpl-core package (mcpltool) is now mcpltool-c. The
+        pymcpltool command still works, but warns that it has been renamed.
+        In Python, app_mcpltool is the new name of app_pymcpltool (which also
+        still works, but warns). The usage information shown with "python -m
+        mcpl" shows "python -m mcpl" as the name of the command.
+      * The MCPL_BINDIR, MCPL_LIBDIR, MCPL_INCDIR, MCPL_LIBNAME,
+        MCPL_CMD_MCPLTOOL and MCPL_CMD_MCPLCONFIG variables provided by
+        find_package(MCPL) in CMake had wrong (or empty) values. The
+        MCPL_CMD_MCPLTOOL variable is now the path of mcpltool-c.
       * mcpltool and pymcpltool no longer leave output files behind when
         --merge, --forcemerge or --extract fail (mcpltool left an empty file,
         and pymcpltool --extract a file with an incomplete header).

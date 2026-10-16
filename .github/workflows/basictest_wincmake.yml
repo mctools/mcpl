@@ -100,9 +100,9 @@ jobs:
       shell: cmd
       run: mcpl-config -s
 
-    - name: Run mcpltool --help
+    - name: Run mcpltool-c --help
       shell: cmd
-      run: mcpltool --help
+      run: mcpltool-c --help
 
     - name: Cfg downstream
       #For fun, always use Release config here, to test that it works even if

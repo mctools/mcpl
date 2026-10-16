@@ -75,7 +75,7 @@ def _pdg_database(pdgcode):
     return None
 
 #Names of a few common particles, which can be used instead of PDG codes in
-#"pymcpltool -p" (mcpltool has an identical list):
+#"mcpltool -p" (mcpltool-c has an identical list):
 _particle_names = { 'neutron' : 2112, 'antineutron' : -2112,
                     'proton' : 2212, 'antiproton' : -2212,
                     'electron' : 11, 'positron' : -11, 'antielectron' : -11,

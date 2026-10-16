@@ -74,7 +74,7 @@ list(
 
 list(
   APPEND mcpltest_pyenvmod
-  "MCPL_TOOL_FILE=set:$<TARGET_FILE:mcpltool>"
+  "MCPL_TOOL_FILE=set:$<TARGET_FILE:mcpltool-c>"
 )
 
 list(

@@ -28,8 +28,9 @@ The mcpl-core package
 
 The `mcpl-core` package provides:
 
-* The `mcpltool`, a command-line utility for working with MCPL files. For more
-  information about this tool, refer to the
+* The `mcpltool-c`, a minimal version (written in C) of the `mcpltool`
+  command-line utility for working with MCPL files from the `mcpl-python`
+  package. For more information about these tools, refer to the
   https://mctools.github.io/mcpl/usage_cmdline page.
 * The C/C++ API in the form of the `mcpl.h` header file and associated shared
   library, along with the header-only C++ interface `mcplcpp.h` (which

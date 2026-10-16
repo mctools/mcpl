@@ -81,5 +81,5 @@ with mcpl.MCPLFile('neutrons.mcpl') as f:
 #       b = block[ flt(block) ]
 #       fo.add_particles( b, **edit(b) )
 #
-#This is also what the command "pymcpltool --extract --select EXPR1 --edit
+#This is also what the command "mcpltool --extract --select EXPR1 --edit
 #EXPR2" does.

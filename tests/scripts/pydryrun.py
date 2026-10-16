@@ -22,7 +22,7 @@
 
 # NEEDS: numpy
 
-# Test the --dry-run (-d) option of pymcpltool and the dry_run argument of the
+# Test the --dry-run (-d) option of mcpltool and the dry_run argument of the
 # file operations in the Python API: a dry run must print what the real run
 # prints (except that it says "Would ..." and ends with a note), give the same
 # exit code, and leave all files untouched (contents and modification times).
@@ -117,7 +117,7 @@ def compare(*args, writes = True):
     if dir_mtimes('dry') != mtimes and not sys.platform.startswith('win'):
         problems.append('dry run changed modification times!')
     changed_real = dir_contents('real') != dir_contents(input_dir)
-    print(f'pymcpltool --dry-run {" ".join(args)}: exit code {dry[0]},'
+    print(f'mcpltool --dry-run {" ".join(args)}: exit code {dry[0]},'
           f' real run {"changed" if changed_real else "did not change"} files')
     for line in dry[1].splitlines():
         print(f'   | {line}')
@@ -126,7 +126,7 @@ def compare(*args, writes = True):
     return not problems
 
 def test_tool():
-    print('=== pymcpltool --dry-run')
+    print('=== mcpltool --dry-run')
     cases = [
         ['--extract','a1.mcpl','out.mcpl'],
         ['--extract','a1.mcpl','out.mcpl.gz'],
@@ -168,7 +168,7 @@ def test_tool():
                   ['--dry-run','--hist','ekin/MeV','--output','h.txt','a1.mcpl'] ):
         fresh('dry')
         rc, out, err = run(args, 'dry')
-        print(f'pymcpltool {" ".join(args)}: exit code {rc}')
+        print(f'mcpltool {" ".join(args)}: exit code {rc}')
         for line in out.splitlines():
             print(f'   | {line}')
         if err or dir_contents('dry') != dir_contents(input_dir):

@@ -59,4 +59,5 @@ scipp = [
 "Bug Tracker" = "https://github.com/mctools/mcpl/issues"
 
 [project.scripts]
-pymcpltool = "mcpl._cli:main"
+mcpltool = "mcpl._cli:main"
+pymcpltool = "mcpl._cli:_main_pymcpltool"

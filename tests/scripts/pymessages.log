@@ -12,14 +12,14 @@ MCPL WARNING: Opened file with unknown "stat:..." syntax in comments. The presen
     logged by "mcpl" with level WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
     logged by "mcpl" with level WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
     logged by "mcpl" with level WARNING: Opened file with unknown "stat:..." syntax in comments. The present installation only has special support for "stat:sum:..." comments. It might be a sign that your installation of MCPL is too old.
-==> pymcpltool always prints:
+==> mcpltool always prints:
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
 MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
 MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
 Opened MCPL file ref_statsum_crash.mcpl:
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
     0        2112      9.1166     -21.123       56.62      59.688           0           0           1      19.755      3.3589
---> pymcpltool exited with code 0
+--> mcpltool exited with code 0
 ==> After use_logging(False), warnings are printed again:
 --> Opening ref_statsum_crash.mcpl
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
@@ -27,10 +27,16 @@ MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not cl
 MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
 --> Opening ref_statunsupported.mcpl.gz
 MCPL WARNING: Opened file with unknown "stat:..." syntax in comments. The present installation only has special support for "stat:sum:..." comments. It might be a sign that your installation of MCPL is too old.
-==> Errors in pymcpltool, with and without --traceback:
---> Running pymcpltool nonexistent.mcpl
+==> Errors in mcpltool, with and without --traceback:
+--> Running mcpltool nonexistent.mcpl
     exit code: 1
     stdout: MCPL ERROR: Unable to open file!
---> Running pymcpltool --traceback nonexistent.mcpl
+--> Running mcpltool --traceback nonexistent.mcpl
     exit code: 1
     last line of stderr: mcpldev._common.MCPLError: Unable to open file!
+==> Program name in the usage with "python -m mcpl":
+      python -m mcpl [dump-options] FILE
+==> The old pymcpltool command warns, and works like mcpltool:
+    stdout: MCPL WARNING: The pymcpltool command has been renamed to mcpltool, and will be removed in a future release.
+    stdout: MCPL WARNING: Opened file with unknown "stat:..." syntax in comments. The present installation only has special support for "stat:sum:..." comments. It might be a sign that your installation of MCPL is too old.
+    stdout: Opened MCPL file ref_statunsupported.mcpl.gz:

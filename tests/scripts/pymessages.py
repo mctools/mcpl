@@ -23,8 +23,8 @@
 # NEEDS: numpy
 
 # Test that messages and warnings are printed by default, sent to the logger
-# "mcpl" after use_logging(), and always printed by pymcpltool. Also test the
-# --traceback option of pymcpltool.
+# "mcpl" after use_logging(), and always printed by mcpltool. Also test the
+# --traceback option of mcpltool.
 
 import logging
 import subprocess
@@ -50,7 +50,7 @@ def open_files():
             pass
 
 def run_tool(*args):
-    print(f'--> Running pymcpltool {" ".join(args)}')
+    print(f'--> Running mcpltool {" ".join(args)}')
     sys.stdout.flush()
     rv = subprocess.run([sys.executable, '-m', 'mcpldev', *args],
                         capture_output=True, text=True, check=False)
@@ -77,11 +77,11 @@ def main():
         print(f'    logged by "{r.name}" with level {r.levelname}: {r.getMessage()}')
     nrecords = len(handler.records)
 
-    print('==> pymcpltool always prints:')
+    print('==> mcpltool always prints:')
     try:
-        mcpl.app_pymcpltool(['pymcpltool', '-n', '-l1', str(files[0])])
+        mcpl.app_mcpltool(['mcpltool', '-n', '-l1', str(files[0])])
     except SystemExit as e:
-        print(f'--> pymcpltool exited with code {e.code}')
+        print(f'--> mcpltool exited with code {e.code}')
     assert len(handler.records) == nrecords
 
     print('==> After use_logging(False), warnings are printed again:')
@@ -89,9 +89,23 @@ def main():
     open_files()
     assert len(handler.records) == nrecords
 
-    print('==> Errors in pymcpltool, with and without --traceback:')
+    print('==> Errors in mcpltool, with and without --traceback:')
     run_tool('nonexistent.mcpl')
     run_tool('--traceback', 'nonexistent.mcpl')
+
+    print('==> Program name in the usage with "python -m mcpl":')
+    rv = subprocess.run([sys.executable, '-m', 'mcpldev', '--help'],
+                        capture_output=True, text=True, check=True)
+    lines = rv.stdout.splitlines()
+    print(f'    {lines[lines.index("Usage:")+1]}')
+
+    print('==> The old pymcpltool command warns, and works like mcpltool:')
+    code = ( 'import sys;sys.argv[0]="pymcpltool";'
+             'from mcpldev._cli import _main_pymcpltool as m;m()' )
+    rv = subprocess.run([sys.executable, '-c', code, '-j', str(files[1])],
+                        capture_output=True, text=True, check=True)
+    for line in rv.stdout.splitlines()[:3]:
+        print(f'    stdout: {line}')
 
 if __name__ == '__main__':
     main()

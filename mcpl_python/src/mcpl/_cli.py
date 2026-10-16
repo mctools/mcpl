@@ -19,9 +19,9 @@
 ##                                                                            ##
 ################################################################################
 
-"""The pymcpltool command."""
+"""The mcpltool command."""
 
-__all__ = ['app_pymcpltool']
+__all__ = ['app_mcpltool', 'app_pymcpltool']
 
 import os
 import pathlib
@@ -43,7 +43,7 @@ from ._reader import MCPLFile
 from ._writer import MCPLOutFile
 
 
-def _pymcpltool_usage(progname,errmsg=None):
+def _mcpltool_usage(progname,errmsg=None):
     if errmsg:
         print(f"ERROR: {errmsg}\n")
         print("Run with -h or --help for usage information")
@@ -53,10 +53,6 @@ Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.
 
 The default behaviour is to display the contents of the FILE in human readable
 format (see Dump Options below for how to modify what is displayed).
-
-This is the python version of the tool, which in addition to the features of
-the compiled mcpltool can show statistics, and select or edit particles based
-on expressions.
 
 This installation supports direct reading of gzipped files (.mcpl.gz).
 
@@ -196,22 +192,24 @@ Other options:
     print(helpmsg.strip().replace('PROGNAME',progname))
     sys.exit(0)
 
-def app_pymcpltool(argv=None):
-    """Implements a python equivalent of the compiled MCPL tool. If no argv list is
+def app_mcpltool(argv=None):
+    """Implements the mcpltool command. If no argv list is
     passed in, sys.argv will be used. In case of errors, MCPLError exceptions
     are raised. Messages are always printed, even if use_logging() was
     called."""
     with _ForcePrinting():
-        _app_pymcpltool(argv)
+        _app_mcpltool(argv)
 
-def _app_pymcpltool(argv):
+def _app_mcpltool(argv):
     if argv is None:
         argv = sys.argv
 
     progname,args = os.path.basename(argv[0]),argv[1:]
+    if progname == '__main__.py':
+        progname = 'python -m mcpl'
 
     #NB: We do not use standard python parsing modules, since we want to be
-    #as strictly compatible with the compiled mcpltool as possible.
+    #as strictly compatible with mcpltool-c as possible.
 
     if not args:
         print('ERROR: No input file specified\n\nRun with -h or --help for usage information')
@@ -244,7 +242,7 @@ def _app_pymcpltool(argv):
     hflag_names = ('--logx','--logy','--lethargy','--unweighted','--print')
     filelist = []
     def bad(errmsg):
-        _pymcpltool_usage(progname,errmsg)
+        _mcpltool_usage(progname,errmsg)
     args = list(args)
     while args:
         a = args.pop(0)
@@ -295,7 +293,7 @@ def _app_pymcpltool(argv):
             elif a=='--traceback':
                 pass#handled by main()
             elif a=='--help':
-                _pymcpltool_usage(progname)
+                _mcpltool_usage(progname)
             else:
                 bad(f"Unrecognised option : {a}")
         elif a.startswith('-'):
@@ -346,7 +344,7 @@ def _app_pymcpltool(argv):
                 elif f=='t':
                     opt_text=True
                 elif f=='h':
-                    _pymcpltool_usage(progname)
+                    _mcpltool_usage(progname)
                 else:
                     bad(f"Unrecognised option : -{f}")
         else:
@@ -418,21 +416,21 @@ def _app_pymcpltool(argv):
         sys.exit(0)
 
     if any_mergeopts:
-        _pymcpltool_merge(filelist,opt_forcemerge,opt_inplace,opt_keepuserflags,
+        _mcpltool_merge(filelist,opt_forcemerge,opt_inplace,opt_keepuserflags,
                           opt_dryrun,bad)
-        _pymcpltool_dryrun_note(opt_dryrun)
+        _mcpltool_dryrun_note(opt_dryrun)
         sys.exit(0)
 
     if opt_extract:
-        _pymcpltool_extract(filelist,opt_limit,opt_skip,pdgcode_str,opt_select,
+        _mcpltool_extract(filelist,opt_limit,opt_skip,pdgcode_str,opt_select,
                             opt_edit,opt_preventcomment,opt_keepstatsum,
                             opt_dryrun,bad)
-        _pymcpltool_dryrun_note(opt_dryrun)
+        _mcpltool_dryrun_note(opt_dryrun)
         sys.exit(0)
 
     if opt_hist is not None:
-        from ._clistats import pymcpltool_hist
-        pymcpltool_hist(filelist,opt_hist,opt_select,vopts,hflags,bad)
+        from ._clistats import mcpltool_hist
+        mcpltool_hist(filelist,opt_hist,opt_select,vopts,hflags,bad)
         sys.exit(0)
 
     if opt_text:
@@ -446,7 +444,7 @@ def _app_pymcpltool(argv):
             #(still read and convert everything, for the same errors):
             import io
             convert2ascii(filelist[0],io.StringIO())
-            _pymcpltool_dryrun_note(opt_dryrun)
+            _mcpltool_dryrun_note(opt_dryrun)
             sys.exit(0)
         try:
             fout = open(filelist[1],'w')  # noqa: SIM115
@@ -468,12 +466,12 @@ def _app_pymcpltool(argv):
 
     if opt_repair:
         repair(filelist[0], dry_run = opt_dryrun)
-        _pymcpltool_dryrun_note(opt_dryrun)
+        _mcpltool_dryrun_note(opt_dryrun)
         sys.exit(0)
 
     if opt_stats:
-        from ._clistats import pymcpltool_stats
-        pymcpltool_stats(filelist[0],opt_select,opt_pdf,opt_gui,vopts,bad)
+        from ._clistats import mcpltool_stats
+        mcpltool_stats(filelist[0],opt_select,opt_pdf,opt_gui,vopts,bad)
         sys.exit(0)
 
     #Dump
@@ -529,7 +527,7 @@ def _tool_outfn(fn):
         return "Requested output file already exists (with .mcpl extension).", None, False
     return None, fn, False
 
-def _pymcpltool_close(outfile, attempt_gzip):
+def _mcpltool_close(outfile, attempt_gzip):
     if attempt_gzip:
         if not outfile.closeandgzip():
             _warning("Failed to gzip output. Non-gzipped output is"
@@ -539,11 +537,11 @@ def _pymcpltool_close(outfile, attempt_gzip):
     outfile.close()
     return outfile.filename
 
-def _pymcpltool_dryrun_note(dry_run):
+def _mcpltool_dryrun_note(dry_run):
     if dry_run:
         _info('dry run, nothing was written')
 
-def _pymcpltool_merge(filelist, opt_forcemerge, opt_inplace, opt_keepuserflags,
+def _mcpltool_merge(filelist, opt_forcemerge, opt_inplace, opt_keepuserflags,
                       dry_run, bad):
     if len(filelist) < 2:
         bad("Too few arguments for --forcemerge." if opt_forcemerge
@@ -569,9 +567,9 @@ def _pymcpltool_merge(filelist, opt_forcemerge, opt_inplace, opt_keepuserflags,
     else:
         out = merge_files(outfn,filelist[1:],dry_run=dry_run)
     if out is not None:
-        _pymcpltool_close(out,attempt_gzip)
+        _mcpltool_close(out,attempt_gzip)
 
-def _pymcpltool_extract(filelist, limit, skip, pdgcode_str, select, edit,
+def _mcpltool_extract(filelist, limit, skip, pdgcode_str, select, edit,
                         preventcomment, keepstatsum, dry_run, bad):
     if len(filelist) > 2:
         bad("Too many arguments.")
@@ -593,7 +591,7 @@ def _pymcpltool_extract(filelist, limit, skip, pdgcode_str, select, edit,
     limit = limit or 0
     skip = skip or 0
     with MCPLFile(filelist[0],raw_strings=True) as fi:
-        #Like mcpltool, only warn about NaN or infinite values in the
+        #Like mcpltool-c, only warn about NaN or infinite values in the
         #particles in the range given by -s and -l:
         fi._check_nonfinite = False
         fo = MCPLOutFile(outfn, _dry_run = dry_run)
@@ -612,10 +610,10 @@ def _pymcpltool_extract(filelist, limit, skip, pdgcode_str, select, edit,
                                    + ( ' with ' + ' '.join(opts)
                                        if opts else '' ))
             if select is not None:
-                fo.hdr_add_comment('pymcpltool: selected particles with:'
+                fo.hdr_add_comment('mcpltool: selected particles with:'
                                    f' {select}')
             if edit is not None:
-                fo.hdr_add_comment('pymcpltool: edited particles with:'
+                fo.hdr_add_comment('mcpltool: edited particles with:'
                                    f' {edit}')
             #As in mcpltool, stat:sum entries are marked as not available
             #when selecting particles based on their positions in the file,
@@ -651,7 +649,7 @@ def _pymcpltool_extract(filelist, limit, skip, pdgcode_str, select, edit,
                 else:
                     fo.add_particles(b)
             n_added = fo.nparticles
-            outname = _pymcpltool_close(fo,attempt_gzip)
+            outname = _mcpltool_close(fo,attempt_gzip)
         except BaseException:
             fo._abort()
             raise
@@ -659,16 +657,30 @@ def _pymcpltool_extract(filelist, limit, skip, pdgcode_str, select, edit,
           f" {n_added} / {n_in} particles from {filelist[0]} into {outname}")
 
 def main():
-    """This function simply calls app_pymcpltool(), but any raised MCPLError
+    """This function simply calls app_mcpltool(), but any raised MCPLError
     exception will be caught and transformed into a corresponding error message
-    followed by a call to sys.exit(1). This is what the pymcpltool command and
+    followed by a call to sys.exit(1). This is what the mcpltool command and
     "python -m mcpl" run. With the --traceback option, MCPLError exceptions
     are not caught, so their Python traceback is shown."""
     if '--traceback' in sys.argv[1:]:
-        app_pymcpltool()
+        app_mcpltool()
         return
     try:
-        app_pymcpltool()
+        app_mcpltool()
     except MCPLError as e:
         print(f'MCPL ERROR: {e!s}')
         sys.exit(1)
+
+def app_pymcpltool(argv=None):
+    """The old name of app_mcpltool (still available for backwards
+    compatibility)."""
+    print('MCPL WARNING: app_pymcpltool has been renamed to app_mcpltool,'
+          ' and will be removed in a future release.')
+    app_mcpltool(argv)
+
+def _main_pymcpltool():
+    """The pymcpltool command, which is the old name of the mcpltool
+    command."""
+    print('MCPL WARNING: The pymcpltool command has been renamed to mcpltool,'
+          ' and will be removed in a future release.')
+    main()

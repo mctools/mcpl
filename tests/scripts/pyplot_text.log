@@ -221,10 +221,10 @@ unicode backend with PYTHONIOENCODING=ascii prints only ASCII: True
          ++---------------------------+
          0.001393     4862         9725
                      ekin/MeV
-pymcpltool --hist --backend ascii: 19 lines, first and last:
+mcpltool --hist --backend ascii: 19 lines, first and last:
 (weights per bin)
                                          time/ms
-pymcpltool --hist x/cm --backend ascii with 83 columns:
+mcpltool --hist x/cm --backend ascii with 83 columns:
 (weights per bin)
      277 +                                  ##
          |                                  ##
@@ -245,7 +245,7 @@ pymcpltool --hist x/cm --backend ascii with 83 columns:
          -60.09                            2.903                             65.89
                                             x/cm
 
-pymcpltool --hist x/cm : y/cm --backend ascii with 83 columns:
+mcpltool --hist x/cm : y/cm --backend ascii with 83 columns:
 (y: y/cm)
    57.69 +        ................        ........
          |                ........        ........

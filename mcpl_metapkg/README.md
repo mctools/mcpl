@@ -33,8 +33,8 @@ instead, however most users are simply recommended to install the `mcpl` package
 for convenience.
 
 The utilities provided by this package thus include utilities for working with
-MCPL files, either via the command-line (the `mcpltool` and `pymcpltool`
-commands), or via dedicated APIs in C, C++, and python.
+MCPL files, either via the command-line (the `mcpltool` command), or via
+dedicated APIs in C, C++, and python.
 
 
 

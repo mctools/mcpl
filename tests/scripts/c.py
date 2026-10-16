@@ -91,7 +91,7 @@ assert len(badfiles)==9
 def testtool(args,testnone=False):
     flush()
     try:
-        mcpl.app_pymcpltool(['mcpltool']+[str(e) for e in args]
+        mcpl.app_mcpltool(['mcpltool']+[str(e) for e in args]
                             if not testnone
                             else None)
     except mcpl.MCPLError as e:

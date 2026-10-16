@@ -34,9 +34,9 @@ from MCPLTestUtils.stdout_redirect import RedirectStdout
 
 
 def run_pymcpltool(*args):
-    from mcpldev import app_pymcpltool
+    from mcpldev import app_mcpltool
     try:
-        app_pymcpltool(['pymcpltool']+[str(e) for e in args])
+        app_mcpltool(['mcpltool']+[str(e) for e in args])
     except SystemExit as e:
         if str(e) != '0':
             raise
@@ -91,7 +91,7 @@ for file_key in sorted(files.keys()):
         f.write(mcpltool_output)
     if (ec!=0) !=  expect_crash:
         errors = True
-        print("ERRORS DETECTED in mcpltool (unexpected error status)")
+        print("ERRORS DETECTED in mcpltool-c (unexpected error status)")
         continue
 
     if pathlib.Path('dump_pymcpltool.txt').read_bytes() != mcpltool_output:

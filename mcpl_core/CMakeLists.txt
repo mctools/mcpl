@@ -174,9 +174,9 @@ mcplfind_relinstpath( MCPL_relpath_BINDIR2INCDIR "${MCPL_BINDIR}"  "${MCPL_INCDI
 mcplfind_relinstpath( MCPL_relpath_BINDIR2CMAKEDIR "${MCPL_BINDIR}"  "${MCPL_CMAKEDIR}" )
 mcplfind_relinstpath( MCPL_relpath_BINDIR2INCDIR "${MCPL_BINDIR}"  "${MCPL_INCDIR}" )
 mcplfind_relinstpath( MCPL_relpath_CMAKEDIR2ROOT "${MCPL_CMAKEDIR}" "" )
-mcplfind_relinstpath( MCPL_relpath_CMAKEDIR2BINDIR "${MCPL_BINDIR}" "" )
-mcplfind_relinstpath( MCPL_relpath_CMAKEDIR2LIBDIR "${MCPL_LIBDIR}" "" )
-mcplfind_relinstpath( MCPL_relpath_CMAKEDIR2INCDIR "${MCPL_INCDIR}" "" )
+mcplfind_relinstpath( MCPL_relpath_CMAKEDIR2BINDIR "${MCPL_CMAKEDIR}" "${MCPL_BINDIR}" )
+mcplfind_relinstpath( MCPL_relpath_CMAKEDIR2LIBDIR "${MCPL_CMAKEDIR}" "${MCPL_LIBDIR}" )
+mcplfind_relinstpath( MCPL_relpath_CMAKEDIR2INCDIR "${MCPL_CMAKEDIR}" "${MCPL_INCDIR}" )
 
 include( mctools_utils )
 
@@ -245,8 +245,8 @@ endif()
 
 set_target_properties( mcpl PROPERTIES C_VISIBILITY_PRESET "hidden" )
 
-add_executable( mcpltool "app_tool/mcpltool_app.c" ${mcpl_src_files} )
-target_compile_definitions( mcpltool PRIVATE mcpl_LIB_IS_STATIC )
+add_executable( mcpltool-c "app_tool/mcpltool_app.c" ${mcpl_src_files} )
+target_compile_definitions( mcpltool-c PRIVATE mcpl_LIB_IS_STATIC )
 
 include( "mcpl_headercreate" )
 mcpl_create_header( mcplheader_include_path )
@@ -258,12 +258,12 @@ configure_file(
 )
 
 set_target_common_props( mcpl )
-set_target_common_props( mcpltool )
+set_target_common_props( mcpltool-c )
 target_compile_features( mcpl PUBLIC c_std_99 )
-target_compile_features( mcpltool PRIVATE c_std_99 )
+target_compile_features( mcpltool-c PRIVATE c_std_99 )
 mctools_detect_extra_cflags( mcpl_extra_private_compile_options )
 target_compile_options( mcpl PRIVATE ${mcpl_extra_private_compile_options} )
-target_compile_options( mcpltool PRIVATE ${mcpl_extra_private_compile_options} )
+target_compile_options( mcpltool-c PRIVATE ${mcpl_extra_private_compile_options} )
 target_include_directories(
   mcpl
   PRIVATE "${PROJECT_SOURCE_DIR}/src"
@@ -272,7 +272,7 @@ target_include_directories(
   $<INSTALL_INTERFACE:${MCPL_INCDIR}>
 )
 target_include_directories(
-  mcpltool PRIVATE
+  mcpltool-c PRIVATE
   "${PROJECT_SOURCE_DIR}/src"
   "${mcplheader_include_path}"
 )
@@ -282,12 +282,12 @@ target_include_directories(
 ##ZLib support:
 include( mcpl_zlib )
 add_zlib_dependency( mcpl )
-add_zlib_dependency( mcpltool )
+add_zlib_dependency( mcpltool-c )
 
 mctools_detect_math_libs( "MCPL_MATH_LIBRARIES" )
 
 target_link_libraries(mcpl PRIVATE ${MCPL_MATH_LIBRARIES} )
-target_link_libraries(mcpltool PRIVATE ${MCPL_MATH_LIBRARIES} )
+target_link_libraries(mcpltool-c PRIVATE ${MCPL_MATH_LIBRARIES} )
 
 install(
   TARGETS mcpl
@@ -298,7 +298,7 @@ install(
 )
 
 install(
-  TARGETS mcpltool
+  TARGETS mcpltool-c
   RUNTIME DESTINATION ${MCPL_BINDIR}
 )
 

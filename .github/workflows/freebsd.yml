@@ -103,18 +103,18 @@ jobs:
             python3 -mpip install --user ./src/mcpl_python
             python3 -mpip show mcpl-python
             ls -l /home/runner/.local/bin
-            which pymcpltool
-            pymcpltool ./src/examples/example.mcpl
+            which mcpltool
+            mcpltool ./src/examples/example.mcpl
             python3 -mpip check
             python3 -mpip install --user -v ./src/mcpl_core
             python3 -mpip show mcpl-core
             python3 -mpip check
-            mcpltool -h
-            mcpltool ./src/examples/example.mcpl
+            mcpltool-c -h
+            mcpltool-c ./src/examples/example.mcpl
             python3 -mpip install --user --no-build-isolation ./src/mcpl_metapkg
             python3 -mpip show mcpl
             python3 -mpip check
             python3 -mpip install --user scikit_build_core ./src/mcpl_extra --no-build-isolation
             mcpl2phits ./src/examples/example.mcpl foo.dmp
             phits2mcpl foo.dmp foo.mcpl
-            mcpltool foo.mcpl.gz
+            mcpltool-c foo.mcpl.gz

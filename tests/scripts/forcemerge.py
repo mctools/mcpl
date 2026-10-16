@@ -41,7 +41,7 @@ def fix_print_str(s):
 
 def run_mcpltool(*args, expect_failure):
     cmdargs =[str(e) for e in args]
-    print( '\n\n\n\n\nRUNNING: mcpltool {}'.format(fix_print_str(' '.join(cmdargs))),
+    print( '\n\n\n\n\nRUNNING: mcpltool-c {}'.format(fix_print_str(' '.join(cmdargs))),
            flush=True )
     print( 'Expect failure: %s'%('yes' if expect_failure else 'no'),
            flush=True )

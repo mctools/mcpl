@@ -128,10 +128,10 @@ def test_resolution():
 def test_tool():
     out = io.StringIO()
     with contextlib.redirect_stdout(out), contextlib.suppress(SystemExit):
-        mcpl.app_pymcpltool(['pymcpltool','--hist','time/ms','--logx','--bins','20',
+        mcpl.app_mcpltool(['mcpltool','--hist','time/ms','--logx','--bins','20',
                              '--backend','ascii',str(example_file)])
     lines = out.getvalue().splitlines()
-    print(f'pymcpltool --hist --backend ascii: {len(lines)} lines, first and last:')
+    print(f'mcpltool --hist --backend ascii: {len(lines)} lines, first and last:')
     print(lines[0])
     print(lines[-1])
     #Without --bins, the histogram is made at the resolution of the terminal
@@ -144,9 +144,9 @@ def test_tool():
         for args in ( ['--hist','x/cm'], ['--hist','x/cm : y/cm'] ):
             out = io.StringIO()
             with contextlib.redirect_stdout(out), contextlib.suppress(SystemExit):
-                mcpl.app_pymcpltool(['pymcpltool',*args,'--backend','ascii',
+                mcpl.app_mcpltool(['mcpltool',*args,'--backend','ascii',
                                      str(example_file)])
-            print(f'pymcpltool {" ".join(args)} --backend ascii with 83 columns:')
+            print(f'mcpltool {" ".join(args)} --backend ascii with 83 columns:')
             print(out.getvalue())
     finally:
         for k,v in old.items():

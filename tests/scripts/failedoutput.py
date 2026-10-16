@@ -19,8 +19,8 @@
 ##                                                                            ##
 ################################################################################
 
-# Failed --merge, --forcemerge and --extract operations of mcpltool and
-# pymcpltool must not leave output files behind. They fail here because the
+# Failed --merge, --forcemerge and --extract operations of mcpltool-c and
+# mcpltool must not leave output files behind. They fail here because the
 # input file has a comment starting with "stat:" which is not "stat:sum:"
 # (which is refused when writing files).
 
@@ -37,7 +37,7 @@ def run( tool, args ):
         cmd = [ str(mcpltool_cmd) ]
     else:
         code = ( 'import sys; import mcpldev._cli as c;'
-                 ' sys.argv[0] = "pymcpltool"; c.main()' )
+                 ' sys.argv[0] = "mcpltool"; c.main()' )
         cmd = [ sys.executable, '-c', code ]
     rv = subprocess.run( cmd + [ str(a) for a in args ],
                          capture_output = True, check = False )

@@ -23,8 +23,8 @@
 # NEEDS: numpy
 
 # Tests of reading per-particle userdata (MCPL format version 4) with the
-# Python API, and of pymcpltool giving the same results and printouts as
-# mcpltool for such files. The files are written with the C API.
+# Python API, and of mcpltool giving the same results and printouts as
+# mcpltool-c for such files. The files are written with the C API.
 
 import pathlib
 import shutil
@@ -88,13 +88,13 @@ def compare(*args):
     if c[1] != p[1]:
         problems.append(f'printouts differ:\n      C: {c[1]!r}\n     Py: {p[1]!r}')
     if p[2]:
-        problems.append(f'pymcpltool stderr: {p[2]!r}')
+        problems.append(f'mcpltool stderr: {p[2]!r}')
     dc, dp = dir_contents('c'), dir_contents('py')
     if set(dc) != set(dp):
         problems.append(f'different files: C: {sorted(dc)} Py: {sorted(dp)}')
     else:
         problems += [ f'file {k} differs' for k in dc if dc[k] != dp[k] ]
-    print(f'mcpltool {" ".join(args)}: exit code {c[0]}')
+    print(f'mcpltool-c {" ".join(args)}: exit code {c[0]}')
     for line in c[1].splitlines():
         print(f'   | {line}')
     for problem in problems:
@@ -108,7 +108,7 @@ def compare(*args):
     return not problems
 
 def test_compare_with_mcpltool():
-    print('=== Comparison with mcpltool')
+    print('=== Comparison with mcpltool-c')
     cases = [
         ['std.mcpl'],
         ['-l0','raw.mcpl'],
@@ -189,7 +189,7 @@ def test_python_api():
     rc = subprocess.run([sys.executable,'-m','mcpldev','--extract','--select',
                          'x > 1.5cm','--edit','z += 1cm',str(d/'std.mcpl'),
                          str(d/'w4.mcpl')],capture_output=True,check=False).returncode
-    print('pymcpltool --extract --select --edit:',rc)
+    print('mcpltool --extract --select --edit:',rc)
     cprint(lib.mcpltest_ud_read,(d/'w4.mcpl').as_posix())
     #Different layouts:
     try:

@@ -321,7 +321,7 @@ def main():
     cmd('bla.txt',fail=True)
     cmd(dd('reffile_truncated.mcpl.gz'),fail=True)
     cmd(dd('reffile_truncated.mcpl'),fail=True)
-    #This next one opens nicely if mcpltool is build with zlib support, due to the
+    #This next one opens nicely if mcpltool-c is build with zlib support, due to the
     #magic of gzopen being able to handle uncompressed files. A bit too magic perhaps...
     cmd(dd('reffile_notreallygz.mcpl.gz'))
     cmd(dd('reffile_uw.mcpl.gz'))

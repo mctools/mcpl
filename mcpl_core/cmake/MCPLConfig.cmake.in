@@ -45,17 +45,17 @@ if ( "@mcpl_zlib_required_depversion@" )
 endif()
 
 #Libname:
-set( MCPL_LIBNAME @MCPL_libname@ )
+set( MCPL_LIBNAME "$<TARGET_FILE_NAME:mcpl>" )
 
 #Various scripts:
-set( MCPL_CMD_MCPLTOOL ${MCPL_BINDIR}/mcpltool )
-if ( NOT EXISTS MCPL_CMD_MCPLTOOL )
+set( MCPL_CMD_MCPLTOOL "${MCPL_BINDIR}/mcpltool-c${CMAKE_EXECUTABLE_SUFFIX}" )
+if ( NOT EXISTS "${MCPL_CMD_MCPLTOOL}" )
   set( MCPL_CMD_MCPLTOOL "")
 endif()
 
 #Various scripts:
-set( MCPL_CMD_MCPLCONFIG ${MCPL_BINDIR}/mcpl-config )
-if ( NOT EXISTS MCPL_CMD_MCPLCONFIG )
+set( MCPL_CMD_MCPLCONFIG "${MCPL_BINDIR}/mcpl-config${CMAKE_EXECUTABLE_SUFFIX}" )
+if ( NOT EXISTS "${MCPL_CMD_MCPLCONFIG}" )
   set( MCPL_CMD_MCPLCONFIG "")
 endif()
 

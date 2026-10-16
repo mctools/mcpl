@@ -127,7 +127,7 @@ class MCPLOutFile:
         """
         self._fh = None
         #(in dry-run mode, used by the dry_run options of the file operations
-        #and pymcpltool, everything is done except writing):
+        #and mcpltool, everything is done except writing):
         self._dry_run = bool(_dry_run)
         #(only importing the expressions module when needed):
         self._flt = self._edt = None

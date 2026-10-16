@@ -46,10 +46,6 @@ Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.
 The default behaviour is to display the contents of the FILE in human readable
 format (see Dump Options below for how to modify what is displayed).
 
-This is the python version of the tool, which in addition to the features of
-the compiled mcpltool can show statistics, and select or edit particles based
-on expressions.
-
 This installation supports direct reading of gzipped files (.mcpl.gz).
 
 Usage:
@@ -199,10 +195,6 @@ Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.
 
 The default behaviour is to display the contents of the FILE in human readable
 format (see Dump Options below for how to modify what is displayed).
-
-This is the python version of the tool, which in addition to the features of
-the compiled mcpltool can show statistics, and select or edit particles based
-on expressions.
 
 This installation supports direct reading of gzipped files (.mcpl.gz).
 

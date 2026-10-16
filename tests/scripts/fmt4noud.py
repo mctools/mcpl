@@ -51,7 +51,7 @@ def run_c( *args ):
 def run_py( *args ):
     import sys
     code = ( 'import sys; import mcpldev;'
-             ' mcpldev.app_pymcpltool(["pymcpltool"]+sys.argv[1:])' )
+             ' mcpldev.app_mcpltool(["mcpltool"]+sys.argv[1:])' )
     rv = subprocess.run( [sys.executable,'-c',code]+[str(a) for a in args],
                          capture_output = True, check = True )
     assert not rv.stderr
