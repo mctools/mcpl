@@ -1,4 +1,10 @@
 v2.2.9  (work in progress)
+      * The C and Python readers refuse files whose particle size in the header
+        does not match the fields of the particles (it was only checked for
+        files with userdata, and a size of 0 could lead to a division by
+        zero), and files with a universal weight which is not positive and
+        finite (as required when writing; the C reader could otherwise read
+        beyond the particle data, when the universal weight was 0).
       * Blob keys can only have printable ASCII characters other than
         whitespace and quotes. This is required for files in MCPL format
         version 4 (which are refused otherwise), and the C, C++ and Python

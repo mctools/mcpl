@@ -631,6 +631,9 @@ class MCPLFile:
         opt_polarisation = bool(opt_polarisation)
         opt_singleprec = bool(opt_singleprec)
         opt_universalweight = float(self._fileread(dtype=np.dtype('f8').newbyteorder(endianness),count=1)[0] if _tmp else 0.0)
+        if _tmp and not ( 0.0 < opt_universalweight < float('inf') ):
+            #(must be positive and finite, as when writing files)
+            raise MCPLError('invalid universal weight')
         h['nparticles']=nparticles
         h['particlesize']=particlesize
         h['opt_universalpdgcode']=opt_universalpdgcode
@@ -658,15 +661,17 @@ class MCPLFile:
             from ._userdata import userdata_dtype
             layout = readarr().decode('ascii','replace')
             udsize = userdata_dtype(layout).itemsize
-            fp = 4 if opt_singleprec else 8
-            expected = ( 7*fp + ( 3*fp if opt_polarisation else 0 )
-                         + ( 0 if opt_universalpdgcode else 4 )
-                         + ( 0 if _tmp else fp )
-                         + ( 4 if opt_userflags else 0 ) + udsize )
-            if particlesize != expected:
-                raise MCPLError('unexpected particle size')
             h['userdata_layout'] = layout
             h['userdata_size'] = udsize
+        #The particle size in the header must be consistent with the size of
+        #the fields:
+        fp = 4 if opt_singleprec else 8
+        expected = ( 7*fp + ( 3*fp if opt_polarisation else 0 )
+                     + ( 0 if opt_universalpdgcode else 4 )
+                     + ( 0 if _tmp else fp )
+                     + ( 4 if opt_userflags else 0 ) + h['userdata_size'] )
+        if particlesize != expected:
+            raise MCPLError('unexpected particle size')
         sourcename = readarr()
         comments=[]
         for i in range(ncomments):

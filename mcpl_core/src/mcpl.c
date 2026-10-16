@@ -2801,6 +2801,9 @@ MCPL_LOCAL int mcpl_internal_open_file( mcpl_fileinternal_t * f,
       return 0;
     }
     current_pos += nb;
+    //(must be positive and finite, as when writing files):
+    if ( !( f->opt_universalweight > 0.0 ) || isinf(f->opt_universalweight) )
+      MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"invalid universal weight");
   }
 
   if ( has_userdata ) {
@@ -2810,7 +2813,10 @@ MCPL_LOCAL int mcpl_internal_open_file( mcpl_fileinternal_t * f,
     f->userdata_size = mcpl_internal_udlayout_validate( f->userdata_layout, es );
     if (!f->userdata_size)
       return 0;
-    //Check consistency with the size of the other fields:
+  }
+  {
+    //The particle size in the header must be consistent with the size of the
+    //fields:
     unsigned fp = f->opt_singleprec ? sizeof(float) : sizeof(double);
     uint64_t expected = 7*fp + ( f->opt_polarisation ? 3*fp : 0 )
       + ( f->opt_universalpdgcode ? 0 : sizeof(int32_t) )
@@ -2819,8 +2825,6 @@ MCPL_LOCAL int mcpl_internal_open_file( mcpl_fileinternal_t * f,
       + f->userdata_size;
     if ( f->particle_size != expected )
       MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"unexpected particle size");
-  } else if ( ! (f->particle_size<=MCPLIMP_MAX_PARTICLE_SIZE) ) {
-    MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"unexpected particle size");
   }
   f->particle_buffer = (char*)mcpl_internal_malloc_es( f->particle_size
                                                        ? f->particle_size : 1,
@@ -3446,7 +3450,7 @@ const mcpl_particle_t* mcpl_read_es( mcpl_file_t ff, mcpl_errstate_t * es )
     }
     p->time = mcpl_internal_rd_float( &pbuf[ibuf] );
     ibuf += sizeof(float);
-    if (!p->weight) {
+    if (!f->opt_universalweight) {
       p->weight = mcpl_internal_rd_float( &pbuf[ibuf] );
       ibuf += sizeof(float);
     }
@@ -3470,7 +3474,7 @@ const mcpl_particle_t* mcpl_read_es( mcpl_file_t ff, mcpl_errstate_t * es )
     }
     p->time = mcpl_internal_rd_double( &pbuf[ibuf] );
     ibuf += sizeof(double);
-    if (!p->weight) {
+    if (!f->opt_universalweight) {
       p->weight = mcpl_internal_rd_double( &pbuf[ibuf] );
       ibuf += sizeof(double);
     }
