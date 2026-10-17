@@ -45,7 +45,7 @@ if ( "@mcpl_zlib_required_depversion@" )
 endif()
 
 #Libname:
-set( MCPL_LIBNAME "$<TARGET_FILE_NAME:mcpl>" )
+set( MCPL_LIBNAME "@MCPL_libname@" )
 
 #Various scripts:
 set( MCPL_CMD_MCPLTOOL "${MCPL_BINDIR}/mcpltool-c${CMAKE_EXECUTABLE_SUFFIX}" )

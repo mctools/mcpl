@@ -51,6 +51,9 @@ jobs:
     - name: mcpltool-c
       run: mcpltool-c ./src/examples/example.mcpl
 
+    - name: Check CMake variables of find_package(MCPL)
+      run: cmake -S "./src/devel/misc/test_cmakevars" -B "./build_cmakevars"
+
     - name: Check client C/CXX standards (cfg)
       run: cmake -S "./src/devel/misc/test_standards" -B bldstd
 

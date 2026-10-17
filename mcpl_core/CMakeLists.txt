@@ -339,6 +339,14 @@ write_basic_package_version_file(
   VERSION ${MCPL_VERSION} COMPATIBILITY AnyNewerVersion
 )
 
+#Name of the library file in MCPL_LIBDIR (same as "mcpl-config --show
+#libname"), a generator expression:
+if ( UNIX )
+  set( MCPL_libname "$<TARGET_FILE_NAME:mcpl>" )
+else()
+  set( MCPL_libname "$<TARGET_IMPORT_FILE_NAME:mcpl>" )
+endif()
+
 #First generated a configured version of the template:
 configure_file(
   "${PROJECT_SOURCE_DIR}/cmake/MCPLConfig.cmake.in"
