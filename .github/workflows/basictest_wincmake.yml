@@ -104,6 +104,9 @@ jobs:
       shell: cmd
       run: mcpltool-c --help
 
+    - name: Check CMake variables of find_package(MCPL)
+      run: cmake -S "./src/devel/misc/test_cmakevars" -B "./build_cmakevars"
+
     - name: Cfg downstream
       #For fun, always use Release config here, to test that it works even if
       #using a different build type than mcpl itself:
