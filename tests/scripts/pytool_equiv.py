@@ -86,11 +86,6 @@ def fresh(d):
     shutil.copytree(input_dir, d)
 
 ncases = 0
-#Commands failing while transferring particles, after which mcpltool leaves an
-#unfinished output file behind, while pymcpltool removes it:
-unfinished_output = [ ['--extract','nan.mcpl','out.mcpl'],
-                      ['--extract','-p2112','inf.mcpl','out.mcpl'],
-                      ['--forcemerge','out.mcpl','b_dp.mcpl','nan.mcpl'] ]
 
 def compare(*args):
     global ncases
@@ -111,9 +106,6 @@ def compare(*args):
     if p[2]:
         problems.append(f'pymcpltool stderr: {p[2]!r}')
     dc, dp = dir_contents('c'), dir_contents('py')
-    if list(args) in unfinished_output:
-        assert 'out.mcpl' in dc and 'out.mcpl' not in dp
-        del dc['out.mcpl']
     if set(dc) != set(dp):
         problems.append(f'different files: C: {sorted(dc)} Py: {sorted(dp)}')
     else:

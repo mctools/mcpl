@@ -5526,6 +5526,136 @@ MCPL_LOCAL const char * mcpl_internal_tool_outfn( char * fn, char ** outfn,
   return NULL;
 }
 
+MCPL_LOCAL void mcpl_internal_tool_remove_output( const char * outfn )
+{
+  //Removes the output file of a failed --merge, --forcemerge or --extract
+  //(which did not exist before, see mcpl_internal_tool_outfn), with the name
+  //given to it by mcpl_create_outfile:
+  size_t n = strlen(outfn);
+  if ( n > 5 && !strcmp(outfn + (n - 5), ".mcpl") ) {
+    if ( mcpl_file_certainly_exists(outfn) )
+      mcpl_internal_delete_file(outfn);
+    return;
+  }
+  char * fn = mcpl_internal_malloc(n+6);
+  memcpy(fn,outfn,n);
+  memcpy(fn+n,".mcpl",6);
+  if ( mcpl_file_certainly_exists(fn) )
+    mcpl_internal_delete_file(fn);
+  free(fn);
+}
+
+MCPL_LOCAL int mcpl_internal_tool_extract( mcpl_file_t fi, const char * outfn,
+                                           int attempt_gzip,
+                                           int opt_nocomment,
+                                           int64_t opt_num_limit,
+                                           int64_t opt_num_skip,
+                                           int32_t pdgcode_select,
+                                           uint64_t * added,
+                                           char ** fo_filename,
+                                           mcpl_errstate_t * es )
+{
+  //The extraction of --extract, returning 0 in case of errors (after which
+  //the output file is closed, and must be removed by the caller). On success,
+  //*fo_filename is the name of the output file (to be freed by the caller).
+  mcpl_outfile_t fo = mcpl_create_outfile_es(outfn,es);
+  if ( !fo.internal )
+    return 0;
+#define MCPLIMP_EXTRACT_CHECK if ( es->code ) { \
+    mcpl_close_outfile_unfinished_es( fo, NULL ); return 0; }
+  mcpl_transfer_metadata_es(fi, fo, es);
+  MCPLIMP_EXTRACT_CHECK;
+  uint64_t fi_nparticles = mcpl_hdr_nparticles(fi);
+
+  if (!opt_nocomment) {
+    //Describe which particles were extracted (but nothing specific to the
+    //input file, to keep files extracted in the same way mergeable):
+    char comment[1024];
+    int n = snprintf(comment, sizeof(comment), "mcpltool: extracted particles");
+    const char * sep = " with ";
+    if ( opt_num_limit > 0 ) {
+      n += snprintf(comment+n, sizeof(comment)-n, "%s-l%" PRId64, sep, opt_num_limit);
+      sep = " ";
+    }
+    if ( opt_num_skip > 0 ) {
+      n += snprintf(comment+n, sizeof(comment)-n, "%s-s%" PRId64, sep, opt_num_skip);
+      sep = " ";
+    }
+    if ( pdgcode_select && n < (int)sizeof(comment) )
+      snprintf(comment+n, sizeof(comment)-n, "%s-p%" PRId32, sep, pdgcode_select);
+    mcpl_hdr_add_comment_es(fo,comment,es);
+    MCPLIMP_EXTRACT_CHECK;
+  }
+
+  if ( fi_nparticles > 0
+       && ( opt_num_skip > 0
+            || ( opt_num_limit>0 && opt_num_limit < (int64_t)fi_nparticles ) ) ) {
+    int need_stat_scaling = 0;
+    unsigned ncomments = mcpl_hdr_ncomments(fi);
+    for ( unsigned ic = 0; ic < ncomments; ++ic ) {
+      const char * comment = mcpl_hdr_comment(fi,ic);
+      if ( !MCPL_COMMENT_IS_STATSUM(comment) )
+        continue;
+      mcpl_internal_statsum_t sc;
+      if ( !mcpl_internal_statsum_parse_or_emit_err_es( comment, &sc, es ) ) {
+        mcpl_close_outfile_unfinished_es( fo, NULL );
+        return 0;
+      }
+      if ( sc.value != -1.0 ) {
+        need_stat_scaling = 1;
+        break;
+      }
+    }
+    if ( need_stat_scaling ) {
+      mcpl_print("MCPL WARNING: Marking stat:sum entries in output file as "
+                 "not available (-1) when filtering based on particle "
+                 "positions\n");
+      mcpl_hdr_scale_stat_sums_es( fo, -1.0, es );
+      MCPLIMP_EXTRACT_CHECK;
+    }
+  }
+
+  if (opt_num_skip>0) {
+    mcpl_seek_es(fi,(uint64_t)opt_num_skip,es);
+    MCPLIMP_EXTRACT_CHECK;
+  }
+
+  //uint64_t(-1) instead of UINT64_MAX to fix clang c++98 compilation
+  uint64_t left = opt_num_limit>0 ? (uint64_t)opt_num_limit : (uint64_t)-1;
+
+  //Writing the next loop in an annoying way to silence MSVC C4706 warning:
+  for (;left;) {
+    --left;
+    const mcpl_particle_t* particle = mcpl_read_es(fi,es);
+    MCPLIMP_EXTRACT_CHECK;
+    if (!particle)
+      break;
+    if (pdgcode_select && pdgcode_select!= particle->pdgcode)
+      continue;
+    mcpl_transfer_last_read_particle_es(fi, fo, es);
+    MCPLIMP_EXTRACT_CHECK;
+    ++(*added);
+  }
+#undef MCPLIMP_EXTRACT_CHECK
+
+  const char * outfile_fn = mcpl_outfile_filename(fo);
+  size_t nn = strlen(outfile_fn);
+  *fo_filename = mcpl_internal_malloc(nn+4);
+  memcpy(*fo_filename,outfile_fn,nn+1);
+  if (attempt_gzip) {
+    if (mcpl_closeandgzip_outfile_es(fo,es))
+      memcpy(*fo_filename+nn,".gz",4);
+  } else {
+    mcpl_close_outfile_es(fo,es);
+  }
+  if ( es->code ) {
+    free(*fo_filename);
+    *fo_filename = NULL;
+    return 0;
+  }
+  return 1;
+}
+
 int mcpl_tool(int argc,char** argv) {
 
   int nfilenames = 0;
@@ -5750,9 +5880,20 @@ int mcpl_tool(int argc,char** argv) {
       if (outfn_err)
         return free(filenames),mcpl_tool_usage(argv,outfn_err);
 
+      //A failed merge must not leave an output file behind, so errors are
+      //only reported after removing it:
+      mcpl_errstate_t es;
       mcpl_outfile_t mf = ( opt_forcemerge ?
-                            mcpl_forcemerge_files( outfn, nfilenames-1, (const char**)filenames + 1, opt_keepuserflags) :
-                            mcpl_merge_files( outfn, nfilenames-1, (const char**)filenames + 1) );
+                            mcpl_forcemerge_files_es( outfn, nfilenames-1, (const char**)filenames + 1, opt_keepuserflags, &es ) :
+                            mcpl_merge_files_es( outfn, nfilenames-1, (const char**)filenames + 1, &es ) );
+      if ( es.code ) {
+        mcpl_internal_tool_remove_output( outfn );
+        if (outfn != filenames[0])
+          free(outfn);
+        free(filenames);
+        mcpl_check_error( &es );
+        return 1;
+      }
       if (attempt_gzip) {
         if (!mcpl_closeandgzip_outfile(mf)) {
           mcpl_print("MCPL WARNING: Failed to gzip output. Non-gzipped output is found in ");
@@ -5796,85 +5937,27 @@ int mcpl_tool(int argc,char** argv) {
       return free(filenames),mcpl_tool_usage(argv,outfn_err);
 
     mcpl_file_t fi = mcpl_open_file(filenames[0]);
-    mcpl_outfile_t fo = mcpl_create_outfile(outfn);
+    uint64_t fi_nparticles = mcpl_hdr_nparticles(fi);
+    //A failed extraction must not leave an output file behind, so errors are
+    //only reported after removing it:
+    mcpl_errstate_t es;
+    uint64_t added = 0;
+    char * fo_filename = NULL;
+    int ok = mcpl_internal_tool_extract( fi, outfn, attempt_gzip,
+                                         opt_nocomment, opt_num_limit,
+                                         opt_num_skip, pdgcode_select,
+                                         &added, &fo_filename, &es );
+    mcpl_close_file(fi);
+    if ( !ok ) {
+      mcpl_internal_tool_remove_output( outfn );
+      if (outfn != filenames[1])
+        free(outfn);
+      free(filenames);
+      mcpl_check_error( &es );
+      return 1;
+    }
     if (outfn != filenames[1])
       free(outfn);
-    mcpl_transfer_metadata(fi, fo);
-    uint64_t fi_nparticles = mcpl_hdr_nparticles(fi);
-
-    if (!opt_nocomment) {
-      //Describe which particles were extracted (but nothing specific to the
-      //input file, to keep files extracted in the same way mergeable):
-      char comment[1024];
-      int n = snprintf(comment, sizeof(comment), "mcpltool: extracted particles");
-      const char * sep = " with ";
-      if ( opt_num_limit > 0 ) {
-        n += snprintf(comment+n, sizeof(comment)-n, "%s-l%" PRId64, sep, opt_num_limit);
-        sep = " ";
-      }
-      if ( opt_num_skip > 0 ) {
-        n += snprintf(comment+n, sizeof(comment)-n, "%s-s%" PRId64, sep, opt_num_skip);
-        sep = " ";
-      }
-      if ( pdgcode_select && n < (int)sizeof(comment) )
-        snprintf(comment+n, sizeof(comment)-n, "%s-p%" PRId32, sep, pdgcode_select);
-      mcpl_hdr_add_comment(fo,comment);
-    }
-
-    if ( fi_nparticles > 0
-         && ( opt_num_skip > 0
-              || ( opt_num_limit>0 && opt_num_limit < (int64_t)fi_nparticles ) ) ) {
-      int need_stat_scaling = 0;
-      unsigned ncomments = mcpl_hdr_ncomments(fi);
-      for ( unsigned ic = 0; ic < ncomments; ++ic ) {
-        const char * comment = mcpl_hdr_comment(fi,ic);
-        if ( !MCPL_COMMENT_IS_STATSUM(comment) )
-          continue;
-        mcpl_internal_statsum_t sc;
-        mcpl_internal_statsum_parse_or_emit_err( comment, &sc );
-        if ( sc.value != -1.0 ) {
-          need_stat_scaling = 1;
-          break;
-        }
-      }
-      if ( need_stat_scaling ) {
-        mcpl_print("MCPL WARNING: Marking stat:sum entries in output file as "
-                   "not available (-1) when filtering based on particle "
-                   "positions\n");
-        mcpl_hdr_scale_stat_sums( fo, -1.0 );
-      }
-    }
-
-    if (opt_num_skip>0)
-      mcpl_seek(fi,(uint64_t)opt_num_skip);
-
-    //uint64_t(-1) instead of UINT64_MAX to fix clang c++98 compilation
-    uint64_t left = opt_num_limit>0 ? (uint64_t)opt_num_limit : (uint64_t)-1;
-    uint64_t added = 0;
-
-    //Writing the next loop in an annoying way to silence MSVC C4706 warning:
-    for (;left;) {
-      --left;
-      const mcpl_particle_t* particle = mcpl_read(fi);
-      if (!particle)
-        break;
-      if (pdgcode_select && pdgcode_select!= particle->pdgcode)
-        continue;
-      mcpl_transfer_last_read_particle(fi, fo);
-      ++added;
-    }
-
-    const char * outfile_fn = mcpl_outfile_filename(fo);
-    size_t nn = strlen(outfile_fn);
-    char *fo_filename = mcpl_internal_malloc(nn+4);
-    memcpy(fo_filename,outfile_fn,nn+1);
-    if (attempt_gzip) {
-      if (mcpl_closeandgzip_outfile(fo))
-        memcpy(fo_filename+nn,".gz",4);
-    } else {
-      mcpl_close_outfile(fo);
-    }
-    mcpl_close_file(fi);
 
     char buf[256];
     snprintf(buf,sizeof(buf),

@@ -23,7 +23,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-// Header-only C++ interface to MCPL (requires C++17), documented below.      //
+// Header-only C++ interface to MCPL (requires C++17 or later), documented    //
+// below.                                                                     //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -62,11 +63,11 @@
 /**
  * @brief Header-only C++ interface to MCPL.
  *
- * The C++ interface to MCPL requires C++17, and is built on the functions
- * of the C API with error states (the `_es` variants). It offers the same
- * functionality as the C API, with errors reported as exceptions (see
- * mcpl::Error), files which are closed automatically, and type-safe access
- * to particles and their userdata.
+ * The C++ interface to MCPL requires C++17 or later, and is built on the
+ * functions of the C API with error states (the `_es` variants). It offers
+ * the same functionality as the C API, with errors reported as exceptions
+ * (see mcpl::Error), files which are closed automatically, and type-safe
+ * access to particles and their userdata.
  *
  * Reading files:
  * @code{.cpp}
