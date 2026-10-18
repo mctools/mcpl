@@ -26,8 +26,8 @@ __all__ = []
 
 import importlib
 import inspect
-import os
 import pathlib
+from typing import ClassVar
 
 from ._common import MCPLError
 
@@ -35,19 +35,35 @@ from ._common import MCPLError
 class PlotBackend:
     """Interface of plotting backends (public as mcpl.plotting.Backend), which
     show or save lists of Figure objects. Subclasses set name (a unique name
-    used to select the backend), formats (the file extensions which save() can
-    create), and requirement (the Python package needed, if any), and implement
-    show() and save(), and is_available() if not always available. Options can
-    be given as keyword arguments to __init__, named with the backend name as
+    used to select the backend), kind (what plots are shown on: 'window' or
+    'terminal', or None for backends which are only used when
+    selected by name), priority (the preference among the backends of the
+    same kind, higher is preferred), formats (a dict with the file extensions
+    which save() can create, and their priorities among the backends which can
+    create them) and requirement (the Python package needed, if any). They
+    implement show() and save(), and is_available() and can_show() if the
+    backend is not always available or able to show plots. Options can be
+    given as keyword arguments to __init__, named with the backend name as
     prefix (like matplotlib_backend)."""
     name = None
-    formats = ()
+    kind = None
+    priority = 0
+    formats: ClassVar[dict] = {}
     requirement = None
+    #Options to use when plots are only saved in files, e.g. by mcpltool (like
+    #a backend of matplotlib which needs no display):
+    batch_options: ClassVar[dict] = {}
 
     @classmethod
     def is_available( cls ):
         """Whether the backend can be used (e.g. if its requirement is
         installed). This should not import any heavy modules."""
+        return True
+
+    @classmethod
+    def can_show( cls ):
+        """Whether the backend can show plots here (e.g. if there is a
+        display), assuming that it is available."""
         return True
 
     @classmethod
@@ -58,7 +74,7 @@ class PlotBackend:
     def resolution( self ):
         """Number of bins which histograms should have to match the resolution
         of the plots, as a tuple (nx,ny) for the two axes, or None if the
-        backend has no preference (like matplotlib and plotly, which draw
+        backend has no preference (like matplotlib, which draws
         bins at any resolution). The text backends return the numbers of
         columns and rows of their plots, so histograms with that many bins
         are shown without any resampling."""
@@ -79,13 +95,16 @@ class PlotBackend:
     def check_format( self, filename ):
         """Extension of filename, if it is an available format (otherwise
         MCPLError is raised)."""
-        ext = pathlib.Path(filename).suffix.lower().lstrip('.')
+        ext = _extension(filename)
         avail = self.available_formats()
         if ext not in avail:
             raise MCPLError(f'The {self.name} plotting backend can not create'
                             f' .{ext} files (supported: '
                             + ', '.join(f'.{e}' for e in avail) + ')')
         return ext
+
+def _extension( filename ):
+    return pathlib.Path(filename).suffix.lower().lstrip('.')
 
 def numbered_filenames( filename, n ):
     """Filenames for n figures: just filename if n==1, otherwise with
@@ -95,18 +114,17 @@ def numbered_filenames( filename, n ):
     p = pathlib.Path(filename)
     return [ str(p.with_name(f'{p.stem}_{i+1}{p.suffix}')) for i in range(n) ]
 
-#Registered backends in order of preference (by name), as names of the modules
-#implementing the built-in ones (loaded when needed, with the name of the class
-#after a colon if it is not Backend), or classes:
+#Registered backends, as names of the modules implementing the built-in ones
+#(loaded when needed, with the name of the class after a colon if it is not
+#Backend), or classes. Which one is used is decided by their attributes (kind,
+#priority, formats, ...):
 _registry = { 'matplotlib' : '_plotbackend_mpl',
-              'plotly' : '_plotbackend_plotly',
               'unicode' : '_plotbackend_text:UnicodeBackend',
               'ascii' : '_plotbackend_text:AsciiBackend' }
 #Backend for unit tests (not listed by available_backends):
 _hidden = { 'test' : '_plotbackend_test' }
 #Default backend set with set_default_backend (name or PlotBackend object):
 _default = None
-_envvar = 'MCPL_PLOT_BACKEND'
 
 def _backend_class( name, source = None ):
     entry = _registry.get(name) or _hidden.get(name)
@@ -131,10 +149,26 @@ def _register_backend( cls ):
     if cls.name in _registry or cls.name in _hidden:
         raise MCPLError(f'A plotting backend named "{cls.name}" is already'
                         ' registered')
+    if cls.kind not in ( 'window', 'terminal', None ):
+        raise MCPLError('The kind of a plotting backend must be "window",'
+                        ' "terminal" or None')
     _registry[cls.name] = cls
 
+def _ordered( classes ):
+    """Backends in order of preference for showing plots: those showing them
+    in a window first, then those for the terminal (each by
+    priority, and otherwise in the order of registration)."""
+    classes = list(classes)
+    return sorted( classes, key = lambda c : ( c.kind is None,
+                                               c.kind == 'terminal',
+                                               -c.priority,
+                                               classes.index(c) ) )
+
+def _all_classes():
+    return [ _backend_class(n) for n in _registry ]
+
 def _available_backends():
-    return [ n for n in _registry if _backend_class(n).is_available() ]
+    return [ c.name for c in _ordered(_all_classes()) if c.is_available() ]
 
 def _set_default_backend( backend ):
     global _default
@@ -148,37 +182,18 @@ def _set_default_backend( backend ):
 
 def _chosen( backend ):
     """Backend selected (name or object), and how it was selected (for error
-    messages), or (None,None) if the first available should be used"""
+    messages), or (None,None) if it should be chosen automatically"""
     if backend is not None:
         return backend, None
     if _default is not None:
         return _default, 'set_default_backend'
-    env = os.environ.get(_envvar,'').strip()
-    if env:
-        return env, f'the {_envvar} environment variable'
     return None, None
 
-def _backend_name( backend = None ):
-    """Name of the backend which would be used (None if none available)"""
-    b, _ = _chosen(backend)
-    if isinstance(b,PlotBackend):
-        return b.name
-    if b is None:
-        avail = _available_backends()
-        return avail[0] if avail else None
-    return b
-
-def _resolve( backend ):
-    """Backend object or class to use"""
-    b, source = _chosen(backend)
+def _explicit( b, source ):
+    """Class (or object) of an explicitly selected backend, which must be
+    available"""
     if isinstance(b,PlotBackend):
         return b
-    if b is None:
-        avail = _available_backends()
-        if not avail:
-            raise MCPLError('No plotting backend available. Please install'
-                            ' matplotlib (or plotly) to make plots.')
-        b = avail[0]
     if not isinstance(b,str):
         raise MCPLError('The backend must be the name of a plotting backend or'
                         ' a mcpl.plotting.Backend object')
@@ -189,9 +204,84 @@ def _resolve( backend ):
                                          ' Python package)' if cls.requirement else '' ))
     return cls
 
-def _create_backend( backend = None, **options ):
-    """Backend object to use (see _chosen), created with the options."""
-    b = _resolve(backend)
+def _show_backend( backend = None, terminal = False ):
+    """Backend class (or object) for showing plots: the given or default one,
+    or else the preferred available backend which can show plots (in the
+    terminal if terminal is True). A note is printed when plots are shown in
+    the terminal only because the preferred backend is not installed."""
+    b, source = _chosen(backend)
+    if b is not None:
+        cls = _explicit(b,source)
+        if not isinstance(cls,PlotBackend) and not cls.can_show():
+            if cls.kind == 'terminal':
+                #(suggesting the other backends which work, those for the
+                #terminal first):
+                others = [ c.name for c in _ordered(_all_classes())
+                           if c is not cls and c.kind is not None
+                           and c.is_available() and c.can_show() ]
+                others.sort( key = lambda n : _backend_class(n).kind != 'terminal' )
+                alt = ( f' or try the {" or ".join(others)} backend'
+                        + ( 's' if len(others) > 1 else '' ) ) if others else ''
+                raise MCPLError(f'The {cls.name} plotting backend{_from(source)}'
+                                ' does not work in this terminal (a solution'
+                                f' might be to switch terminal{alt})')
+            raise MCPLError(f'The {cls.name} plotting backend{_from(source)}'
+                            ' can not show plots here (is there no display?)')
+        return cls
+    ordered = [ c for c in _ordered(_all_classes()) if c.kind is not None ]
+    if not terminal:
+        others = [ c for c in ordered if c.kind != 'terminal' ]
+        for cls in others:
+            if cls.is_available() and cls.can_show():
+                return cls
+        if others and not others[0].is_available() and others[0].requirement:
+            from ._messages import _info
+            _info(f'Showing plots in the terminal, since {others[0].requirement}'
+                  ' is not installed')
+    for cls in ordered:
+        if cls.kind == 'terminal' and cls.is_available() and cls.can_show():
+            return cls
+    raise MCPLError('No plotting backend can show plots here')
+
+def _save_backend( filename, backend = None ):
+    """Backend class (or object) for saving plots in filename: the given or
+    default one, or else the available backend with the highest priority for
+    the format given by the extension of the filename."""
+    ext = _extension(filename)
+    b, source = _chosen(backend)
+    if b is not None:
+        cls = _explicit(b,source)
+        if not ext:
+            raise MCPLError(f'The file name {filename} has no extension (which'
+                            ' gives the format of the plots, e.g. .'
+                            + ', .'.join(cls.available_formats()) + ')')
+        return cls
+    classes = [ c for c in _ordered(_all_classes()) if c.kind is not None ]
+    known = []
+    for c in classes:
+        known += [ e for e in c.formats if e not in known ]
+    if not ext or ext not in known:
+        what = ( f'The file name {filename} has no extension' if not ext else
+                 f'Plots can not be saved as .{ext} files' )
+        raise MCPLError(f'{what} (the extension gives the format of the plots: '
+                        + ', '.join( f'.{e}' for e in known ) + ')')
+    cands = [ c for c in classes if ext in c.formats ]
+    avail = [ c for c in cands if c.is_available() and ext in c.available_formats() ]
+    if not avail:
+        reqs = [ c.requirement for c in cands if c.requirement ]
+        raise MCPLError(f'Plots can not be saved as .{ext} files in this'
+                        ' installation' + ( f' (install the {reqs[0]} Python'
+                                            ' package)' if reqs else '' ))
+    return max( avail, key = lambda c : ( _format_priority(c,ext), c.priority ) )
+
+def _format_priority( cls, ext ):
+    """Priority of the backend class for creating files of the format (the
+    formats can also be given as a list without priorities)"""
+    f = cls.formats
+    return f.get(ext,0) if isinstance(f,dict) else 0
+
+def _create( b, **options ):
+    """Backend object from class (or object) b, with the options."""
     if isinstance(b,PlotBackend):
         if options:
             raise MCPLError('Options for plotting backends ('
@@ -205,4 +295,13 @@ def _create_backend( backend = None, **options ):
     return b(**options)
 
 def _formats( backend = None ):
-    return tuple(_resolve(backend).available_formats())
+    """File extensions which the backend (or else any available backend) can
+    create"""
+    b, source = _chosen(backend)
+    if b is not None:
+        return tuple(_explicit(b,source).available_formats())
+    res = []
+    for c in _ordered(_all_classes()):
+        if c.kind is not None and c.is_available():
+            res += [ e for e in c.available_formats() if e not in res ]
+    return tuple(res)

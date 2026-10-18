@@ -55,8 +55,8 @@ def test_reading():
             print(f'==> {title} of {fn}:')
             with mcpl.MCPLFile(fn,blocklength=10) as f:
                 fct(f)
-    print('==> select (with blocklength 10):')
-    with mcpl.MCPLFile('nan.mcpl',blocklength=10,select='ekin > 1.5MeV') as f:
+    print('==> pick (with blocklength 10):')
+    with mcpl.MCPLFile('nan.mcpl',blocklength=10,pick='ekin > 1.5MeV') as f:
         print(f'   selected {sum(len(b) for b in f.particle_blocks)} particles')
 
 def test_errors():

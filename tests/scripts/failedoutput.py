@@ -32,6 +32,18 @@ import sys
 from MCPLTestUtils.dirs import mcpltool_cmd, test_data_dir
 
 
+def py_args( args ):
+    """Arguments for mcpltool corresponding to those of mcpltool-c: -pPDGCODE
+    is -p "pdgcode == PDGCODE" for mcpltool"""
+    res = []
+    for a in args:
+        a = str(a)
+        if a.startswith('-p') and len(a) > 2:
+            res += [ '-p', f'pdgcode == {a[2:]}' ]
+        else:
+            res.append(a)
+    return res
+
 def run( tool, args ):
     if tool == 'C':
         cmd = [ str(mcpltool_cmd) ]
@@ -39,6 +51,7 @@ def run( tool, args ):
         code = ( 'import sys; import mcpldev._cli as c;'
                  ' sys.argv[0] = "mcpltool"; c.main()' )
         cmd = [ sys.executable, '-c', code ]
+        args = py_args(args)
     rv = subprocess.run( cmd + [ str(a) for a in args ],
                          capture_output = True, check = False )
     return rv.returncode, ( rv.stdout + rv.stderr ).decode()

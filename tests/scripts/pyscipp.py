@@ -87,9 +87,9 @@ def test_basic():
         for d, b in zip(das,blocks7):
             check_values(d,[b])
         assert sc.identical(sc.concat(das,'particle'),da)
-        sel = list(f.scipp_blocks(select='pdgcode == neutron',
+        sel = list(f.scipp_blocks(pick='pdgcode == neutron',
                                   coords={'r':'hypot(x,y)'},vectors=True))
-        dsel = f.to_scipp(select='pdgcode == neutron',
+        dsel = f.to_scipp(pick='pdgcode == neutron',
                           coords={'r':'hypot(x,y)'},vectors=True)
         assert sc.identical(sc.concat(sel,'particle'),dsel)
     #scipp can then do the rest:
@@ -148,7 +148,7 @@ def test_userdata():
 
 def test_select_skip_limit():
     blocks = all_blocks(example_file)
-    sel = 'pdgcode == neutron && ekin > 1keV'
+    sel = 'pdgcode == neutron and ekin > 1keV'
     flt = mcpl.ParticleFilter(sel)
     selected = [ b[flt(b)] for b in blocks ]
     allsel = { k : concat(selected,k) for k in ('ekin','x') }
@@ -157,7 +157,7 @@ def test_select_skip_limit():
     with mcpl.MCPLFile(example_file,blocklength=3) as f:
         for skip, limit in [ (0,0), (2,0), (2,5), (0,1), (nsel-1,0),
                              (nsel,0), (nsel+5,3) ]:
-            da = f.to_scipp(select=sel,skip=skip,limit=limit)
+            da = f.to_scipp(pick=sel,skip=skip,limit=limit)
             end = nsel if not limit else min(nsel,skip+limit)
             assert np.array_equal(da.coords['ekin'].values,allsel['ekin'][skip:end]),(skip,limit)
             assert np.array_equal(da.coords['x'].values,allsel['x'][skip:end]),(skip,limit)
@@ -167,9 +167,9 @@ def test_select_skip_limit():
         da = f.to_scipp(skip=n-4,limit=2)
         assert np.array_equal(da.coords['x'].values,allx[n-4:n-2])
     #Selection and edit given when opening the file are applied first:
-    with mcpl.MCPLFile(example_file,select='pdgcode == neutron',edit='x += 1m') as f:
+    with mcpl.MCPLFile(example_file,pick='pdgcode == neutron',edit='x += 1m') as f:
         da = f.to_scipp()
-        nb = all_blocks(example_file,select='pdgcode == neutron',edit='x += 1m')
+        nb = all_blocks(example_file,pick='pdgcode == neutron',edit='x += 1m')
         assert np.array_equal(da.coords['x'].values,concat(nb,'x'))
         assert np.all(da.coords['pdgcode'].values == 2112)
     print("Selection, skip and limit OK")
@@ -190,7 +190,7 @@ def test_default_limit():
         #No warning if there are no more particles:
         out = io.StringIO()
         with contextlib.redirect_stdout(out):
-            mcpl.MCPLFile(example_file).to_scipp(select='x > 1e30cm')
+            mcpl.MCPLFile(example_file).to_scipp(pick='x > 1e30cm')
         assert not out.getvalue()
     finally:
         mcpldev._scipp._default_limit = 100_000_000
@@ -202,7 +202,7 @@ def test_coords():
     da = mcpl.MCPLFile(example_file).to_scipp(
         coords = { 'r' : 'hypot(x,y)', 'ex' : 'ekin*x', 'cosz' : 'uz',
                    'isn' : 'pdgcode == neutron', 'r_mm' : 'hypot(x,y)/mm' },
-        select = 'pdgcode == neutron || pdgcode == gamma' )
+        pick = 'pdgcode == neutron or pdgcode == gamma' )
     sel = np.isin(concat(blocks,'pdgcode'),(2112,22))
     assert da.coords['r'].unit == sc.Unit('cm')
     assert np.allclose(da.coords['r'].values,np.hypot(x,y)[sel])
@@ -214,8 +214,8 @@ def test_coords():
     assert np.allclose(da.coords['r_mm'].values,10*np.hypot(x,y)[sel])
     #Wavelengths (calculated in cm, but scipp converts them):
     wl = mcpl.MCPLFile(example_file).to_scipp( coords = { 'wl' : 'wavelength' },
-                                               select = 'pdgcode == neutron' )
-    nb = all_blocks(example_file,select='pdgcode == neutron')
+                                               pick = 'pdgcode == neutron' )
+    nb = all_blocks(example_file,pick='pdgcode == neutron')
     assert np.allclose(wl.coords['wl'].to(unit='angstrom').values,
                        np.concatenate([b.wavelength for b in nb]))
     print("Extra coordinates OK")
@@ -224,7 +224,7 @@ def test_errors():
     f = mcpl.MCPLFile(example_file)
     for kwargs in [ {'skip':-1}, {'limit':-1}, {'coords':'r'},
                     {'coords':{'':'x'}}, {'coords':{'r':'nosuchfield'}},
-                    {'coords':{'x':'x'}}, {'select':'x >'} ]:
+                    {'coords':{'x':'x'}}, {'pick':'x >'} ]:
         try:
             f.to_scipp(**kwargs)
         except mcpl.MCPLError as e:

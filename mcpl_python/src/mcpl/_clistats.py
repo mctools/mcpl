@@ -30,122 +30,101 @@ from ._common import MCPLError
 from ._reader import MCPLFile
 
 
-def mcpltool_stats(filename,opt_select,opt_pdf,opt_gui,vopts,bad):
-    from ._stats import _SelectedFile, dump_stats
-    f=MCPLFile(filename)
-    if f.nparticles==0:
-        bad("Can not calculate statistics for an empty file")
-    if opt_select is not None:
-        f = _SelectedFile(f,opt_select)
-        if f.nparticles==0:
-            bad("Can not calculate statistics when no particles are selected")
-    outfn = vopts.get('--output') or ( 'mcpl.pdf' if opt_pdf else None )
-    if outfn or opt_gui or '--backend' in vopts:
-        from ._statsplot import plot_stats
-        try:
-            files = plot_stats(f,filename=outfn,backend=vopts.get('--backend'),
-                               **_save_options(outfn,vopts.get('--backend')))
-        except MCPLError as e:
-            bad(str(e))
-        if files:
-            print('Created ' + ', '.join(files))
-    else:
-        dump_stats(f)
+def _view( filename, skip, limit, pick, edit ):
+    """The particles of a file to use, after -s, -l, -p and -E"""
+    from ._reader import _FileView
+    f = MCPLFile(filename)
+    if not ( skip or limit or pick is not None or edit is not None ):
+        return f
+    return _FileView(f,skip,limit,pick,edit)
 
-def mcpltool_hist(filelist,expr,select,vopts,hflags,bad):
-    from ._histogram import histogram, histogram2d
-    if not filelist:
-        bad("No input file specified")
-    bins = vopts.get('--bins')
-    if bins is not None and ( not bins.isdigit() or not int(bins) > 0 ):
-        bad("--bins must be a positive integer")
-    exprs = expr.split(' : ')
-    outfn = vopts.get('--output')
-    #Unless the number of bins is given, it is chosen automatically, with at
-    #most the resolution of the plot (if the backend has one, like the text
-    #backends, whose plots are then fitted to the bins):
-    backend, maxbins = None, None
-    if bins is not None:
-        bins = int(bins)
-    else:
-        bins = 'auto'
-        if '--print' not in hflags:
-            from ._plotbackend import _create_backend
-            try:
-                backend = _create_backend(vopts.get('--backend'),
-                                          **_save_options(outfn,vopts.get('--backend')))
-            except MCPLError as e:
-                bad(str(e))
-            res = backend.resolution()
-            if res is not None:
-                maxbins = tuple(res) if len(exprs) == 2 else res[0]
-    rngs = [ None, None ]
-    if '--range' in vopts:
-        parts = vopts['--range'].split(',')
-        if len(parts) > len(exprs):
-            parts = []
-        for i,r in enumerate(parts):
-            try:
-                lo, hi = ( float(e) for e in r.split(':') )
-            except ValueError:
-                lo, hi = None, None
-            if lo is None or not lo < hi:
-                parts = []
-                break
-            rngs[i] = ( lo, hi )
-        if not parts:
-            bad("--range must be given as LOW:HIGH (or XLOW:XHIGH,YLOW:YHIGH for 2D"
-                " histograms), with numbers in the units of the expression")
-    rng = rngs[0]
-    if len(exprs) > 2 or not all(e.strip() for e in exprs):
-        bad('--hist takes an expression, or two expressions separated by'
-            ' " : " (with spaces) for 2D histograms')
-    try:
-        if len(exprs) == 2:
-            for o in ('--logx','--lethargy'):
-                if o in hflags:
-                    bad(f"{o} can not be used with 2D histograms")
-            if '--split' in vopts:
-                bad("--split can not be used with 2D histograms")
-            h = histogram2d(filelist,exprs[0].strip(),exprs[1].strip(),
-                            select=select,bins=bins,xrange=rng,yrange=rngs[1],
-                            weighted='--unweighted' not in hflags,
-                            _maxbins=maxbins)
-        else:
-            h = histogram(filelist,expr,select=select,bins=bins,range=rng,
-                          _maxbins=maxbins,
-                          logx='--logx' in hflags,
-                          weighted='--unweighted' not in hflags,
-                          split=vopts.get('--split'),
-                          lethargy='--lethargy' in hflags)
-    except MCPLError as e:
-        bad(str(e))
-    if '--print' in hflags:
-        print(h.to_text())
+def _plot_backend( outfn, backend, terminal ):
+    """Backend object for showing plots (or saving them in outfn), with the
+    options for mcpltool (e.g. a backend of matplotlib which needs no display
+    when saving files)"""
+    from ._plotbackend import PlotBackend, _create, _save_backend, _show_backend
+    if outfn:
+        if os.path.exists(outfn):
+            raise MCPLError("Requested output file already exists.")
+        cls = _save_backend(outfn,backend)
+        bk = _create(cls,**( {} if isinstance(cls,PlotBackend) else cls.batch_options ))
+        bk.check_format(outfn)
+        return bk
+    return _create(_show_backend(backend,terminal))
+
+def mcpltool_stats(filename,skip,limit,pick,edit,outfn,backend,bad):
+    from ._stats import _PickedFile, dump_stats
+    f = _view(filename,skip,limit,pick,edit)
+    if MCPLFile(filename).nparticles == 0:
+        bad("Can not calculate statistics for an empty file")
+    if f.nparticles == 0:
+        bad("Can not calculate statistics when no particles are picked")
+    f = _PickedFile(f,None)
+    if not outfn:
+        dump_stats(f)
         return
-    if outfn and os.path.exists(outfn):
-        bad("Requested output file already exists.")
-    kw = {} if len(exprs) == 2 else { 'logy' : '--logy' in hflags }
+    from ._statsplot import plot_stats
     try:
-        if backend is not None:
-            if maxbins is not None and hasattr(backend,'_fit_resolution'):
-                #(draw the bins exactly, with a whole number of columns each):
-                backend._fit_resolution(h._display_bins)
-            files = h.plot(filename=outfn,backend=backend,**kw)
-        else:
-            files = h.plot(filename=outfn,backend=vopts.get('--backend'),**kw,
-                           **_save_options(outfn,vopts.get('--backend')))
+        files = plot_stats(f,filename=outfn,backend=_plot_backend(outfn,backend,False))
     except MCPLError as e:
         bad(str(e))
     if files:
         print('Created ' + ', '.join(files))
 
-
-def _save_options(outfn, backend):
-    """Options for the plotting backend: when saving files with matplotlib, its
-    agg backend is used (which does not need a display)."""
-    from ._plotbackend import _backend_name
-    if outfn and _backend_name(backend) == 'matplotlib':
-        return { 'matplotlib_backend' : 'agg' }
-    return {}
-
+def mcpltool_hist(filelist,histstr,skip,limit,pick,edit,outfn,backend,terminal,bad):
+    from ._histogram import _parse_hist, histogram, histogram2d
+    if not filelist:
+        bad("No input file specified")
+    try:
+        o = _parse_hist(histstr)
+    except MCPLError as e:
+        bad(str(e))
+    if o['print'] and ( outfn or backend or terminal ):
+        bad("The histogram option print can not be used together with -o, -B"
+            " or -t.")
+    exprs = o['exprs']
+    #Unless the number of bins is given, it is chosen automatically, with at
+    #most the resolution of the plot (if the backend has one, like the text
+    #backends, whose plots are then fitted to the bins):
+    bk, maxbins = None, None
+    if not o['print']:
+        try:
+            bk = _plot_backend(outfn,backend,terminal)
+        except MCPLError as e:
+            bad(str(e))
+        if o['bins'] is None:
+            res = bk.resolution()
+            if res is not None:
+                maxbins = tuple(res) if len(exprs) == 2 else res[0]
+    bins = o['bins'] or 'auto'
+    sources = [ _view(fn,skip,limit,pick,edit) for fn in filelist ]
+    try:
+        if len(exprs) == 2:
+            h = histogram2d(sources,exprs[0],exprs[1],bins=bins,
+                            xrange=o['xrange'],yrange=o['yrange'],
+                            unweighted=o['unweighted'],_maxbins=maxbins)
+        else:
+            h = histogram(sources,exprs[0],bins=bins,range=o['range'],
+                          _maxbins=maxbins,logx=o['logx'],
+                          unweighted=o['unweighted'],split=o['split'],
+                          lethargy=o['lethargy'])
+    except MCPLError as e:
+        bad(str(e))
+    title = [ f'{what}: {e.expression}' for what, e in (('pick',pick),
+                                                         ('edit',edit))
+              if e is not None ]
+    if title:
+        h.title = '\n'.join(title)
+    if o['print']:
+        print(h.to_text())
+        return
+    kw = {} if len(exprs) == 2 else { 'logy' : o['logy'] }
+    try:
+        if maxbins is not None and hasattr(bk,'_fit_resolution'):
+            #(draw the bins exactly, with a whole number of columns each):
+            bk._fit_resolution(h._display_bins)
+        files = h.plot(filename=outfn,backend=bk,**kw)
+    except MCPLError as e:
+        bad(str(e))
+    if files:
+        print('Created ' + ', '.join(files))

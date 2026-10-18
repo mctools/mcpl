@@ -41,34 +41,37 @@ def test_expressions():
         b = f.read_block()
     #Wavelengths, NaN for particles other than neutrons and gammas:
     wl = wavelength_from_ekin(b.ekin,b.pdgcode)
-    cases = [ ('ekin > 25keV && x <= 2cm + y && pdgcode != 22',
+    cases = [ ('ekin > 25keV and x <= 2cm + y and pdgcode != 22',
                (b.ekin>0.025)&(b.x<=2.0+b.y)&(b.pdgcode!=22)),
-              ('pdgcode == neutron && ekin < 500keV', (b.pdgcode==2112)&(b.ekin<0.5)),
-              ('!(pdgcode == gamma) || ekin > 1GeV', ~(b.pdgcode==22)|(b.ekin>1000)),
-              ('0cm < x < 10mm && !(abs(y) >= 1cm)', (0<b.x)&(b.x<1.0)&~(np.abs(b.y)>=1)),
+              ('pdgcode == neutron and ekin < 500keV', (b.pdgcode==2112)&(b.ekin<0.5)),
+              ('mod(fileidx,10) == 0', np.mod(b.fileidx,10) == 0),
+              ('fileidx >= 3 and pdgcode == gamma', (b.fileidx>=3)&(b.pdgcode==22)),
+              ('not (pdgcode == gamma) or ekin > 1GeV', ~(b.pdgcode==22)|(b.ekin>1000)),
+              ('0cm < x < 10mm and not(abs(y) >= 1cm)', (0<b.x)&(b.x<1.0)&~(np.abs(b.y)>=1)),
               ('sqrt(x**2+y**2) < 5cm', np.hypot(b.x,b.y)<5),
               ('sqrt(x^2+y^2) < 5cm', np.hypot(b.x,b.y)<5),
               ('hypot(x,y) < 0.05m', np.hypot(b.x,b.y)<5),
               ('hypot(x,y,z) < 25cm', np.sqrt(b.x**2+b.y**2+b.z**2)<25),
               ('x^2 + y^2 < 4cm^2', b.x**2+b.y**2 < 4),
               ('x^2 + y^2 < 400 mm^2', b.x**2+b.y**2 < 4),
-              ('(pdgcode == neutron || pdgcode == gamma) && wavelength > 0.005Aa', wl > 0.005),
-              ('(pdgcode == neutron || pdgcode == gamma) && wavelength > 0.0005nm', wl > 0.005),
-              ('(pdgcode == neutron || pdgcode == gamma) && wavelength > 5e-13m', wl > 0.005),
-              ('pdgcode == proton || (pdgcode == gamma && wavelength > 0.5Aa)', (wl > 0.5)|(b.pdgcode==2212)),
-              ('pdgcode == neutron && wavelength > 0.005Aa', (b.pdgcode==2112)&(wl > 0.005)),
-              ('pdgcode != neutron || wavelength > 0.005Aa', (b.pdgcode!=2112)|(wl > 0.005)),
+              ('(pdgcode == neutron or pdgcode == gamma) and wavelength > 0.005Aa', wl > 0.005),
+              ('(pdgcode == neutron or pdgcode == gamma) and wavelength > 0.0005nm', wl > 0.005),
+              ('(pdgcode == neutron or pdgcode == gamma) and wavelength > 5e-13m', wl > 0.005),
+              ('pdgcode == proton or (pdgcode == gamma and wavelength > 0.5Aa)', (wl > 0.5)|(b.pdgcode==2212)),
+              ('pdgcode == neutron and wavelength > 0.005Aa', (b.pdgcode==2112)&(wl > 0.005)),
+              ('pdgcode != neutron or wavelength > 0.005Aa', (b.pdgcode!=2112)|(wl > 0.005)),
               ('pdgcode == gamma and 0 < 2*wavelength < x', (b.pdgcode==22)&(wl*2e-8 < b.x)),
               ('uz > cos(10*pi/180)', b.uz > np.cos(np.radians(10))),
               ('acos(uz) < 10deg', np.arccos(b.uz) < np.radians(10)),
               ('time < 10us', b.time < 0.01),
-              ('(userflags & 1) == 0 && weight == 1', np.ones(len(b),dtype=bool)),
-              ('ekin/1meV % 2 < 1', np.mod(b.ekin/1e-9,2) < 1),
+              ('(userflags & 1) == 0 and weight == 1', np.ones(len(b),dtype=bool)),
+              ('mod(userflags,4) == 0', np.mod(b.userflags,4) == 0),
+              ('mod(pdgcode,2) == 0', np.mod(b.pdgcode,2) == 0),
               ('max(abs(x),abs(y)) < 3cm', np.maximum(np.abs(b.x),np.abs(b.y)) < 3),
               ('ekin/keV > 500', b.ekin/1e-3 > 500),
               ('abs(x) < 1cm + 2mm', np.abs(b.x) < 1.2),
               ('1 < 2', np.ones(len(b),dtype=bool)),
-              ('x > 0 && y <= -0', (b.x>0)&(b.y<=0)),
+              ('x > 0 and y <= -0', (b.x>0)&(b.y<=0)),
               ('0 < x < 2cm', (b.x>0)&(b.x<2)),
               ('ekin > 0 and time > 0 or z == 0', ((b.ekin>0)&(b.time>0))|(b.z==0)),
               ('userflags & 0x10', (b.userflags & 0x10) != 0),
@@ -78,17 +81,17 @@ def test_expressions():
               ('angle_to(0,0,1) < 30deg', np.degrees(np.arccos(np.clip(b.uz,-1,1))) < 30),
               #(the angle to -z is above 150 degrees when the angle to +z is below 30):
               ('angle_to(0,0,-2cm) > 150deg', np.degrees(np.arccos(np.clip(b.uz,-1,1))) < 30),
-              ('!(userflags & 1) && pdgcode != 0b0', ((b.userflags & 1) == 0)&(b.pdgcode!=0)),
-              ('pdgcode == electron || pdgcode == positron', np.isin(b.pdgcode,(11,-11))),
-              ('pdgcode == antielectron || pdgcode == photon', np.isin(b.pdgcode,(-11,22))),
-              ('pdgcode == muon || pdgcode == antimuon || pdgcode == antiproton || pdgcode == antineutron',
+              ('not (userflags & 1) and pdgcode != 0b0', ((b.userflags & 1) == 0)&(b.pdgcode!=0)),
+              ('pdgcode == electron or pdgcode == positron', np.isin(b.pdgcode,(11,-11))),
+              ('pdgcode == antielectron or pdgcode == photon', np.isin(b.pdgcode,(-11,22))),
+              ('pdgcode == muon or pdgcode == antimuon or pdgcode == antiproton or pdgcode == antineutron',
                np.isin(b.pdgcode,(13,-13,-2212,-2112))) ]
     for expr, ref in cases:
         flt = mcpl.ParticleFilter(expr)
         sel = flt(b)
         print(f'{flt!r}: selects {np.sum(sel)}')
         assert sel.dtype == bool and np.array_equal(sel, ref), expr
-    edit = mcpl.ParticleEdit('tmp = x, x = -y, y = tmp + 2cm, z *= 2, weight = weight*0.5, time += 1ms, pdgcode = neutron')
+    edit = mcpl.ParticleEdit('tmp = x; x = -y; y = tmp + 2cm; z *= 2; weight = weight*0.5; time += 1ms; pdgcode = neutron')
     r = edit(b)
     ok = ( np.allclose(r['x'],-b.y) and np.allclose(r['y'],b.x+2) and np.allclose(r['z'],2*b.z)
            and np.allclose(r['weight'],0.5*b.weight) and np.allclose(r['time'],b.time+1)
@@ -103,39 +106,39 @@ def test_expressions():
         wl = wavelength_from_ekin(r['ekin'],n.pdgcode)
         print(f'ParticleEdit({ed!r}) as expected: {np.allclose(wl,ref)}')
         assert sorted(r) == ['ekin'] and np.allclose(wl,ref)
-    r = mcpl.ParticleEdit('z = 0, x = -0, time = 0')(b)
+    r = mcpl.ParticleEdit('z = 0; x = -0; time = 0')(b)
     assert np.all(r['z']==0) and np.all(r['x']==0) and np.all(r['time']==0)
     #Statements are executed in order:
     for ed, checks in (
-            ('x = -y, y = x', lambda r : np.allclose(r['x'],-b.y) and np.allclose(r['y'],-b.y)),
-            ('x = 1cm, x += 1cm', lambda r : np.all(r['x']==2)),
-            ('tmp = x, x = 2m, z = 2*tmp', lambda r : sorted(r) == ['x','z'] and np.allclose(r['z'],2*b.x)),
-            ('a = ekin, ekin = 1MeV, ekin += a', lambda r : np.allclose(r['ekin'],1+b.ekin)),
-            ('ekin *= 2, weight = ekin/MeV', lambda r : np.allclose(r['weight'],2*b.ekin)),
+            ('x = -y; y = x', lambda r : np.allclose(r['x'],-b.y) and np.allclose(r['y'],-b.y)),
+            ('x = 1cm; x += 1cm', lambda r : np.all(r['x']==2)),
+            ('tmp = x; x = 2m; z = 2*tmp', lambda r : sorted(r) == ['x','z'] and np.allclose(r['z'],2*b.x)),
+            ('a = ekin; ekin = 1MeV; ekin += a', lambda r : np.allclose(r['ekin'],1+b.ekin)),
+            ('ekin *= 2; weight = ekin/MeV', lambda r : np.allclose(r['weight'],2*b.ekin)),
             ('swap(x,y)', lambda r : np.allclose(r['x'],b.y) and np.allclose(r['y'],b.x)),
-            ('tmp = x, swap(tmp,y), x = tmp', lambda r : sorted(r) == ['x','y'] and np.allclose(r['x'],b.y)),
+            ('tmp = x; swap(tmp,y); x = tmp', lambda r : sorted(r) == ['x','y'] and np.allclose(r['x'],b.y)),
             ('rotate_z(90deg)', lambda r : ( sorted(r) == ['polx','poly','ux','uy','x','y']
                                              and np.allclose(r['x'],-b.y) and np.allclose(r['y'],b.x)
                                              and np.allclose(r['ux'],-b.uy) and np.allclose(r['uy'],b.ux) )),
             ('rotate_x(90deg)', lambda r : np.allclose(r['y'],-b.z) and np.allclose(r['z'],b.y)),
-            ('rotate_y(90deg), x += 10cm', lambda r : np.allclose(r['x'],b.z+10) and np.allclose(r['z'],-b.x)),
-            ('x += 10cm, rotate_y(pi/2)', lambda r : np.allclose(r['x'],b.z) and np.allclose(r['z'],-(b.x+10))),
-            ('x = clamp(x, -1cm, 1cm), y = min(y, 1cm, 2mm), z = max(z, 0, 25cm)',
+            ('rotate_y(90deg); x += 10cm', lambda r : np.allclose(r['x'],b.z+10) and np.allclose(r['z'],-b.x)),
+            ('x += 10cm; rotate_y(pi/2)', lambda r : np.allclose(r['x'],b.z) and np.allclose(r['z'],-(b.x+10))),
+            ('x = clamp(x, -1cm, 1cm); y = min(y, 1cm, 2mm); z = max(z, 0, 25cm)',
              lambda r : ( np.allclose(r['x'],np.clip(b.x,-1,1)) and np.allclose(r['y'],np.minimum(b.y,0.2))
                           and np.allclose(r['z'],np.maximum(b.z,25)) )) ):
         ok = checks(mcpl.ParticleEdit(ed)(b))
         print(f'ParticleEdit({ed!r}) as expected: {ok}')
         assert ok
-    r = mcpl.ParticleEdit('wavelength = 1.8Aa, weight = wavelength/Aa, time = 0')(n)
+    r = mcpl.ParticleEdit('wavelength = 1.8Aa; weight = wavelength/Aa; time = 0')(n)
     assert sorted(r) == ['ekin','time','weight'] and np.allclose(r['weight'],1.8)
-    r = mcpl.ParticleEdit('ekin = 1MeV, wavelength = 2Aa')(n)
+    r = mcpl.ParticleEdit('ekin = 1MeV; wavelength = 2Aa')(n)
     assert np.allclose(wavelength_from_ekin(r['ekin']),2)
-    r = mcpl.ParticleEdit('z += 1mm, time = time + 2us, ekin = 25meV')(b)
+    r = mcpl.ParticleEdit('z += 1mm; time = time + 2us; ekin = 25meV')(b)
     assert np.allclose(r['z'],b.z+0.1) and np.allclose(r['time'],b.time+0.002) and np.allclose(r['ekin'],25e-9)
-    r = mcpl.ParticleEdit('x = 2m*ux, y = uy*1m, ux = min(ux, 0.5), weight = 2')(b)
+    r = mcpl.ParticleEdit('x = 2m*ux; y = uy*1m; ux = min(ux, 0.5); weight = 2')(b)
     assert ( np.allclose(r['x'], 200*b.ux) and np.allclose(r['y'], 100*b.uy)
              and np.allclose(r['ux'], np.minimum(b.ux,0.5)) and np.all(r['weight']==2) )
-    for bad in ('wavelength > 1.8Aa', 'x > 0 && wavelength > 1.8Aa', 'pdgcode == proton || wavelength > 1Aa',
+    for bad in ('wavelength > 1.8Aa', 'x > 0 and wavelength > 1.8Aa', 'pdgcode == proton or wavelength > 1Aa',
                 'x < 2', 'x > 0.0001', 'x > 2 - 2', 'ekin > 0.025', 'wavelength > 1.8', 'x^2 + y^2 < 4',
                 'x < 1meV', 'ekin > 2cm', 'sin(x) > 0', 'x^0.5 > 1cm', 'sqrt(x) < 2',
                 'x + time > 0cm', 'ekin^x > 1', 'atan2(x, ekin) > 0', 'hypot(x) > 1cm',
@@ -146,8 +149,11 @@ def test_expressions():
                 "__import__('os').system('ls')", 'ekin', 'lambda: 1',
                 'sin(x, y=1) > 0', 'x.real > 0', '[x][0] > 0', "x > 'a'", '',
                 'sqrt(x/cm) > 1', '1/(x/cm - x/cm) > 1', 'log(ekin/MeV - ekin/MeV) > 0',
-                'x/cm % 0 > 1', '1e999 > x/cm', '(-1)^(x/cm) > 0',
-                'x != x && 1/(x/cm - x/cm) > 1', '~x > 0cm', '~uz > 0',
+                'mod(pdgcode,0) == 1', 'mod(x,2cm) > 0', 'mod(ekin/MeV,2) > 0',
+                'mod(pdgcode,2.5) > 0', 'mod(pdgcode) > 0',
+                'x > 0 && y > 0', 'x > 0 || y > 0', '!(x > 0)', 'x/cm % 2 > 1',
+                'fileidx > 1cm', 'mod(fileidx,2.0) == 0', '1e999 > x/cm', '(-1)^(x/cm) > 0',
+                'x != x and 1/(x/cm - x/cm) > 1', '~x > 0cm', '~uz > 0',
                 'x > 0cm if ux > 0 else x < 0cm'):
         try:
             mcpl.ParticleFilter(bad)(b)
@@ -156,10 +162,11 @@ def test_expressions():
             print(f'ParticleFilter({bad!r}): {e}')
     for bad in ('x = 2*ux', 'x = 2', 'ekin = 0.025', 'wavelength = 1.8', 'z += 1',
                 'x = 1meV', 'wavelength = 1keV', 'time = 2*x', 'weight = 1cm',
-                'x', 'foo = 1', 'wl = 1.8Aa', 'tmp = x, x = y', 'Tmp = 1', 'tmp += 1cm', 'x = tmp', 'clamp = 1',
+                'x', 'foo = 1', 'wl = 1.8Aa', 'tmp = x; x = y', 'Tmp = 1', 'tmp += 1cm', 'x = tmp', 'clamp = 1',
                 'swap(x,ekin)', 'swap(x)', 'swap(x,2)', 'rotate_z(1cm)', 'rotate_q(1)',
                 'rotate_z(1,2)', 'x = clamp(x,1cm)', 'x = min(x)',
-                'x == 1cm', 'pi = 3', 'wl = 1Aa', 'x = 1cm; y = 1cm',
+                'x == 1cm', 'pi = 3', 'wl = 1Aa', 'x = 1cm, y = 1cm',
+                'fileidx = 2', 'fileidx += 1', 'swap(fileidx,pdgcode)',
                 'x = y = 1cm', 'x, y = y, x', '', 'pdgcode = 1.5',
                 'x = sqrt(x/cm)*1cm', 'weight = 1/(x/cm - x/cm)'):
         try:
@@ -185,9 +192,9 @@ def test_nonfinite():
                          pdgcode = [2112, 2112, 11] )
     with mcpl.MCPLFile('zero_ekin.mcpl') as f:
         z = f.read_block()
-    for expr in ( 'pdgcode == neutron && wavelength > 1Aa',
-                  'pdgcode == neutron && ekin > 0 && wavelength > 1Aa',
-                  'ekin > 0 && 1/(ekin/MeV) > 1',
+    for expr in ( 'pdgcode == neutron and wavelength > 1Aa',
+                  'pdgcode == neutron and ekin > 0 and wavelength > 1Aa',
+                  'ekin > 0 and 1/(ekin/MeV) > 1',
                   '1/(ekin/MeV) > 1' ):
         try:
             print(f'ParticleFilter({expr!r}) with zero ekin: selects'
@@ -214,10 +221,10 @@ def test_examples():
 
 def test_dump_and_stats():
     mcpl.dump_file(example_file, header=False, limit=4, skip=1,
-                   select='pdgcode == gamma && ekin > 1MeV')
-    mcpl.dump_stats(mcpl.collect_stats(example_file, select='pdgcode == neutron && ekin < 1MeV',
+                   pick='pdgcode == gamma and ekin > 1MeV')
+    mcpl.dump_stats(mcpl.collect_stats(example_file, pick='pdgcode == neutron and ekin < 1MeV',
                                        bin_data=False))
-    s = mcpl.collect_stats(example_file, select=mcpl.ParticleFilter('x > 1km'))
+    s = mcpl.collect_stats(example_file, pick=mcpl.ParticleFilter('x > 1km'))
     print(f'stats for no selected particles: {s}')
 
 def test_exact_rotations():
@@ -243,7 +250,7 @@ def test_exact_rotations():
     def raw_bits(a):
         return np.ascontiguousarray(a,dtype=float).view(np.uint64)
     for angle in ('90deg','180deg','270deg','-0deg','0deg','30deg','pi'):
-        r = mcpl.ParticleEdit(f'x = 0cm, y = 0cm, rotate_z({angle})')(b)
+        r = mcpl.ParticleEdit(f'x = 0cm; y = 0cm; rotate_z({angle})')(b)
         assert all( np.array_equal(raw_bits(r[k]),raw_bits(zero))
                     for k in ('x','y') ), angle
     print('rotations of zeros give 0.0 (not -0.0)')
@@ -271,12 +278,12 @@ def test_whitespace():
     with mcpl.MCPLFile(example_file) as f:
         b = f.read_block()
     flt = mcpl.ParticleFilter("""pdgcode == neutron
-                                 &&\tekin < 1MeV
-                                 && hypot(x,y) < 10 cm  """)
+                                 and \tekin < 1MeV
+                                 and hypot(x,y) < 10 cm  """)
     print(f'normalised selection: {flt.expression!r}')
-    ref = mcpl.ParticleFilter('pdgcode == neutron && ekin < 1MeV && hypot(x,y) < 10cm')
+    ref = mcpl.ParticleFilter('pdgcode == neutron and ekin < 1MeV and hypot(x,y) < 10cm')
     assert np.array_equal(flt(b), ref(b))
-    edit = mcpl.ParticleEdit('z = 0cm,\n  wavelength = 1.8Aa\n')
+    edit = mcpl.ParticleEdit('z = 0cm;\n  wavelength = 1.8Aa\n')
     print(f'normalised edit: {edit.expression!r}')
     val = mcpl.ParticleValue('  ekin /\n eV ')
     print(f'normalised value: {val.expression!r}')

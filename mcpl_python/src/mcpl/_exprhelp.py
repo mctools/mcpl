@@ -1,0 +1,338 @@
+
+################################################################################
+##                                                                            ##
+##  This file is part of MCPL (see https://mctools.github.io/mcpl/)           ##
+##                                                                            ##
+##  Copyright 2015-2026 MCPL developers.                                      ##
+##                                                                            ##
+##  Licensed under the Apache License, Version 2.0 (the "License");           ##
+##  you may not use this file except in compliance with the License.          ##
+##  You may obtain a copy of the License at                                   ##
+##                                                                            ##
+##      http://www.apache.org/licenses/LICENSE-2.0                            ##
+##                                                                            ##
+##  Unless required by applicable law or agreed to in writing, software       ##
+##  distributed under the License is distributed on an "AS IS" BASIS,         ##
+##  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  ##
+##  See the License for the specific language governing permissions and       ##
+##  limitations under the License.                                            ##
+##                                                                            ##
+################################################################################
+
+"""Descriptions of the names which can be used in expressions and histogram
+strings (short ones for completion while typing, long ones for the help), and
+the help texts of mcpltool -p help, -E help and -H help."""
+
+__all__ = []
+
+import textwrap
+
+#(group, name, short description, long description):
+_hints = (
+    ( 'fields', 'x',
+      'x coordinate of the position (a length)',
+      'x coordinate of the position (a length: e.g. x > 2cm, or x/cm)' ),
+    ( 'fields', 'y',
+      'y coordinate of the position (a length)',
+      'y coordinate of the position (a length: e.g. y > 2cm, or y/cm)' ),
+    ( 'fields', 'z',
+      'z coordinate of the position (a length)',
+      'z coordinate of the position (a length: e.g. z > 2cm, or z/cm)' ),
+    ( 'fields', 'ux',
+      'x component of the direction (no unit)',
+      'x component of the direction, a unit vector (no unit, from -1 to 1: e.g. ux > 0.9)' ),
+    ( 'fields', 'uy',
+      'y component of the direction (no unit)',
+      'y component of the direction, a unit vector (no unit, from -1 to 1: e.g. uy > 0.9)' ),
+    ( 'fields', 'uz',
+      'z component of the direction (no unit)',
+      'z component of the direction, a unit vector (no unit, from -1 to 1: e.g. uz > 0.9)' ),
+    ( 'fields', 'polx',
+      'x component of the polarisation (no unit)',
+      'x component of the polarisation vector (no unit: e.g. polx > 0.5; zero in files without polarisation)' ),
+    ( 'fields', 'poly',
+      'y component of the polarisation (no unit)',
+      'y component of the polarisation vector (no unit: e.g. poly > 0.5; zero in files without polarisation)' ),
+    ( 'fields', 'polz',
+      'z component of the polarisation (no unit)',
+      'z component of the polarisation vector (no unit: e.g. polz > 0.5; zero in files without polarisation)' ),
+    ( 'fields', 'ekin',
+      'kinetic energy (an energy)',
+      'kinetic energy (an energy: e.g. ekin > 2eV, or ekin/MeV)' ),
+    ( 'fields', 'time',
+      'time (a time)',
+      'time (a time: e.g. time < 5ms, or time/ms)' ),
+    ( 'fields', 'weight',
+      'weight (no unit)',
+      'statistical weight (no unit: e.g. weight > 0.1, or in edits weight *= 0.5)' ),
+    ( 'fields', 'pdgcode',
+      'particle type, as a PDG code (an integer)',
+      'particle type, as a PDG code (an integer: e.g. pdgcode == 2112, or pdgcode == neutron)' ),
+    ( 'fields', 'userflags',
+      'user flags (an integer)',
+      'user flags (a 32 bit integer: e.g. userflags & 0x10, or (userflags & 0xff) == 7)' ),
+    ( 'fields', 'fileidx',
+      'position in the file (an integer)',
+      'position of the particle in the file, counting from 0 (an integer, which can not be changed: e.g. mod(fileidx,10) == 0 for every tenth particle)' ),
+    ( 'fields', 'wavelength',
+      'wavelength (a length)',
+      'wavelength, calculated from ekin, only for neutrons and gammas (a length: e.g. pdgcode == neutron and wavelength > 1.8Aa, or wavelength/Aa)' ),
+    ( 'constants', 'pi',
+      'pi (no unit)',
+      'pi = 3.14159... (no unit: e.g. atan2(y,x) > pi/2)' ),
+    ( 'particles', 'neutron',
+      'PDG code 2112',
+      'the PDG code of neutrons, 2112 (e.g. pdgcode == neutron)' ),
+    ( 'particles', 'antineutron',
+      'PDG code -2112',
+      'the PDG code of antineutrons, -2112 (e.g. pdgcode == antineutron)' ),
+    ( 'particles', 'proton',
+      'PDG code 2212',
+      'the PDG code of protons, 2212 (e.g. pdgcode == proton)' ),
+    ( 'particles', 'antiproton',
+      'PDG code -2212',
+      'the PDG code of antiprotons, -2212 (e.g. pdgcode == antiproton)' ),
+    ( 'particles', 'electron',
+      'PDG code 11',
+      'the PDG code of electrons, 11 (e.g. pdgcode == electron)' ),
+    ( 'particles', 'positron',
+      'PDG code -11',
+      'the PDG code of positrons, -11 (e.g. pdgcode == positron)' ),
+    ( 'particles', 'antielectron',
+      'PDG code -11',
+      'the PDG code of positrons (same as positron), -11 (e.g. pdgcode == antielectron)' ),
+    ( 'particles', 'muon',
+      'PDG code 13',
+      'the PDG code of muons (negative), 13 (e.g. pdgcode == muon)' ),
+    ( 'particles', 'antimuon',
+      'PDG code -13',
+      'the PDG code of antimuons (positive muons), -13 (e.g. pdgcode == antimuon)' ),
+    ( 'particles', 'gamma',
+      'PDG code 22',
+      'the PDG code of gammas (photons), 22 (e.g. pdgcode == gamma)' ),
+    ( 'particles', 'photon',
+      'PDG code 22',
+      'the PDG code of photons (same as gamma), 22 (e.g. pdgcode == photon)' ),
+    ( 'units', 'meV',
+      'energy unit, 1e-9 MeV',
+      'unit of energy: 1meV = 1e-9 MeV (e.g. ekin < 25meV)' ),
+    ( 'units', 'eV',
+      'energy unit, 1e-6 MeV',
+      'unit of energy: 1eV = 1e-6 MeV (e.g. ekin > 1eV)' ),
+    ( 'units', 'keV',
+      'energy unit, 1e-3 MeV',
+      'unit of energy: 1keV = 1e-3 MeV (e.g. ekin > 10keV)' ),
+    ( 'units', 'MeV',
+      'energy unit',
+      'unit of energy, the one used in MCPL files (e.g. ekin/MeV)' ),
+    ( 'units', 'GeV',
+      'energy unit, 1000 MeV',
+      'unit of energy: 1GeV = 1000 MeV (e.g. ekin > 1GeV)' ),
+    ( 'units', 'TeV',
+      'energy unit, 1e6 MeV',
+      'unit of energy: 1TeV = 1e6 MeV (e.g. ekin > 1TeV)' ),
+    ( 'units', 'ns',
+      'time unit, 1e-6 ms',
+      'unit of time: 1ns = 1e-6 ms (e.g. time < 100ns)' ),
+    ( 'units', 'us',
+      'time unit, 1e-3 ms (microsecond)',
+      'unit of time, the microsecond: 1us = 1e-3 ms (e.g. time < 10us)' ),
+    ( 'units', 'ms',
+      'time unit',
+      'unit of time, the one used in MCPL files (e.g. time/ms)' ),
+    ( 'units', 's',
+      'time unit, 1000 ms',
+      'unit of time: 1s = 1000 ms (e.g. time < 1s)' ),
+    ( 'units', 'Aa',
+      'length unit, 1e-8 cm (angstrom)',
+      'unit of length, the angstrom: 1Aa = 1e-8 cm (e.g. wavelength > 1.8Aa)' ),
+    ( 'units', 'nm',
+      'length unit, 1e-7 cm',
+      'unit of length: 1nm = 1e-7 cm (e.g. wavelength > 0.18nm)' ),
+    ( 'units', 'um',
+      'length unit, 1e-4 cm (micrometre)',
+      'unit of length, the micrometre: 1um = 1e-4 cm (e.g. abs(x) < 50um)' ),
+    ( 'units', 'mm',
+      'length unit, 0.1 cm',
+      'unit of length: 1mm = 0.1 cm (e.g. abs(x) < 5mm)' ),
+    ( 'units', 'cm',
+      'length unit',
+      'unit of length, the one used in MCPL files (e.g. x/cm)' ),
+    ( 'units', 'm',
+      'length unit, 100 cm',
+      'unit of length: 1m = 100 cm (e.g. 0 < z < 1m)' ),
+    ( 'units', 'km',
+      'length unit, 1e5 cm',
+      'unit of length: 1km = 1e5 cm (e.g. hypot(x,y,z) > 1km)' ),
+    ( 'units', 'deg',
+      'angle unit, pi/180',
+      'unit of angle: 1deg = pi/180 (e.g. angle_to(0,0,1) < 1deg, or rotate_z(90deg))' ),
+    ( 'units', 'rad',
+      'angle unit, 1',
+      'unit of angle: 1rad = 1 (e.g. angle_to(0,0,1) < 0.01rad)' ),
+    ( 'functions', 'sqrt(a)',
+      'square root',
+      'square root, of a value without unit or with a squared unit (e.g. sqrt(x^2 + y^2) < 1cm; sqrt(ekin) is an error)' ),
+    ( 'functions', 'abs(a)',
+      'absolute value (same unit)',
+      'absolute value (same unit as a: e.g. abs(x) < 5cm)' ),
+    ( 'functions', 'floor(a)',
+      'round down (same unit)',
+      'round down to an integer (same unit as a: e.g. floor(time/ms))' ),
+    ( 'functions', 'ceil(a)',
+      'round up (same unit)',
+      'round up to an integer (same unit as a: e.g. ceil(ekin/MeV))' ),
+    ( 'functions', 'min(a,b,...)',
+      'smallest value (same unit)',
+      'smallest of the values, which must have the same unit (e.g. min(x,y) > 0cm)' ),
+    ( 'functions', 'max(a,b,...)',
+      'largest value (same unit)',
+      'largest of the values, which must have the same unit (e.g. max(abs(x),abs(y)) < 5cm)' ),
+    ( 'functions', 'hypot(a,b,...)',
+      'sqrt(a^2+b^2+...) (same unit)',
+      'sqrt(a^2 + b^2 + ...), of values with the same unit (e.g. hypot(x,y) < 10cm, the distance from the z axis)' ),
+    ( 'functions', 'mod(a,b)',
+      'remainder of a/b (integers)',
+      'remainder of the division a/b of integers without units (e.g. mod(userflags,4) == 1)' ),
+    ( 'functions', 'clamp(v,low,high)',
+      'v limited to [low,high] (same unit)',
+      'v limited to the range from low to high, all with the same unit (e.g. in edits x = clamp(x, -5cm, 5cm))' ),
+    ( 'functions', 'exp(a)',
+      'exponential (a without unit)',
+      'exponential function (a must have no unit: e.g. exp(-time/ms) > 0.5)' ),
+    ( 'functions', 'log(a)',
+      'natural logarithm (a without unit)',
+      'natural logarithm (a must have no unit: e.g. log(ekin/MeV) > 0)' ),
+    ( 'functions', 'log10(a)',
+      'base 10 logarithm (a without unit)',
+      'base 10 logarithm (a must have no unit: e.g. log10(ekin/eV) histogrammed with -H)' ),
+    ( 'functions', 'sin(a)',
+      'sine (a: an angle)',
+      'sine (a is an angle, or a value without unit taken as radians: e.g. sin(30deg))' ),
+    ( 'functions', 'cos(a)',
+      'cosine (a: an angle)',
+      'cosine (a is an angle, or a value without unit taken as radians: e.g. cos(30deg))' ),
+    ( 'functions', 'tan(a)',
+      'tangent (a: an angle)',
+      'tangent (a is an angle, or a value without unit taken as radians: e.g. tan(30deg))' ),
+    ( 'functions', 'asin(a)',
+      'arcsine (an angle)',
+      'arcsine, as an angle (a must have no unit: e.g. asin(uz) > 80deg)' ),
+    ( 'functions', 'acos(a)',
+      'arccosine (an angle)',
+      'arccosine, as an angle (a must have no unit: e.g. acos(uz) < 10deg; for small angles angle_to is more precise)' ),
+    ( 'functions', 'atan(a)',
+      'arctangent (an angle)',
+      'arctangent, as an angle (a must have no unit: e.g. atan(ux/uz) < 5deg)' ),
+    ( 'functions', 'atan2(y,x)',
+      'angle of the point (x,y) (an angle)',
+      'angle of the point (x,y) from the x axis, from -180deg to 180deg (x and y with the same unit: e.g. atan2(y,x) > 0deg)' ),
+    ( 'functions', 'angle_to(x,y,z)',
+      'angle between direction and (x,y,z) (an angle)',
+      'angle between the direction of the particle and the vector (x,y,z), precise also for small angles (e.g. angle_to(0,0,1) < 1deg, or angle_to(x,y,z) for the angle between direction and position)' ),
+    ( 'statements', 'swap(a,b)',
+      'exchange two fields (same unit)',
+      'exchange the values of two fields or variables with the same unit (e.g. swap(x,y))' ),
+    ( 'statements', 'rotate_x(angle)',
+      'rotate around the x axis',
+      'rotate position, direction and polarisation around the x axis, counter-clockwise (e.g. rotate_x(90deg))' ),
+    ( 'statements', 'rotate_y(angle)',
+      'rotate around the y axis',
+      'rotate position, direction and polarisation around the y axis, counter-clockwise (e.g. rotate_y(90deg))' ),
+    ( 'statements', 'rotate_z(angle)',
+      'rotate around the z axis',
+      'rotate position, direction and polarisation around the z axis, counter-clockwise (e.g. rotate_z(90deg))' ),
+    ( 'histoptions', 'bins=N',
+      'number of bins',
+      'number of bins (default: chosen from the number of particles, e.g. bins=50)' ),
+    ( 'histoptions', 'range=LOW:HIGH',
+      'range of the histogram',
+      'range of the histogram, without units like the expression (default: all values, e.g. range=0:10)' ),
+    ( 'histoptions', 'xrange=LOW:HIGH',
+      'range of x in 2D histograms',
+      'range of the first expression of a 2D histogram (default: all values, e.g. xrange=-10:10)' ),
+    ( 'histoptions', 'yrange=LOW:HIGH',
+      'range of y in 2D histograms',
+      'range of the second expression of a 2D histogram (default: all values, e.g. yrange=-10:10)' ),
+    ( 'histoptions', 'logx',
+      'logarithmic x axis',
+      'logarithmic binning and x axis (e.g. "ekin/MeV;logx")' ),
+    ( 'histoptions', 'logy',
+      'logarithmic y axis',
+      'logarithmic y axis' ),
+    ( 'histoptions', 'lethargy',
+      'per unit lethargy (implies logx)',
+      'divide by the bin widths in lethargy, so 1/E spectra are flat (implies logx)' ),
+    ( 'histoptions', 'split=EXPR',
+      'one curve per value of EXPR',
+      'one curve for each value of the expression EXPR (e.g. split=pdgcode, or split=x > 0cm)' ),
+    ( 'histoptions', 'unweighted',
+      'count particles',
+      'count particles instead of summing their weights' ),
+    ( 'histoptions', 'print',
+      'print contents instead of plotting',
+      'print the contents of the histogram instead of plotting it' ),)
+
+_group_titles = { 'histoptions' : 'Options (after the expression, separated by ";")',
+                  'fields' : 'Fields of the particles',
+                  'constants' : 'Constants',
+                  'particles' : 'Particle names (PDG codes)',
+                  'units' : 'Units',
+                  'functions' : 'Functions',
+                  'statements' : 'Statements' }
+
+_intro = {
+    'pick' : '''PICK: an expression which is true for the particles to use, e.g.
+  -p "pdgcode == neutron and ekin < 25meV"
+  -p "hypot(x,y) < 10cm and angle_to(0,0,1) < 1deg"
+  -p "(userflags & 0xff) == 7 or time > 10us"
+The operators are: + - * / (and ^ for powers), == != < <= > >=, and, or,
+not (and & | ~ for bits). Values with units must be written with units
+(e.g. 25meV or 10cm), except for a plain 0 (e.g. x > 0), and the wavelength
+can only be used for neutrons and gammas, which must be picked first (e.g.
+"pdgcode == neutron and wavelength > 1.8Aa").''',
+    'edit' : '''EDIT: statements separated by ";", executed in order, e.g.
+  -E "z += 1cm;weight *= 0.5"
+  -E "rotate_y(90deg);x += 10cm"
+  -E "tmp = x;x = y;y = tmp"
+The statements are assignments to fields (=, +=, -=, *= and /=, with values
+in the units of the field, and wavelength = ... changing ekin), assignments
+to variables (other lowercase names, which can be used in later statements),
+and the statements listed below. The expressions are written as for -p (see
+-p help).''',
+    'hist' : '''HIST: an expression without units (divide values with units by a unit,
+e.g. ekin/MeV), or two separated by ":" for a 2D histogram, followed by
+options separated by ";", e.g.
+  -H "ekin/MeV;logx;split=pdgcode"
+  -H "wavelength/Aa;bins=100;range=0:10"
+  -H "x/cm : y/cm;xrange=-10:10;yrange=-10:10"
+The expressions are written as for -p (see -p help).''',
+}
+
+_topic_groups = {
+    'pick' : ( 'fields', 'constants', 'particles', 'units', 'functions' ),
+    'edit' : ( 'statements', 'fields', 'constants', 'particles', 'units',
+               'functions' ),
+    'hist' : ( 'histoptions', 'fields', 'constants', 'particles', 'units',
+               'functions' ),
+}
+
+def _help_text( topic ):
+    """Help text for -p help ('pick'), -E help ('edit') or -H help ('hist')"""
+    lines = [ _intro[topic] ]
+    for g in _topic_groups[topic]:
+        lines += [ '', _group_titles[g] + ':' ]
+        for grp, name, _short, long in _hints:
+            if grp != g:
+                continue
+            lines += textwrap.wrap( long, width = 79,
+                                    initial_indent = f'  {name}: ',
+                                    subsequent_indent = '      ' )
+    return '\n'.join(lines)
+
+def _short_hint( name ):
+    """Short description of a name (for completion), or None"""
+    for _, n, short, _ in _hints:
+        if n.split('(')[0].split('=')[0] == name:
+            return short
+    return None

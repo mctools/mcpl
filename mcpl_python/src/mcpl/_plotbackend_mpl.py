@@ -23,6 +23,8 @@
 
 __all__ = []
 
+from typing import ClassVar
+
 from ._common import _determine_version
 from ._numpy import np
 from ._plotbackend import PlotBackend, numbered_filenames
@@ -34,13 +36,31 @@ class Backend(PlotBackend):
     select a backend of matplotlib (e.g. 'agg' for saving files without a
     display)."""
     name = 'matplotlib'
-    formats = ('pdf','png','svg')
+    kind = 'window'
+    priority = 100
+    formats: ClassVar[dict] = { 'pdf' : 100, 'png' : 100, 'svg' : 100 }
     requirement = 'matplotlib'
+    batch_options: ClassVar[dict] = { 'matplotlib_backend' : 'agg' }
 
     @classmethod
     def is_available( cls ):
         import importlib.util
         return importlib.util.find_spec('matplotlib') is not None
+
+    @classmethod
+    def can_show( cls ):
+        #Whether matplotlib picks (or was configured with) an interactive
+        #backend, which it does not do when there is no display:
+        import matplotlib
+        name = matplotlib.get_backend().lower()
+        if name.startswith('module://'):
+            return True#(e.g. the inline backend of Jupyter)
+        try:
+            from matplotlib.backends import BackendFilter, backend_registry
+            noninteractive = backend_registry.list_builtin(BackendFilter.NON_INTERACTIVE)
+        except ImportError:
+            from matplotlib.rcsetup import non_interactive_bk as noninteractive
+        return name not in [ e.lower() for e in noninteractive ]
 
     def __init__( self, matplotlib_backend = None ):
         import matplotlib

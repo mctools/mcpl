@@ -19,7 +19,7 @@
 ##                                                                            ##
 ################################################################################
 
-"""Particle expressions (selections and edits), which are evaluated with numpy
+"""Particle expressions (picks and edits), which are evaluated with numpy
 on blocks of particles."""
 
 __all__ = [ 'ParticleEdit', 'ParticleFilter', 'ParticleValue' ]
@@ -34,7 +34,7 @@ from ._physics import _particle_names, ekin_from_wavelength, wavelength_from_eki
 
 _expr_fields = ( 'x', 'y', 'z', 'ux', 'uy', 'uz', 'polx', 'poly', 'polz',
                  'ekin', 'time', 'weight', 'pdgcode', 'userflags',
-                 'wavelength' )
+                 'wavelength', 'fileidx' )
 _expr_constants = { 'pi' : math.pi, **_particle_names }
 #Dimensions (length,energy,time) and units of quantities in expressions. Values
 #are internally in the units of MCPL (cm, MeV, ms), also for wavelengths:
@@ -73,6 +73,7 @@ _rotation_planes = { 'rotate_x' : ( ('y','z'), ('uy','uz'), ('poly','polz') ),
                      'rotate_y' : ( ('z','x'), ('uz','ux'), ('polz','polx') ),
                      'rotate_z' : ( ('x','y'), ('ux','uy'), ('polx','poly') ) }
 _expr_functions = dict( sqrt = np.sqrt, atan2 = np.arctan2, angle_to = None,
+                        mod = np.mod,
                         **_expr_functions_nodim, **_expr_functions_samedim )
 
 def _angle_highres( a, b ):
@@ -91,18 +92,53 @@ def _angle_highres( a, b ):
     smag = np.sqrt( sum( ( x + y )**2 for x, y in zip(ua,ub) ) )
     return 2.0 * np.arctan2(dmag,smag)
 
+#Characters which can not be used in expressions (nor in the histogram strings
+#of mcpltool -H), although they are printable ASCII characters:
+_forbidden_chars = '"\'{}[]#$`\\'
+
+def _check_chars( text, what = 'expression' ):
+    """Check that the text only has printable ASCII characters (and ASCII
+    whitespace, including newlines), and none of the forbidden characters."""
+    for c in text:
+        if c in _forbidden_chars:
+            raise MCPLError(f'The character {c} can not be used in {what}s'
+                            f' (in "{_ascii_repr(text)}")')
+        if not ( ' ' <= c <= '~' or c in '\t\n\r\f\v' ):
+            raise MCPLError(f'Only printable ASCII characters can be used in'
+                            f' {what}s (not U+{ord(c):04X}, in'
+                            f' "{_ascii_repr(text)}")')
+
+def _ascii_repr( text ):
+    return text.encode('ascii','backslashreplace').decode('ascii')
+
 def _expr_normalise( expr ):
     """Expression with all whitespace (including newlines, e.g. in long
     expressions written over several lines) normalised to single spaces."""
     if not isinstance(expr,str):
         raise MCPLError(f'Expressions must be strings (got {type(expr).__name__})')
+    _check_chars(expr)
     return ' '.join(expr.split())
 
+#C-style operators, which give errors saying what to use instead:
+_expr_unsupported_ops = ( ( '&&', 'and', 'x > 0 and y > 0' ),
+                          ( '||', 'or', 'x > 0 or y > 0' ),
+                          ( '!', 'not', 'not (x > 0)' ),
+                          ( '%', 'mod(a,b)', 'mod(userflags,4) == 1' ) )
+
+def _expr_check_ops( expr ):
+    #NB: Do not add support for these: ! and % break command lines in some
+    #shells (bash history expansion, Windows batch files).
+    for op, alt, example in _expr_unsupported_ops:
+        found = ( re.search(r'!(?!=)',expr) if op == '!' else op in expr )
+        if found:
+            raise MCPLError(f'Use "{alt}" instead of "{op}" in expressions (e.g.'
+                            f' "{example}"), in expression "{expr}"')
+
 def _expr_preprocess( expr ):
-    """Translate C-like syntax (&&, ||, !) to Python syntax, ^ to ** (powers),
-    and numbers with units (e.g. 25meV) to multiplications."""
-    e = expr.replace('&&',' and ').replace('||',' or ').replace('^','**')
-    e = re.sub(r'!(?!=)',' not ',e)
+    """Translate ^ to ** (powers), and numbers with units (e.g. 25meV) to
+    multiplications."""
+    _expr_check_ops(expr)
+    e = expr.replace('^','**')
     units = '|'.join(sorted(_expr_units,key=len,reverse=True))
     #(a power directly after a unit only applies to the unit, e.g. 4cm^2):
     e = re.sub(r'(?<![\w.])((?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?)\s*(' + units
@@ -115,13 +151,13 @@ def _expr_check( node, expr, variables = () ):
     (variables are names of variables defined in edits)"""
     ok_nodes = ( ast.Expression, ast.BoolOp, ast.And, ast.Or, ast.UnaryOp,
                  ast.Not, ast.USub, ast.UAdd, ast.Invert, ast.BinOp, ast.Add,
-                 ast.Sub, ast.Mult, ast.Div, ast.Pow, ast.Mod, ast.FloorDiv,
+                 ast.Sub, ast.Mult, ast.Div, ast.Pow, ast.FloorDiv,
                  ast.BitAnd, ast.BitOr, ast.Compare, ast.Eq, ast.NotEq,
                  ast.Lt, ast.LtE, ast.Gt, ast.GtE, ast.Name, ast.Load,
                  ast.Constant, ast.Call )
     #TODO: Consider supporting conditional expressions ("a if cond else b",
     #e.g. evaluated with _ExprEvaluator._with_active for each branch, like the
-    #right side of && and ||), which were removed since nothing used them.
+    #right side of and/or), which were removed since nothing used them.
     for n in ast.walk(node):
         if not isinstance( n, ok_nodes ):
             raise MCPLError(f'Unsupported syntax in expression "{expr}"')
@@ -181,7 +217,7 @@ class _ExprEvaluator:
         #Values of variables and modified fields (in edits):
         self.state = state if state is not None else {}
         #Particles for which the current part of the expression is used (None
-        #for all), e.g. only those for which the left side of && is true:
+        #for all), e.g. only those for which the left side of and is true:
         self.active = None
     def error( self, msg ):
         raise MCPLError(f'{msg} in expression "{self._expr}"')
@@ -239,8 +275,8 @@ class _ExprEvaluator:
             bad &= self.active
         if np.any(bad):
             raise MCPLError('The wavelength is only defined for neutrons and gammas,'
-                            ' so select those before using it, e.g. "pdgcode =='
-                            f' neutron && wavelength > 1.8Aa" (in expression "{self._expr}")')
+                            ' so pick those before using it, e.g. "pdgcode =='
+                            f' neutron and wavelength > 1.8Aa" (in expression "{self._expr}")')
     def _with_active( self, mask, node ):
         """Evaluate node, for the particles where mask is true (and which are
         currently active)"""
@@ -274,7 +310,7 @@ class _ExprEvaluator:
         if isinstance(node,ast.Name):
             return self.name(node.id)
         if isinstance(node,ast.BoolOp):
-            #Like in C, the right side of && (||) is only used for particles
+            #The right side of and (or) is only used for particles
             #where the left side is true (false):
             is_and = isinstance(node.op,ast.And)
             fct = np.logical_and if is_and else np.logical_or
@@ -295,7 +331,7 @@ class _ExprEvaluator:
         if isinstance(node,ast.BinOp):
             what = { ast.Add : 'Addition', ast.Sub : 'Subtraction',
                      ast.Mult : 'Multiplication', ast.Div : 'Division',
-                     ast.Mod : 'The modulo operation', ast.FloorDiv : 'Floor division',
+                     ast.FloorDiv : 'Floor division',
                      ast.Pow : 'Raising to a power' }.get(type(node.op),'An operation')
             return self.finite(self.binop(node.op,ev(node.left),ev(node.right)),
                                f'{what} gives')
@@ -320,10 +356,10 @@ class _ExprEvaluator:
             fct = np.bitwise_and if sym == '&' else np.bitwise_or
             return _Q(fct(self._int(a,sym),self._int(b,sym)))
         with np.errstate(divide='ignore',invalid='ignore'):
-            if isinstance(op,(ast.Add,ast.Sub,ast.Mod,ast.FloorDiv)):
+            if isinstance(op,(ast.Add,ast.Sub,ast.FloorDiv)):
                 x, y, d = self.same(a,b,'arithmetic')
                 fct = { ast.Add : np.add, ast.Sub : np.subtract,
-                        ast.Mod : np.mod, ast.FloorDiv : np.floor_divide }[type(op)]
+                        ast.FloorDiv : np.floor_divide }[type(op)]
                 return _Q(fct(x,y),d)
             if isinstance(op,(ast.Mult,ast.Div)):
                 if isinstance(op,ast.Mult):
@@ -371,6 +407,17 @@ class _ExprEvaluator:
                 _, vz, _ = self.same(args[0],args[2],'angle_to(..)')
                 u = tuple( self.name(c).v for c in ('ux','uy','uz') )
                 return _Q(_angle_highres(u,(vx,vy,vz)))
+            if fname == 'mod':
+                if len(args) != 2:
+                    self.error('mod(a,b) takes two arguments')
+                for q in args:
+                    if np.asarray(q.v).dtype.kind not in 'iu' or q.d is not None:
+                        self.error('mod(a,b) requires integers without units'
+                                   ' (like userflags or pdgcode)')
+                a, b = ( np.asarray(q.v) for q in args )
+                if np.any( b == 0 ):
+                    self.error('Division by zero in mod(a,b)')
+                return _Q(np.mod(a,b))
             #Functions keeping units:
             if fname == 'hypot':
                 if len(args) < 2:
@@ -402,8 +449,8 @@ class _ExprEvaluator:
     def _int( q, op ):
         a = np.asarray(q.v)
         if a.dtype.kind not in 'iub':
-            hint = ( 'use ! for logical not' if op == '~'
-                     else 'use && and || for logical and/or' )
+            hint = ( 'use "not" for logical not' if op == '~'
+                     else 'use "and" and "or" for logical and/or' )
             raise MCPLError(f'The bitwise operator {op} requires integer operands'
                             f' ({hint})')
         return a
@@ -413,38 +460,44 @@ class _EmptyBlock:
     def __len__( self ):
         return 0
     def __getattr__( self, name ):
-        return np.zeros(0,dtype = int if name in ('pdgcode','userflags') else float)
+        return np.zeros(0,dtype = int if name in ('pdgcode','userflags','fileidx')
+                        else float)
 
 class ParticleFilter:
-    """Selection of particles based on an expression, which is evaluated with
-    numpy on blocks of particles. For instance:
+    """Picks particles with an expression, which is evaluated with numpy on
+    blocks of particles (this is also what the pick arguments of MCPLFile,
+    MCPLOutFile, histogram, collect_stats, etc. do, and mcpltool -p). For
+    instance:
 
        flt = ParticleFilter("pdgcode == neutron"
-                            " && ekin < 25meV"
-                            " && abs(x) <= 2mm")
+                            " and ekin < 25meV"
+                            " and abs(x) <= 2mm")
        for block in mcplfile.particle_blocks:
-           selected = block[ flt(block) ]
+           picked = block[ flt(block) ]
 
     Whitespace (including newlines) is only used to separate the parts of
     expressions, so long expressions can be written over several lines. The
-    expression syntax is like in C: particle fields (x, y, z, ux, uy,
+    expression syntax is like in Python: particle fields (x, y, z, ux, uy,
     uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, and
-    wavelength), numbers, arithmetic (+, -, *, /, %, and ^ or ** for powers),
+    wavelength), fileidx (the position of the particles in the file,
+    counting from 0, e.g. "mod(fileidx,10) == 0" for every tenth particle),
+    numbers, arithmetic (+, -, *, /, and ^ or ** for powers),
     comparisons (which can be chained, as in "0 < x < 2cm"), logical operations
-    (&&, ||, ! or and, or, not), bitwise &, | and ~ on integers (e.g. on
-    userflags, as in "userflags & 0x10", where like in C integers which are not
-    0 are true), functions (sqrt, abs, floor, ceil, exp, log, log10,
-    sin, cos, tan, asin, acos, atan, atan2, hypot, min, max, and
-    angle_to(x,y,z) for the angle between the direction of the particles and
-    the vector (x,y,z), which is precise also for small angles), the constant
+    (and, or, not), bitwise &, | and ~ on integers (e.g. on userflags, as in
+    "userflags & 0x10", where integers which are not 0 are true), functions
+    (sqrt, abs, floor, ceil, exp, log, log10, sin, cos, tan, asin, acos,
+    atan, atan2, hypot, min, max, clamp, mod(a,b) for the remainder of the
+    division of integers, and angle_to(x,y,z) for the angle between the
+    direction of the particles and the vector (x,y,z), which is precise also
+    for small angles), the constant
     pi, and the names neutron, antineutron, proton, antiproton, electron,
     positron (or antielectron), muon, antimuon, and gamma (or photon), which
     can be used for pdgcode values. The wavelength is only defined for
     neutrons and gammas, so it is an error to use it for other particles, and
-    expressions must select neutrons or gammas before using it, as in
-    "pdgcode == neutron && wavelength > 1.8Aa" (the right side of && is only
-    evaluated for particles where the left side is true, and the right side
-    of || only for particles where the left side is false, like in C).
+    expressions must pick neutrons or gammas before using it, as in
+    "pdgcode == neutron and wavelength > 1.8Aa" (the right side of and is
+    only evaluated for particles where the left side is true, and the right
+    side of or only for particles where the left side is false).
 
     Values with units must always be given with units (except for a plain 0,
     as in "x > 0"): meV, eV, keV, MeV,
@@ -461,12 +514,16 @@ class ParticleFilter:
         self._tree = _expr_parse(expression)
         _expr_check(self._tree, expression)
         self(_EmptyBlock())#check units etc.
+        #(for marking stat:sum entries as not available when particles are
+        #picked by their positions in the file):
+        self._uses_fileidx = any( isinstance(n,ast.Name) and n.id == 'fileidx'
+                                  for n in ast.walk(self._tree) )
     @property
     def expression( self ):
         """The expression (with normalised whitespace)"""
         return self._expr
     def __call__( self, block ):
-        """Return boolean array selecting particles in the block"""
+        """Return boolean array picking particles in the block"""
         res = np.asarray(_ExprEvaluator(block,self._expr)(self._tree).v)
         if res.dtype.kind in 'iu':
             res = res != 0#like in C, e.g. for "userflags & 0x10"
@@ -519,10 +576,10 @@ class ParticleValue:
 
 class ParticleEdit:
     """Modification of particle fields given by an expression with statements
-    separated by commas, which are evaluated with numpy on blocks of particles.
+    separated by ";", which are evaluated with numpy on blocks of particles.
     For instance:
 
-       edit = ParticleEdit("rotate_z(90deg), z += 10cm,"
+       edit = ParticleEdit("rotate_z(90deg); z += 10cm;"
                            " wavelength = 1.8Aa")
        for block in mcplfile.particle_blocks:
            outfile.add_particles( block, **edit(block) )
@@ -536,7 +593,7 @@ class ParticleEdit:
         Assigning wavelength changes the kinetic energy of neutrons and gammas.
       * Assignments to variables (lowercase names which are not names of
         fields, units, constants or functions), which can be used in later
-        statements, for instance to keep original values: "tmp = x, x = y,
+        statements, for instance to keep original values: "tmp = x; x = y;
         y = tmp". Variables keep the units of their values.
       * swap(a,b), which exchanges the values of two fields (or variables)
         with the same units, e.g. "swap(x,y)".
@@ -548,13 +605,16 @@ class ParticleEdit:
         "rotate_z(90deg)" changes (x,y) to exactly (-y,x)), and rotations never
         give negative zeros (-0.0).
     """
-    _assignable = tuple( f for f in _expr_fields )
+    _assignable = tuple( f for f in _expr_fields if f != 'fileidx' )
     def __init__( self, expression ):
         expression = _expr_normalise(expression)
         self._expr = expression
         self._statements = []
         variables, used = set(), set()
         def check_var( name ):
+            if name in _expr_fields:
+                raise MCPLError(f'{name} (the position of the particles in the'
+                                f' file) can not be changed, in "{expression}"')
             if not ( name.isidentifier() and name == name.lower() ) or (
                     name in _expr_constants or name in _expr_units
                     or name in _expr_functions or name in _edit_statements ):
@@ -627,6 +687,10 @@ class ParticleEdit:
                                 f' as arguments, as in swap(x,y), in "{self._expr}"')
             names = [ a.id for a in call.args ]
             for n in names:
+                if n == 'fileidx':
+                    raise MCPLError('fileidx (the position of the particles in'
+                                    ' the file) can not be changed, in'
+                                    f' "{self._expr}"')
                 if n not in self._assignable and n not in variables:
                     raise MCPLError(f'Can not swap "{n}" in "{self._expr}"'
                                     ' (it is not a field or variable)')
@@ -650,6 +714,9 @@ class ParticleEdit:
             elif c in ')]':
                 depth -= 1
             if c == ',' and depth == 0:
+                raise MCPLError('Separate the statements of edits with ";"'
+                                f' (not ",") in "{expr}"')
+            if c == ';' and depth == 0:
                 parts.append(cur)
                 cur = ''
             else:
@@ -788,10 +855,10 @@ def _quantity_functions( coords ):
         res[name] = fct
     return res
 
-def _as_filter(select):
-    if isinstance(select,str):
-        return ParticleFilter(select)
-    return select
+def _as_filter(pick):
+    if isinstance(pick,str):
+        return ParticleFilter(pick)
+    return pick
 
 def _as_edit(edit):
     if isinstance(edit,str):

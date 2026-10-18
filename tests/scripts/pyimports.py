@@ -24,7 +24,7 @@
 
 # Test that the optional parts of the mcpl package (expressions, statistics,
 # histograms, plotting, and the mcpltool command), and the packages used for plotting
-# (matplotlib, plotly, ...), are only imported when they are used, and not by
+# (matplotlib, ...), are only imported when they are used, and not by
 # "import mcpl" or when using the other functionality of the Python API or of
 # mcpltool. Each case runs in a new Python process, which reports the
 # modules it imported.
@@ -52,7 +52,7 @@ pathlib.Path('torepair2.mcpl').write_bytes(data)
 pathlib.Path('example.mcpl.gz').write_bytes(gzip.compress(example_file.read_bytes()))
 
 #Modules which must not be imported unless plots are made:
-plot_modules = ( 'matplotlib', 'plotly', 'kaleido', 'PIL' )
+plot_modules = ( 'matplotlib', 'PIL' )
 
 code_template = """
 import contextlib, json, os, sys
@@ -73,7 +73,7 @@ print(json.dumps(mods))
 optional_modules = ( '_expressions', '_stats', '_statsplot', '_histogram',
                      '_clistats', '_cli', '_userdata', '_scipp',
                      'plotting', '_plotbackend', '_plotbackend_mpl',
-                     '_plotbackend_plotly', '_plotbackend_test', '_plotbackend_text' )
+                     '_plotbackend_test', '_plotbackend_text' )
 
 def tool(*args):
     return f"mcpl.app_mcpltool(['mcpltool',{','.join(repr(a) for a in args)}])"
@@ -100,20 +100,20 @@ cases = [
         "        mcpl.merge_inplace('w3.mcpl', 'example.mcpl')" ) ),
     ( 'repair', '', "mcpl.repair('torepair.mcpl')" ),
     #Optional functionality, which must only import what it needs:
-    ( 'read with select and edit', '_expressions',
-      ( "for b in mcpl.MCPLFile('example.mcpl', select='pdgcode == neutron',"
+    ( 'read with pick and edit', '_expressions',
+      ( "for b in mcpl.MCPLFile('example.mcpl', pick='pdgcode == neutron',"
         " edit='rotate_z(90deg)').particle_blocks: pass" ) ),
     ( 'statistics', '_stats', "mcpl.dump_stats(mcpl.collect_stats('example.mcpl'))" ),
-    ( 'statistics with selection', '_expressions _stats',
-      "mcpl.dump_stats(mcpl.collect_stats('example.mcpl', select='x > 0cm'))" ),
+    ( 'statistics with pick', '_expressions _stats',
+      "mcpl.dump_stats(mcpl.collect_stats('example.mcpl', pick='x > 0cm'))" ),
     ( 'histogram as text', '_expressions _histogram',
       "print(mcpl.histogram('example.mcpl','ekin/MeV',bins=4).to_text())" ),
     ( 'mcpltool FILE', '_cli', tool('example.mcpl') ),
-    ( 'mcpltool --select', '_cli _expressions',
-      tool('-l3','--select','pdgcode == gamma','example.mcpl') ),
+    ( 'mcpltool --pick', '_cli _expressions',
+      tool('-l3','--pick','pdgcode == gamma','example.mcpl') ),
     ( 'mcpltool --stats', '_cli _clistats _stats', tool('--stats','example.mcpl') ),
-    ( 'mcpltool --hist --print', '_cli _clistats _expressions _histogram',
-      tool('--hist','ekin/MeV','--print','example.mcpl') ),
+    ( 'mcpltool --hist with print', '_cli _clistats _expressions _histogram',
+      tool('--hist','ekin/MeV;print','example.mcpl') ),
     ( 'mcpltool --extract', '_cli', tool('--extract','example.mcpl','e1.mcpl') ),
     ( 'mcpltool --extract --edit', '_cli _expressions',
       tool('--extract','example.mcpl','e2.mcpl','--edit','z += 1m') ),

@@ -50,7 +50,7 @@ def test_histograms():
     h = mcpl.histogram(example_file, 'ekin/MeV', logx=True, split='pdgcode')
     show(h)
     assert np.isclose(sum(c.sum() for c in h.contents.values()), b.weight.sum())
-    h = mcpl.histogram(example_file, 'ekin/eV', select='pdgcode == neutron',
+    h = mcpl.histogram(example_file, 'ekin/eV', pick='pdgcode == neutron',
                        lethargy=True, bins=20)
     show(h)
     ref = np.histogram(b.ekin[b.pdgcode==2112]*1e6, bins=h.edges)[0]
@@ -58,7 +58,7 @@ def test_histograms():
     assert np.allclose(h.values(), ref/np.log(h.edges[1:]/h.edges[:-1]))
     print(h.to_text())
     h = mcpl.histogram(example_file, 'acos(uz)/deg', range=(0,90), bins=9,
-                       split='x > 0cm', weighted=False)
+                       split='x > 0cm', unweighted=True)
     show(h)
     print(h.to_text())
     h = mcpl.histogram([example_file, ref1], 'x/cm', range=(-20,20), bins=8)
@@ -68,15 +68,15 @@ def test_histograms():
                        range=(-300,2300), bins=26)
     show(h)
     h = mcpl.histogram2d(example_file, 'x/cm', 'y/cm', bins=10,
-                         select=mcpl.ParticleFilter('pdgcode == gamma'))
+                         pick=mcpl.ParticleFilter('pdgcode == gamma'))
     show(h)
     assert np.isclose(h.contents.sum(), np.count_nonzero(b.pdgcode==22))
     #No selected particles, but a range (so an empty histogram), with splits:
     for split in ('pdgcode', 'x > 0cm'):
-        h = mcpl.histogram(example_file, 'ekin/MeV', select='x > 1km',
+        h = mcpl.histogram(example_file, 'ekin/MeV', pick='x > 1km',
                            range=(0,10), bins=2, split=split)
         print(f'empty histogram with split={split!r}:', h.to_text())
-    for args, kwargs in ( (('ekin',),{}), (('ekin/MeV',),{'select':'x > 1km'}),
+    for args, kwargs in ( (('ekin',),{}), (('ekin/MeV',),{'pick':'x > 1km'}),
                           (('x/cm',),{'logx':True,'range':(-1,1)}),
                           (('wavelength',),{}), (('x/cm',),{'split':'x'}) ):
         try:
@@ -87,12 +87,12 @@ def test_histograms():
 
 def test_stats_figures():
     show(mcpl.stats_figures(mcpl.collect_stats(example_file)))
-    show(mcpl.stats_figures(mcpl.collect_stats(example_file,select='pdgcode == electron')))
+    show(mcpl.stats_figures(mcpl.collect_stats(example_file,pick='pdgcode == electron')))
 
 def test_overlay():
-    hn = mcpl.histogram(example_file, 'ekin/MeV', select='pdgcode == neutron',
+    hn = mcpl.histogram(example_file, 'ekin/MeV', pick='pdgcode == neutron',
                         logx=True, bins=10)
-    hg = mcpl.histogram(example_file, 'ekin/MeV', select='pdgcode == gamma',
+    hg = mcpl.histogram(example_file, 'ekin/MeV', pick='pdgcode == gamma',
                         logx=True, bins=10)
     mcpl.plot_histograms([hn,hg], overlay=True, backend='test', logy=True)
     mcpl.plot_histograms([hn,hg], overlay=True, labels=['n','g'], backend='test')
@@ -145,7 +145,7 @@ def test_autobins():
           f' merged exactly: {np.allclose(v,vf.reshape(len(v),-1).sum(axis=1))},'
           f' same edges: {np.allclose(h.edges,hf.edges[::1080//len(v)])},'
           f' for display: {h._display_bins}')
-    h = mcpl.histogram(example_file, 'x/cm', select='pdgcode == 2212')
+    h = mcpl.histogram(example_file, 'x/cm', pick='pdgcode == 2212')
     print(f'auto with few particles: {len(h.edges)-1} bins, sum {h.values().sum():g}')
     h = mcpl.histogram(example_file, 'x/cm', _maxbins=83)
     print(f'auto with at most 83 bins: {len(h.edges)-1} bins, for display: {h._display_bins}')
@@ -172,42 +172,76 @@ def tool(*args):
 
 def test_cmdline():
     ex = str(example_file)
-    tool('--hist','ekin/MeV','--logx','--split','pdgcode','--backend','test',ex)
-    tool('--hist','ekin/eV','--lethargy','-pneutron','--bins','5','--print',ex)
-    tool('--hist','x/cm : y/cm','--bins','4','--select','pdgcode == gamma','--print',ex)
-    tool('--hist','x/cm : y/cm','--bins','2','--range','-10:10,0:5','--print',ex)
-    tool('--hist','x/cm','--range','-10:10','--bins','4','--backend','test',ex,str(ref1))
-    tool('--hist','time/ms','--logx','--logy','--unweighted','--backend','test',ex)
-    tool('--hist','ekin/MeV','--split','pdgcode','--range','0:10','--bins','2',
-         '--select','x > 1km','--print',ex)
-    for bad in ( ['--hist','ekin',ex], ['--hist','ekin/MeV','--bins','0',ex],
-                 ['--hist','ekin/MeV','--range','1',ex], ['--hist','ekin/MeV','--range','2:1',ex],
-                 ['--hist','ekin/MeV','--range','1:2,3:4',ex],
-                 ['--hist','x/cm : y/cm','--logx',ex], ['--hist','x/cm : y/cm : z/cm',ex],
-                 ['--hist','x/cm','--backend','foo',ex], ['--logx',ex], ['--bins','10',ex],
-                 ['--output','a.pdf',ex], ['--hist','x/cm','--extract',ex,'out.mcpl'],
-                 ['--hist','x/cm'] ):
+    tool('-H','ekin/MeV;logx;split=pdgcode','-B','test',ex)
+    tool('-H','ekin/eV;lethargy;bins=5;print','-p','pdgcode == neutron',ex)
+    tool('-H','x/cm : y/cm;bins=4;print','-p','pdgcode == gamma',ex)
+    tool('-H','x/cm:y/cm;bins=2;xrange=-10:10;yrange=0:5;print',ex)
+    tool('-H','x/cm : y/cm;bins=2;xrange=-10:10;print',ex)
+    tool('-H','x/cm : y/cm;bins=3,2;print',ex)
+    tool('-H','x/cm;range=-10:10;bins=4','-B','test',ex,str(ref1))
+    tool('-H','time/ms;logx;logy;unweighted','-B','test',ex)
+    tool('-H','ekin/MeV;split=pdgcode;range=0:10;bins=2;print',
+         '-p','x > 1km',ex)
+    #-l, -s and -E (the particles are picked before they are edited):
+    tool('-H','z/cm;bins=2;range=0:100;print','-s1000',ex)
+    tool('-H','z/cm;bins=2;range=0:100;print','-l3','-E','z += 50cm',ex)
+    tool('-H','z/cm;bins=2;range=0:100;print','--pick=z < 25cm',
+         '--edit=z += 50cm',ex)
+    tool('-Hekin/MeV;print;bins=2','-ppdgcode==22',ex)
+    for bad in ( ['-H','ekin',ex], ['-H','ekin/MeV;bins=0',ex],
+                 ['-H','ekin/MeV;range=1',ex], ['-H','ekin/MeV;range=2:1',ex],
+                 ['-H','ekin/MeV;range=1:2,3:4',ex], ['-H','ekin/MeV;xrange=1:2',ex],
+                 ['-H','x/cm : y/cm;range=1:2',ex],
+                 ['-H','x/cm : y/cm;logx',ex], ['-H','x/cm : y/cm : z/cm',ex],
+                 ['-H','x/cm;bins',ex], ['-H','x/cm;logx=1',ex],
+                 ['-H','x/cm;logx;logx',ex], ['-H','x/cm;foo',ex],
+                 ['-H','x/cm','-B','foo',ex], ['--logx',ex], ['--bins','10',ex],
+                 ['-o','a.pdf',ex], ['-H','x/cm','-e',ex,'out.mcpl'],
+                 ['-H','x/cm'], ['-H','x/cm;print','-t',ex],
+                 ['-H','x/cm','-t','-o','a.txt',ex] ):
         tool(*bad)
 
 def test_cmdline_more():
     #Plots of statistics, and saving files, with the test backend (which
     #describes the figures), and argument errors:
     ex = str(example_file)
-    tool('--stats','--gui','--backend','test','-pgamma',ex)
-    tool('--stats','--pdf','--backend','test',ex)
-    tool('--stats','--output','stats.txt','--backend','test',ex)
-    tool('--hist','x/cm','--bins','3','--output','hist.txt','--backend','test',ex)
-    for bad in ( ['-p2112','-p22',ex], ['-p'], ['-lX',ex], ['-l',ex],
-                 ['--edit','z += 1m',ex], ['--pdf',ex], ['--gui',ex],
-                 ['--stats','--pdf','--gui',ex], [ex,ex,ex],
+    tool('-S','-o','stats.txt','-B','test','-p','pdgcode == gamma',ex)
+    tool('-S','-s1000','-E','x = 1cm',ex)
+    tool('-H','x/cm;bins=3','-o','hist.txt','-B','test',ex)
+    for bad in ( ['-p','neutron',ex], ['-p2112',ex], ['-p',' gamma ',ex],
+                 ['-p'], ['-lX',ex], ['-l',ex],
+                 ['-p','x > 0','-p','x < 1cm',ex], ['--pdf',ex], ['--gui',ex],
+                 ['--select','x > 0',ex], ['-S','-B','test',ex], ['-S','-t',ex],
+                 ['-S','-H','x/cm',ex], [ex,ex,ex],
                  ['--text',ex], ['--text',ex,'hist.txt'],
-                 ['--hist','x/cm : y/cm','--split','pdgcode',ex],
-                 ['--hist','x/cm','--output','hist.txt','--backend','test',ex] ):
+                 ['-t',ex], ['-j','-H','x/cm',ex], ['--no-comment','-S',ex],
+                 ['-H','x/cm : y/cm;split=pdgcode',ex],
+                 ['-H','x/cm','-o','hist.txt','-B','test',ex],
+                 ['-H','x/cm','-o','hist',ex], ['-H','x/cm','-o','hist.jpg',ex],
+                 ['-H','x/cm','-o','hist.png','-d',ex],
+                 ['-p','x > 0;',ex], ['-p','x > "1"',ex], ['-E','z = 1cm, x = 0',ex] ):
         tool(*bad)
+
+def test_help_topics():
+    #Only the start of each topic (the rest are tables of all names):
+    for args in ( ['-p','help'], ['--edit=help'], ['-H','help',str(example_file)] ):
+        out = io.StringIO()
+        rc = 0
+        with contextlib.redirect_stdout(out):
+            try:
+                mcpl.app_mcpltool(['mcpltool',*args])
+            except SystemExit as e:
+                rc = e.code
+        lines = out.getvalue().splitlines()
+        print(f'mcpltool {" ".join(args)}: exit code {rc}, {len(lines)} lines,'
+              ' starting with:')
+        for line in lines[:3]:
+            print(f'   | {line}')
 
 test_histograms()
 test_stats_figures()
 test_overlay()
 test_cmdline()
 test_cmdline_more()
+test_help_topics()
 test_autobins()

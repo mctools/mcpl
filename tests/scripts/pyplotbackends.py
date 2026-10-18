@@ -22,12 +22,12 @@
 
 # NEEDS: numpy
 
-# Test the selection of plotting backends (by name, with
-# set_default_backend, and with the MCPL_PLOT_BACKEND environment variable),
-# custom backends registered with register_backend, Backend objects, backend
-# options, and the deprecated set_backend parameter of plot_stats.
+# Test the selection of plotting backends (by name, with set_default_backend,
+# and automatically, for showing plots or for saving them in files of a
+# format), custom backends registered with register_backend, Backend objects,
+# backend options, the deprecated set_backend parameter of plot_stats, and the
+# -B, -t and -o options of mcpltool.
 
-import os
 import subprocess
 import sys
 import warnings
@@ -88,15 +88,13 @@ def test_registry():
     expect_error('backend=42', lambda : mcpl.plotting.show(fig, backend=42))
 
 def test_default():
-    os.environ.pop('MCPL_PLOT_BACKEND',None)
     for default in ( 'printing', PrintingBackend(printing_prefix='[object] '), None ):
         mcpl.plotting.set_default_backend(default)
         label = 'PrintingBackend object' if isinstance(default,Backend) else repr(default)
         print(f'==> set_default_backend({label}):')
         if default is None:
-            first = mcpl.plotting.available_backends()[0]
-            same = mcpl.plotting.formats() == mcpl.plotting.formats(first)
-            print(f'   default backend is the first available: {same}')
+            print(f'   available backends: {mcpl.plotting.available_backends()}')
+            print(f'   formats which can be saved: {mcpl.plotting.formats()}')
             continue
         mcpl.plotting.show(fig)
         mcpl.plotting.show(fig, backend='test')#explicit backend wins
@@ -115,27 +113,25 @@ def test_default():
                  lambda : mcpl.plotting.set_default_backend('foo'))
     expect_error('set_default_backend(42)',
                  lambda : mcpl.plotting.set_default_backend(42))
-    #The environment variable is used if no default backend was set:
     mcpl.plotting.set_default_backend(None)
-    os.environ['MCPL_PLOT_BACKEND'] = 'printing'
-    mcpl.plotting.show(fig)
-    mcpl.plotting.set_default_backend('test')
-    mcpl.plotting.show(fig)
-    mcpl.plotting.set_default_backend(None)
-    for env in ('unavailable', 'foo'):
-        os.environ['MCPL_PLOT_BACKEND'] = env
-        expect_error(f'MCPL_PLOT_BACKEND={env}', lambda : mcpl.plotting.show(fig))
-    os.environ.pop('MCPL_PLOT_BACKEND')
 
-def test_tool_environment():
-    #mcpltool uses the environment variable (unless --backend is given):
-    for env, args in ( ('test', []), ('test', ['--backend','foo']), ('foo', []) ):
+def test_automatic():
+    #Without a backend, the backend for saving is chosen by the format:
+    for fn in ( 'auto.txt', 'auto.pdf', 'auto.html', 'auto' ):
+        expect_error(f'save(fig, {fn!r})',
+                     lambda fn = fn : print(f'   created {mcpl.plotting.save(fig, fn)}'))
+
+def test_tool_backends():
+    #-B selects the backend, otherwise it is chosen automatically (by the
+    #extension of the file with -o, and for the terminal with -t):
+    for args in ( ['-B','test'], ['-B','foo'], ['-t','-B','test'],
+                  ['-o','tool1.txt'], ['-o','tool2.txt','-B','test'],
+                  ['-o','tool3.txt','-B','ascii'], ['-t'] ):
         sys.stdout.flush()
-        rv = subprocess.run([sys.executable, '-m', 'mcpldev', '--hist', 'ekin/MeV',
-                             '--bins', '3', *args, str(example_file)],
-                            capture_output=True, text=True, check=False,
-                            env=dict(os.environ, MCPL_PLOT_BACKEND=env))
-        print(f'==> MCPL_PLOT_BACKEND={env} mcpltool --hist ... {" ".join(args)}:'
+        rv = subprocess.run([sys.executable, '-m', 'mcpldev', '-H', 'ekin/MeV;bins=3',
+                             *args, str(example_file)],
+                            capture_output=True, text=True, check=False)
+        print(f'==> mcpltool -H ekin/MeV;bins=3 {" ".join(args)}:'
               f' exit code {rv.returncode}')
         for line in rv.stdout.splitlines()[:4]:
             print(f'   | {line}')
@@ -151,5 +147,6 @@ def test_deprecated_set_backend():
 if __name__ == '__main__':
     test_registry()
     test_default()
-    test_tool_environment()
+    test_automatic()
+    test_tool_backends()
     test_deprecated_set_backend()

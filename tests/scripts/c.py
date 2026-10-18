@@ -205,27 +205,27 @@ with mcpl.MCPLFile(file1,blocklength=3) as f:
     assert set(f.blobs.keys()) == set(f.blob_storage_order)
     print(','.join(f'{k}[{len(f.blobs[k])}]' for k in f.blob_storage_order))
 
-    print('indices in file: {}'.format(','.join(str(p.file_index) for p in f.particles)))
+    print('indices in file: {}'.format(','.join(str(p.fileidx) for p in f.particles)))
     for ib,pb in enumerate(f.particle_blocks):
         pb.uy if ib%2 else pb.uz
         assert pb[len(pb)] is None
         print(f'indices in block starting at {pb.file_offset} a:',
-              ','.join( str(pb[i].file_index) for i in range(len(pb)) ))
+              ','.join( str(pb[i].fileidx) for i in range(len(pb)) ))
         print(f'indices in block starting at {pb.file_offset} b:',
-              ','.join( str(p.file_index) for p in pb.particles ))
+              ','.join( str(p.fileidx) for p in pb.particles ))
     f.rewind()
     p=f.read()
-    assert p.file_index==0
+    assert p.fileidx==0
     f.skip_forward(1)
     p=f.read()
-    assert p.file_index==2
+    assert p.fileidx==2
     f.skip_forward(1)
     p=f.read()
-    assert p.file_index==4
+    assert p.fileidx==4
     f.rewind()
     f.skip_forward(4)
     p=f.read()
-    assert p.file_index==4
+    assert p.fileidx==4
     try:
         f.skip_forward(-1)
         p=f.read()

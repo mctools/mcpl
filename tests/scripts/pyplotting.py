@@ -37,7 +37,7 @@ example_file = test_data_dir.joinpath('example.mcpl')
 
 def test_backends():
     avail = mcpl.plotting.available_backends()
-    assert set(avail) <= {'matplotlib','plotly','unicode','ascii'} and 'test' not in avail
+    assert set(avail) <= {'matplotlib','unicode','ascii'} and 'test' not in avail
     print('available_backends() only lists known backends, and not the test backend')
     for name, fn in ( ('nosuchbackend', 'x.pdf'), ('test', 'x.foo') ):
         try:

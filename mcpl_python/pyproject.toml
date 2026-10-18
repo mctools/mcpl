@@ -43,12 +43,9 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-#Plotting backends (the text backends need no extra packages, and saving plotly
-#plots as images also needs the kaleido package, which needs a Chrome
-#installation and is therefore not included):
+#Plotting backends (the text backends need no extra packages):
 plot = [ 'matplotlib>=3.6' ]
-plotly = [ 'plotly>=5.11' ]
-all = [ 'matplotlib>=3.6', 'plotly>=5.11' ]
+all = [ 'matplotlib>=3.6' ]
 #Conversion to scipp (MCPLFile.to_scipp), not included in "all" since scipp
 #needs a more recent Python and numpy than the rest of mcpl-python:
 scipp = [
