@@ -222,7 +222,7 @@ plot(terminal=True,ascii_width=40,ascii_height=5) with PYTHONIOENCODING=ascii: e
          0.001393     4862         9725
                      ekin/MeV
 plot(backend="unicode",unicode_width=40,unicode_height=5) with PYTHONIOENCODING=ascii: exit code 1, output only ASCII: True
-mcpldev._common.MCPLError: The unicode plotting backend does not work in this terminal (a solution might be to switch terminal or try the ascii backend)
+mcpldev._common.MCPLError: The unicode plotting backend does not work in this terminal (a solution might be to switch terminal or try the ascii or matplotlib backends)
 mcpltool --hist --backend ascii: 19 lines, first and last:
 (weights per bin)
                                          time/ms

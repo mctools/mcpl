@@ -85,14 +85,12 @@ class Backend(PlotBackend):
 
     def save( self, figures, filename ):
         ext = self.check_format(filename)
-        plt = self._plt
         if ext == 'pdf':
             from matplotlib.backends.backend_pdf import PdfPages
 
             with PdfPages(filename) as pdf:
                 for f in figures:
-                    pdf.savefig(self._draw(f))
-                    plt.close()
+                    pdf.savefig(self._draw(f,saving=True))
                 d = pdf.infodict()
                 d['Title'] = ( 'Plots made with the mcpl Python package version'
                                f' {_determine_version()}' )
@@ -102,16 +100,22 @@ class Backend(PlotBackend):
             return [ filename ]
         fns = numbered_filenames(filename,len(figures))
         for f, fn in zip(figures,fns):
-            self._draw(f).savefig(fn)
-            plt.close()
+            self._draw(f,saving=True).savefig(fn)
         return fns
 
-    def _draw( self, figure ):
+    def _draw( self, figure, saving = False ):
         import matplotlib.ticker
-        plt = self._plt
         big = figure.nrows * figure.ncols > 1
-        fig, axs = plt.subplots(figure.nrows,figure.ncols,squeeze=False,
-                                figsize=( (15,8.5) if big else (8,6) ))
+        figsize = (15,8.5) if big else (8,6)
+        if saving:
+            #(figures which are not managed by pyplot, so saving them works
+            #without a display, whatever the backend of matplotlib):
+            from matplotlib.figure import Figure
+            fig = Figure(figsize=figsize)
+            axs = fig.subplots(figure.nrows,figure.ncols,squeeze=False)
+        else:
+            fig, axs = self._plt.subplots(figure.nrows,figure.ncols,squeeze=False,
+                                          figsize=figsize)
         if figure.title:
             fig.suptitle(figure.title)
         axlist = list(axs.flat)
