@@ -1,4 +1,6 @@
 v2.2.9  (work in progress)
+      * The minimum CMake version is now 3.21 (and on Windows 3.27, which was
+        already needed there, now with a clear error message).
       * The command-line tools are renamed: the Python tool from the
         mcpl-python package (pymcpltool) is now mcpltool, and the compiled
         tool from the mcpl-core package (mcpltool) is now mcpltool-c. The

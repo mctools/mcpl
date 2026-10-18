@@ -19,7 +19,7 @@
 ##                                                                            ##
 ################################################################################
 
-cmake_minimum_required(VERSION 3.16...4.4)
+cmake_minimum_required(VERSION 3.21...4.4)
 
 #Detect skbuild mode (std/monolithic) if appropriate:
 
