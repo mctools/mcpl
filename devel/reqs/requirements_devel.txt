@@ -1,7 +1,6 @@
 PyYAML>=6.0.0
 matplotlib>=3.6
 numpy>=1.22
-plotly>=5.11
 ruff>=0.8.1
 scipp>=26.9; python_version >= "3.12" and platform_system != "FreeBSD"
 tomli>=2.0.0; python_version < "3.11"

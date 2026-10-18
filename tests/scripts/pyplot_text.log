@@ -56,9 +56,9 @@
          0                             90                           180
                                    acos(uz)/deg
 * x > 0cm
-o !(x > 0cm)
+o not (x > 0cm)
 ==> unicode backend, width 72, height 12:
-                     selection: pdgcode == neutron
+                        pick: pdgcode == neutron
 (y: y/cm)
    57.69 ┤          ▒▒░   ▒▒▒▒░     ▒▒▒
          │        ▒▒░ ▒▒░ ▒▒▒▒░   ▒▒░ ▒▒▒   ░▒▒   ░▒▒     ░▒▒
@@ -77,7 +77,7 @@ o !(x > 0cm)
                                        x/cm
 · = 0.006667 ... █ = 23 (log scale)
 ==> ascii backend, width 72, height 12:
-                     selection: pdgcode == neutron
+                        pick: pdgcode == neutron
 (y: y/cm)
    57.69 +          ++-   +++=-     =+=
          |        ++- ++- +++=-   =+= +*+   =+=   =++     -++
@@ -211,7 +211,7 @@ ascii: saved ['stats_ascii.txt'], 137 lines, max width 59, ascii only: True
 {'backend': 'ascii', 'unicode_width': 50}: MCPLError: Unsupported option(s) for the ascii plotting backend: unicode_width
 {'backend': 'unicode'}: MCPLError: The unicode plotting backend can not create .pdf files (supported: .txt)
 unicode and ascii backends always available, as the last ones: True
-unicode backend with PYTHONIOENCODING=ascii prints only ASCII: True
+plot(terminal=True,ascii_width=40,ascii_height=5) with PYTHONIOENCODING=ascii: exit code 0, output only ASCII: True
 (weights per bin)
      994 +###
          |###
@@ -221,6 +221,8 @@ unicode backend with PYTHONIOENCODING=ascii prints only ASCII: True
          ++---------------------------+
          0.001393     4862         9725
                      ekin/MeV
+plot(backend="unicode",unicode_width=40,unicode_height=5) with PYTHONIOENCODING=ascii: exit code 1, output only ASCII: True
+mcpldev._common.MCPLError: The unicode plotting backend does not work in this terminal (a solution might be to switch terminal or try the ascii backend)
 mcpltool --hist --backend ascii: 19 lines, first and last:
 (weights per bin)
                                          time/ms

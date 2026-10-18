@@ -11,7 +11,7 @@ mcpltool --dry-run --extract -l5 -s3 a1.mcpl out.mcpl: exit code 0, real run cha
    | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
    | MCPL: Would extract 5 / 30 particles from a1.mcpl into out.mcpl
    | MCPL: dry run, nothing was written
-mcpltool --dry-run --extract -p2112 --select ekin > 5keV a3.mcpl.gz out.mcpl: exit code 0, real run changed files
+mcpltool --dry-run --extract -p pdgcode == 2112 and ekin > 5keV a3.mcpl.gz out.mcpl: exit code 0, real run changed files
    | MCPL: Would extract 0 / 5 particles from a3.mcpl.gz into out.mcpl
    | MCPL: dry run, nothing was written
 mcpltool --dry-run --extract --edit weight *= 2 a1.mcpl out.mcpl: exit code 0, real run changed files
@@ -21,7 +21,7 @@ mcpltool --dry-run --extract --edit weight *= 2 a1.mcpl out.mcpl: exit code 0, r
 mcpltool --dry-run --extract --edit weight *= 2 --keep-statsum a1.mcpl out.mcpl: exit code 0, real run changed files
    | MCPL: Would extract 30 / 30 particles from a1.mcpl into out.mcpl
    | MCPL: dry run, nothing was written
-mcpltool --dry-run --extract --select ekin < 1 meV + a1.mcpl out.mcpl: exit code 1, real run did not change files
+mcpltool --dry-run --extract --pick ekin < 1 meV + a1.mcpl out.mcpl: exit code 1, real run did not change files
    | ERROR: Syntax error in expression "ekin < 1 meV +"
    | 
    | Run with -h or --help for usage information
@@ -183,7 +183,7 @@ mcpltool --dry-run --stats a1.mcpl: exit code 0, real run did not change files
    | userflags    :           0 (0x00000000)        247.5 (100.00%)
    |                      [ values ]             [ weighted counts ]
    | ------------------------------------------------------------------------------
-mcpltool --dry-run --hist ekin/MeV --print a1.mcpl: exit code 0, real run did not change files
+mcpltool --dry-run --hist ekin/MeV;print a1.mcpl: exit code 0, real run did not change files
    | # histogram of: ekin/MeV
    | # values: weights per bin
    | # lower edge | upper edge | value
@@ -233,12 +233,12 @@ mcpltool -jd a1.mcpl: exit code 0
    |     Endianness         : little
    |     Storage            : 36 bytes/particle
    | 
-mcpltool -d --stats --pdf a1.mcpl: exit code 1
-   | ERROR: --dry-run can not be used with --pdf or --output (which save plots in files).
+mcpltool -d --stats -o s.pdf a1.mcpl: exit code 1
+   | ERROR: -d can not be used with -o (which saves plots in files).
    | 
    | Run with -h or --help for usage information
 mcpltool --dry-run --hist ekin/MeV --output h.txt a1.mcpl: exit code 1
-   | ERROR: --dry-run can not be used with --pdf or --output (which save plots in files).
+   | ERROR: -d can not be used with -o (which saves plots in files).
    | 
    | Run with -h or --help for usage information
 === Python API dry_run

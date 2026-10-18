@@ -32,19 +32,19 @@ from ._physics import _pdg_database, wavelength_from_ekin
 from ._reader import MCPLFile
 
 
-class _SelectedFile:
-    """Read-only view of the particles in an MCPLFile selected by an
+class _PickedFile:
+    """Read-only view of the particles in an MCPLFile picked by an
     expression (or ParticleFilter), for collect_stats. Also used for files
-    opened with select or edit (in which case select can be None)."""
-    def __init__(self,mcplfile,select):
+    opened with pick or edit (in which case pick can be None)."""
+    def __init__(self,mcplfile,pick):
         self._f = mcplfile
         self._flt = None
-        if select is not None:
+        if pick is not None:
             from ._expressions import _as_filter
-            self._flt = _as_filter(select)
-        sels = [ e.expression for e in (getattr(mcplfile,'select',None),self._flt)
+            self._flt = _as_filter(pick)
+        sels = [ e.expression for e in (getattr(mcplfile,'pick',None),self._flt)
                  if e is not None ]
-        self.selection = ' && '.join( f'({e})' if len(sels) > 1 else e for e in sels )
+        self.pick = ' and '.join( f'({e})' if len(sels) > 1 else e for e in sels )
         if getattr(mcplfile,'edit',None) is not None:
             self.edit = mcplfile.edit.expression
         self.nparticles = sum( len(b) for b in self.particle_blocks )
@@ -238,10 +238,10 @@ class _Overview:
                  'time' : self.time,
                  'xy' : self.xy, 'xy_range' : self.xy_range }
 
-def collect_stats(mcplfile,stats='all',bin_data=True,select=None):
+def collect_stats(mcplfile,stats='all',bin_data=True,pick=None):
     """Efficiently collect statistics from an entire file. Returns dictionary
-    with stat names as key and the collected statistics as values. If select
-    is given (an expression or a ParticleFilter), only the selected particles
+    with stat names as key and the collected statistics as values. If pick
+    is given (an expression or a ParticleFilter), only the picked particles
     are included."""
 
     #Normal stats (will be used weighted, except for stats about the weight field itself):
@@ -256,15 +256,15 @@ def collect_stats(mcplfile,stats='all',bin_data=True,select=None):
     if not isinstance(stats,set):
         stats = set(stats)
 
-    if not isinstance(mcplfile,(MCPLFile,_SelectedFile)):
+    if not isinstance(mcplfile,(MCPLFile,_PickedFile)):
         mcplfile = MCPLFile(mcplfile)
-    if select is not None or ( isinstance(mcplfile,MCPLFile) and (
-            mcplfile.select is not None or mcplfile.edit is not None ) ):
-        mcplfile = _SelectedFile(mcplfile,select)
+    if pick is not None or ( isinstance(mcplfile,MCPLFile) and (
+            mcplfile.pick is not None or mcplfile.edit is not None ) ):
+        mcplfile = _PickedFile(mcplfile,pick)
     if mcplfile.nparticles==0:
         _warning("Can not calculate stats on an empty file"
-                 if select is None else
-                 "Can not calculate stats when no particles are selected")
+                 if pick is None else
+                 "Can not calculate stats when no particles are picked")
         return {}
 
     unknown = stats.difference(possible_std_stats.union(possible_freq_stats))
@@ -417,9 +417,9 @@ def collect_stats(mcplfile,stats='all',bin_data=True,select=None):
                         'filename':os.path.basename(os.fsdecode(mcplfile._filename))} }
     if ov:
         results['overview'] = ov.result()
-    if isinstance(mcplfile,_SelectedFile):
-        if mcplfile.selection:
-            results['file']['selection'] = mcplfile.selection
+    if isinstance(mcplfile,_PickedFile):
+        if mcplfile.pick:
+            results['file']['pick'] = mcplfile.pick
         if getattr(mcplfile,'edit',None):
             results['file']['edit'] = mcplfile.edit
     for s,uc in freq_uc.items():
@@ -453,8 +453,8 @@ def dump_stats(stats):
     if not isinstance(stats,dict):
         stats = collect_stats(stats,bin_data=False)
     print('------------------------------------------------------------------------------')
-    if 'selection' in stats['file']:
-        print(f"selection    : {stats['file']['selection']}")
+    if 'pick' in stats['file']:
+        print(f"pick         : {stats['file']['pick']}")
     if 'edit' in stats['file']:
         print(f"edit         : {stats['file']['edit']}")
     print(f"nparticles   : {stats['file']['nparticles']}")

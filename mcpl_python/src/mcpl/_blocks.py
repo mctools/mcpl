@@ -23,6 +23,7 @@
 
 __all__ = ['MCPLParticle', 'MCPLParticleBlock']
 
+from ._common import MCPLError
 from ._numpy import np, np_fma
 from ._physics import wavelength_checked
 
@@ -115,11 +116,18 @@ class MCPLParticle:
         """MC particle number from the Particle Data Group (2112=neutron, 22=gamma, ...)"""
         return self._b.pdgcode[self._i]
     @property
-    def file_index(self):
+    def fileidx(self):
         """Particle position in file (counting from 0)"""
         if self._b._indices is not None:
             return int(self._b._indices[self._i])
         return self._b._offset + self._i
+    @property
+    def file_index(self):
+        """Deprecated name of fileidx"""
+        import warnings
+        warnings.warn('MCPLParticle.file_index is deprecated, use fileidx'
+                      ' instead', DeprecationWarning, stacklevel=2)
+        return self.fileidx
 
 class MCPLParticleBlock:
     """Object representing a block of particle. Fields are arrays rather than single
@@ -208,7 +216,7 @@ class MCPLParticleBlock:
             if step == 1 and self._indices is None:
                 offset = self._offset + start
         res._set_data(data,offset)
-        res._indices = self.file_indices[ipos]
+        res._indices = self.fileidx[ipos]
         return res
 
     def get_by_global(self,ipos):
@@ -243,9 +251,9 @@ class MCPLParticleBlock:
         return self._offset
 
     @property
-    def file_indices(self):
+    def fileidx(self):
         """Array with the positions in the file of the particles in the block
-        (counting from 0), also for blocks with selected particles."""
+        (counting from 0), also for blocks with picked particles."""
         if self._indices is not None:
             return self._indices
         return np.arange(self._offset,self._offset+len(self._data),dtype=np.int64)
@@ -501,7 +509,7 @@ def _concat_blocks(blocks):
         return blocks[0]
     res = MCPLParticleBlock(*blocks[0]._ctor_args)
     res._set_data(np.concatenate([ b._data for b in blocks ]),9223372036854775807)
-    res._indices = np.concatenate([ b.file_indices for b in blocks ])
+    res._indices = np.concatenate([ b.fileidx for b in blocks ])
     return res
 
 class _ArrayBlock:
@@ -516,6 +524,9 @@ class _ArrayBlock:
             setattr(self,f,np.broadcast_to(np.asarray(v),(n,)))
     def __len__(self):
         return self._n
+    @property
+    def fileidx(self):
+        raise MCPLError('fileidx can only be used for particles read from files')
     @property
     def wavelength(self):
         return wavelength_checked(self.ekin,self.pdgcode)

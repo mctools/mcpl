@@ -24,6 +24,8 @@ instead of drawing them."""
 
 __all__ = []
 
+from typing import ClassVar
+
 from ._numpy import np
 from ._plotbackend import PlotBackend
 from .plotting import Bars, Hist2D, StepHist, Text
@@ -70,7 +72,7 @@ class Backend(PlotBackend):
     """Prints a description of figures (show) or writes it to a file
     (save)."""
     name = 'test'
-    formats = ('txt','pdf','png','html')
+    formats: ClassVar[dict] = { 'txt' : 0, 'pdf' : 0, 'png' : 0 }
 
     def show( self, figures ):
         print(describe(figures))

@@ -34,11 +34,11 @@ from MCPLTestUtils.dirs import test_data_dir
 
 example_file = test_data_dir.joinpath('example.mcpl')
 
-def check_overview(fn, select=None):
-    s = mcpl.collect_stats(fn, select=select)
+def check_overview(fn, pick=None):
+    s = mcpl.collect_stats(fn, pick=pick)
     ov = s['overview']
     integral = s['file']['integral']
-    print(f'{pathlib.Path(fn).name} (selection: {select}): {s["file"]["nparticles"]} particles,'
+    print(f'{pathlib.Path(fn).name} (pick: {pick}): {s["file"]["nparticles"]} particles,'
           f' ekin bins log: {ov["ekin_log"]}, time bins log: {ov["time_log"]}')
     for k, h in ov['ekin'].items():
         print(f'   ekin hist of {k}: sum {h.sum():g}, theta hist sum {ov["theta"][k].sum():g}')
@@ -83,16 +83,16 @@ def test_png():
     #backend for saving files):
     rc = 0
     try:
-        mcpl.app_mcpltool(['mcpltool','--stats','--output','tool.png',str(example_file)])
+        mcpl.app_mcpltool(['mcpltool','-S','-o','tool.png',str(example_file)])
     except SystemExit as e:
         rc = e.code
-    created = sorted(f.name for f in pathlib.Path('.').glob('tool_*.png'))
-    assert rc == 0 and created and all(
+    created = sorted(f.name for f in pathlib.Path('.').glob('tool*.png'))
+    assert rc == 0 and created == ['tool.png'] and all(
         pathlib.Path(f).read_bytes()[:4] == b'\x89PNG' for f in created )
-    print(f'mcpltool --stats --output tool.png created {len(created)} PNG files')
+    print('mcpltool -S -o tool.png created the overview plot in tool.png')
 
 check_overview(example_file)
-check_overview(example_file, 'pdgcode == neutron && ekin < 1MeV')
+check_overview(example_file, 'pdgcode == neutron and ekin < 1MeV')
 check_overview(example_file, 'pdgcode == gamma')
 check_overview(test_data_dir.joinpath('ref','reffile_1.mcpl'))
 test_plots()

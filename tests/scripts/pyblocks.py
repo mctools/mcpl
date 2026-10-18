@@ -25,6 +25,8 @@
 # Test indexing of particle blocks, and MCPLOutFile.add_particles with blocks
 # and new values of some of their fields.
 
+import warnings
+
 import mcpldev as mcpl
 import numpy as np
 from MCPLTestUtils.dirs import test_data_dir
@@ -109,14 +111,20 @@ def test_transfer_and_edit():
             print(f'add_particles(block,{sorted(kw)}): {type(e).__name__}: {e}')
     o.close()
 
-def test_file_indices():
+def test_fileidx():
     with mcpl.MCPLFile(example_file, blocklength=300) as f:
         f.read_block()
         b = f.read_block()
         s = b[b.pdgcode == 22][1:3]
-        print(f'file_indices of selection: {s.file_indices}, of particles:'
-              f' {[p.file_index for p in s.particles]}')
-        assert np.array_equal(s.file_indices, b.file_indices[b.pdgcode == 22][1:3])
+        print(f'fileidx of selection: {s.fileidx}, of particles:'
+              f' {[p.fileidx for p in s.particles]}')
+        assert np.array_equal(s.fileidx, b.fileidx[b.pdgcode == 22][1:3])
+        #The name used in 2.2.8 and earlier still works, with a warning:
+        with warnings.catch_warnings(record=True) as wlist:
+            warnings.simplefilter('always')
+            old = s[0].file_index
+        print(f'deprecated file_index: {old}, warnings:'
+              f' {[ f"{w.category.__name__}: {w.message}" for w in wlist ]}')
 
 def test_double_precision():
     #Like in the C API, all floating point fields are double precision numbers
@@ -141,5 +149,5 @@ def test_double_precision():
 if __name__ == '__main__':
     test_double_precision()
     test_block_indexing()
-    test_file_indices()
+    test_fileidx()
     test_transfer_and_edit()

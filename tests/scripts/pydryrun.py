@@ -131,10 +131,10 @@ def test_tool():
         ['--extract','a1.mcpl','out.mcpl'],
         ['--extract','a1.mcpl','out.mcpl.gz'],
         ['--extract','-l5','-s3','a1.mcpl','out.mcpl'],
-        ['--extract','-p2112','--select','ekin > 5keV','a3.mcpl.gz','out.mcpl'],
+        ['--extract','-p','pdgcode == 2112 and ekin > 5keV','a3.mcpl.gz','out.mcpl'],
         ['--extract','--edit','weight *= 2','a1.mcpl','out.mcpl'],
         ['--extract','--edit','weight *= 2','--keep-statsum','a1.mcpl','out.mcpl'],
-        ['--extract','--select','ekin < 1 meV +','a1.mcpl','out.mcpl'],
+        ['--extract','--pick','ekin < 1 meV +','a1.mcpl','out.mcpl'],
         ['--extract','a1.mcpl','a2.mcpl'],
         ['--extract','nosuch.mcpl','out.mcpl'],
         ['--merge','out.mcpl','a1.mcpl','a2.mcpl','a3.mcpl.gz'],
@@ -158,13 +158,13 @@ def test_tool():
         ok &= compare(*args)
     #Commands which do not write files ignore --dry-run:
     for args in ( ['a1.mcpl'], ['-j','a1.mcpl'], ['-n','-l3','-s2','a1.mcpl'],
-                  ['--stats','a1.mcpl'], ['--hist','ekin/MeV','--print','a1.mcpl'],
+                  ['--stats','a1.mcpl'], ['--hist','ekin/MeV;print','a1.mcpl'],
                   ['--version'], ['--bkey1','a1.mcpl'] ):
         ok &= compare(*args, writes = False)
     #The short form, and misuse:
     for args in ( ['-d','--extract','-l2','a1.mcpl','out.mcpl'],
                   ['-jd','a1.mcpl'],
-                  ['-d','--stats','--pdf','a1.mcpl'],
+                  ['-d','--stats','-o','s.pdf','a1.mcpl'],
                   ['--dry-run','--hist','ekin/MeV','--output','h.txt','a1.mcpl'] ):
         fresh('dry')
         rc, out, err = run(args, 'dry')

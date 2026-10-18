@@ -23,8 +23,8 @@
 # NEEDS: numpy
 
 # Check that mcpltool gives the same results and printouts as mcpltool-c for
-# the operations they share, and test the --select, --edit and --keep-statsum
-# options of mcpltool, and -p outside --extract.
+# the operations they share, and test the --pick, --edit and --keep-statsum
+# options of mcpltool.
 
 import gzip
 import pathlib
@@ -87,9 +87,26 @@ def fresh(d):
 
 ncases = 0
 
+def py_args( args ):
+    """Arguments for mcpltool corresponding to those of mcpltool-c: -pPDGCODE
+    is -p "pdgcode == PDGCODE" for mcpltool"""
+    res = []
+    for a in args:
+        if a.startswith('-p') and len(a) > 2:
+            res += [ '-p', f'pdgcode == {a[2:]}' ]
+        else:
+            res.append(a)
+    return res
+
 def compare(*args):
     global ncases
     ncases += 1
+    #(with -p, the comments added by --extract are different, since -p is a
+    #PICK expression for mcpltool):
+    if ( any( a.startswith('-p') for a in args )
+         and any( a in ('--extract','-e') for a in args )
+         and '--no-comment' not in args ):
+        args = ( '--no-comment', *args )
     fresh('c')
     fresh('py')
     c = run([str(mcpltool_cmd), *args], 'c')
@@ -97,11 +114,13 @@ def compare(*args):
     #particles with add_particles:
     c = ( c[0], c[1].replace('mcpl_','').replace('transfer_last_read_particle',
                                                  'add_particles'), c[2] )
-    p = run([sys.executable, '-m', 'mcpldev', *args], 'py')
+    p = run([sys.executable, '-m', 'mcpldev', *py_args(args)], 'py')
     problems = []
     if c[0] != p[0]:
         problems.append(f'exit codes differ: C: {c[0]} Py: {p[0]}')
-    if c[1] != p[1]:
+    usage_errors = all( out.startswith('ERROR: ') and 'Run with -h' in out
+                        for out in (c[1],p[1]) )
+    if c[1] != p[1] and not usage_errors:
         problems.append(f'printouts differ:\n      C: {c[1]!r}\n     Py: {p[1]!r}')
     if p[2]:
         problems.append(f'mcpltool stderr: {p[2]!r}')
@@ -113,6 +132,11 @@ def compare(*args):
     print(f'mcpltool-c {" ".join(args)}: exit code {c[0]}')
     for line in c[1].splitlines():
         print(f'   | {line}')
+    if c[1] != p[1] and usage_errors:
+        #(the usage errors of mcpltool can be worded differently)
+        print('   mcpltool:')
+        for line in p[1].splitlines():
+            print(f'   | {line}')
     for problem in problems:
         print(f'   PROBLEM: {problem}')
     return not problems
@@ -151,8 +175,6 @@ def test_compare_with_mcpltool():
         ['--extract','a1.mcpl','out.gz'],
         ['--extract','a1.mcpl'],
         ['--extract','a1.mcpl','x.mcpl','y.mcpl'],
-        ['--extract','-p0','a1.mcpl','out.mcpl'],
-        ['--extract','-pabc','a1.mcpl','out.mcpl'],
         ['--extract','--no-comment','-p22','-l5','a1.mcpl','out.mcpl'],
         ['--extract','-p11','-l3','-s4','a1.mcpl','out.mcpl'],
         ['--no-comment','a1.mcpl'],
@@ -160,8 +182,6 @@ def test_compare_with_mcpltool():
         ['--extract','-pphoton','-l10','a1.mcpl','out.mcpl'],
         ['--extract','-pantielectron','b_dp.mcpl','out.mcpl'],
         ['--extract','-pneutron','c_nostat.mcpl','out.mcpl'],
-        ['--extract','-pNeutron','a1.mcpl','out.mcpl'],
-        ['--extract','-pfoo','a1.mcpl','out.mcpl'],
         ['--inplace','a1.mcpl','a2.mcpl'],
         ['--keepuserflags','a1.mcpl'],
         ['--merge','--forcemerge','out.mcpl','a1.mcpl','a2.mcpl'],
@@ -195,46 +215,49 @@ def test_compare_with_mcpltool():
         ok &= compare(*args)
     return ok
 
-def py_extract(infile, outfile, select = None, edit = None):
-    """Do the same as mcpltool --extract --select --edit with the API"""
-    flt = mcpl.ParticleFilter(select) if select else None
+def py_extract(infile, outfile, pick = None, edit = None):
+    """Do the same as mcpltool --extract --pick --edit with the API"""
+    flt = mcpl.ParticleFilter(pick) if pick else None
     edt = mcpl.ParticleEdit(edit) if edit else None
     with mcpl.MCPLFile(infile) as fi, mcpl.MCPLOutFile(outfile) as fo:
         fo.transfer_metadata(fi)
-        fo.hdr_add_comment('mcpltool: extracted particles')
-        if select:
-            fo.hdr_add_comment(f'mcpltool: selected particles with: {select}')
-        if edit:
-            fo.hdr_add_comment(f'mcpltool: edited particles with: {edit}')
-            if 'weight' in edt.modified_fields:
-                fo.hdr_scale_stat_sums(-1.0)
+        #(the comment gives the options as they can be used in shells, with the
+        #expressions in double quotes):
+        opts = ''
+        for opt, e in ( ('-p',flt), ('-E',edt) ):
+            if e:
+                opts += f' {opt} "{e.expression}"'
+        fo.hdr_add_comment('mcpltool: extracted particles'
+                           + ( f' with{opts}' if opts else '' ))
+        if edit and 'weight' in edt.modified_fields:
+            fo.hdr_scale_stat_sums(-1.0)
         for b in fi.particle_blocks:
             if flt:
                 b = b[flt(b)]
             fo.add_particles(b, **(edt(b) if edt else {}))
 
-def test_select_edit():
+def test_pick_edit():
     ok = True
     cases = [ ('pdgcode == neutron', None),
-              ('ekin > 5keV && ekin <= 20keV && x <= 2cm + abs(y)', None),
-              ('!(pdgcode == gamma) || uz > 0.7', None),
-              ('(userflags & 1) == 1 && z < 1.5mm', None),
-              (None, 'x = -y, y = x, z += 1cm'),
-              (None, 'tmp = x, x = y, y = tmp, swap(ux,uy), rotate_x(30deg)'),
-              (None, 'weight *= 0.5, time = time + 1us'),
+              ('ekin > 5keV and ekin <= 20keV and x <= 2cm + abs(y)', None),
+              ('not (pdgcode == gamma) or uz > 0.7', None),
+              ('(userflags & 1) == 1 and z < 1.5mm', None),
+              (None, 'x = -y; y = x; z += 1cm'),
+              (None, 'tmp = x; x = y; y = tmp; swap(ux,uy); rotate_x(30deg)'),
+              (None, 'weight *= 0.5; time = time + 1us'),
               ('pdgcode == 2112', 'wavelength = 1.8Aa'),
               ('pdgcode == gamma', 'wavelength = wavelength*2'),
-              ('pdgcode != 11', 'ux = -ux, uz = -uz, pdgcode = 2112'),
+              ('pdgcode != 11', 'ux = -ux; uz = -uz; pdgcode = 2112'),
               ('x > 10m', None) ]
-    for select, edit in cases:
+    for pick, edit in cases:
         fresh('py')
         args = ['--extract','a1.mcpl','out.mcpl']
-        if select:
-            args += ['--select', select]
+        if pick:
+            args += ['--pick', pick]
         if edit:
             args += [f'--edit={edit}']
         rc, out, err = run([sys.executable, '-m', 'mcpldev', *args], 'py')
-        py_extract('py/a1.mcpl', 'py/ref.mcpl', select, edit)
+        py_extract('py/a1.mcpl', 'py/ref.mcpl', pick, edit)
         same = ( rc == 0 and not err
                  and pathlib.Path('py/out.mcpl').read_bytes() == pathlib.Path('py/ref.mcpl').read_bytes() )
         with mcpl.MCPLFile('py/out.mcpl') as f:
@@ -247,7 +270,7 @@ def test_select_edit():
         b = f.read_block()
     fresh('py')
     run([sys.executable, '-m', 'mcpldev', '--extract', 'a1.mcpl', 'out.mcpl',
-         '--select', 'pdgcode == neutron', '--edit', 'rotate_z(90deg), wavelength = 1.8Aa'], 'py')
+         '--pick', 'pdgcode == neutron', '--edit', 'rotate_z(90deg); wavelength = 1.8Aa'], 'py')
     with mcpl.MCPLFile('py/out.mcpl') as f:
         e = f.read_block()
     n = b[b.pdgcode==2112]
@@ -256,24 +279,28 @@ def test_select_edit():
     print(f'Results of selection and edit as expected: {all(checks)}')
     ok &= all(checks)
     #Errors:
-    for args in ( ['--extract','a1.mcpl','out.mcpl','--select','ekin=1MeV'],
-                  ['--extract','a1.mcpl','out.mcpl','--select','foo>1'],
-                  ['--extract','a1.mcpl','out.mcpl','--select','x>1'],
+    for args in ( ['--extract','a1.mcpl','out.mcpl','--pick','ekin=1MeV'],
+                  ['--extract','a1.mcpl','out.mcpl','--pick','foo>1'],
+                  ['--extract','a1.mcpl','out.mcpl','--pick','x>1'],
                   ['--extract','a1.mcpl','out.mcpl','--edit','x==1cm'],
                   ['--extract','a1.mcpl','out.mcpl','--edit','x=2*ux'],
-                  ['--extract','a1.mcpl','out.mcpl','--select'],
-                  ['--extract','a1.mcpl','out.mcpl','--select','x>1cm','--select','y>1cm'],
+                  ['--extract','a1.mcpl','out.mcpl','--pick'],
+                  ['--extract','a1.mcpl','out.mcpl','--pick','x>1cm','--pick','y>1cm'],
                   ['--extract','a1.mcpl','out.mcpl','--edit','wavelength=1.8Aa'],
-                  ['--select','x>1cm','-j','a1.mcpl'],
-                  ['--select','x>1cm','-ba','a1.mcpl'],
-                  ['--select','x>1meV','a1.mcpl'],
-                  ['--stats','--select','x>1km','a1.mcpl'],
+                  ['--pick','x>1cm','-j','a1.mcpl'],
+                  ['--pick','x>1cm','-ba','a1.mcpl'],
+                  ['--pick','x>1meV','a1.mcpl'],
+                  ['--stats','--pick','x>1km','a1.mcpl'],
                   ['--stats','-pantimuon','a1.mcpl'],
                   ['-pfoo','a1.mcpl'],
                   ['-pgamma','-j','a1.mcpl'],
-                  ['--repair','--select','x>1cm','a1.mcpl'],
+                  ['--repair','--pick','x>1cm','a1.mcpl'],
                   ['--repair','-pgamma','a1.mcpl'],
                   ['-p22','--merge','out.mcpl','a1.mcpl','a2.mcpl'],
+                  ['--extract','-p0','a1.mcpl','out.mcpl'],
+                  ['--extract','-pabc','a1.mcpl','out.mcpl'],
+                  ['--extract','-pNeutron','a1.mcpl','out.mcpl'],
+                  ['--extract','-pfoo','a1.mcpl','out.mcpl'],
                   ['--keep-statsum','a1.mcpl'],
                   ['--stats','--keep-statsum','a1.mcpl'] ):
         fresh('py')
@@ -284,37 +311,23 @@ def test_select_edit():
         ok &= ( rc != 0 and not err and not pathlib.Path('py/out.mcpl').exists() )
     return ok
 
-def test_p_option():
-    #Outside --extract, -pNAME (mcpltool only) is the same as a selection:
-    ok = True
-    for pargs, sargs in ( (['-pgamma','-l3'], ['--select','pdgcode == gamma','-l3']),
-                          (['-p11','-n'], ['--select','pdgcode == 11','-n']),
-                          (['-pneutron','--select','x > 1cm'],
-                           ['--select','pdgcode == neutron && (x > 1cm)']),
-                          (['--stats','-pelectron'], ['--stats','--select','pdgcode == electron']) ):
-        fresh('py')
-        rp = run([sys.executable, '-m', 'mcpldev', *pargs, 'a1.mcpl'], 'py')
-        rs = run([sys.executable, '-m', 'mcpldev', *sargs, 'a1.mcpl'], 'py')
-        same = rp == rs and rp[0] == 0
-        print(f'mcpltool {" ".join(pargs)}: same as {" ".join(sargs)}: {same}')
-        ok &= same
-    return ok
-
 def test_statsum():
     #stat:sum entries are kept when selecting particles by their properties or
     #editing other fields than weights, and marked as not available (-1) when
     #selecting based on positions in the file or editing weights:
     ok = True
-    for args, expected in ( (['--select','pdgcode == neutron'], 1000.0),
-                            (['--edit','z += 1cm, rotate_z(10deg)'], 1000.0),
-                            (['-pgamma','--edit','wavelength = 1Aa'], 1000.0),
+    for args, expected in ( (['--pick','pdgcode == neutron'], 1000.0),
+                            (['--edit','z += 1cm; rotate_z(10deg)'], 1000.0),
+                            (['-p','pdgcode == gamma','--edit','wavelength = 1Aa'], 1000.0),
                             (['--edit','weight *= 2'], None),
-                            (['--edit','tmp = weight, weight = 2*tmp'], None),
+                            (['--edit','tmp = weight; weight = 2*tmp'], None),
                             (['--edit','weight *= 2','--keep-statsum'], 1000.0),
-                            (['--select','x > 0','--edit','weight = 1','--keep-statsum'], 1000.0),
+                            (['--pick','x > 0','--edit','weight = 1','--keep-statsum'], 1000.0),
                             (['-l5','--edit','weight *= 2','--keep-statsum'], None),
                             (['-l5'], None),
-                            (['-s1','--select','x > 0'], None) ):
+                            (['-s1','--pick','x > 0'], None),
+                            (['--pick','mod(fileidx,2) == 0'], None),
+                            (['-E','x = 1cm*fileidx'], 1000.0) ):
         fresh('py')
         rc, out, err = run([sys.executable, '-m', 'mcpldev', '--extract', 'a1.mcpl',
                             'out.mcpl', *args], 'py')
@@ -328,8 +341,7 @@ def test_statsum():
 
 def main():
     make_inputs()
-    results = [ test_compare_with_mcpltool(), test_select_edit(), test_p_option(),
-                test_statsum() ]
+    results = [ test_compare_with_mcpltool(), test_pick_edit(), test_statsum() ]
     print(f'Compared {ncases} command lines with mcpltool-c')
     assert all(results), 'Problems found'
 

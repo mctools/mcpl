@@ -73,6 +73,18 @@ def fresh(d):
 def dir_contents(d):
     return { f.name : f.read_bytes() for f in sorted(pathlib.Path(d).iterdir()) }
 
+def py_args( args ):
+    """Arguments for mcpltool corresponding to those of mcpltool-c: -pPDGCODE
+    is -p "pdgcode == PDGCODE" for mcpltool"""
+    res = []
+    for a in args:
+        a = str(a)
+        if a.startswith('-p') and len(a) > 2:
+            res += [ '-p', f'pdgcode == {a[2:]}' ]
+        else:
+            res.append(a)
+    return res
+
 def compare(*args):
     fresh('c')
     fresh('py')
@@ -81,7 +93,7 @@ def compare(*args):
     #particles with add_particles:
     c = ( c[0], c[1].replace('mcpl_','').replace('transfer_last_read_particle',
                                                  'add_particles'), c[2] )
-    p = run([sys.executable, '-m', 'mcpldev', *args], 'py')
+    p = run([sys.executable, '-m', 'mcpldev', *py_args(args)], 'py')
     problems = []
     if c[0] != p[0]:
         problems.append(f'exit codes differ: C: {c[0]} Py: {p[0]}')
@@ -127,7 +139,7 @@ def test_compare_with_mcpltool():
         ['--forcemerge','out.mcpl','empty.mcpl','raw.mcpl'],
         ['--extract','std.mcpl','out.mcpl'],
         ['--extract','-l2','-s1','stddp.mcpl','out.mcpl'],
-        ['--extract','-p2112','raw.mcpl','out.mcpl'],
+        ['--extract','--no-comment','-p2112','raw.mcpl','out.mcpl'],
         ['--text','std.mcpl','out.txt'],
         ['--repair','trunc.mcpl'],
     ]
@@ -151,7 +163,7 @@ def test_python_api():
         p = b[2]
         print('particle 2:',p.userdata['temp'],p.userdata['tags'].tolist())
         sel = b[b.userdata['origin'] < 0]
-        print('selected with origin<0:',sel.userdata['id'].tolist(),sel.file_indices.tolist())
+        print('selected with origin<0:',sel.userdata['id'].tolist(),sel.fileidx.tolist())
         print('empty selection:',b[b.x > 100].userdata.dtype.names,len(b[b.x > 100].userdata))
     with mcpl.MCPLFile(d/'none.mcpl') as f:
         b = f.read_block()
@@ -186,10 +198,10 @@ def test_python_api():
     cprint(lib.mcpltest_ud_read,(d/'w2.mcpl').as_posix())
     cprint(lib.mcpltest_ud_read,(d/'w3.mcpl').as_posix())
     #Edits and selections when extracting:
-    rc = subprocess.run([sys.executable,'-m','mcpldev','--extract','--select',
+    rc = subprocess.run([sys.executable,'-m','mcpldev','--extract','--pick',
                          'x > 1.5cm','--edit','z += 1cm',str(d/'std.mcpl'),
                          str(d/'w4.mcpl')],capture_output=True,check=False).returncode
-    print('mcpltool --extract --select --edit:',rc)
+    print('mcpltool --extract --pick --edit:',rc)
     cprint(lib.mcpltest_ud_read,(d/'w4.mcpl').as_posix())
     #Different layouts:
     try:
@@ -252,7 +264,7 @@ def test_python_writing():
     ud = b.userdata.copy()
     ud['temp'] += 100
     with mcpl.MCPLOutFile(d/'sel1.mcpl',userdata_layout=stdlayout,
-                          select='x > 1.5cm',edit='z += 1cm') as o:
+                          pick='x > 1.5cm',edit='z += 1cm') as o:
         o.add_particles(b,userdata=ud)
         o.add_particles(x=b.x,uz=1.0,ekin=1.0,pdgcode=22,weight=1.0,userdata=ud)
     cprint(lib.mcpltest_ud_read,(d/'sel1.mcpl').as_posix())

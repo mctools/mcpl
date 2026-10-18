@@ -102,7 +102,7 @@ class MCPLOutFile:
                   blobs = None, stat_sum = None, opt_userflags = False,
                   opt_polarisation = False, opt_singleprec = True,
                   opt_universalpdgcode = 0, opt_universalweight = 0.0,
-                  blocklength = 10000, select = None, edit = None,
+                  blocklength = 10000, pick = None, edit = None,
                   userdata_layout = None, _dry_run = False ):
         """Create new file (overwriting any existing file). Like in the C API,
         ".mcpl" is appended to the filename if it does not already end with
@@ -116,10 +116,10 @@ class MCPLOutFile:
         particles added with add_particle(..) are buffered before being
         written.
 
-        If select (an expression or a ParticleFilter) is given, only the
-        selected particles are written, and if edit (an expression or a
+        If pick (an expression or a ParticleFilter) is given, only the
+        picked particles are written, and if edit (an expression or a
         ParticleEdit) is given, it is applied to all particles before they are
-        written. For instance, MCPLOutFile("out.mcpl",select="pdgcode ==
+        written. For instance, MCPLOutFile("out.mcpl",pick="pdgcode ==
         neutron",edit="z += 1m").
         Note that stat:sum entries are not modified, so they should for
         instance be scaled with hdr_scale_stat_sums(-1) when particle weights
@@ -131,9 +131,9 @@ class MCPLOutFile:
         self._dry_run = bool(_dry_run)
         #(only importing the expressions module when needed):
         self._flt = self._edt = None
-        if select is not None or edit is not None:
+        if pick is not None or edit is not None:
             from ._expressions import _as_edit, _as_filter
-            self._flt = None if select is None else _as_filter(select)
+            self._flt = None if pick is None else _as_filter(pick)
             self._edt = None if edit is None else _as_edit(edit)
         if hasattr(filename,'__fspath__'):
             filename = os.fspath(filename)

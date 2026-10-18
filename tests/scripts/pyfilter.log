@@ -16,38 +16,41 @@ rotate_z(pi/2) is exact
 rotate_z(-pi) is exact
 rotations of zeros give 0.0 (not -0.0)
 rotations with other angles use cos and sin
-normalised selection: 'pdgcode == neutron && ekin < 1MeV && hypot(x,y) < 10 cm'
-normalised edit: 'z = 0cm, wavelength = 1.8Aa'
+normalised selection: 'pdgcode == neutron and ekin < 1MeV and hypot(x,y) < 10 cm'
+normalised edit: 'z = 0cm; wavelength = 1.8Aa'
 normalised value: 'ekin / eV'
 ParticleFilter(42): Expressions must be strings (got int)
 ParticleFilter(None): Expressions must be strings (got NoneType)
-ParticleFilter('ekin > 25keV && x <= 2cm + y && pdgcode != 22'): selects 477
-ParticleFilter('pdgcode == neutron && ekin < 500keV'): selects 335
-ParticleFilter('!(pdgcode == gamma) || ekin > 1GeV'): selects 767
-ParticleFilter('0cm < x < 10mm && !(abs(y) >= 1cm)'): selects 104
+ParticleFilter('ekin > 25keV and x <= 2cm + y and pdgcode != 22'): selects 477
+ParticleFilter('pdgcode == neutron and ekin < 500keV'): selects 335
+ParticleFilter('mod(fileidx,10) == 0'): selects 101
+ParticleFilter('fileidx >= 3 and pdgcode == gamma'): selects 237
+ParticleFilter('not (pdgcode == gamma) or ekin > 1GeV'): selects 767
+ParticleFilter('0cm < x < 10mm and not(abs(y) >= 1cm)'): selects 104
 ParticleFilter('sqrt(x**2+y**2) < 5cm'): selects 344
 ParticleFilter('sqrt(x^2+y^2) < 5cm'): selects 344
 ParticleFilter('hypot(x,y) < 0.05m'): selects 344
 ParticleFilter('hypot(x,y,z) < 25cm'): selects 669
 ParticleFilter('x^2 + y^2 < 4cm^2'): selects 186
 ParticleFilter('x^2 + y^2 < 400 mm^2'): selects 186
-ParticleFilter('(pdgcode == neutron || pdgcode == gamma) && wavelength > 0.005Aa'): selects 158
-ParticleFilter('(pdgcode == neutron || pdgcode == gamma) && wavelength > 0.0005nm'): selects 158
-ParticleFilter('(pdgcode == neutron || pdgcode == gamma) && wavelength > 5e-13m'): selects 158
-ParticleFilter('pdgcode == proton || (pdgcode == gamma && wavelength > 0.5Aa)'): selects 10
-ParticleFilter('pdgcode == neutron && wavelength > 0.005Aa'): selects 2
-ParticleFilter('pdgcode != neutron || wavelength > 0.005Aa'): selects 282
+ParticleFilter('(pdgcode == neutron or pdgcode == gamma) and wavelength > 0.005Aa'): selects 158
+ParticleFilter('(pdgcode == neutron or pdgcode == gamma) and wavelength > 0.0005nm'): selects 158
+ParticleFilter('(pdgcode == neutron or pdgcode == gamma) and wavelength > 5e-13m'): selects 158
+ParticleFilter('pdgcode == proton or (pdgcode == gamma and wavelength > 0.5Aa)'): selects 10
+ParticleFilter('pdgcode == neutron and wavelength > 0.005Aa'): selects 2
+ParticleFilter('pdgcode != neutron or wavelength > 0.005Aa'): selects 282
 ParticleFilter('pdgcode == gamma and 0 < 2*wavelength < x'): selects 141
 ParticleFilter('uz > cos(10*pi/180)'): selects 54
 ParticleFilter('acos(uz) < 10deg'): selects 54
 ParticleFilter('time < 10us'): selects 1006
-ParticleFilter('(userflags & 1) == 0 && weight == 1'): selects 1006
-ParticleFilter('ekin/1meV % 2 < 1'): selects 524
+ParticleFilter('(userflags & 1) == 0 and weight == 1'): selects 1006
+ParticleFilter('mod(userflags,4) == 0'): selects 1006
+ParticleFilter('mod(pdgcode,2) == 0'): selects 976
 ParticleFilter('max(abs(x),abs(y)) < 3cm'): selects 245
 ParticleFilter('ekin/keV > 500'): selects 648
 ParticleFilter('abs(x) < 1cm + 2mm'): selects 247
 ParticleFilter('1 < 2'): selects 1006
-ParticleFilter('x > 0 && y <= -0'): selects 251
+ParticleFilter('x > 0 and y <= -0'): selects 251
 ParticleFilter('0 < x < 2cm'): selects 195
 ParticleFilter('ekin > 0 and time > 0 or z == 0'): selects 1006
 ParticleFilter('userflags & 0x10'): selects 0
@@ -56,30 +59,30 @@ ParticleFilter('pdgcode == ~2111'): selects 0
 ParticleFilter('atan2(uy,ux) > 90deg'): selects 212
 ParticleFilter('angle_to(0,0,1) < 30deg'): selects 313
 ParticleFilter('angle_to(0,0,-2cm) > 150deg'): selects 313
-ParticleFilter('!(userflags & 1) && pdgcode != 0b0'): selects 1006
-ParticleFilter('pdgcode == electron || pdgcode == positron'): selects 23
-ParticleFilter('pdgcode == antielectron || pdgcode == photon'): selects 247
-ParticleFilter('pdgcode == muon || pdgcode == antimuon || pdgcode == antiproton || pdgcode == antineutron'): selects 0
-ParticleEdit('tmp = x, x = -y, y = tmp + 2cm, z *= 2, weight = weight*0.5, time += 1ms, pdgcode = neutron'): fields ['pdgcode', 'time', 'weight', 'x', 'y', 'z'], as expected: True
+ParticleFilter('not (userflags & 1) and pdgcode != 0b0'): selects 1006
+ParticleFilter('pdgcode == electron or pdgcode == positron'): selects 23
+ParticleFilter('pdgcode == antielectron or pdgcode == photon'): selects 247
+ParticleFilter('pdgcode == muon or pdgcode == antimuon or pdgcode == antiproton or pdgcode == antineutron'): selects 0
+ParticleEdit('tmp = x; x = -y; y = tmp + 2cm; z *= 2; weight = weight*0.5; time += 1ms; pdgcode = neutron'): fields ['pdgcode', 'time', 'weight', 'x', 'y', 'z'], as expected: True
 ParticleEdit('wavelength = 1.8Aa') as expected: True
 ParticleEdit('wavelength = 0.18nm') as expected: True
 ParticleEdit('wavelength = 1.8Aa + wavelength') as expected: True
 ParticleEdit('wavelength *= 2') as expected: True
-ParticleEdit('x = -y, y = x') as expected: True
-ParticleEdit('x = 1cm, x += 1cm') as expected: True
-ParticleEdit('tmp = x, x = 2m, z = 2*tmp') as expected: True
-ParticleEdit('a = ekin, ekin = 1MeV, ekin += a') as expected: True
-ParticleEdit('ekin *= 2, weight = ekin/MeV') as expected: True
+ParticleEdit('x = -y; y = x') as expected: True
+ParticleEdit('x = 1cm; x += 1cm') as expected: True
+ParticleEdit('tmp = x; x = 2m; z = 2*tmp') as expected: True
+ParticleEdit('a = ekin; ekin = 1MeV; ekin += a') as expected: True
+ParticleEdit('ekin *= 2; weight = ekin/MeV') as expected: True
 ParticleEdit('swap(x,y)') as expected: True
-ParticleEdit('tmp = x, swap(tmp,y), x = tmp') as expected: True
+ParticleEdit('tmp = x; swap(tmp,y); x = tmp') as expected: True
 ParticleEdit('rotate_z(90deg)') as expected: True
 ParticleEdit('rotate_x(90deg)') as expected: True
-ParticleEdit('rotate_y(90deg), x += 10cm') as expected: True
-ParticleEdit('x += 10cm, rotate_y(pi/2)') as expected: True
-ParticleEdit('x = clamp(x, -1cm, 1cm), y = min(y, 1cm, 2mm), z = max(z, 0, 25cm)') as expected: True
-ParticleFilter('wavelength > 1.8Aa'): The wavelength is only defined for neutrons and gammas, so select those before using it, e.g. "pdgcode == neutron && wavelength > 1.8Aa" (in expression "wavelength > 1.8Aa")
-ParticleFilter('x > 0 && wavelength > 1.8Aa'): The wavelength is only defined for neutrons and gammas, so select those before using it, e.g. "pdgcode == neutron && wavelength > 1.8Aa" (in expression "x > 0 && wavelength > 1.8Aa")
-ParticleFilter('pdgcode == proton || wavelength > 1Aa'): The wavelength is only defined for neutrons and gammas, so select those before using it, e.g. "pdgcode == neutron && wavelength > 1.8Aa" (in expression "pdgcode == proton || wavelength > 1Aa")
+ParticleEdit('rotate_y(90deg); x += 10cm') as expected: True
+ParticleEdit('x += 10cm; rotate_y(pi/2)') as expected: True
+ParticleEdit('x = clamp(x, -1cm, 1cm); y = min(y, 1cm, 2mm); z = max(z, 0, 25cm)') as expected: True
+ParticleFilter('wavelength > 1.8Aa'): The wavelength is only defined for neutrons and gammas, so pick those before using it, e.g. "pdgcode == neutron and wavelength > 1.8Aa" (in expression "wavelength > 1.8Aa")
+ParticleFilter('x > 0 and wavelength > 1.8Aa'): The wavelength is only defined for neutrons and gammas, so pick those before using it, e.g. "pdgcode == neutron and wavelength > 1.8Aa" (in expression "x > 0 and wavelength > 1.8Aa")
+ParticleFilter('pdgcode == proton or wavelength > 1Aa'): The wavelength is only defined for neutrons and gammas, so pick those before using it, e.g. "pdgcode == neutron and wavelength > 1.8Aa" (in expression "pdgcode == proton or wavelength > 1Aa")
 ParticleFilter('x < 2'): Incompatible units in comparison: length and value without units (add units, e.g. 2cm) in expression "x < 2"
 ParticleFilter('x > 0.0001'): Incompatible units in comparison: length and value without units (add units, e.g. 2cm) in expression "x > 0.0001"
 ParticleFilter('x > 2 - 2'): Incompatible units in comparison: length and value without units (add units, e.g. 2cm) in expression "x > 2 - 2"
@@ -97,32 +100,42 @@ ParticleFilter('atan2(x, ekin) > 0'): Incompatible units in atan2(..): length an
 ParticleFilter('hypot(x) > 1cm'): hypot(..) takes two or more arguments in expression "hypot(x) > 1cm"
 ParticleFilter('hypot(x,ekin) > 1cm'): Incompatible units in hypot(..): length and energy in expression "hypot(x,ekin) > 1cm"
 ParticleFilter('abs(y) > 1cm + 1'): Incompatible units in arithmetic: length and value without units (add units, e.g. 2cm) in expression "abs(y) > 1cm + 1"
-ParticleFilter('wl > 1Aa'): Unknown name "wl" in expression "wl > 1Aa" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength)
-ParticleFilter('dirx > 0'): Unknown name "dirx" in expression "dirx > 0" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength)
-ParticleFilter('t < 1ms'): Unknown name "t" in expression "t < 1ms" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength)
-ParticleFilter('is_neutron'): Unknown name "is_neutron" in expression "is_neutron" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength)
-ParticleFilter('neutron_wl > 1Aa'): Unknown name "neutron_wl" in expression "neutron_wl > 1Aa" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength)
-ParticleFilter('degrees(acos(uz)) < 10'): Unsupported function call in expression "degrees(acos(uz)) < 10" (available functions are: abs, acos, angle_to, asin, atan, atan2, ceil, clamp, cos, exp, floor, hypot, log, log10, max, min, sin, sqrt, tan)
+ParticleFilter('wl > 1Aa'): Unknown name "wl" in expression "wl > 1Aa" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, fileidx)
+ParticleFilter('dirx > 0'): Unknown name "dirx" in expression "dirx > 0" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, fileidx)
+ParticleFilter('t < 1ms'): Unknown name "t" in expression "t < 1ms" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, fileidx)
+ParticleFilter('is_neutron'): Unknown name "is_neutron" in expression "is_neutron" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, fileidx)
+ParticleFilter('neutron_wl > 1Aa'): Unknown name "neutron_wl" in expression "neutron_wl > 1Aa" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, fileidx)
+ParticleFilter('degrees(acos(uz)) < 10'): Unsupported function call in expression "degrees(acos(uz)) < 10" (available functions are: abs, acos, angle_to, asin, atan, atan2, ceil, clamp, cos, exp, floor, hypot, log, log10, max, min, mod, sin, sqrt, tan)
 ParticleFilter('ekin = 1MeV'): Syntax error in expression "ekin = 1MeV" (use == for comparisons)
-ParticleFilter('ekin > 1MeV & x < 2cm'): The bitwise operator & requires integer operands (use && and || for logical and/or)
-ParticleFilter('foo > 1'): Unknown name "foo" in expression "foo > 1" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength)
-ParticleFilter("__import__('os').system('ls')"): Unsupported function call in expression "__import__('os').system('ls')" (available functions are: abs, acos, angle_to, asin, atan, atan2, ceil, clamp, cos, exp, floor, hypot, log, log10, max, min, sin, sqrt, tan)
+ParticleFilter('ekin > 1MeV & x < 2cm'): The bitwise operator & requires integer operands (use "and" and "or" for logical and/or)
+ParticleFilter('foo > 1'): Unknown name "foo" in expression "foo > 1" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, fileidx)
+ParticleFilter("__import__('os').system('ls')"): The character ' can not be used in expressions (in "__import__('os').system('ls')")
 ParticleFilter('ekin'): Expression "ekin" is not a condition (e.g. a comparison)
 ParticleFilter('lambda: 1'): Unsupported syntax in expression "lambda: 1"
-ParticleFilter('sin(x, y=1) > 0'): Unsupported function call in expression "sin(x, y=1) > 0" (available functions are: abs, acos, angle_to, asin, atan, atan2, ceil, clamp, cos, exp, floor, hypot, log, log10, max, min, sin, sqrt, tan)
+ParticleFilter('sin(x, y=1) > 0'): Unsupported function call in expression "sin(x, y=1) > 0" (available functions are: abs, acos, angle_to, asin, atan, atan2, ceil, clamp, cos, exp, floor, hypot, log, log10, max, min, mod, sin, sqrt, tan)
 ParticleFilter('x.real > 0'): Unsupported syntax in expression "x.real > 0"
-ParticleFilter('[x][0] > 0'): Unsupported syntax in expression "[x][0] > 0"
-ParticleFilter("x > 'a'"): Unsupported value in expression "x > 'a'"
+ParticleFilter('[x][0] > 0'): The character [ can not be used in expressions (in "[x][0] > 0")
+ParticleFilter("x > 'a'"): The character ' can not be used in expressions (in "x > 'a'")
 ParticleFilter(''): Syntax error in expression ""
 ParticleFilter('sqrt(x/cm) > 1'): sqrt(..) gives NaN or infinite values in expression "sqrt(x/cm) > 1"
 ParticleFilter('1/(x/cm - x/cm) > 1'): Division gives NaN or infinite values in expression "1/(x/cm - x/cm) > 1"
 ParticleFilter('log(ekin/MeV - ekin/MeV) > 0'): log(..) gives NaN or infinite values in expression "log(ekin/MeV - ekin/MeV) > 0"
-ParticleFilter('x/cm % 0 > 1'): The modulo operation gives NaN or infinite values in expression "x/cm % 0 > 1"
+ParticleFilter('mod(pdgcode,0) == 1'): Division by zero in mod(a,b) in expression "mod(pdgcode,0) == 1"
+ParticleFilter('mod(x,2cm) > 0'): mod(a,b) requires integers without units (like userflags or pdgcode) in expression "mod(x,2cm) > 0"
+ParticleFilter('mod(ekin/MeV,2) > 0'): mod(a,b) requires integers without units (like userflags or pdgcode) in expression "mod(ekin/MeV,2) > 0"
+ParticleFilter('mod(pdgcode,2.5) > 0'): mod(a,b) requires integers without units (like userflags or pdgcode) in expression "mod(pdgcode,2.5) > 0"
+ParticleFilter('mod(pdgcode) > 0'): mod(a,b) takes two arguments in expression "mod(pdgcode) > 0"
+ParticleFilter('x > 0 && y > 0'): Use "and" instead of "&&" in expressions (e.g. "x > 0 and y > 0"), in expression "x > 0 && y > 0"
+ParticleFilter('x > 0 || y > 0'): Use "or" instead of "||" in expressions (e.g. "x > 0 or y > 0"), in expression "x > 0 || y > 0"
+ParticleFilter('!(x > 0)'): Use "not" instead of "!" in expressions (e.g. "not (x > 0)"), in expression "!(x > 0)"
+ParticleFilter('x/cm % 2 > 1'): Use "mod(a,b)" instead of "%" in expressions (e.g. "mod(userflags,4) == 1"), in expression "x/cm % 2 > 1"
+ParticleFilter('fileidx > 1cm'): Incompatible units in comparison: value without units and length (add units, e.g. 2cm) in expression "fileidx > 1cm"
+ParticleFilter('mod(fileidx,2.0) == 0'): mod(a,b) requires integers without units (like userflags or pdgcode) in expression "mod(fileidx,2.0) == 0"
 ParticleFilter('1e999 > x/cm'): A constant has NaN or infinite values in expression "1e999 > x/cm"
 ParticleFilter('(-1)^(x/cm) > 0'): Raising to a power gives NaN or infinite values in expression "(-1)^(x/cm) > 0"
-ParticleFilter('x != x && 1/(x/cm - x/cm) > 1'): no error
-ParticleFilter('~x > 0cm'): The bitwise operator ~ requires integer operands (use ! for logical not)
-ParticleFilter('~uz > 0'): The bitwise operator ~ requires integer operands (use ! for logical not)
+ParticleFilter('x != x and 1/(x/cm - x/cm) > 1'): no error
+ParticleFilter('~x > 0cm'): The bitwise operator ~ requires integer operands (use "not" for logical not)
+ParticleFilter('~uz > 0'): The bitwise operator ~ requires integer operands (use "not" for logical not)
 ParticleFilter('x > 0cm if ux > 0 else x < 0cm'): Unsupported syntax in expression "x > 0cm if ux > 0 else x < 0cm"
 ParticleEdit('x = 2*ux'): Can not assign value without units to x, which is a length (add units, e.g. 2cm), in expression "x = 2*ux"
 ParticleEdit('x = 2'): Can not assign value without units to x, which is a length (add units, e.g. 2cm), in expression "x = 2"
@@ -136,10 +149,10 @@ ParticleEdit('weight = 1cm'): Can not assign value with length to weight, which 
 ParticleEdit('x'): Expected assignments like "x = 2*y" (or swap(..) or rotate_x/y/z(..)) in "x"
 ParticleEdit('foo = 1'): Variable "foo" is assigned but never used in "foo = 1" (fields which can be assigned are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength)
 ParticleEdit('wl = 1.8Aa'): Variable "wl" is assigned but never used in "wl = 1.8Aa" (fields which can be assigned are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength)
-ParticleEdit('tmp = x, x = y'): Variable "tmp" is assigned but never used in "tmp = x, x = y" (fields which can be assigned are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength)
+ParticleEdit('tmp = x; x = y'): Variable "tmp" is assigned but never used in "tmp = x; x = y" (fields which can be assigned are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength)
 ParticleEdit('Tmp = 1'): Can not assign to "Tmp" in "Tmp = 1" (fields which can be assigned are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, and other lowercase names can be used for variables)
 ParticleEdit('tmp += 1cm'): Variable "tmp" used before it is assigned in "tmp += 1cm"
-ParticleEdit('x = tmp'): Unknown name "tmp" in expression "x = tmp" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength)
+ParticleEdit('x = tmp'): Unknown name "tmp" in expression "x = tmp" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, fileidx)
 ParticleEdit('clamp = 1'): Can not assign to "clamp" in "clamp = 1" (fields which can be assigned are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, and other lowercase names can be used for variables)
 ParticleEdit('swap(x,ekin)'): Incompatible units in swap(..): length and energy in expression "swap(x,ekin)"
 ParticleEdit('swap(x)'): swap(..) takes two fields (or variables) as arguments, as in swap(x,y), in "swap(x)"
@@ -152,9 +165,12 @@ ParticleEdit('x = min(x)'): Wrong number of arguments for min(..) in expression 
 ParticleEdit('x == 1cm'): Expected assignments like "x = 2*y" (or swap(..) or rotate_x/y/z(..)) in "x == 1cm"
 ParticleEdit('pi = 3'): Can not assign to "pi" in "pi = 3" (fields which can be assigned are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, and other lowercase names can be used for variables)
 ParticleEdit('wl = 1Aa'): Variable "wl" is assigned but never used in "wl = 1Aa" (fields which can be assigned are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength)
-ParticleEdit('x = 1cm; y = 1cm'): Expected assignments like "x = 2*y" (or swap(..) or rotate_x/y/z(..)) in "x = 1cm; y = 1cm"
+ParticleEdit('x = 1cm, y = 1cm'): Separate the statements of edits with ";" (not ",") in "x = 1cm, y = 1cm"
+ParticleEdit('fileidx = 2'): fileidx (the position of the particles in the file) can not be changed, in "fileidx = 2"
+ParticleEdit('fileidx += 1'): fileidx (the position of the particles in the file) can not be changed, in "fileidx += 1"
+ParticleEdit('swap(fileidx,pdgcode)'): fileidx (the position of the particles in the file) can not be changed, in "swap(fileidx,pdgcode)"
 ParticleEdit('x = y = 1cm'): Unsupported assignment "x = y = 1cm" in "x = y = 1cm"
-ParticleEdit('x, y = y, x'): Expected assignments like "x = 2*y" (or swap(..) or rotate_x/y/z(..)) in "x, y = y, x"
+ParticleEdit('x, y = y, x'): Separate the statements of edits with ";" (not ",") in "x, y = y, x"
 ParticleEdit(''): Empty edit expression
 ParticleEdit('pdgcode = 1.5'): Non-integer values assigned to pdgcode
 ParticleEdit('x = sqrt(x/cm)*1cm'): sqrt(..) gives NaN or infinite values in expression "x = sqrt(x/cm)*1cm"
@@ -162,9 +178,9 @@ ParticleEdit('weight = 1/(x/cm - x/cm)'): Division gives NaN or infinite values 
 ParticleEdit('wavelength = 0') on neutrons: wavelength must be assigned positive values in expression "wavelength = 0"
 ParticleEdit('wavelength = -1Aa') on neutrons: wavelength must be assigned positive values in expression "wavelength = -1Aa"
 ParticleEdit('wavelength = wavelength - wavelength') on neutrons: wavelength must be assigned positive values in expression "wavelength = wavelength - wavelength"
-ParticleFilter('pdgcode == neutron && wavelength > 1Aa') with zero ekin: The wavelength is infinite for particles with zero kinetic energy in expression "pdgcode == neutron && wavelength > 1Aa"
-ParticleFilter('pdgcode == neutron && ekin > 0 && wavelength > 1Aa') with zero ekin: selects 0
-ParticleFilter('ekin > 0 && 1/(ekin/MeV) > 1') with zero ekin: selects 1
+ParticleFilter('pdgcode == neutron and wavelength > 1Aa') with zero ekin: The wavelength is infinite for particles with zero kinetic energy in expression "pdgcode == neutron and wavelength > 1Aa"
+ParticleFilter('pdgcode == neutron and ekin > 0 and wavelength > 1Aa') with zero ekin: selects 0
+ParticleFilter('ekin > 0 and 1/(ekin/MeV) > 1') with zero ekin: selects 1
 ParticleFilter('1/(ekin/MeV) > 1') with zero ekin: Division gives NaN or infinite values in expression "1/(ekin/MeV) > 1"
 pyexample_filtermcpl wrote 81 particles with comments ['Transmission spectrum from 10GeV proton beam on 20cm lead', 'Applied filter for neutrons with ekin<0.1MeV']
 Wrote 726 particles to neutrons.mcpl
@@ -172,7 +188,7 @@ Wrote 239 particles to gammas.mcpl
 Neutron wavelengths in neutrons.mcpl: 1.8Aa - 1.8Aa
 1.8Aa neutrons have ekin = 25.25meV
 Opened MCPL file example.mcpl:
-Showing particles selected with: pdgcode == gamma && ekin > 1MeV
+Showing particles picked with: pdgcode == gamma and ekin > 1MeV
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
     1          22      2.6273     0.85935      10.196          20   0.0031473     0.75937     0.65065  8.6567e-07           1
@@ -180,7 +196,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
    47          22      2.3411      4.5887      14.531          20  -0.0090622    -0.86911     0.49453  6.3877e-06           1
    49          22      1.0268     -19.849   -0.045838          20     0.30278     0.37687     0.87538  9.5645e-06           1
 ------------------------------------------------------------------------------
-selection    : pdgcode == neutron && ekin < 1MeV
+pick         : pdgcode == neutron and ekin < 1MeV
 nparticles   : 466
 sum(weights) : 466
 ------------------------------------------------------------------------------
@@ -205,5 +221,5 @@ pdgcode      :        2112 (n)                   466 (100.00%)
 userflags    :           0 (0x00000000)          466 (100.00%)
                      [ values ]             [ weighted counts ]
 ------------------------------------------------------------------------------
-MCPL WARNING: Can not calculate stats when no particles are selected
+MCPL WARNING: Can not calculate stats when no particles are picked
 stats for no selected particles: {}

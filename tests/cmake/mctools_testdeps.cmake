@@ -25,7 +25,6 @@
 
 set( MCTOOLS_TESTDEP_matplotlib_IMPORT "matplotlib.pyplot" )
 set( MCTOOLS_TESTDEP_numpy_IMPORT "numpy" )
-set( MCTOOLS_TESTDEP_plotly_IMPORT "plotly" )
 set( MCTOOLS_TESTDEP_pyyaml_IMPORT "yaml" )
 set( MCTOOLS_TESTDEP_ruff_CMD "ruff" )
 set( MCTOOLS_TESTDEP_scipp_IMPORT "scipp" )

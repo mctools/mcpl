@@ -31,7 +31,7 @@ import warnings
 from ._common import MCPLError
 from ._numpy import np
 from ._physics import _pdg_database
-from ._plotbackend import _backend_name
+from ._plotbackend import PlotBackend
 from ._stats import (
     _freq_alt_descr,
     _possible_freq_stats,
@@ -62,8 +62,8 @@ def _overview_figure(stats):
     ov = stats['overview']
     info = stats['file']
     title = f"{info.get('filename','')}: {info['nparticles']} particles, sum(weights) = {info['integral']:g}"
-    if info.get('selection'):
-        title += f"\nselection: {info['selection']}"
+    if info.get('pick'):
+        title += f"\npick: {info['pick']}"
     if info.get('edit'):
         title += f"\nedit: {info['edit']}"
     fig = Figure( title = title, nrows = 2, ncols = 3 )
@@ -166,16 +166,18 @@ def stats_figures(stats):
                                                  items = [ StepHist(bins,hist) ] ) ] ))
     return figures
 
-def plot_stats(stats,pdf=False,set_backend=None,backend=None,filename=None,**options):
-    """Produce plots of provided statistics object (from collect_stats(), or a
-    file for which collect_stats() is called). The plots are shown
-    interactively, or saved in a file if filename is given, in the format
-    given by its extension (e.g. "plots.pdf", or "plots.png" which gives one
-    numbered file per plot). The backend parameter selects the plotting
-    backend (name or Backend object, default is the default backend, see
-    mcpl.plotting), and further keyword arguments are options for it (e.g.
+def plot_stats(stats,pdf=False,set_backend=None,backend=None,filename=None,
+               terminal=False,**options):
+    """Show the overview plot of provided statistics object (from
+    collect_stats(), or a file for which collect_stats() is called), or save
+    it in a file if filename is given, in the format given by its extension
+    (e.g. "overview.png" or "overview.pdf"). The backend parameter selects
+    the plotting backend (name or Backend object, default is chosen as
+    described in mcpl.plotting, in the terminal if terminal is True), and
+    further keyword arguments are options for it (e.g.
     matplotlib_backend='agg'). Returns the list of created files when saving.
-    The pdf and set_backend parameters are deprecated (use filename and
+    The plots of each field are available from stats_figures(). The pdf and
+    set_backend parameters are deprecated (use filename and
     matplotlib_backend instead)."""
     if pdf is True:
         raise MCPLError('If set, the pdf parameter should be a string'
@@ -190,11 +192,17 @@ def plot_stats(stats,pdf=False,set_backend=None,backend=None,filename=None,**opt
         warnings.warn('The set_backend parameter of plot_stats is deprecated,'
                       ' use matplotlib_backend instead', DeprecationWarning,
                       stacklevel=2)
-        #It was only used for matplotlib:
-        if _backend_name(backend) == 'matplotlib':
-            options.setdefault('matplotlib_backend',set_backend)
-    figures = stats_figures(stats)
+        #It was only used for matplotlib (for which the option is called
+        #matplotlib_backend):
+        from ._plotbackend import _save_backend, _show_backend
+        cls = ( _save_backend(filename,backend) if filename
+                else _show_backend(backend,terminal) )
+        opt = f'{getattr(cls,"name","")}_backend'
+        import inspect
+        if not isinstance(cls,PlotBackend) and opt in inspect.signature(cls).parameters:
+            options.setdefault(opt,set_backend)
+    figures = stats_figures(stats)[:1]
     if filename:
         return save(figures,filename,backend=backend,**options)
-    show(figures,backend=backend,**options)
+    show(figures,backend=backend,terminal=terminal,**options)
     return None

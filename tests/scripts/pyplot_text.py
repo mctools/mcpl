@@ -57,7 +57,7 @@ def test_histograms():
     show(h.figure(), 'ascii')
     #2D histogram:
     h = mcpl.histogram2d(example_file, 'x/cm', 'y/cm', bins=30,
-                         select='pdgcode == neutron')
+                         pick='pdgcode == neutron')
     for backend in ('unicode','ascii'):
         show(h.figure(), backend, height=12)
 
@@ -91,16 +91,24 @@ def test_files_and_options():
     avail = mcpl.plotting.available_backends()
     print(f'unicode and ascii backends always available, as the last ones:'
           f' {avail[-2:] == ["unicode","ascii"]}')
-    #In terminals which can not show its characters, the unicode backend uses
-    #the ASCII characters:
+    #In terminals which can not show its characters, the unicode backend can
+    #not show plots, so plots for the terminal are shown with the ascii
+    #backend, while explicitly requesting the unicode backend is an error:
     env = dict(os.environ, PYTHONIOENCODING='ascii',
                PYTHONPATH=os.pathsep.join(p for p in sys.path if p))
-    code = ( f'import mcpldev; mcpldev.histogram({str(example_file)!r},"ekin/MeV",'
-             'bins=10).plot(backend="unicode",unicode_width=40,unicode_height=5)' )
-    rv = subprocess.run([sys.executable,'-c',code], capture_output=True, env=env, check=True)
-    print(f'unicode backend with PYTHONIOENCODING=ascii prints only ASCII: {rv.stdout.isascii()}')
-    #(splitlines, since the output has \r\n line endings on Windows):
-    print('\n'.join(rv.stdout.decode().splitlines()).rstrip())
+    for args in ( 'terminal=True,ascii_width=40,ascii_height=5',
+                  'backend="unicode",unicode_width=40,unicode_height=5' ):
+        code = ( f'import mcpldev; mcpldev.histogram({str(example_file)!r},"ekin/MeV",'
+                 f'bins=10).plot({args})' )
+        rv = subprocess.run([sys.executable,'-c',code], capture_output=True,
+                            env=env, check=False)
+        print(f'plot({args}) with PYTHONIOENCODING=ascii: exit code {rv.returncode},'
+              f' output only ASCII: {(rv.stdout + rv.stderr).isascii()}')
+        #(splitlines, since the output has \r\n line endings on Windows):
+        out = rv.stdout.decode().splitlines()
+        err = [ e for e in rv.stderr.decode().splitlines()
+                if e.startswith('mcpldev._common.MCPLError') ]
+        print('\n'.join(out + err).rstrip())
 
 def test_resolution():
     #The text backends know their resolution (number of columns and rows)
@@ -128,7 +136,7 @@ def test_resolution():
 def test_tool():
     out = io.StringIO()
     with contextlib.redirect_stdout(out), contextlib.suppress(SystemExit):
-        mcpl.app_mcpltool(['mcpltool','--hist','time/ms','--logx','--bins','20',
+        mcpl.app_mcpltool(['mcpltool','--hist','time/ms;logx;bins=20',
                              '--backend','ascii',str(example_file)])
     lines = out.getvalue().splitlines()
     print(f'mcpltool --hist --backend ascii: {len(lines)} lines, first and last:')

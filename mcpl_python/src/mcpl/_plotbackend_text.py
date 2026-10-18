@@ -29,6 +29,7 @@ import math
 import pathlib
 import shutil
 import sys
+from typing import ClassVar
 
 from ._numpy import np
 from ._plotbackend import PlotBackend
@@ -78,9 +79,19 @@ def _fmt_y( v ):
 def _center( text, width ):
     return text.center(width).rstrip()
 
+def _can_encode( c ):
+    """Whether all the characters can be written to standard output"""
+    enc = getattr(sys.stdout,'encoding',None) or 'ascii'
+    try:
+        ( c.fill + c.hfill + c.shades + c.markers + c.vline + c.hline
+          + c.corner + c.ytick + c.xtick ).encode(enc)
+    except (UnicodeEncodeError,LookupError):
+        return False
+    return True
+
 class _TextBackend(PlotBackend):
     """Draws figures as text (with the characters in self._chars)"""
-    formats = ('txt',)
+    kind = 'terminal'
     _chars = None
     encoding = 'utf-8'
 
@@ -355,27 +366,19 @@ class _TextBackend(PlotBackend):
 
 class UnicodeBackend(_TextBackend):
     """Plots drawn as text with Unicode characters (block elements and box
-    drawing), for terminals (in terminals which can not show these characters,
-    the ASCII characters are used instead). The unicode_width and unicode_height options set
+    drawing), for terminals which can show these characters (files are
+    always written as UTF-8). The unicode_width and unicode_height options set
     the size of the plots in characters (default is the width of the
     terminal, up to 250, and a height of 15)."""
     name = 'unicode'
+    priority = 100
+    formats: ClassVar[dict] = { 'txt' : 100 }
     _chars = _unicode
 
-    def show( self, figures ):
-        #In terminals which can not show the characters, the ASCII characters
-        #are used instead (files are always written as UTF-8):
-        enc = getattr(sys.stdout,'encoding',None) or 'ascii'
-        c = self._chars
-        try:
-            ( c.fill + c.hfill + c.shades + c.markers + c.vline + c.hline
-              + c.corner + c.ytick + c.xtick ).encode(enc)
-        except (UnicodeEncodeError,LookupError):
-            self._chars = _ascii
-        try:
-            super().show(figures)
-        finally:
-            self._chars = c
+    @classmethod
+    def can_show( cls ):
+        #Only in terminals which can show the characters:
+        return _can_encode(cls._chars)
 
     def __init__( self, unicode_width = None, unicode_height = None ):
         super().__init__(unicode_width,unicode_height)
@@ -386,6 +389,8 @@ class AsciiBackend(_TextBackend):
     characters (default is the width of the terminal, up to 250, and a height
     of 15)."""
     name = 'ascii'
+    priority = 10
+    formats: ClassVar[dict] = { 'txt' : 10 }
     _chars = _ascii
     encoding = 'ascii'
 

@@ -1,4 +1,16 @@
 v2.2.9  (work in progress)
+      * New usage information for mcpltool: -h shows a single page with the
+        common options, --full-help shows all options, and -p help, -E help
+        and -H help describe how to write the expressions, with all particle
+        fields, units, functions and histogram options.
+      * Expressions (with -p, -E and -H, and in the Python API) use the
+        logical operators and, or and not (&&, || and ! give an error saying
+        what to write instead), and mod(a,b) for remainders of integers. The
+        position of the particles in the file can be used as fileidx (e.g.
+        mcpltool -e -p "mod(fileidx,10) == 0" FILE OUT.mcpl.gz extracts every
+        tenth particle, marking stat:sum entries as not available). They
+        can only contain printable ASCII characters, and not the characters
+        " ' { } [ ] # $ ` and backslash.
       * New option mcpltool --create-examples[=N], which creates three example
         files with N particles each (default 1000000) in the current
         directory: neutrons leaving a moderator surface, mixed particles
@@ -82,7 +94,7 @@ v2.2.9  (work in progress)
         Positions, directions and polarisations can also be given as
         3-vectors, and extra coordinates can be calculated with expressions
         (with units following from the expressions). For files, skip, limit
-        and select parameters choose the particles, and by default at most
+        and pick parameters choose the particles, and by default at most
         100 million particles are converted (with a warning when particles
         are left out). This needs scipp 26.9 or later, which can be installed
         with the new "scipp" extra (pip install "mcpl-python[scipp]"), which
@@ -205,11 +217,9 @@ v2.2.9  (work in progress)
         unless kept, comments and blobs).
       * Optional dependencies (extras) for the plotting backends of the Python
         API: pip install "mcpl[plot]" (or "mcpl-python[plot]") also installs
-        matplotlib (>=3.6), "[plotly]" installs plotly (>=5.11), and "[all]"
-        both. The kaleido package needed to save plotly plots as images is not
-        included, since it needs a Chrome installation.
+        matplotlib (>=3.6), as does "[all]".
       * The minimum versions of the Python dependencies (numpy 1.22, and the
-        matplotlib 3.6 and plotly 5.11 of the extras) are now tested in CI.
+        matplotlib 3.6 of the extras) are now tested in CI.
       * The fields x, y, z and time of particles and blocks of particles read
         with the Python API are now always double precision numbers (like in
         the C API), also for files which store numbers in single precision
@@ -218,16 +228,16 @@ v2.2.9  (work in progress)
         the direction of the particles and the vector (x,y,z), precise also for
         small angles (e.g. "angle_to(0,0,1) < 1deg").
       * New plotting backends "unicode" and "ascii" in the Python API and
-        pymcpltool, which draw plots as text: in the terminal (e.g. with
-        pymcpltool --hist ... --backend unicode), or in .txt files. They need
+        mcpltool, which draw plots as text: in the terminal (e.g. with
+        mcpltool -H ... -t), or in .txt files. They need
         no extra Python packages, so plots can always be made. Histograms
         with more bins than the columns (or cells) of such plots are shown
         with the average of the bin values over each column, and histograms
-        from pymcpltool --hist without --bins are made at the resolution of
+        from mcpltool -H without bins=N are made at the resolution of
         the plot, with a whole number of columns per bin (the number of
         columns is given by mcpl.plotting.resolution(..)).
       * Unless the number of bins is given, mcpl.histogram, mcpl.histogram2d
-        and pymcpltool --hist now choose it from the effective number of
+        and mcpltool -H now choose it from the effective number of
         entries N: sqrt(N) bins (the fourth root per axis for 2D histograms),
         between 10 and 400, rather than always 100.
       * Particles can now carry custom per-particle data ("userdata"): a fixed
@@ -275,12 +285,16 @@ v2.2.9  (work in progress)
       * Clearer error messages for invalid values of stat:sum entries (which
         must be non-negative or -1, and may only be padded with spaces).
       * Plotting backends in the Python API: the default backend can be set
-        with mcpl.plotting.set_default_backend(...) or the MCPL_PLOT_BACKEND
-        environment variable (also used by pymcpltool), custom backends can be
-        added by subclassing mcpl.plotting.Backend and calling
-        mcpl.plotting.register_backend, and mcpl.plotting.formats lists the
-        file formats a backend can save. Options for backends are named with
-        the backend name as prefix (matplotlib_backend, plotly_renderer), and
+        with mcpl.plotting.set_default_backend(...), and otherwise a backend is
+        chosen automatically: for showing plots matplotlib (if it can show
+        them here), else the unicode text backend (if the terminal can show
+        its characters), else the ascii text backend, and for saving
+        plots the best backend for the format given by the file extension.
+        Custom backends can be added by subclassing mcpl.plotting.Backend
+        (describing what they show plots on, their priority and their file
+        formats) and calling mcpl.plotting.register_backend, and
+        mcpl.plotting.formats lists the file formats which can be saved. Options for backends are named with
+        the backend name as prefix (matplotlib_backend, unicode_width), and
         can be given to all plotting functions. The set_backend parameter of
         plot_stats is deprecated (use matplotlib_backend instead).
       * NaN and infinite values are no longer allowed in the particle data of
@@ -329,8 +343,9 @@ v2.2.9  (work in progress)
         block[block.pdgcode == 2112]). Such blocks can be passed to
         MCPLOutFile.add_particles like any other block, also together with new
         values of some of the fields (e.g. weight = 2 * block.weight). The new
-        file_indices attribute of blocks gives the positions of their particles
-        in the file.
+        fileidx attribute of blocks gives the positions of their particles in
+        the file, and fileidx is also the new name of the file_index attribute
+        of particles (file_index still works, but is deprecated).
       * The Python API also gets the other file-level functions of the C API:
         merge_files, forcemerge_files, merge_inplace, can_merge, repair,
         name_helper, create_outfile_mpi and merge_outfiles_mpi. They give the
@@ -345,64 +360,74 @@ v2.2.9  (work in progress)
         instructions.
       * Particles can now be selected and edited with expressions in the Python
         API, with the new ParticleFilter and ParticleEdit classes, e.g.
-        ParticleFilter("pdgcode == neutron && wavelength > 1.8Aa") or
-        ParticleEdit("rotate_z(90deg), z += 1cm"), which are applied to blocks
+        ParticleFilter("pdgcode == neutron and wavelength > 1.8Aa") or
+        ParticleEdit("rotate_z(90deg);z += 1cm"), which are applied to blocks
         of particles. Values with units must always be given with units (like
         25meV, 0.18nm or 1us, but a plain 0 is fine), and expressions with
         missing or inconsistent units are rejected. The wavelength can only be
-        used for neutrons and gammas, which must be selected first (as in
-        "pdgcode == neutron && wavelength > 1.8Aa"). Edits are executed in
-        order, and can use variables (e.g. "tmp = x, x = y, y = tmp"),
+        used for neutrons and gammas, which must be picked first (as in
+        "pdgcode == neutron and wavelength > 1.8Aa"). Edits are executed in
+        order, and can use variables (e.g. "tmp = x;x = y;y = tmp"),
         swap(a,b), and rotations. ParticleValue gives the values of an
         expression. See also the new examples pyexample_filtermcpl and
         pyexample_editmcpl.
-      * MCPLFile and MCPLOutFile accept select and edit arguments (expressions
-        or ParticleFilter/ParticleEdit objects), which select and edit the
+      * MCPLFile and MCPLOutFile accept pick and edit arguments (expressions
+        or ParticleFilter/ParticleEdit objects), which pick and edit the
         particles read from (or written to) the files, e.g.
-        MCPLFile("in.mcpl",select="pdgcode == neutron",edit="z += 1m"). Edited
+        MCPLFile("in.mcpl",pick="pdgcode == neutron",edit="z += 1m"). Edited
         particles are still transferred exactly by MCPLOutFile.add_particles,
         except for the edited fields. dump_file, MCPLFile.dump_particles and
-        collect_stats also accept a select argument.
-      * pymcpltool --extract can now also select and edit particles with
-        expressions, with the new --select and --edit options, e.g. pymcpltool
-        --extract --select "pdgcode == neutron" --edit "wavelength = 1.8Aa" ...
-        The --select and -p options can also be used with --stats, and when
-        showing particles. Like with -l and -s, stat:sum entries are marked as
-        not available (-1) when --edit modifies weights, unless the new
+        collect_stats, histogram and histogram2d also accept a pick argument.
+      * mcpltool can now pick and edit particles with expressions, with the
+        new -p (--pick) and -E (--edit) options, e.g. mcpltool -e -p "pdgcode
+        == neutron" -E "wavelength = 1.8Aa" FILE OUT.mcpl.gz. They can be used
+        when showing particles, and with -S, -H and -e, as can -l and -s,
+        which choose the range of particles in the file before -p and -E are
+        applied. Like with -l and -s, stat:sum entries are marked as not
+        available (-1) when -E modifies weights, unless the new
         --keep-statsum option is used. The header comments describe the
-        selection and edits, unless --no-comment is used.
+        picks and edits, unless --no-comment is used. To pick particles of a
+        type, use e.g. -p "pdgcode == neutron" (mcpltool-c still has
+        -pPDGCODE).
       * New module mcpl.plotting with a backend-independent description of
         plots (Figure, Panel, and the items StepHist, Hist2D, Bars and Text),
-        which can be shown or saved with matplotlib or plotly (with the show and
+        which can be shown or saved with matplotlib (with the show and
         save functions, and available_backends to list the available ones).
       * plot_stats now draws its plots with mcpl.plotting (still with
         matplotlib). The histograms are drawn as lines instead of bars, and
         when shown interactively, all plots are shown at once. Without
         matplotlib, it now gives an MCPLError.
-      * pymcpltool --stats --pdf and --gui (and plot_stats in the Python API)
-        now start with an overview page, with distributions of kinetic energies,
+      * mcpltool -S -o FILE (and plot_stats in the Python API) now make an
+        overview plot, with distributions of kinetic energies,
         wavelengths and directions by particle type (with logarithmic axes when
         values span several decades), positions in the x-y plane, times, and
-        particle types. The other histograms show how much is outside their
-        range. plot_stats gets backend and filename arguments to select the
+        particle types, instead of the many plots of earlier versions.
+        plot_stats gets backend and filename arguments to select the
         plotting backend and the output file (any format supported by the
-        backend, e.g. .pdf or .png), and the figures can also be obtained with
-        the new stats_figures function. The pdf argument of plot_stats is
+        backend, e.g. .pdf or .png), and all figures (the overview and the
+        plots of each field, which show how much is outside their range) can
+        be obtained with the new stats_figures function. The --pdf option is
+        removed (use -S -o FILE.pdf), and --gui will be replaced by a viewer. The pdf argument of plot_stats is
         deprecated (use filename instead).
       * New histogram API: histograms of values given by expressions, e.g.
         mcpl.histogram(FILE,"ekin/eV",lethargy=True).plot(), with options for
-        selections, logarithmic axes, separate curves for each particle type
+        picking particles, logarithmic axes, separate curves for each particle type
         (split="pdgcode") or file, 2D histograms (mcpl.histogram2d), and
         printing the contents as text. mcpl.plot_histograms shows or saves
         several histograms, also on top of each other in one plot with
         overlay=True (e.g. to compare simulations).
-      * New pymcpltool --hist option for histograms of expressions, e.g.
-        pymcpltool --hist "ekin/eV" --lethargy -pneutron FILE, with options for
-        the binning (--bins, --range, --logx), --logy, separate curves for each
-        value of an expression (--split pdgcode) or file, 2D histograms ("x/cm :
-        y/cm"), unweighted histograms, and printing the contents as text
-        (--print). Plots can be made with matplotlib or plotly (select with
-        --backend), and saved in files with --output (also for --stats).
+      * New mcpltool -H (--hist) option for histograms of expressions, with
+        options in the same string separated by ";", e.g. mcpltool -H
+        "ekin/eV;lethargy" -p "pdgcode == neutron" FILE: the binning (bins=N,
+        range=LOW:HIGH, logx), logy, separate curves for each value of an
+        expression (split=pdgcode) or file, 2D histograms ("x/cm : y/cm",
+        with xrange=LOW:HIGH and yrange=LOW:HIGH),
+        unweighted histograms, and printing the contents as text (print).
+        Plots are shown in a window (matplotlib), or in the terminal (always
+        with -t), and saved with -o FILE in the format given by the
+        extension (.png, .pdf, .svg or .txt). The backend can be chosen
+        with -B. mcpl.histogram also accepts these strings, e.g.
+        mcpl.histogram(FILE,"ekin/eV;lethargy").
       * mcpltool --extract no longer leaves a broken output file behind when
         given an invalid -p argument.
       * ssw2mcpl and phits2mcpl no longer leave an unfinished output file behind

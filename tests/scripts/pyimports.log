@@ -5,14 +5,14 @@ write blocks and single particles       : no optional modules
 copy blocks with numpy mask             : no optional modules
 merge files                             : no optional modules
 repair                                  : no optional modules
-read with select and edit               : _expressions
+read with pick and edit                 : _expressions
 statistics                              : _stats
-statistics with selection               : _expressions _stats
+statistics with pick                    : _expressions _stats
 histogram as text                       : _expressions _histogram
 mcpltool FILE                           : _cli
-mcpltool --select                       : _cli _expressions
+mcpltool --pick                         : _cli _expressions
 mcpltool --stats                        : _cli _clistats _stats
-mcpltool --hist --print                 : _cli _clistats _expressions _histogram
+mcpltool --hist with print              : _cli _clistats _expressions _histogram
 mcpltool --extract                      : _cli
 mcpltool --extract --edit               : _cli _expressions
 mcpltool --merge                        : _cli

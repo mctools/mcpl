@@ -71,7 +71,7 @@ jobs:
         cat minreqs.txt
         pip install -r minreqs.txt
         pip check
-        python -c 'import numpy,matplotlib,plotly; print(numpy.__version__, matplotlib.__version__, plotly.__version__)'
+        python -c 'import numpy,matplotlib; print(numpy.__version__, matplotlib.__version__)'
 
     - name: Configure CMake
       run: >

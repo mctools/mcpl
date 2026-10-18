@@ -29,11 +29,8 @@ packages:
         - numpy
       plot:
         - matplotlib
-      plotly:
-        - plotly
       all:
         - ADD plot
-        - ADD plotly
       #(not in "all", since scipp needs a more recent Python and numpy):
       scipp:
         - scipp
@@ -53,8 +50,6 @@ packages:
       #(extras of mcpl-python are forwarded):
       plot:
         - mcpl-python[plot]
-      plotly:
-        - mcpl-python[plotly]
       all:
         - mcpl-python[all]
       scipp:
@@ -80,9 +75,6 @@ dependencies:
   numpy:
     min_version: "1.22"
     freebsd_pkgname: "{py}-numpy"
-  plotly:
-    min_version: "5.11"
-    freebsd_pkgname: "{py}-plotly"
   scipp:
     min_version: "26.9"
     min_python: "3.12"

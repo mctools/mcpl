@@ -22,7 +22,8 @@ second block: 300 particles at offset 300
   block[0:0]: 0 particles, offset 300, pdgcodes []
   nested selection: 2 particles, ekin=[0.03427 0.08529]
   single particle of selection: ekin=0.634722
-file_indices of selection: [417 418], of particles: [417, 418]
+fileidx of selection: [417 418], of particles: [417, 418]
+deprecated file_index: 417, warnings: ['DeprecationWarning: MCPLParticle.file_index is deprecated, use fileidx instead']
 transferred 726 neutrons, packed data identical: True
 edit of x, y, weight: unchanged packed fields: ['z', 'uve1', 'uve2', 'uve3', 't', 'pdg']
 edit of direction and wavelength: 726 particles, as expected: True
