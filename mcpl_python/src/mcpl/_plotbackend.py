@@ -214,17 +214,10 @@ def _show_backend( backend = None, terminal = False ):
         cls = _explicit(b,source)
         if not isinstance(cls,PlotBackend) and not cls.can_show():
             if cls.kind == 'terminal':
-                #(suggesting the other backends which work, those for the
-                #terminal first):
-                others = [ c.name for c in _ordered(_all_classes())
-                           if c is not cls and c.kind is not None
-                           and c.is_available() and c.can_show() ]
-                others.sort( key = lambda n : _backend_class(n).kind != 'terminal' )
-                alt = ( f' or try the {" or ".join(others)} backend'
-                        + ( 's' if len(others) > 1 else '' ) ) if others else ''
                 raise MCPLError(f'The {cls.name} plotting backend{_from(source)}'
                                 ' does not work in this terminal (a solution'
-                                f' might be to switch terminal{alt})')
+                                ' might be to switch terminal or try the ascii'
+                                ' or matplotlib backends)')
             raise MCPLError(f'The {cls.name} plotting backend{_from(source)}'
                             ' can not show plots here (is there no display?)')
         return cls
