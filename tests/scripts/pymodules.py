@@ -50,6 +50,7 @@ layers = {
     '_statsum' : 1,
     '_userdata' : 1,
     '_scipp' : 1,
+    '_termcolor' : 1,
     '_blocks' : 2,
     '_expressions' : 2,
     '_reader' : 3,

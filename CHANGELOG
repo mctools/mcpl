@@ -1,4 +1,13 @@
 v2.2.9  (work in progress)
+      * Plots in the terminal (the unicode and ascii plotting backends) are
+        shown in colour: curves with the colours of matplotlib, and 2D maps
+        with the viridis colour map (with the unicode backend, drawn with half
+        blocks, so with twice as many rows). Colours are used when the output
+        is a terminal, unless the NO_COLOR environment variable is set, and
+        always if FORCE_COLOR is set. The new mcpltool option
+        --color=auto|always|never (and the unicode_color and ascii_color
+        options of the backends) overrides this. Files are always written
+        without colours.
       * New usage information for mcpltool: -h shows a single page with the
         common options, --full-help shows all options, and -p help, -E help
         and -H help describe how to write the expressions, with all particle

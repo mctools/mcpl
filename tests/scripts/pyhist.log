@@ -408,7 +408,7 @@ mcpltool -H x/cm: exit code 1
    | 
    | Run with -h or --help for usage information
 mcpltool -H x/cm;print -t example.mcpl: exit code 1
-   | ERROR: The histogram option print can not be used together with -o, -B or -t.
+   | ERROR: The histogram option print can not be used together with -o, -B, -t or --color.
    | 
    | Run with -h or --help for usage information
 mcpltool -H x/cm -t -o a.txt example.mcpl: exit code 1

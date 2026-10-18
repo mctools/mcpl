@@ -38,10 +38,10 @@ def _view( filename, skip, limit, pick, edit ):
         return f
     return _FileView(f,skip,limit,pick,edit)
 
-def _plot_backend( outfn, backend, terminal ):
+def _plot_backend( outfn, backend, terminal, color = None ):
     """Backend object for showing plots (or saving them in outfn), with the
     options for mcpltool (e.g. a backend of matplotlib which needs no display
-    when saving files)"""
+    when saving files, and the --color setting for plots in the terminal)"""
     from ._plotbackend import PlotBackend, _create, _save_backend, _show_backend
     if outfn:
         if os.path.exists(outfn):
@@ -50,7 +50,19 @@ def _plot_backend( outfn, backend, terminal ):
         bk = _create(cls,**( {} if isinstance(cls,PlotBackend) else cls.batch_options ))
         bk.check_format(outfn)
         return bk
-    return _create(_show_backend(backend,terminal))
+    cls = _show_backend(backend,terminal)
+    opts = {}
+    if color is not None and not isinstance(cls,PlotBackend):
+        if cls.kind == 'terminal' and f'{cls.name}_color' in _option_names(cls):
+            opts[f'{cls.name}_color'] = color
+        elif backend is not None:
+            raise MCPLError(f'--color can not be used with the {cls.name}'
+                            ' plotting backend (only for plots in the terminal)')
+    return _create(cls,**opts)
+
+def _option_names( cls ):
+    import inspect
+    return set(inspect.signature(cls).parameters)
 
 def mcpltool_stats(filename,skip,limit,pick,edit,outfn,backend,bad):
     from ._stats import _PickedFile, dump_stats
@@ -71,7 +83,8 @@ def mcpltool_stats(filename,skip,limit,pick,edit,outfn,backend,bad):
     if files:
         print('Created ' + ', '.join(files))
 
-def mcpltool_hist(filelist,histstr,skip,limit,pick,edit,outfn,backend,terminal,bad):
+def mcpltool_hist(filelist,histstr,skip,limit,pick,edit,outfn,backend,terminal,bad,
+                  color=None):
     from ._histogram import _parse_hist, histogram, histogram2d
     if not filelist:
         bad("No input file specified")
@@ -79,9 +92,9 @@ def mcpltool_hist(filelist,histstr,skip,limit,pick,edit,outfn,backend,terminal,b
         o = _parse_hist(histstr)
     except MCPLError as e:
         bad(str(e))
-    if o['print'] and ( outfn or backend or terminal ):
-        bad("The histogram option print can not be used together with -o, -B"
-            " or -t.")
+    if o['print'] and ( outfn or backend or terminal or color ):
+        bad("The histogram option print can not be used together with -o, -B,"
+            " -t or --color.")
     exprs = o['exprs']
     #Unless the number of bins is given, it is chosen automatically, with at
     #most the resolution of the plot (if the backend has one, like the text
@@ -89,7 +102,7 @@ def mcpltool_hist(filelist,histstr,skip,limit,pick,edit,outfn,backend,terminal,b
     bk, maxbins = None, None
     if not o['print']:
         try:
-            bk = _plot_backend(outfn,backend,terminal)
+            bk = _plot_backend(outfn,backend,terminal,color)
         except MCPLError as e:
             bad(str(e))
         if o['bins'] is None:
