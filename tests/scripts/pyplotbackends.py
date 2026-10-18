@@ -28,6 +28,7 @@
 # backend options, the deprecated set_backend parameter of plot_stats, and the
 # -B, -t and -o options of mcpltool.
 
+import os
 import subprocess
 import sys
 import warnings
@@ -128,9 +129,12 @@ def test_tool_backends():
                   ['-o','tool1.txt'], ['-o','tool2.txt','-B','test'],
                   ['-o','tool3.txt','-B','ascii'], ['-t'] ):
         sys.stdout.flush()
+        #(with UTF-8 output, also on Windows, so the plots in the terminal are
+        #drawn with the unicode backend):
         rv = subprocess.run([sys.executable, '-m', 'mcpldev', '-H', 'ekin/MeV;bins=3',
                              *args, str(example_file)],
-                            capture_output=True, text=True, check=False)
+                            capture_output=True, encoding='utf-8', check=False,
+                            env=dict(os.environ, PYTHONIOENCODING='utf-8'))
         print(f'==> mcpltool -H ekin/MeV;bins=3 {" ".join(args)}:'
               f' exit code {rv.returncode}')
         for line in rv.stdout.splitlines()[:4]:
