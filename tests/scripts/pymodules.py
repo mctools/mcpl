@@ -54,6 +54,7 @@ layers = {
     '_reader' : 3,
     '_writer' : 4,
     '_fileops' : 5,
+    '_examples' : 5,
     '_plotbackend' : 6,
     'plotting' : 7,
     '_plotbackend_mpl' : 8,

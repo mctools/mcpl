@@ -1,0 +1,64 @@
+--> mcpltool --create-examples=500 --dry-run
+MCPL: Would create mcplexample_source.mcpl.gz with 500 particles (neutrons leaving a moderator surface)
+MCPL: Would create mcplexample_target.mcpl.gz with 500 particles (mixed particles leaving the surroundings of a target)
+MCPL: Would create mcplexample_beam.mcpl.gz with 500 particles (polarised neutron beam, with userdata)
+MCPL: dry run, nothing was written
+--> mcpltool --create-examples=2500
+MCPL: Creating mcplexample_source.mcpl.gz with 2500 particles (neutrons leaving a moderator surface)
+MCPL: Compressing file mcplexample_source.mcpl
+MCPL: Compressed file into mcplexample_source.mcpl.gz
+MCPL: Creating mcplexample_target.mcpl.gz with 2500 particles (mixed particles leaving the surroundings of a target)
+MCPL: Compressing file mcplexample_target.mcpl
+MCPL: Compressed file into mcplexample_target.mcpl.gz
+MCPL: Creating mcplexample_beam.mcpl.gz with 2500 particles (polarised neutron beam, with userdata)
+MCPL: Compressing file mcplexample_beam.mcpl
+MCPL: Compressed file into mcplexample_beam.mcpl.gz
+Created: mcplexample_beam.mcpl.gz, mcplexample_source.mcpl.gz, mcplexample_target.mcpl.gz
+mcplexample_beam.mcpl.gz: 2500 particles, comments ['Example file made by mcpltool --create-examples, with particles generated from simple distributions (not by a simulation)', 'Polarised neutron beam, with userdata'], polarisation: True, userdata: nscat:uint8,pathlength:float32,origin:uint32
+mcplexample_source.mcpl.gz: 2500 particles, comments ['Example file made by mcpltool --create-examples, with particles generated from simple distributions (not by a simulation)', 'Neutrons leaving a moderator surface'], polarisation: False, userdata: None
+mcplexample_target.mcpl.gz: 2500 particles, comments ['Example file made by mcpltool --create-examples, with particles generated from simple distributions (not by a simulation)', 'Mixed particles leaving the surroundings of a target'], polarisation: False, userdata: None
+Existing files are not overwritten:
+--> mcpltool --create-examples=10
+ERROR: File mcplexample_source.mcpl.gz already exists
+
+Run with -h or --help for usage information
+    exit code 1
+--> mcpltool --create-examples=0
+ERROR: --create-examples=N requires a positive integer N
+
+Run with -h or --help for usage information
+    exit code 1
+--> mcpltool --create-examples=abc
+ERROR: --create-examples=N requires a positive integer N
+
+Run with -h or --help for usage information
+    exit code 1
+--> mcpltool --create-examples=-5
+ERROR: --create-examples=N requires a positive integer N
+
+Run with -h or --help for usage information
+    exit code 1
+--> mcpltool --create-examples=1e6
+ERROR: --create-examples=N requires a positive integer N
+
+Run with -h or --help for usage information
+    exit code 1
+--> mcpltool --create-examples -j foo.mcpl
+ERROR: --create-examples can only be combined with --dry-run.
+
+Run with -h or --help for usage information
+    exit code 1
+A second run gives the same particles (fixed random seed):
+--> mcpltool --create-examples=2500
+MCPL: Creating mcplexample_source.mcpl.gz with 2500 particles (neutrons leaving a moderator surface)
+MCPL: Compressing file mcplexample_source.mcpl
+MCPL: Compressed file into mcplexample_source.mcpl.gz
+MCPL: Creating mcplexample_target.mcpl.gz with 2500 particles (mixed particles leaving the surroundings of a target)
+MCPL: Compressing file mcplexample_target.mcpl
+MCPL: Compressed file into mcplexample_target.mcpl.gz
+MCPL: Creating mcplexample_beam.mcpl.gz with 2500 particles (polarised neutron beam, with userdata)
+MCPL: Compressing file mcplexample_beam.mcpl
+MCPL: Compressed file into mcplexample_beam.mcpl.gz
+mcplexample_beam.mcpl.gz: same particles: True
+mcplexample_source.mcpl.gz: same particles: True
+mcplexample_target.mcpl.gz: same particles: True
