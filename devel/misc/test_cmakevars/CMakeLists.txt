@@ -23,7 +23,7 @@
 #the output of mcpl-config, and by running the commands. Everything is done
 #when configuring this project, which fails if anything is wrong.
 
-cmake_minimum_required(VERSION 3.16...4.4)
+cmake_minimum_required(VERSION 3.21...4.4)
 
 project( TestMCPLCMakeVars VERSION 0.0.1 LANGUAGES C )
 
@@ -95,8 +95,13 @@ foreach( item_and_var cmakedir:MCPL_CMAKEDIR bindir:MCPL_BINDIR
     set( a "${out}" )
     set( b "${${var}}" )
   else()
+    file( TO_CMAKE_PATH "${out}" out )
     file( REAL_PATH "${out}" a )
     file( REAL_PATH "${${var}}" b )
+    if ( WIN32 )
+      string( TOLOWER "${a}" a )
+      string( TOLOWER "${b}" b )
+    endif()
   endif()
   if ( NOT a STREQUAL b )
     check_failed( "${var} is \"${b}\" but mcpl-config --show ${item} gives \"${a}\"" )

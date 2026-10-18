@@ -19,7 +19,14 @@
 ##                                                                            ##
 ################################################################################
 
-cmake_minimum_required(VERSION 3.16...4.4)
+cmake_minimum_required(VERSION 3.21...4.4)
+
+#On Windows, the build uses $<TARGET_IMPORT_FILE_NAME:...>, which needs CMake
+#3.27:
+if ( NOT UNIX AND CMAKE_VERSION VERSION_LESS "3.27" )
+  message( FATAL_ERROR "Building MCPL on Windows requires CMake 3.27 or later"
+                       " (this is CMake ${CMAKE_VERSION})." )
+endif()
 
 #Detect skbuild mode (std/monolithic) if appropriate:
 

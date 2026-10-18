@@ -30,7 +30,7 @@
 #very old version in their cmake_minimum_required statements (cf. github
 #discussion/issue #137):
 cmake_policy(PUSH)#NB: We POP at the end of this file.
-cmake_policy(VERSION 3.16...4.4)
+cmake_policy(VERSION 3.21...4.4)
 
 #Export a few directory paths (relocatable):
 set( MCPL_CMAKEDIR "${CMAKE_CURRENT_LIST_DIR}" )
@@ -55,7 +55,34 @@ endif()
 
 #Various scripts:
 set( MCPL_CMD_MCPLCONFIG "${MCPL_BINDIR}/mcpl-config${CMAKE_EXECUTABLE_SUFFIX}" )
-if ( NOT EXISTS "${MCPL_CMD_MCPLCONFIG}" )
+if ( "@mcpl_skbuild_shlib_in_wheel_scripts@" )
+  #In Python wheels on Windows, the mcpl-config binary only works when called
+  #via the mcpl-config command of the wheel (which tells it where mcpl.dll
+  #is). So use that command, if it is found and belongs to this installation:
+  set( MCPL_CMD_MCPLCONFIG "" )
+  find_program( _mcpl_tmp_cfgcmd NAMES mcpl-config NO_CACHE )
+  if ( _mcpl_tmp_cfgcmd )
+    execute_process(
+      COMMAND "${_mcpl_tmp_cfgcmd}" --show cmakedir
+      OUTPUT_VARIABLE _mcpl_tmp_dir OUTPUT_STRIP_TRAILING_WHITESPACE
+      RESULT_VARIABLE _mcpl_tmp_rv
+    )
+    if ( _mcpl_tmp_rv EQUAL 0 AND _mcpl_tmp_dir )
+      file( TO_CMAKE_PATH "${_mcpl_tmp_dir}" _mcpl_tmp_dir )
+      file( REAL_PATH "${_mcpl_tmp_dir}" _mcpl_tmp_dir )
+      file( REAL_PATH "${MCPL_CMAKEDIR}" _mcpl_tmp_dir2 )
+      string( TOLOWER "${_mcpl_tmp_dir}" _mcpl_tmp_dir )#(Windows paths)
+      string( TOLOWER "${_mcpl_tmp_dir2}" _mcpl_tmp_dir2 )
+      if ( _mcpl_tmp_dir STREQUAL _mcpl_tmp_dir2 )
+        set( MCPL_CMD_MCPLCONFIG "${_mcpl_tmp_cfgcmd}" )
+      endif()
+    endif()
+  endif()
+  unset( _mcpl_tmp_cfgcmd )
+  unset( _mcpl_tmp_dir )
+  unset( _mcpl_tmp_dir2 )
+  unset( _mcpl_tmp_rv )
+elseif ( NOT EXISTS "${MCPL_CMD_MCPLCONFIG}" )
   set( MCPL_CMD_MCPLCONFIG "")
 endif()
 
