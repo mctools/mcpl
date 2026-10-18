@@ -121,6 +121,9 @@ Histogram (-H, --hist HIST):
                    default, plots are shown in a window with matplotlib, or
                    else in the terminal, and are saved with the backend for
                    the format.
+  --color=WHEN     Colours of plots in the terminal: auto (the default: in
+                   terminals, unless the NO_COLOR environment variable is set,
+                   or always if FORCE_COLOR is set), always or never.
 
 Extract (-e, --extract FILE OUT.mcpl.gz):
   --no-comment     Do not add comments to the header of OUT about how the
@@ -177,6 +180,8 @@ def app_mcpltool(argv=None):
 #-pVALUE or --pick=VALUE), by short and long names:
 _value_opts = { '-p' : '--pick', '-E' : '--edit', '-H' : '--hist',
                 '-o' : '--output', '-B' : '--backend' }
+#(and those without short names):
+_long_value_opts = ( '--color', )
 #Flags, by long name (with short name, if any):
 _flag_opts = { '--stats' : '-S', '--extract' : '-e', '--merge' : '-m',
                '--repair' : '-r', '--dry-run' : '-d', '--justhead' : '-j',
@@ -241,7 +246,7 @@ def _app_mcpltool(argv):
     longtoshort = { v : k for k,v in _value_opts.items() }
     def set_value(name, value):
         if name in values:
-            bad(f"{longtoshort[name]} specified more than once")
+            bad(f"{longtoshort.get(name,name)} specified more than once")
         values[name] = value
     short_flags = { v : k for k,v in _flag_opts.items() if v }
     short_values = _value_opts
@@ -252,7 +257,7 @@ def _app_mcpltool(argv):
             if name in _removed_opts:
                 bad(f"{name} is no longer supported as an option"
                     f" ({_removed_opts[name]})")
-            if name in _value_opts.values():
+            if name in _value_opts.values() or name in _long_value_opts:
                 if not eq:
                     if not args:
                         bad(f"Missing argument for {name}")
@@ -345,6 +350,11 @@ def _app_mcpltool(argv):
                                                        if mode == 'dump' else "." ))
     allowed('-o',('--stats','--hist'),'--output' in values)
     allowed('-B',('--stats','--hist'),'--backend' in values)
+    allowed('--color',('--hist',),'--color' in values)
+    if values.get('--color',"auto") not in ('auto','always','never'):
+        bad("--color must be auto, always or never.")
+    if '--color' in values and '--output' in values:
+        bad("--color can not be used with -o (plots are saved without colours).")
     allowed('--no-comment',('--extract',),bool(flags & {'--no-comment','--preventcomment'}))
     allowed('--keep-statsum',('--extract',),'--keep-statsum' in flags)
     allowed('--inplace',('--merge',),'--inplace' in flags)
@@ -399,7 +409,7 @@ def _app_mcpltool(argv):
         from ._clistats import mcpltool_hist
         mcpltool_hist(filelist,values['--hist'],opt_skip,opt_limit,pick,edit,
                       values.get('--output'),values.get('--backend'),
-                      '--term' in flags,bad)
+                      '--term' in flags,bad,color=values.get('--color'))
         sys.exit(0)
 
     if mode == '--text':

@@ -7,6 +7,7 @@ Modules of the mcpl package and their imports from the package:
   layer   1 : _physics             <- _common, _numpy, constants
   layer   1 : _scipp               <- _common, _messages, _numpy
   layer   1 : _statsum             <- _common
+  layer   1 : _termcolor           <- _common
   layer   1 : _userdata            <- _common, _numpy
   layer   2 : _blocks              <- _common, _numpy, _physics
   layer   2 : _expressions         <- _common, _numpy, _physics
@@ -20,7 +21,7 @@ Modules of the mcpl package and their imports from the package:
   layer   8 : _histogram           <- _common, _expressions, _numpy, _physics, _reader, plotting
   layer   8 : _plotbackend_mpl     <- _common, _numpy, _plotbackend, plotting
   layer   8 : _plotbackend_test    <- _numpy, _plotbackend, plotting
-  layer   8 : _plotbackend_text    <- _numpy, _plotbackend, plotting
+  layer   8 : _plotbackend_text    <- _numpy, _plotbackend, _termcolor, plotting
   layer   9 : _statsplot           <- _common, _numpy, _physics, _plotbackend, _stats, plotting
   layer  10 : _clistats            <- _common, _histogram, _plotbackend, _reader, _stats, _statsplot
   layer  11 : _cli                 <- _clistats, _common, _examples, _expressions, _exprhelp, _fileops, _messages, _physics, _reader, _writer

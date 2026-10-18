@@ -1,0 +1,46 @@
+Number of colours (stream is a terminal or not):
+   {}: auto: 8/0, always: 8/8, never: 0/0
+   {'NO_COLOR': '1'}: auto: 0/0, always: 8/8, never: 0/0
+   {'NO_COLOR': ''}: auto: 8/0, always: 8/8, never: 0/0
+   {'FORCE_COLOR': '1'}: auto: 8/8, always: 8/8, never: 0/0
+   {'NO_COLOR': '1', 'FORCE_COLOR': '1'}: auto: 0/0, always: 8/8, never: 0/0
+   {'TERM': 'dumb'}: auto: 0/0, always: 8/8, never: 0/0
+   {'TERM': 'dumb', 'FORCE_COLOR': '1'}: auto: 8/8, always: 8/8, never: 0/0
+   {'TERM': 'xterm-256color'}: auto: 256/0, always: 256/256, never: 0/0
+   {'COLORTERM': 'truecolor'}: auto: 16777216/0, always: 16777216/16777216, never: 0/0
+   {'COLORTERM': '24bit', 'TERM': 'xterm'}: auto: 16777216/0, always: 16777216/16777216, never: 0/0
+   _ncolors("sometimes"): MCPLError: The colour setting must be auto, always or never (not "sometimes")
+8 colours: '\x1b[36mX\x1b[0m' '\x1b[33;40mX\x1b[0m'
+256 colours: '\x1b[38;5;31mX\x1b[0m' '\x1b[38;5;220;48;5;53mX\x1b[0m'
+16777216 colours: '\x1b[38;2;31;119;180mX\x1b[0m' '\x1b[38;2;253;231;37;48;2;68;1;84mX\x1b[0m'
+no colours: 'X'
+256 colour codes of black, white, grey, red: [16, 231, 244, 196]
+unicode 1D: colours used: True, same text without them: True
+unicode split: colours used: True, same text without them: True
+unicode 2D: colours used: True, same text without them: False
+   half blocks: True
+unicode overview: colours used: True, same text without them: False
+   half blocks: True
+ascii 1D: colours used: True, same text without them: True
+ascii split: colours used: True, same text without them: True
+ascii 2D: colours used: True, same text without them: True
+ascii overview: colours used: True, same text without them: True
+file without escape sequences: True
+mcpltool -H ekin/MeV;bins=5 -t : exit code 0, colours: False
+mcpltool -H ekin/MeV;bins=5 -t --color=always : exit code 0, colours: True
+mcpltool -H ekin/MeV;bins=5 -t --color always : exit code 0, colours: True
+mcpltool -H ekin/MeV;bins=5 -t --color=never {'FORCE_COLOR': '1'}: exit code 0, colours: False
+mcpltool -H ekin/MeV;bins=5 -t {'FORCE_COLOR': '1'}: exit code 0, colours: True
+mcpltool -H ekin/MeV;bins=5 -t --color=always {'NO_COLOR': '1'}: exit code 0, colours: True
+mcpltool -H ekin/MeV;bins=5 -t {'NO_COLOR': '1', 'FORCE_COLOR': '1'}: exit code 0, colours: False
+mcpltool -H ekin/MeV;bins=5 -B ascii --color=always : exit code 0, colours: True
+mcpltool -H ekin/MeV;bins=5 --color=sometimes : exit code 1, colours: False
+   | ERROR: --color must be auto, always or never.
+mcpltool -H ekin/MeV;bins=5 --color=always -o x.txt : exit code 1, colours: False
+   | ERROR: --color can not be used with -o (plots are saved without colours).
+mcpltool -H ekin/MeV;bins=5;print --color=always : exit code 1, colours: False
+   | ERROR: The histogram option print can not be used together with -o, -B, -t or --color.
+mcpltool -S --color=always : exit code 1, colours: False
+   | ERROR: --color can only be used with -H.
+mcpltool -H ekin/MeV;bins=5 -t --color=always --color=never : exit code 1, colours: False
+   | ERROR: --color specified more than once

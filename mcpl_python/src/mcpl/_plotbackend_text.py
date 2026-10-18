@@ -21,7 +21,8 @@
 
 """Plotting backends drawing figures as text, with ASCII characters or with
 Unicode characters (block elements and box drawing, which give smoother
-plots), for showing plots in a terminal or saving them in text files."""
+plots), for showing plots in a terminal (in colour, if the terminal supports
+it) or saving them in text files."""
 
 __all__ = []
 
@@ -33,6 +34,7 @@ from typing import ClassVar
 
 from ._numpy import np
 from ._plotbackend import PlotBackend
+from ._termcolor import _check_setting, _curve_rgb, _map_rgb, _ncolors, _paint
 from .plotting import Bars, Hist2D, StepHist, Text
 
 
@@ -94,12 +96,23 @@ class _TextBackend(PlotBackend):
     kind = 'terminal'
     _chars = None
     encoding = 'utf-8'
+    #Whether 2D maps in colour are drawn with half blocks (two cells per
+    #character, with foreground and background colours):
+    _halfblocks = False
 
-    def __init__( self, width = None, height = None ):
+    def __init__( self, width = None, height = None, color = 'auto' ):
         if width is None:
             width = min( 250, shutil.get_terminal_size((80,24)).columns )
         self._width = max( 40, int(width) )
         self._height = max( 5, int(height or 15) )
+        self._when = _check_setting(color)
+        self._nc = 0#number of colours while drawing (0: no colours)
+
+    def _p( self, text, fg = None, bg = None ):
+        return _paint(text,self._nc,fg,bg)
+
+    def _curve_color( self, item, k ):
+        return _curve_rgb( item.color if item.color is not None else k )
 
     def resolution( self ):
         return ( self._width - _ylw - 3, self._height )
@@ -116,7 +129,12 @@ class _TextBackend(PlotBackend):
             self._height = nrows - nrows % ny
 
     def show( self, figures ):
-        print('\n\n'.join( self.draw(f) for f in figures ))
+        #(in colour, depending on the colour setting and the terminal):
+        self._nc = _ncolors(self._when)
+        try:
+            print('\n\n'.join( self.draw(f) for f in figures ))
+        finally:
+            self._nc = 0
 
     def save( self, figures, filename ):
         self.check_format(filename)
@@ -274,6 +292,7 @@ class _TextBackend(PlotBackend):
         if len(steps) == 1:
             #Filled columns, with partial characters for fractions of rows:
             nlev = len(c.fill) - 1
+            rgb = self._curve_color(steps[0],0)
             for j,v in enumerate(cols[0]):
                 if not np.isfinite(v):
                     continue
@@ -281,12 +300,12 @@ class _TextBackend(PlotBackend):
                 for row in range(h):
                     k = min( nlev, max( 0, units - row * nlev ) )
                     if k:
-                        grid[h-1-row][j] = c.fill[k]
+                        grid[h-1-row][j] = self._p(c.fill[k],rgb)
         else:
             #A marker symbol for each curve (for bins with contents, drawing
             #the first curves last, so they are on top):
             for k in reversed(range(len(cols))):
-                sym = self._marker(steps[k],k)
+                sym = self._p(self._marker(steps[k],k),self._curve_color(steps[k],k))
                 for j,v in enumerate(cols[k]):
                     if not ( np.isfinite(v) and v > 0 ):
                         continue
@@ -299,9 +318,11 @@ class _TextBackend(PlotBackend):
         labels = [ s.label for s in steps ]
         if any( lab is not None for lab in labels ):
             if len(steps) == 1:
-                out.append( f'{c.fill[-1]} {labels[0]}' )
+                out.append( f'{self._p(c.fill[-1],self._curve_color(steps[0],0))}'
+                            f' {labels[0]}' )
             else:
-                out += [ f'{self._marker(s,k)} {s.label}'
+                out += [ f'{self._p(self._marker(s,k),self._curve_color(s,k))}'
+                         f' {s.label}'
                          for k,s in enumerate(steps) if s.label is not None ]
         return out
 
@@ -326,7 +347,7 @@ class _TextBackend(PlotBackend):
             if v > 0:
                 units = max( 1, units )#non-zero values are always visible
             bar = c.hfill[-1] * ( units // nlev ) + ( c.hfill[units % nlev] if units % nlev else '' )
-            out.append( f'{lab:>{lw}} {c.vline}{bar} {t}' )
+            out.append( f'{lab:>{lw}} {c.vline}{self._p(bar,_curve_rgb(0))} {t}' )
         return out
 
     def _draw_hist2d( self, panel, item ):
@@ -337,31 +358,52 @@ class _TextBackend(PlotBackend):
             ylo, yhi = ylo - 1.0, yhi + 1.0
         ylabels = ( _fmt_y(yhi), _fmt_y(ylo) )
         ncols, nrows = self.resolution()
+        #In colour with half blocks, each character shows two cells:
+        half = bool( self._nc and self._halfblocks )
+        ncells = 2 * nrows if half else nrows
         v = np.asarray(item.values,dtype=float)
         cells = ( self._overlap_matrix(item.xedges,xlo,xhi,ncols) @ v
-                  @ self._overlap_matrix(item.yedges,ylo,yhi,nrows).T )
+                  @ self._overlap_matrix(item.yedges,ylo,yhi,ncells).T )
         pos = cells[cells>0]
         nlev = len(c.shades) - 1
         grid = [ [' '] * ncols for _ in range(nrows) ]
         if len(pos):
             vmin, vmax = pos.min(), pos.max()
+            def frac( val ):
+                if item.logz and vmax > vmin:
+                    return ( math.log(val) - math.log(vmin) ) / ( math.log(vmax) - math.log(vmin) )
+                return val / vmax
             for i in range(ncols):
                 for j in range(nrows):
+                    if half:
+                        bottom, top = cells[i,2*j], cells[i,2*j+1]
+                        if top > 0:
+                            grid[nrows-1-j][i] = self._p( '\u2580', _map_rgb(frac(top)),
+                                                          _map_rgb(frac(bottom))
+                                                          if bottom > 0 else None )
+                        elif bottom > 0:
+                            grid[nrows-1-j][i] = self._p( '\u2584', _map_rgb(frac(bottom)) )
+                        continue
                     val = cells[i,j]
                     if not val > 0:
                         continue
-                    if item.logz and vmax > vmin:
-                        f = ( math.log(val) - math.log(vmin) ) / ( math.log(vmax) - math.log(vmin) )
-                    else:
-                        f = val / vmax
-                    grid[nrows-1-j][i] = c.shades[ max( 1, math.ceil( f * nlev ) ) ]
+                    f = frac(val)
+                    grid[nrows-1-j][i] = self._p( c.shades[ max( 1, math.ceil( f * nlev ) ) ],
+                                                  _map_rgb(f) if self._nc else None )
         out = self._frame([ ''.join(r) for r in grid ], ylabels, ncols, xlo, xhi,
                           False, panel.xlabel)
         if panel.ylabel:
             out.insert( 0, f'(y: {panel.ylabel})' )
         if len(pos):
-            out.append( f'{c.shades[1]} = {_fmt(vmin)} ... {c.shades[-1]} = {_fmt(vmax)}'
-                        + ( ' (log scale)' if item.logz else '' ) )
+            log = ' (log scale)' if item.logz else ''
+            if half:
+                scale = ''.join( self._p( c.shades[-1], _map_rgb( k / 19 ) )
+                                 for k in range(20) )
+                out.append( f'{_fmt(vmin)} {scale} {_fmt(vmax)}{log}' )
+            else:
+                lo_c, hi_c = ( self._p(c.shades[1],_map_rgb(0.0) if self._nc else None),
+                               self._p(c.shades[-1],_map_rgb(1.0) if self._nc else None) )
+                out.append( f'{lo_c} = {_fmt(vmin)} ... {hi_c} = {_fmt(vmax)}{log}' )
         return out
 
 class UnicodeBackend(_TextBackend):
@@ -369,30 +411,38 @@ class UnicodeBackend(_TextBackend):
     drawing), for terminals which can show these characters (files are
     always written as UTF-8). The unicode_width and unicode_height options set
     the size of the plots in characters (default is the width of the
-    terminal, up to 250, and a height of 15)."""
+    terminal, up to 250, and a height of 15). The unicode_color option
+    ('auto', 'always' or 'never') sets whether plots are shown in colour
+    (default 'auto': in terminals, unless the NO_COLOR environment variable
+    is set, or always if FORCE_COLOR is set). Files are written without
+    colours."""
     name = 'unicode'
     priority = 100
     formats: ClassVar[dict] = { 'txt' : 100 }
     _chars = _unicode
+    _halfblocks = True
 
     @classmethod
     def can_show( cls ):
         #Only in terminals which can show the characters:
         return _can_encode(cls._chars)
 
-    def __init__( self, unicode_width = None, unicode_height = None ):
-        super().__init__(unicode_width,unicode_height)
+    def __init__( self, unicode_width = None, unicode_height = None,
+                  unicode_color = 'auto' ):
+        super().__init__(unicode_width,unicode_height,unicode_color)
 
 class AsciiBackend(_TextBackend):
     """Plots drawn as text with ASCII characters only, for any terminal. The
     ascii_width and ascii_height options set the size of the plots in
     characters (default is the width of the terminal, up to 250, and a height
-    of 15)."""
+    of 15), and the ascii_color option whether they are shown in colour (as
+    unicode_color for the unicode backend)."""
     name = 'ascii'
     priority = 10
     formats: ClassVar[dict] = { 'txt' : 10 }
     _chars = _ascii
     encoding = 'ascii'
 
-    def __init__( self, ascii_width = None, ascii_height = None ):
-        super().__init__(ascii_width,ascii_height)
+    def __init__( self, ascii_width = None, ascii_height = None,
+                  ascii_color = 'auto' ):
+        super().__init__(ascii_width,ascii_height,ascii_color)
