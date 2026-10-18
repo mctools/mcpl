@@ -1,4 +1,10 @@
 v2.2.9  (work in progress)
+      * New option mcpltool --create-examples[=N], which creates three example
+        files with N particles each (default 1000000) in the current
+        directory: neutrons leaving a moderator surface, mixed particles
+        around a target, and a polarised neutron beam with userdata. The
+        particles are generated from simple distributions, for trying out
+        mcpltool and the mcpl Python package with large files.
       * The minimum CMake version is now 3.21 (and on Windows 3.27, which was
         already needed there, now with a clear error message).
       * The command-line tools are renamed: the Python tool from the

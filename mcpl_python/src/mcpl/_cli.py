@@ -180,11 +180,15 @@ Other options:
   -t, --text MCPLFILE OUTFILE
                     Read particle contents of MCPLFILE and write into OUTFILE
                     using a simple ASCII-based format.
+  --create-examples[=N]
+                    Create three example files, with N particles each (default
+                    1000000), in the current directory (to try out mcpltool).
   -d, --dry-run   : Do everything except writing files (e.g. to check for
                     errors or see what would happen before doing it), with
-                    --merge, --forcemerge, --extract, --repair and --text. It
-                    is ignored with commands which do not write files, so it
-                    can always be added to be sure that nothing is written.
+                    --merge, --forcemerge, --extract, --repair, --text and
+                    --create-examples. It is ignored with commands which do not
+                    write files, so it can always be added to be sure that
+                    nothing is written.
   -v, --version   : Display version of MCPL installation.
   -h, --help      : Display this usage information (ignores all other options).
   --traceback     : Show the Python traceback for errors (for debugging).
@@ -244,6 +248,30 @@ def _app_mcpltool(argv):
     def bad(errmsg):
         _mcpltool_usage(progname,errmsg)
     args = list(args)
+    #(--create-examples can only be combined with --dry-run):
+    opt_examples = None
+    for a in args:
+        if a == '--create-examples' or a.startswith('--create-examples='):
+            if opt_examples is not None:
+                bad("--create-examples specified more than once")
+            opt_examples = a.partition('=')[2]
+    if opt_examples is not None:
+        if any( not ( a.startswith('--create-examples') or a in
+                      ('-d','--dry-run','--traceback') ) for a in args ):
+            bad("--create-examples can only be combined with --dry-run.")
+        n = None
+        if opt_examples:
+            if not opt_examples.isdigit() or not int(opt_examples) > 0:
+                bad("--create-examples=N requires a positive integer N")
+            n = int(opt_examples)
+        from ._examples import create_examples
+        dry_run = '-d' in args or '--dry-run' in args
+        try:
+            create_examples( n, dry_run = dry_run )
+        except MCPLError as e:
+            bad(str(e))
+        _mcpltool_dryrun_note(dry_run)
+        return
     while args:
         a = args.pop(0)
         if a.startswith('--') and a.split('=')[0] in vopt_names:
