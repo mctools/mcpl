@@ -66,12 +66,12 @@ jobs:
     #Enable cl.exe usage:
     - name: Setup VS in shell
       if: runner.os == 'Windows' && matrix.os != 'windows-11-arm'
-      uses: egor-tensin/vs-shell@54e4148eac794e4580591c2e0b7750f14b7891fc
+      uses: egor-tensin/vs-shell@7710434f30f873ff4ab78184b74cc576a10726d6
 
 
     - name: Setup VS in shell
       if: runner.os == 'Windows' && matrix.os == 'windows-11-arm'
-      uses: egor-tensin/vs-shell@54e4148eac794e4580591c2e0b7750f14b7891fc
+      uses: egor-tensin/vs-shell@7710434f30f873ff4ab78184b74cc576a10726d6
       with:
         arch: arm64
 
