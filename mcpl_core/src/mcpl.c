@@ -2056,9 +2056,12 @@ MCPL_LOCAL double mcpl_internal_rd_double( const char * buf ) { double v; memcpy
 MCPL_LOCAL int32_t mcpl_internal_rd_int32( const char * buf ) { int32_t v; memcpy( &v, buf, sizeof(v) ); return v; }
 MCPL_LOCAL uint32_t mcpl_internal_rd_uint32( const char * buf ) { uint32_t v; memcpy( &v, buf, sizeof(v) ); return v; }
 
-MCPL_LOCAL int mcpl_internal_isfinite3( const double* v )
+//(mcpl_particle_t is packed, so the arrays in it are not necessarily aligned
+//for double, and are therefore never passed on as double pointers, while
+//accessing their elements through the struct is fine):
+MCPL_LOCAL int mcpl_internal_isfinite3( double x, double y, double z )
 {
-  return isfinite(v[0]) && isfinite(v[1]) && isfinite(v[2]);
+  return isfinite(x) && isfinite(y) && isfinite(z);
 }
 
 MCPL_LOCAL const char * mcpl_internal_nonfinite_field( const mcpl_particle_t* p,
@@ -2067,11 +2070,13 @@ MCPL_LOCAL const char * mcpl_internal_nonfinite_field( const mcpl_particle_t* p,
 {
   //Name of the first field (to be stored) with a NaN or infinite value, or
   //NULL if all are finite:
-  if ( !mcpl_internal_isfinite3( p->position ) )
+  if ( !mcpl_internal_isfinite3( p->position[0], p->position[1], p->position[2] ) )
     return "position";
-  if ( !mcpl_internal_isfinite3( p->direction ) )
+  if ( !mcpl_internal_isfinite3( p->direction[0], p->direction[1], p->direction[2] ) )
     return "direction";
-  if ( check_polarisation && !mcpl_internal_isfinite3( p->polarisation ) )
+  if ( check_polarisation
+       && !mcpl_internal_isfinite3( p->polarisation[0], p->polarisation[1],
+                                    p->polarisation[2] ) )
     return "polarisation";
   if ( !isfinite( p->ekin ) )
     return "kinetic energy";
@@ -2116,7 +2121,9 @@ MCPL_LOCAL int mcpl_internal_serialise_particle_to_buffer( const mcpl_particle_t
     return mcpl_internal_raise_runtime( es, "attempting to add particle with"
                                         " negative kinetic energy" );
   //direction and ekin are packed into 3 doubles:
-  mcpl_unitvect_pack_adaptproj(particle->direction,pack_ekindir);
+  const double dir[3] = { particle->direction[0], particle->direction[1],
+                          particle->direction[2] };
+  mcpl_unitvect_pack_adaptproj(dir,pack_ekindir);
   //pack_ekindir[2] is now just a sign(1.0 or -1.0), so we can store the
   //ekin in that field as well (since it must be non-negative). We use copysign
   //to be sure the signbit is set also if ekin=0:
