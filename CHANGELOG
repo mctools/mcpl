@@ -1,4 +1,7 @@
 v2.2.9  (work in progress)
+      * mcpltool --extract keeps the uncompressed output (with a warning) if
+        compressing it fails, as --merge does, and output names of existing
+        directories are refused.
       * mcpl_name_helper no longer crashes for names ending with a directory
         separator (with mode "b", like mcpl.name_helper in Python, which gave
         another result).

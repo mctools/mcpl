@@ -188,6 +188,10 @@ def main():
     cmd('-e','-p99999999999999999999',fmiscnogz,'badpdg.mcpl',fail=True)
     cmd(f1,'-l99999999999999999999',fail=True)
     cmd('-e','-p022','--no-comment',fmisc,'extracted_6.mcpl.gz')
+    #Outputs with the name of an existing directory are refused:
+    Path('dirout.mcpl.gz').mkdir()
+    cmd('-e',fmisc,'dirout.mcpl.gz',fail=True)
+    Path('dirout.mcpl.gz').rmdir()
     cmd('-e','-pabc',fmiscnogz,'badpdg.mcpl',fail=True)
     cmd('-e','-pNeutron',fmiscnogz,'badpdg.mcpl',fail=True)
     cmd('-e','-pneutron',fmiscnogz,'extracted_names_1.mcpl')
