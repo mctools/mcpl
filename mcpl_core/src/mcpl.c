@@ -2915,6 +2915,9 @@ MCPL_LOCAL int mcpl_internal_open_file( mcpl_fileinternal_t * f,
     mcpl_internal_readerr( f, "Error while reading first bytes of file!", es );
     return 0;
   }
+  for ( int i = 4; i < 7; ++i )
+    if ( start[i] < '0' || start[i] > '9' )
+      MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"File is in an unsupported MCPL version!");
   f->format_version = (start[4]-'0')*100 + (start[5]-'0')*10 + (start[6]-'0');
   if (f->format_version<2||f->format_version>4)
     MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"File is in an unsupported MCPL version!");

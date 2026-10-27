@@ -730,6 +730,16 @@ repair file with blobs 1000000: error: File header has too many comments and blo
 repair file with blobs 999000: error: File header is too large (more than 1.9GB)
 repair file with source name length 1900000000: error: File header is too large (more than 1.9GB)
 repair file with source name length 1899999000: error: Errors encountered while attempting to read header
+repair file with version "003": error: File does not appear to be broken.
+repair file with version "005": error: File is in an unsupported MCPL version!
+repair file with version "0/=": error: File is in an unsupported MCPL version!
+repair file with version " 03": error: File is in an unsupported MCPL version!
+repair file with version "+03": error: File is in an unsupported MCPL version!
+repair file with version "0a3": error: File is in an unsupported MCPL version!
+repair file with only 2 bytes: error: Error while reading first bytes of file!
+repair file with only 3 bytes: error: Error while reading first bytes of file!
+repair file with only 6 bytes: error: Error while reading first bytes of file!
+repair file with not starting with MCPL: error: File is not an MCPL file!
 name_helper("x","M") identical: True
 name_helper("x","G") identical: True
 name_helper("x","B") identical: True
@@ -1015,4 +1025,4 @@ Script "random script 146": error: enable_userflags called too late.
 Script "random script 147": error: enable_universal_pdgcode must be called with non-zero pdgcode.
 Script "random script 148": ok
 Script "random script 149": ok
-Compared 630 operations
+Compared 640 operations

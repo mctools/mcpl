@@ -614,9 +614,13 @@ class MCPLFile:
         self._hdr={}
         h=self._hdr
         x=self._fileread(dtype='u1',count=8)
-        if len(x)!=8 or not all(x[0:4]==(77,67,80,76)):
+        if len(x)>=4 and not all(x[0:4]==(77,67,80,76)):
             raise MCPLError('File is not an MCPL file!')
+        if len(x)!=8:
+            raise MCPLError('Error while reading first bytes of file!')
         x=list(map(chr,x[4:]))
+        if not all( c in '0123456789' for c in x[0:3] ):
+            raise MCPLError('File is in an unsupported MCPL version!')
         version = int(''.join(x[0:3]))
         if version not in (2,3,4):
             raise MCPLError('File is in an unsupported MCPL version!')
