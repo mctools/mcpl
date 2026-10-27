@@ -383,6 +383,20 @@ def make_inputs():
     w('c_blob', script('srcname MySim', 'comment a comment', 'blob key1 other data',
                        'statsum nsim 1', 'statsum other -1', parts(2), 'close'))
     w('c_statkey', script(hdr, 'statsum nsim 1', 'statsum otherkey -1', parts(2), 'close'))
+    #Files with userdata (with the Python writer, since the scripts have no
+    #userdata), and one of them not closed properly (nparticles 0):
+    for name, n in ( ('u1', 3), ('u2', 2), ('u_crash', 4) ):
+        with mcpl.MCPLOutFile(input_dir/f'{name}.mcpl', sourcename = 'MySim',
+                              userdata_layout = 'temp:float32:K,n:uint16',
+                              stat_sum = { 'nsim' : 10.0 }) as f:
+            f.hdr_add_comment('a comment')
+            for i in range(n):
+                f.add_particle( pdgcode = 2112, ekin = 1.0 + i,
+                                direction = (0,0,1),
+                                userdata = { 'temp' : 300.0 + i, 'n' : i } )
+    d = bytearray((input_dir/'u_crash.mcpl').read_bytes())
+    d[8:16] = bytes(8)
+    (input_dir/'u_crash.mcpl').write_bytes(bytes(d))
     for f in ('reffile_1.mcpl', 'reffile_crash.mcpl', 'reffile_empty.mcpl',
               'reffile_skip123.mcpl', 'reffile_truncated.mcpl', 'reffile_5.mcpl.gz',
               'ref_statsum_crash.mcpl', 'ref_statsum.mcpl.gz'):
@@ -447,13 +461,14 @@ def test_file_functions():
                 ('reffile_1.mcpl','fmt2_reffile_1.mcpl'),
                 ('fmt2_reffile_1.mcpl','fmt2_reffile_5.mcpl'),
                 ('reffile_crash.mcpl','reffile_1.mcpl'), ('a1.mcpl','nonexistent.mcpl'),
-                ('a2.mcpl','n_w_nan.mcpl'), ('n_dir_nan.mcpl','a1.mcpl') ]
+                ('a2.mcpl','n_w_nan.mcpl'), ('n_dir_nan.mcpl','a1.mcpl'),
+                ('u1.mcpl','u2.mcpl') ]
     for f1, f2 in inplace:
         ok &= compare(f'merge_inplace "{f1}" "{f2}"', 'mcpltest_merge_inplace',
                       (f1, f2), mcpl.merge_inplace)
     for f in ('reffile_crash.mcpl', 'reffile_1.mcpl', 'reffile_empty.mcpl',
               'reffile_truncated.mcpl', 'ref_statsum_crash.mcpl', 'reffile_5.mcpl.gz',
-              'agz.mcpl.gz', 'nonexistent.mcpl'):
+              'agz.mcpl.gz', 'nonexistent.mcpl', 'u_crash.mcpl'):
         ok &= compare(f'repair "{f}"', 'mcpltest_repair', (f,), mcpl.repair)
     names = sorted(f.name for f in input_dir.iterdir())
     for i, f1 in enumerate(names):

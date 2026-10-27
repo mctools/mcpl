@@ -1,0 +1,10 @@
+ud.mcpl: the copy with the other byte order is read identically
+example.mcpl: the copy with the other byte order is read identically
+miscphys.mcpl.gz: the copy with the other byte order is read identically
+merge_inplace: 14 particles, stat:sum {'nsrc': 20.0}
+MCPL WARNING: Marking stat:sum:nsrc entry as not available (-1) since file not closed properly.
+MCPL: Successfully repaired file with 7 particles.
+repair (not closed): 7 particles, stat:sum {'nsrc': None}
+MCPL WARNING: Marking stat:sum:nsrc entry as not available (-1) since file not closed properly.
+MCPL: Successfully repaired file with 6 particles.
+repair (truncated): 6 particles, stat:sum {'nsrc': None}

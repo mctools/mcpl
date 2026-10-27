@@ -94,6 +94,8 @@ def _comment_positions(f):
     position and comment)"""
     h = f._hdr
     pos = 8 + 8 + 32 + (8 if f.opt_universalweight else 0)
+    if h['userdata_layout'] is not None:
+        pos += 4 + len(h['userdata_layout'])
     pos += 4 + len(h['sourcename'])
     res = []
     for c in h['comments']:
@@ -101,6 +103,12 @@ def _comment_positions(f):
         res.append((pos,c))
         pos += len(c)
     return res
+
+def _nparticles_bytes(f, n):
+    """The number of particles n encoded for the header of MCPLFile f (in the
+    byte order of the file)"""
+    import struct
+    return struct.pack('<Q' if f.endianness == 'L' else '>Q', n)
 
 def _statsum_entries(f):
     """List of (comment index, key, value) for the stat:sum entries of MCPLFile f
@@ -424,7 +432,6 @@ def merge_inplace(file1, file2, dry_run = False):
     gzipped. Values of stat:sum entries are added up. With dry_run=True,
     everything is done except writing (nothing is modified)."""
     import math
-    import struct
     file1, file2 = os.fspath(file1), os.fspath(file2)
     if _is_same_file(file1, file2):
         raise MCPLError('Merging file with itself')
@@ -466,7 +473,7 @@ def merge_inplace(file1, file2, dry_run = False):
                 fh.seek(pos)
                 fh.write(data)
             #While transferring, the file appears broken and in need of repair:
-            write_at(8, struct.pack('=Q', 0))
+            write_at(8, _nparticles_bytes(f1, 0))
             for pos, key, _ in updates:
                 write_at(pos, encode_stat_sum(key, -1.0).encode('ascii'))
             fh.seek(first_particle_pos + psize * np1)
@@ -475,7 +482,7 @@ def merge_inplace(file1, file2, dry_run = False):
             for pos, key, newval in updates:
                 if newval != -1.0:
                     write_at(pos, encode_stat_sum(key, newval).encode('ascii'))
-            write_at(8, struct.pack('=Q', np1 + np2))
+            write_at(8, _nparticles_bytes(f1, np1 + np2))
 
 def repair(filename, dry_run = False):
     """Repair a file which was not properly closed, or which was truncated, by
@@ -484,7 +491,6 @@ def repair(filename, dry_run = False):
     With dry_run=True, everything is done except writing (nothing is
     modified)."""
     import pathlib
-    import struct
     filename = os.fspath(filename)
     with _open_raw(filename, _recover = False) as f:
         nparticles = f.nparticles
@@ -508,6 +514,7 @@ def repair(filename, dry_run = False):
         statsums = [ (positions[i], key) for i, key, value in _statsum_entries(f)
                      if value != -1.0 ]
         headersize, psize = f.headersize, f.particlesize
+        np_bytes = _nparticles_bytes(f, np_)
     for _, key in statsums:
         _warning(f'Marking stat:sum:{key} entry as not available'
                  ' (-1) since file not closed properly.')
@@ -520,7 +527,7 @@ def repair(filename, dry_run = False):
             fh.write(encode_stat_sum(key, -1.0).encode('ascii'))
         fh.truncate(headersize + np_ * psize)
         fh.seek(8)
-        fh.write(struct.pack('=Q', np_))
+        fh.write(np_bytes)
     _info(f'Successfully repaired file with {np_} particles.')
 
 def _absolute_path(path):
