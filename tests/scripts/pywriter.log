@@ -171,6 +171,14 @@ Filename given as bytes: bytesname.mcpl
   Got expected error: Syntax error: could not properly decode comment starting with "stat:sum:" (did not find colon separating key and value). Issue with comment "stat:sum:k"
 add_particle and add_particles gave the same results for 370 cases
   Got expected error: pdgcode must be integers
+Invalid arguments of MCPLOutFile leave no file behind:
+  Got expected error: enable_universal_weight must be called with positive but finite weight.
+  Got expected error: Invalid userdata layout "x:float32": reserved field name (the names of particle fields, like x, ekin, position or wavelength, can not be used)
+  Got expected error: hdr_add_data got invalid key (whitespace is not allowed).
+  Got expected error: Invalid stat:sum: key "1bad" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
+  Got expected error: blocklength must be at least 1
+Invalid arguments of MCPLFile:
+  Got expected error: blocklength must be at least 1
 MCPL: Compressing file example_output.mcpl
 MCPL: Compressed file into example_output.mcpl.gz
 pyexample_writemcpl wrote 10001 particles from "my_cool_program_name" with comments ['Some comment.', 'Another comment.']

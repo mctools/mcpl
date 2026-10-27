@@ -102,6 +102,8 @@ class MCPLFile:
         """
         #(set first, so cleaning up after errors below always works):
         self._fileclose = lambda : None
+        if int(blocklength) < 1:
+            raise MCPLError('blocklength must be at least 1')
         #(only importing the expressions module when needed):
         self._flt = self._edt = None
         if pick is not None or edit is not None:
@@ -222,7 +224,6 @@ class MCPLFile:
         #Init position and caches (don't read first block yet):
         self._ipos = 0
         self._blocklength = int(blocklength)
-        assert(self._blocklength>0)
         self._iblock = 0
         self._nblocks = self.nparticles // self._blocklength + (1 if self.nparticles%self._blocklength else 0)
         #reuse same block object for whole file (to reuse fixed columns and internal caches)

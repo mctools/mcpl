@@ -176,26 +176,31 @@ class MCPLOutFile:
         self._pending = []
         self._pdt = None
         self._fh = _DryRunHandle() if self._dry_run else open(self._filename,'wb')  # noqa: SIM115
-        if sourcename is not None:
-            self.hdr_set_srcname(sourcename)
-        for c in (comments or []):
-            self.hdr_add_comment(c)
-        for k,v in (blobs.items() if hasattr(blobs,'items') else (blobs or [])):
-            self.hdr_add_data(k,v)
-        for k,v in (stat_sum or {}).items():
-            self.hdr_add_stat_sum(k,v)
-        if opt_userflags:
-            self.enable_userflags()
-        if opt_polarisation:
-            self.enable_polarisation()
-        if not opt_singleprec:
-            self.enable_doubleprec()
-        if opt_universalpdgcode:
-            self.enable_universal_pdgcode(opt_universalpdgcode)
-        if opt_universalweight:
-            self.enable_universal_weight(opt_universalweight)
-        if userdata_layout is not None:
-            self.enable_userdata(userdata_layout)
+        #(invalid arguments must not leave a file behind):
+        try:
+            if sourcename is not None:
+                self.hdr_set_srcname(sourcename)
+            for c in (comments or []):
+                self.hdr_add_comment(c)
+            for k,v in (blobs.items() if hasattr(blobs,'items') else (blobs or [])):
+                self.hdr_add_data(k,v)
+            for k,v in (stat_sum or {}).items():
+                self.hdr_add_stat_sum(k,v)
+            if opt_userflags:
+                self.enable_userflags()
+            if opt_polarisation:
+                self.enable_polarisation()
+            if not opt_singleprec:
+                self.enable_doubleprec()
+            if opt_universalpdgcode:
+                self.enable_universal_pdgcode(opt_universalpdgcode)
+            if opt_universalweight:
+                self.enable_universal_weight(opt_universalweight)
+            if userdata_layout is not None:
+                self.enable_userdata(userdata_layout)
+        except BaseException:
+            self._abort()
+            raise
 
     def __enter__(self):
         return self

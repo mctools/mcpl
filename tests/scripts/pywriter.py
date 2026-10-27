@@ -361,6 +361,20 @@ def test_example():
         print(f'pyexample_writemcpl wrote {f.nparticles} particles from'
               f' "{f.sourcename}" with comments {f.comments}')
 
+def test_invalid_arguments():
+    print('Invalid arguments of MCPLOutFile leave no file behind:')
+    for kw in ( { 'opt_universalweight' : -1.0 },
+                { 'userdata_layout' : 'x:float32' },
+                { 'blobs' : { 'bad key' : b'data' } },
+                { 'stat_sum' : { '1bad' : 1.0 } },
+                { 'blocklength' : 0 } ):
+        expect_error(mcpl.MCPLOutFile,'invalid_args',**kw)
+        assert not pathlib.Path('invalid_args.mcpl').exists(), kw
+    print('Invalid arguments of MCPLFile:')
+    with mcpl.MCPLOutFile('valid.mcpl') as o:
+        o.add_particle(pdgcode=2112,ekin=1.0,uz=1.0)
+    expect_error(mcpl.MCPLFile,'valid.mcpl',blocklength=0)
+
 test_reference_files()
 test_raw_values()
 test_transfers()
@@ -368,4 +382,5 @@ test_api()
 test_api_more()
 test_statsum_syntax()
 test_single_vs_blocks()
+test_invalid_arguments()
 test_example()
