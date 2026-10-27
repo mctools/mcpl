@@ -618,6 +618,18 @@ namespace {
       std::remove(fn.c_str());
     }
     std::cout << "output files in a vector: ok" << std::endl;
+    //Particles of a closed file are refused by files opened later (also by
+    //an object reused for a new file, which might get the same C handle):
+    mcpl::MCPLOutFile a("closed.mcpl");
+    auto pa = a.new_particle();
+    pa.set_uz(1.0);
+    a.add(pa);
+    a.close();
+    a = mcpl::MCPLOutFile("reopened.mcpl");
+    expect_throw( "add (particle of a closed file)", [&]{ a.add(pa); } );
+    a.close();
+    std::remove("closed.mcpl");
+    std::remove("reopened.mcpl");
   }
 
   void test_misc()

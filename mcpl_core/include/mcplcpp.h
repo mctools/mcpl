@@ -40,6 +40,7 @@
 #endif
 
 #include <array>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -347,6 +348,12 @@ namespace mcpl {
           ds->eptr = std::current_exception();
         }
       }
+    }
+
+    inline std::uint64_t new_outfile_id() noexcept
+    {
+      static std::atomic<std::uint64_t> last_id{0};
+      return ++last_id;
     }
 
   }//end of implementation details
@@ -856,12 +863,12 @@ namespace mcpl {
     friend class ParticleAccessors<OutParticle>;
     friend class MCPLOutFile;
     OutParticle( mcpl_particle_t * p, std::uint8_t * ud, std::uint32_t udsize,
-                 const void * owner ) noexcept
+                 std::uint64_t owner ) noexcept
       : m_p(p), m_ud(ud), m_udsize(udsize), m_owner(owner) {}
     mcpl_particle_t * m_p = nullptr;
     std::uint8_t * m_ud = nullptr;
     std::uint32_t m_udsize = 0;
-    const void * m_owner = nullptr;
+    std::uint64_t m_owner = 0;
   };
 
   //////////////////////////////////////////////////////////////////////////////
@@ -1461,7 +1468,8 @@ namespace mcpl {
      * @param o The file object moved from.
      */
     MCPLOutFile( MCPLOutFile&& o ) noexcept
-      : m_f(o.m_f), m_pending_layout(std::move(o.m_pending_layout)),
+      : m_f(o.m_f), m_id(o.m_id),
+        m_pending_layout(std::move(o.m_pending_layout)),
         m_ud(std::move(o.m_ud)), m_puser(o.m_puser),
         m_layout_locked(o.m_layout_locked)
     {
@@ -1480,6 +1488,7 @@ namespace mcpl {
       if ( this != &o ) {
         abandon();
         m_f = o.m_f;
+        m_id = o.m_id;
         m_pending_layout = std::move(o.m_pending_layout);
         m_ud = std::move(o.m_ud);
         m_puser = o.m_puser;
@@ -1764,7 +1773,7 @@ namespace mcpl {
         std::memset( m_ud.data(), 0, m_ud.size() );
       return OutParticle( m_puser, m_ud.empty() ? nullptr : m_ud.data(),
                           static_cast<std::uint32_t>(m_ud.size()),
-                          m_f.internal );
+                          m_id );
     }
 
     /**
@@ -1775,7 +1784,7 @@ namespace mcpl {
     void add( const OutParticle& p )
     {
       h();
-      if ( p.m_owner != m_f.internal )
+      if ( p.m_owner != m_id )
         detail::throw_runtime( "particle does not belong to this output file" );
       add_impl( p.c_struct(), p.m_ud );
     }
@@ -1927,6 +1936,8 @@ namespace mcpl {
     //(keeps the handler of set_print_handler alive while the file exists):
     std::shared_ptr<detail::PrintHandlerState> m_printstate
       = detail::print_handler_state();
+    //(unique for each opened file, to recognise its particles):
+    std::uint64_t m_id = detail::new_outfile_id();
     std::string m_pending_layout;//fields not yet given to the C library
     std::vector<std::uint8_t> m_ud;//userdata of new_particle()
     mcpl_particle_t * m_puser = nullptr;

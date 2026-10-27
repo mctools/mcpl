@@ -374,6 +374,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     2           0           3           0           0           0           0           0           1           0           0  00004040
 other.mcpl (abandoned before the header was written) has 0 bytes
 output files in a vector: ok
+add (particle of a closed file) -> mcpl::Error: particle does not belong to this output file
 
 ==> Filenames, new_particle and C handles:
 MCPLOutFile(path).filename() = viapath.mcpl
