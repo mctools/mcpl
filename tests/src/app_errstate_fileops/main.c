@@ -168,8 +168,11 @@ static void test_merge_files(void)
     { "missing input file", "mout.mcpl", 2, { "m1.mcpl", "nosuchfile.mcpl", NULL } },
     { "incompatible files", "mout.mcpl", 2, { "m1.mcpl", "m3_dp.mcpl", NULL } },
     { "output file exists", "m2.mcpl", 1, { "m1.mcpl", NULL, NULL } },
+    //(".mcpl" is appended to the output filename, giving an input file):
+    { "output file exists with .mcpl", "m1", 2, { "m1.mcpl", "m2.mcpl", NULL } },
     { "NULL output file", NULL, 1, { "m1.mcpl", NULL, NULL } },
   };
+  const uint64_t m1size = file_size("m1.mcpl");
   for ( unsigned i = 0; i < sizeof(cases)/sizeof(cases[0]); ++i ) {
     char what[256];
     snprintf(what,sizeof(what),"merge_files (%s)",cases[i].what);
@@ -183,6 +186,8 @@ static void test_merge_files(void)
          && file_exists("mout.mcpl") )
       test_fail("output file created");
   }
+  if ( file_size("m1.mcpl") != m1size )
+    test_fail("input file modified");
 
   //Input file which turns out to be truncated while transferring particles:
   //the output is left unfinished (and can be repaired):
@@ -256,7 +261,9 @@ static void test_forcemerge_files(void)
     { "same file twice", "fout.mcpl", 2, { "m1.mcpl", "m1.mcpl", NULL } },
     { "missing input file", "fout.mcpl", 2, { "m1.mcpl", "nosuchfile.mcpl", NULL } },
     { "output file exists", "m2.mcpl", 2, { "m1.mcpl", "m3_dp.mcpl", NULL } },
+    { "output file exists with .mcpl", "m1", 2, { "m1.mcpl", "m3_dp.mcpl", NULL } },
   };
+  const uint64_t m1size = file_size("m1.mcpl");
   for ( unsigned i = 0; i < sizeof(cases)/sizeof(cases[0]); ++i ) {
     char what[256];
     snprintf(what,sizeof(what),"forcemerge_files (%s)",cases[i].what);
@@ -267,6 +274,8 @@ static void test_forcemerge_files(void)
       test_fail("merge unexpectedly succeeded");
     print_result(what,&es);
   }
+  if ( file_size("m1.mcpl") != m1size )
+    test_fail("input file modified");
   //Truncated input file (output left unfinished):
   {
     const char * files[2] = { "m3_dp.mcpl", "m2_trunc.mcpl" };

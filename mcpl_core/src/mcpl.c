@@ -947,6 +947,22 @@ MCPL_LOCAL void mcpl_internal_cleanup_outfile(mcpl_outfileinternal_t * f)
   free(f);
 }
 
+//The name which mcpl_create_outfile gives a file: the filename with ".mcpl"
+//appended unless it already ends with ".mcpl" (newly allocated, or NULL in
+//case of errors):
+MCPL_LOCAL char * mcpl_internal_outfile_name_es( const char * filename,
+                                                 mcpl_errstate_t * es )
+{
+  size_t n = strlen(filename);
+  int has_ext = ( n >= 5 && strcmp( filename + ( n - 5 ), ".mcpl" ) == 0 );
+  char * res = mcpl_internal_malloc_es( n + ( has_ext ? 1 : 6 ), es );
+  if ( !res )
+    return NULL;
+  memcpy( res, filename, n );
+  memcpy( res + n, has_ext ? "" : ".mcpl", has_ext ? 1 : 6 );
+  return res;
+}
+
 mcpl_outfile_t mcpl_create_outfile_es( const char * filename,
                                        mcpl_errstate_t * es )
 {
@@ -988,21 +1004,10 @@ mcpl_outfile_t mcpl_create_outfile_es( const char * filename,
   if (!f)
     return out;
 
-  if (!lastdot || strcmp(lastdot, ".mcpl") != 0) {
-    f->filename = mcpl_internal_malloc_es(n+6,es);
-    if (!f->filename) {
-      mcpl_internal_cleanup_outfile(f);
-      return out;
-    }
-    memcpy(f->filename,filename,n);
-    memcpy(f->filename+n,".mcpl",6);
-  } else {
-    f->filename = mcpl_internal_malloc_es(n+1,es);
-    if (!f->filename) {
-      mcpl_internal_cleanup_outfile(f);
-      return out;
-    }
-    memcpy(f->filename,filename,n+1);
+  f->filename = mcpl_internal_outfile_name_es(filename,es);
+  if (!f->filename) {
+    mcpl_internal_cleanup_outfile(f);
+    return out;
   }
 
   f->hdr_srcprogname = NULL;
@@ -4492,6 +4497,20 @@ MCPL_LOCAL int mcpl_file_certainly_exists(const char * filename)
   return mctools_is_file( &fn );
 }
 
+//Whether the file which mcpl_create_outfile would create already exists (so
+//it is never one of the input files of the merge functions). Returns -1 in
+//case of errors:
+MCPL_LOCAL int mcpl_internal_outfile_exists_es( const char * filename,
+                                                mcpl_errstate_t * es )
+{
+  char * fn = mcpl_internal_outfile_name_es( filename, es );
+  if ( !fn )
+    return -1;
+  int res = mcpl_file_certainly_exists(fn);
+  free(fn);
+  return res;
+}
+
 MCPL_LOCAL int mcpl_error_on_dups( unsigned n, const char ** filenames,
                                    mcpl_errstate_t * es )
 {
@@ -4664,7 +4683,10 @@ mcpl_outfile_t mcpl_forcemerge_files_es( const char * file_output,
                                  " string as output filename" );
     return out;
   }
-  if (mcpl_file_certainly_exists(file_output)) {
+  int exists = mcpl_internal_outfile_exists_es( file_output, es );
+  if ( exists < 0 )
+    return out;
+  if ( exists ) {
     mcpl_internal_raise_runtime( es, "requested output file of"
                                  " mcpl_forcemerge_files already exists" );
     return out;
@@ -5126,7 +5148,10 @@ mcpl_outfile_t mcpl_merge_files_es( const char* file_output,
                                  " as output filename" );
     return out;
   }
-  if (mcpl_file_certainly_exists(file_output)) {
+  int exists = mcpl_internal_outfile_exists_es( file_output, es );
+  if ( exists < 0 )
+    return out;
+  if ( exists ) {
     mcpl_internal_raise_runtime( es, "requested output file of mcpl_merge_files"
                                  " already exists" );
     return out;
@@ -5608,15 +5633,9 @@ MCPL_LOCAL const char * mcpl_internal_tool_outfn( char * fn, char ** outfn,
     }
   } else if( lfn > 3 && !strcmp(fn + (lfn - 3), ".gz")) {
     return "Requested output file should not have .gz extension (unless it is .mcpl.gz).";
-  } else if( !( lfn > 5 && !strcmp(fn + (lfn - 5), ".mcpl") ) ) {
-    //mcpl_create_outfile will append .mcpl:
-    char * fnmcpl = mcpl_internal_malloc(lfn+6);
-    memcpy(fnmcpl,fn,lfn);
-    memcpy(fnmcpl+lfn,".mcpl",6);
-    int exists = mcpl_file_certainly_exists(fnmcpl);
-    free(fnmcpl);
-    if (exists)
-      return "Requested output file already exists (with .mcpl extension).";
+  } else if ( mcpl_internal_outfile_exists_es( fn, NULL ) ) {
+    //(mcpl_create_outfile will append .mcpl)
+    return "Requested output file already exists (with .mcpl extension).";
   }
   return NULL;
 }
@@ -5626,15 +5645,7 @@ MCPL_LOCAL void mcpl_internal_tool_remove_output( const char * outfn )
   //Removes the output file of a failed --merge, --forcemerge or --extract
   //(which did not exist before, see mcpl_internal_tool_outfn), with the name
   //given to it by mcpl_create_outfile:
-  size_t n = strlen(outfn);
-  if ( n > 5 && !strcmp(outfn + (n - 5), ".mcpl") ) {
-    if ( mcpl_file_certainly_exists(outfn) )
-      mcpl_internal_delete_file(outfn);
-    return;
-  }
-  char * fn = mcpl_internal_malloc(n+6);
-  memcpy(fn,outfn,n);
-  memcpy(fn+n,".mcpl",6);
+  char * fn = mcpl_internal_outfile_name_es( outfn, NULL );
   if ( mcpl_file_certainly_exists(fn) )
     mcpl_internal_delete_file(fn);
   free(fn);

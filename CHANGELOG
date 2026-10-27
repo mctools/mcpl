@@ -1,4 +1,7 @@
 v2.2.9  (work in progress)
+      * mcpl_merge_files and mcpl_forcemerge_files no longer overwrite an
+        input file when ".mcpl" is appended to the name of the output file
+        (e.g. output "a" with input "a.mcpl").
       * Plots in the terminal (the unicode and ascii plotting backends) are
         shown in colour: curves with the colours of matplotlib, and 2D maps
         with the viridis colour map (with the unicode backend, drawn with half
