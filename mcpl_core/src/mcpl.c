@@ -6548,7 +6548,7 @@ unsigned mcpl_generic_fread_try( mcpl_generic_filehandle_t* fh,
       if ( rv < 1 )
         return nb_read;
       nb_read += (unsigned)rv;
-      fh->current_pos += nb_read;
+      fh->current_pos += (unsigned)rv;
       dest += rv;
       nb_left -= (unsigned)rv;
     } else {
