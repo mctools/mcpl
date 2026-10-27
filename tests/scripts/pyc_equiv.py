@@ -546,6 +546,12 @@ def test_header_start():
                  for v in ( '003', '005', '0/=', ' 03', '+03', '0a3' ) ]
     variants += [ ( f'only {n} bytes', data[:n] ) for n in ( 2, 3, 6 ) ]
     variants += [ ( 'not starting with MCPL', b'XCPL' + data[4:] ) ]
+    #(truncated in the universal weight, which follows the 48 bytes of the
+    #fixed part of the header):
+    lib.mcpltest_script(str(input_dir/'start_uw'),
+                        script('srcname src', 'uw 2.5', parts(2), 'close'))
+    data_uw = (input_dir/'start_uw.mcpl').read_bytes()
+    variants += [ ( 'only 52 bytes (universal weight)', data_uw[:52] ) ]
     for what, d in variants:
         (input_dir/'start.mcpl').write_bytes(d)
         ok &= compare(f'repair file with {what}', 'mcpltest_repair',

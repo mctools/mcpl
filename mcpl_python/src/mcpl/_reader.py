@@ -661,7 +661,12 @@ class MCPLFile:
         opt_userflags = bool( opt_userflags & 0x1 )
         opt_polarisation = bool(opt_polarisation)
         opt_singleprec = bool(opt_singleprec)
-        opt_universalweight = float(self._fileread(dtype=np.dtype('f8').newbyteorder(endianness),count=1)[0] if _tmp else 0.0)
+        opt_universalweight = 0.0
+        if _tmp:
+            uw = self._fileread(dtype=np.dtype('f8').newbyteorder(endianness),count=1)
+            if len(uw) != 1:
+                raise MCPLError('Errors encountered while attempting to read header')
+            opt_universalweight = float(uw[0])
         if _tmp and not ( 0.0 < opt_universalweight < float('inf') ):
             #(must be positive and finite, as when writing files)
             raise MCPLError('invalid universal weight')
