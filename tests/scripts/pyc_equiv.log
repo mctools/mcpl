@@ -179,6 +179,8 @@ merge_files "a1.mcpl|n_w_nan.mcpl": ok
 merge_files "n_ekin_inf.mcpl|a2.mcpl": ok
 merge_files "b_dp.mcpl|n_x_nan.mcpl": ok
 merge_files to existing file: error: requested output file of merge_files already exists
+merge_files to input file without .mcpl: error: requested output file of merge_files already exists
+forcemerge_files to input file without .mcpl: error: requested output file of forcemerge_files already exists
 forcemerge_files "a1.mcpl|b_dp.mcpl" keep_userflags=0: ok
    | MCPL force-merge: Files have different FP precision (single and double), using double
    | MCPL force-merge: Discarding comments and blobs of the input files
@@ -1101,4 +1103,4 @@ Script "random script 146": error: enable_userflags called too late.
 Script "random script 147": error: enable_universal_pdgcode must be called with non-zero pdgcode.
 Script "random script 148": ok
 Script "random script 149": ok
-Compared 682 operations
+Compared 684 operations

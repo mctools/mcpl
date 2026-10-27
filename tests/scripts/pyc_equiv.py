@@ -441,6 +441,13 @@ def test_file_functions():
                       ('merged', files), py_merge_files)
     ok &= compare('merge_files to existing file', 'mcpltest_merge_files',
                   ('a3.mcpl', 'a1.mcpl|a2.mcpl'), py_merge_files)
+    #(".mcpl" is appended to the name of the output file, giving an input file,
+    #which must not be touched):
+    ok &= compare('merge_files to input file without .mcpl', 'mcpltest_merge_files',
+                  ('a1', 'a1.mcpl|a2.mcpl'), py_merge_files)
+    ok &= compare('forcemerge_files to input file without .mcpl',
+                  'mcpltest_forcemerge_files', ('a1', 'a1.mcpl|b_dp.mcpl', 0),
+                  py_forcemerge_files)
     forcemerges = [ 'a1.mcpl|b_dp.mcpl', 'a1.mcpl|a2.mcpl', 'b_pol.mcpl|b_uf.mcpl',
                     'b_uf.mcpl|b_pol.mcpl|a1.mcpl', 'b_updg.mcpl|b_updg_g.mcpl',
                     'b_updg.mcpl|b_uw.mcpl', 'b_updg.mcpl|b_updg2.mcpl|b_empty_pol.mcpl',
