@@ -162,6 +162,27 @@ def userdata_units( layout ):
         res[name] = typespec.partition(':')[2] or None
     return res
 
+def _exact_ints( v, base ):
+    """Plain Python integers (single numbers or lists) as an array of the
+    integer type base, so they are not converted to floating point numbers
+    (which can not represent all 64 bit integers exactly). Other values are
+    returned as arrays as usual (checked by the caller), and None is returned
+    for integers outside the range of base."""
+    if isinstance(v, np.ndarray):
+        return v
+    def all_ints( x ):
+        if isinstance(x, (list, tuple)):
+            return all( all_ints(e) for e in x )
+        return isinstance(x, int) and not isinstance(x, bool)
+    if not all_ints(v):
+        return np.asarray(v)
+    info = np.iinfo(base)
+    def in_range( x ):
+        if isinstance(x, (list, tuple)):
+            return all( in_range(e) for e in x )
+        return info.min <= x <= info.max
+    return np.array(v, dtype=base) if in_range(v) else None
+
 def userdata_array( value, layout, what = 'userdata' ):
     """Convert userdata given as a dict of field values (e.g. {'temp':temps})
     or a numpy structured array (or record) with fields of the layout into a
@@ -185,7 +206,10 @@ def userdata_array( value, layout, what = 'userdata' ):
     conv, lengths = {}, set()
     for name, v in fields.items():
         sub, base = dt[name].shape, dt[name].base
-        v = np.asarray(v)
+        v = _exact_ints(v, base) if base.kind in 'iu' else np.asarray(v)
+        if v is None:
+            raise MCPLError(f'{what} field {name} out of range for'
+                            f' {base.name}')
         if v.dtype.kind not in 'biuf':
             raise MCPLError(f'{what} field {name} must be numbers')
         if v.shape == sub:
