@@ -1,4 +1,9 @@
 v2.2.9  (work in progress)
+      * Uncompressed files whose size does not agree with the number of
+        particles in their header (e.g. truncated files) can no longer be
+        opened (in C and Python), as the format requires. Files with 0
+        particles (not closed properly) are still recovered when opened, and
+        truncated files can be repaired with mcpltool --repair.
       * The file position (current_pos) of gzipped files read with
         mcpl_generic_fread was wrong after reading more than 32 kB at once,
         which could give wrong output from mcpl2ssw with gzipped reference

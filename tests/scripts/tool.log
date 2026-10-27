@@ -2785,38 +2785,7 @@ MCPL ERROR: Errors encountered while attempting to read particle data.
 ----------------------------------------------
 Running mcpltool-c '<TESTDATADIR>/ref/reffile_truncated.mcpl'
 ----------------------------------------------
-Opened MCPL file reffile_truncated.mcpl:
-
-  Basic info
-    Format             : MCPL-3
-    No. of particles   : 15
-    Header storage     : 148 bytes
-    Data storage       : 480 bytes
-
-  Custom meta data
-    Source             : "ESS/dgcode/MCPLTests/genisotrop"
-    Number of comments : 1
-          -> comment 0 : "A simple file with isotropically generated particles."
-    Number of blobs    : 0
-
-  Particle data format
-    User flags         : no
-    Polarisation info  : no
-    Fixed part. type   : no
-    Fixed part. weight : yes (weight 1)
-    FP precision       : single
-    Endianness         : little
-    Storage            : 32 bytes/particle
-
-index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]
-    0        2112           0           0           0           0     0.69673    -0.32571    -0.63913           0
-    1          22           0           0           0           0    -0.43755    -0.27624     0.85571           0
-    2        2112           0           0           0           0     0.61152     0.73811    -0.28504           0
-    3          22           0           0           0           0     0.76301   -0.046213     0.64473           0
-    4        2112           0           0           0           0    -0.89736    -0.39549     0.19578           0
-    5          22           0           0           0           0     0.27755    -0.37388     0.88497           0
-    6        2112           0           0           0           0     0.93106    0.033764    -0.36331           0
-MCPL ERROR: Errors encountered while attempting to read particle data.
+MCPL ERROR: Input file is truncated (it has fewer particles than given in its header)
 
 ===> Command failed!
 ----------------------------------------------

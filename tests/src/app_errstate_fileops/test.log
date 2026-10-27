@@ -49,7 +49,7 @@ forcemerge_files (output file exists with .mcpl) -> ERROR RUNTIME: requested out
 MCPL force-merge: Files have different FP precision (single and double), using double
 MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 2 particles from file m3_dp.mcpl
-MCPL force-merge: Transferring 2 particles from file m2_trunc.mcpl
+MCPL force-merge: Transferring 2 particles from file m2_trunc.mcpl.gz
 forcemerge_files (truncated input file) -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
   output left unfinished:
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 3 particles.

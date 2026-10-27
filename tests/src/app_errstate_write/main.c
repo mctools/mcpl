@@ -553,11 +553,13 @@ static void test_transfers(void)
     mcpl_close_file(fnan);
   }
   {
-    //Source file unusable after an error:
+    //Source file unusable after an error (gzipped, since uncompressed files
+    //with a wrong size can not be opened):
     buffer_t b = file_load("src_plain.mcpl");
     file_save("src_trunc.mcpl",b.data,b.size-10);
     free(b.data);
-    mcpl_file_t ftr = mcpl_open_file("src_trunc.mcpl");
+    quiet_gzip("src_trunc.mcpl");
+    mcpl_file_t ftr = mcpl_open_file("src_trunc.mcpl.gz");
     mcpl_read(ftr);
     mcpl_read(ftr);
     mcpl_errstate_t es2;
@@ -581,7 +583,7 @@ static void test_transfers(void)
           mcpl_transfer_last_read_particle_es(ftr,f,&es));
     mcpl_close_outfile(f);
     mcpl_close_file(ftr);
-    remove("src_trunc.mcpl");
+    remove("src_trunc.mcpl.gz");
   }
   //Valid transfers:
   f = mcpl_create_outfile_es("tr5.mcpl",&es);

@@ -177,7 +177,7 @@ open(x.mcpl) -> ERROR RUNTIME: Errors encountered while attempting to read heade
 ==> Opening a.mcpl truncated to n bytes:
   n=[0,7] -> ERROR RUNTIME: Error while reading first bytes of file!
   n=[8,210] -> ERROR RUNTIME: Errors encountered while attempting to read header
-  n=[211,211] -> ok
+  n=[211,211] -> ERROR RUNTIME: Input file is truncated (it has fewer particles than given in its header)
 
 ==> Opening a.mcpl truncated to n bytes (gzipped):
   n=[0,7] -> ERROR RUNTIME: Error while reading first bytes of file!
@@ -187,27 +187,15 @@ open(x.mcpl) -> ERROR RUNTIME: Errors encountered while attempting to read heade
 ==> Opening b.mcpl truncated to n bytes:
   n=[0,7] -> ERROR RUNTIME: Error while reading first bytes of file!
   n=[8,104] -> ERROR RUNTIME: Errors encountered while attempting to read header
-  n=[105,105] -> ok
+  n=[105,105] -> ERROR RUNTIME: Input file is truncated (it has fewer particles than given in its header)
 
 ==> Opening b.mcpl truncated to n bytes (gzipped):
   n=[0,7] -> ERROR RUNTIME: Error while reading first bytes of file!
   n=[8,104] -> ERROR RUNTIME: Errors encountered while attempting to read header
   n=[105,105] -> ok
 
-==> Reading trdata.mcpl:
-open -> ok
-  read 6 particles of 10
-read (NULL) -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
-read again (NULL) -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
-read_with_userdata (NULL) -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
-  skipforward returned 0
-skipforward -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
-  rewind returned 0
-rewind -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
-  seek returned 0
-seek -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
-  header still available: nparticles=10, srcname="errstate_test", comment 0: "first comment", stat:sum:nevents: 1000
-header access -> ok
+==> Opening trdata.mcpl:
+open(trdata.mcpl) -> ERROR RUNTIME: Input file is truncated (it has fewer particles than given in its header)
 
 ==> Reading trdata.mcpl.gz:
 open -> ok
@@ -225,11 +213,6 @@ seek -> ERROR RUNTIME: Errors encountered while attempting to read particle data
 header access -> ok
 
 ==> Seeking in truncated files:
-  trdata2.mcpl: seek(8) -> 1
-  seek(8) -> ok
-  read (NULL) -> ERROR RUNTIME: Errors encountered while attempting to read particle data.
-  trdata2.mcpl: skipforward(8) -> 1
-  skipforward(8) -> ok
   trdata2.mcpl.gz: seek(8) -> 1
   seek(8) -> ok
   read (NULL) -> ERROR RUNTIME: Errors encountered while attempting to read particle data.

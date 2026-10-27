@@ -504,15 +504,22 @@ namespace {
       mcpltest::write_file( "trunc_hdr.mcpl", data.substr(0,40) );
       mcpltest::write_file( "trunc_data.mcpl",
                             data.substr(0,data.size()-10) );
+      //(gzipped, since uncompressed files with a wrong size can not be
+      //opened, and errors are wanted while reading):
+      mcpltest::write_file( "trunc_gz.mcpl",
+                            data.substr(0,data.size()-10) );
+      mcpl::gzip_file("trunc_gz.mcpl");
       mcpltest::write_file( "garbage.mcpl", "this is not an MCPL file" );
     }
     expect_throw( "MCPLFile(\"trunc_hdr.mcpl\")",
                   []{ mcpl::MCPLFile f("trunc_hdr.mcpl"); } );
     expect_throw( "MCPLFile(\"garbage.mcpl\")",
                   []{ mcpl::MCPLFile f("garbage.mcpl"); } );
+    expect_throw( "MCPLFile(\"trunc_data.mcpl\")",
+                  []{ mcpl::MCPLFile f("trunc_data.mcpl"); } );
     {
-      mcpl::MCPLFile f("trunc_data.mcpl");
-      std::cout << "trunc_data.mcpl opened, reading:";
+      mcpl::MCPLFile f("trunc_gz.mcpl.gz");
+      std::cout << "trunc_gz.mcpl.gz opened, reading:";
       try {
         for ( auto p : f )
           std::cout << " " << p.x();
@@ -532,7 +539,7 @@ namespace {
                 << f.nparticles() << std::endl;
     }
     for ( const char * fn : { "trunc_hdr.mcpl", "trunc_data.mcpl",
-                              "garbage.mcpl" } )
+                              "trunc_gz.mcpl.gz", "garbage.mcpl" } )
       std::remove(fn);
   }
 

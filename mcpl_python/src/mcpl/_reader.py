@@ -179,6 +179,17 @@ class MCPLFile:
                     #Invalidate any already loaded stat sum dict:
                     if 'stat_sum' in self._hdr:
                         del self._hdr['stat_sum']
+        elif _recover and not filename.endswith('.gz'):
+            #Uncompressed files with particles must have exactly the size
+            #given by their header (like in mcpl.c):
+            size = int(os.stat(filename).st_size)
+            expected = self.headersize + self.nparticles * self.particlesize
+            if size < expected:
+                raise MCPLError('Input file is truncated (it has fewer'
+                                ' particles than given in its header)')
+            if size > expected:
+                raise MCPLError('Input file has unexpected data after its'
+                                ' particles')
 
         #prepare dtype for reading 1 particle:
         fp = 'f4' if self.opt_singleprec else 'f8'

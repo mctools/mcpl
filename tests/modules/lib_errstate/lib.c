@@ -77,7 +77,10 @@ MCPLTEST_CTYPES void mcpltest_es_setup(void)
   mcpltest_es_write("es_a.mcpl",0);
   mcpltest_es_write("es_b.mcpl",1);
   mcpltest_es_truncated_copy("es_a.mcpl","es_hdr.mcpl",20);
+  //(gzipped, since uncompressed files with a wrong size can not be opened,
+  //and errors are wanted while reading the particles):
   mcpltest_es_truncated_copy("es_a.mcpl","es_data.mcpl",-10);
+  mcpl_gzip_file("es_data.mcpl");
 }
 
 //Runs the case, with the _es variant (printing the error), or with the
@@ -96,7 +99,7 @@ MCPLTEST_CTYPES void mcpltest_es_case( const char * name, int use_es )
   } else if ( strcmp(name,"open_truncated_header") == 0 ) {
     mcpl_close_file( mcpl_open_file_es("es_hdr.mcpl",es) );
   } else if ( strcmp(name,"read_truncated_data") == 0 ) {
-    mcpl_file_t f = mcpl_open_file("es_data.mcpl");
+    mcpl_file_t f = mcpl_open_file("es_data.mcpl.gz");
     while ( mcpl_read_es(f,es) ) {}
     mcpl_close_file(f);
   } else if ( strcmp(name,"comment_index") == 0 ) {
