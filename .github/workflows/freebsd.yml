@@ -33,16 +33,20 @@ jobs:
       - name: Enable parallel cmake
         run: python ./src/devel/bin/mcpldevtool nprocs --enable-github-parallel
 
-      - name: FreeBSD
+      - name: Start FreeBSD VM
         uses: cross-platform-actions/action@e0b9770014ba65d5e0815f15b74031c3a635f641
-
         with:
           environment_variables: CMAKE_BUILD_PARALLEL_LEVEL CTEST_PARALLEL_LEVEL
           operating_system: freebsd
           #Increase "memory" from 6G to 10G for bigfile ctests:
           #memory: 10G
           version: '15.1'
-          run: |
+
+      - name: Build and test in the FreeBSD VM
+        #(files are only copied to the VM, not back):
+        shell: cpa.sh {0} --sync-files runner-to-vm
+        run: |
+            set -e
             df -h
             #Due to limited VM disk space, do not run tests in parallel (the
             #bigfile tests involve huge intermittent files):
@@ -79,13 +83,18 @@ jobs:
       - name: Enable parallel cmake
         run: python ./src/devel/bin/mcpldevtool nprocs --enable-github-parallel
 
-      - name: FreeBSD
+      - name: Start FreeBSD VM
         uses: cross-platform-actions/action@e0b9770014ba65d5e0815f15b74031c3a635f641
         with:
           environment_variables: CMAKE_BUILD_PARALLEL_LEVEL CTEST_PARALLEL_LEVEL
           operating_system: freebsd
           version: '15.1'
-          run: |
+
+      - name: Install with pip in the FreeBSD VM
+        #(files are only copied to the VM, not back):
+        shell: cpa.sh {0} --sync-files runner-to-vm
+        run: |
+            set -e
             echo "CMAKE_BUILD_PARALLEL_LEVEL=${CMAKE_BUILD_PARALLEL_LEVEL}"
             echo "CTEST_PARALLEL_LEVEL=${CTEST_PARALLEL_LEVEL}"
             #(packages by origin, as in the ctest job):
