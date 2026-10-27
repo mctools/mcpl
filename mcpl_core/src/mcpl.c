@@ -1887,10 +1887,10 @@ MCPL_LOCAL int mcpl_write_header_es( mcpl_outfileinternal_t * f,
       statsuminfo->writtenpos = MCPL_FTELL( f->file );
       statsuminfo->value = sc.value;
       size_t nn = strlen(sc.key);
-      if ( nn > MCPL_STATSUMBUF_MAXLENGTH )
+      if ( nn > MCPL_STATSUMKEY_MAXLENGTH )
         return mcpl_internal_raise_runtime( es, "stat:sum: key unexpected"
                                             " strlen" );
-      memcpy( statsuminfo->key, sc.key, nn );
+      memcpy( statsuminfo->key, sc.key, nn + 1 );//(with the null character)
     }
     if ( !mcpl_write_string_es(f->file,f->comments[i],errmsg,es) )
       return 0;
