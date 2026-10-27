@@ -1624,6 +1624,29 @@ Run with -h or --help for usage information
 
 ===> Command failed!
 ----------------------------------------------
+Running mcpltool-c -e -p99999999999999999999 miscphysnogz.mcpl badpdg.mcpl
+----------------------------------------------
+ERROR: Must specify non-zero 32bit integer or particle name as argument to -p.
+
+Run with -h or --help for usage information
+
+===> Command failed!
+----------------------------------------------
+Running mcpltool-c rf16cp.mcpl -l99999999999999999999
+----------------------------------------------
+ERROR: Bad option: number too large
+
+Run with -h or --help for usage information
+
+===> Command failed!
+----------------------------------------------
+Running mcpltool-c -e -p022 --no-comment miscphys.mcpl.gz extracted_6.mcpl.gz
+----------------------------------------------
+MCPL: Compressing file extracted_6.mcpl
+MCPL: Compressed file into extracted_6.mcpl.gz
+MCPL: Successfully extracted 15 / 195 particles from miscphys.mcpl.gz into extracted_6.mcpl.gz
+
+----------------------------------------------
 Running mcpltool-c -e -pabc miscphysnogz.mcpl badpdg.mcpl
 ----------------------------------------------
 ERROR: Must specify non-zero 32bit integer or particle name as argument to -p.
