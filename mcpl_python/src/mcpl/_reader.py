@@ -100,6 +100,8 @@ class MCPLFile:
         particles, in which case their unmodified fields are transferred
         exactly.
         """
+        #(set first, so cleaning up after errors below always works):
+        self._fileclose = lambda : None
         #(only importing the expressions module when needed):
         self._flt = self._edt = None
         if pick is not None or edit is not None:
@@ -114,7 +116,6 @@ class MCPLFile:
         self._warned_nonfinite = False
         self._nonfinite_mask = None
 
-        self._fileclose = lambda : None
         self._str_decode = (not raw_strings)
 
         if hasattr(filename,'__fspath__'):
@@ -124,6 +125,8 @@ class MCPLFile:
             if not isinstance(filename,bytes) and not isinstance(filename,str):
                 raise MCPLError('Unsupported type of filename object'
                                 ' (should be path-like, a string or similar)')
+        if isinstance(filename,bytes):
+            filename = os.fsdecode(filename)
 
         self._filename = filename
         #prepare file i/o (opens file):

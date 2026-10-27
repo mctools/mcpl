@@ -48,3 +48,5 @@ MCPLOutFile({'edit': 'x = 2'}): Can not assign value without units to x, which i
 MCPLOutFile({'pick': 'wavelength > 1Aa'}): The wavelength is only defined for neutrons and gammas, so pick those before using it, e.g. "pdgcode == neutron and wavelength > 1.8Aa" (in expression "wavelength > 1Aa")
 MCPLOutFile with pick using fileidx: 11 particles
 fileidx with arrays: fileidx can only be used for particles read from files
+MCPLFile with a bytes filename: ok
+MCPLFile with an invalid pick: Syntax error in expression "blah +"

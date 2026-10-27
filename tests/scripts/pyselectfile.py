@@ -131,5 +131,20 @@ def test_write():
     except mcpl.MCPLError as err:
         print(f'fileidx with arrays: {err}')
 
+def test_names_and_errors():
+    #Filenames given as bytes:
+    with mcpl.MCPLFile(ex.encode()) as f, mcpl.MCPLFile(ex) as f2:
+        assert f.nparticles == f2.nparticles
+    print('MCPLFile with a bytes filename: ok')
+    #Invalid picks give an error, and nothing else (like warnings about the
+    #clean-up of the MCPLFile object, on stderr, which makes the test fail):
+    import gc
+    try:
+        mcpl.MCPLFile(ex, pick='blah +')
+    except mcpl.MCPLError as err:
+        print(f'MCPLFile with an invalid pick: {err}')
+    gc.collect()
+
 test_read()
 test_write()
+test_names_and_errors()
