@@ -2,8 +2,9 @@ v2.2.9  (work in progress)
       * mcpl_merge_files and mcpl_forcemerge_files no longer overwrite an
         input file when ".mcpl" is appended to the name of the output file
         (e.g. output "a" with input "a.mcpl").
-      * stat:sum values are always written and read with "." as the decimal
-        point, also in applications using a locale with another one.
+      * stat:sum values, and numbers in the files of mcpltool --text, are
+        always written and read with "." as the decimal point, also in
+        applications using a locale with another one.
       * Plots in the terminal (the unicode and ascii plotting backends) are
         shown in colour: curves with the colours of matplotlib, and 2D maps
         with the viridis colour map (with the unicode backend, drawn with half

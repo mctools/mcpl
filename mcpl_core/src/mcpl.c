@@ -6168,12 +6168,20 @@ int mcpl_tool(int argc,char** argv) {
       if (!p)
         break;
       uint64_t idx = mcpl_currentposition(fi)-1;//-1 since mcpl_read skipped ahead
-      fprintf( fout,"%5" PRIu64
-               " %11i %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g"
-               " %23.18g %23.18g %23.18g %23.18g %23.18g 0x%08x\n",
-               idx,p->pdgcode,p->ekin,p->position[0],p->position[1],p->position[2],
-               p->direction[0],p->direction[1],p->direction[2],p->time,p->weight,
-               p->polarisation[0],p->polarisation[1],p->polarisation[2],p->userflags);
+      fprintf( fout,"%5" PRIu64 " %11i", idx, p->pdgcode );
+      //(numbers always with "." as the decimal point, whatever the locale):
+      const double values[12] = { p->ekin, p->position[0], p->position[1],
+                                  p->position[2], p->direction[0],
+                                  p->direction[1], p->direction[2], p->time,
+                                  p->weight, p->polarisation[0],
+                                  p->polarisation[1], p->polarisation[2] };
+      for ( int ival = 0; ival < 12; ++ival ) {
+        char buf[64];
+        snprintf( buf, sizeof(buf), " %23.18g", values[ival] );
+        mcpl_internal_to_c_decimal_point( buf );
+        fputs( buf, fout );
+      }
+      fprintf( fout, " 0x%08x\n", p->userflags );
     }
     fclose(fout);
     mcpl_close_file(fi);
