@@ -32,6 +32,7 @@ import pathlib
 
 import mcpldev as mcpl
 import numpy as np
+from MCPLTestUtils.dirs import test_data_dir
 from MCPLTestUtils.mcplpatch import set_values
 
 
@@ -92,7 +93,40 @@ def test_errors():
                                                                     ['ok_dp.mcpl','nan.mcpl']))
     print(f'   merged.mcpl exists: {pathlib.Path("merged.mcpl").exists()}')
 
+def test_directions():
+    #Directions with NaN or -0.0 values are unpacked like in the C library:
+    #computed components which would be NaN are 0, and the sign of -0.0 is
+    #kept (in MCPL-2 files, which pack directions differently). Values found
+    #with mcpltool-c:
+    set_values('ok.mcpl','dirnan.mcpl',4,{'uve1':float('nan')})
+    with mcpl.MCPLFile('dirnan.mcpl') as f:
+        b = f.read_block()
+        assert np.isnan(b.ux[4]) and b.uy[4] == 0.0 and b.uz[4] == 0.0, b.direction[4]
+    print('==> NaN in packed direction: ux=nan, uy=0, uz=0 (as in C)')
+    fmt2 = test_data_dir.joinpath('reffmt2','reffile_1.mcpl')
+    set_values(fmt2,'fmt2_negzero.mcpl',1,{'uve1':-0.0})
+    set_values('fmt2_negzero.mcpl','fmt2.mcpl',2,{'uve1':float('nan')})
+    with mcpl.MCPLFile('fmt2.mcpl') as f:
+        b = f.read_block()
+        assert b.ux[1] == 0.0 and np.signbit(b.ux[1]), b.direction[1]
+    print('==> MCPL-2 direction with -0.0: ux=-0.0 (as in C)')
+    #Reading MCPL-2 files with NaN values also works without math.fma (Python
+    #versions before 3.13), where they are handled in Python:
+    import math
+    fma = getattr(math,'fma',None)
+    if fma is not None:
+        del math.fma
+    try:
+        with mcpl.MCPLFile('fmt2.mcpl') as f:
+            b = f.read_block()
+        assert np.isnan(b.ux[2]), b.direction[2]
+    finally:
+        if fma is not None:
+            math.fma = fma
+    print('==> MCPL-2 file with NaN in directions read without math.fma')
+
 if __name__ == '__main__':
     make_files()
     test_reading()
     test_errors()
+    test_directions()

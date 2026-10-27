@@ -39,3 +39,9 @@ MCPL force-merge: Transferring 25 particles from file nan.mcpl
 MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 7). They can not be added to other MCPL files.
 forcemerge_files: MCPLError: add_particles asked to transfer particle with NaN or infinite position
    merged.mcpl exists: False
+MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 4). They can not be added to other MCPL files.
+==> NaN in packed direction: ux=nan, uy=0, uz=0 (as in C)
+MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 2). They can not be added to other MCPL files.
+==> MCPL-2 direction with -0.0: ux=-0.0 (as in C)
+MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 2). They can not be added to other MCPL files.
+==> MCPL-2 file with NaN in directions read without math.fma
