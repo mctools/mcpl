@@ -361,6 +361,7 @@ merge_inplace "reffile_crash.mcpl" "reffile_1.mcpl": error: Attempting to merge 
 merge_inplace "a1.mcpl" "nonexistent.mcpl": error: Unable to open file!
 merge_inplace "a2.mcpl" "n_w_nan.mcpl": ok
 merge_inplace "n_dir_nan.mcpl" "a1.mcpl": ok
+merge_inplace "u1.mcpl" "u2.mcpl": ok
 repair "reffile_crash.mcpl": ok
    | MCPL: Successfully repaired file with 4 particles.
 repair "reffile_1.mcpl": error: File does not appear to be broken.
@@ -374,6 +375,9 @@ repair "ref_statsum_crash.mcpl": ok
 repair "reffile_5.mcpl.gz": error: File must be gunzipped before it can be checked and possibly repaired.
 repair "agz.mcpl.gz": error: File must be gunzipped before it can be checked and possibly repaired.
 repair "nonexistent.mcpl": error: Unable to open file!
+repair "u_crash.mcpl": ok
+   | MCPL WARNING: Marking stat:sum:nsim entry as not available (-1) since file not closed properly.
+   | MCPL: Successfully repaired file with 4 particles.
 can_merge "a1.mcpl" "a1.mcpl": ok
 can_merge "a1.mcpl" "a4.mcpl": ok
 can_merge "a1.mcpl" "agz.mcpl.gz": ok
@@ -391,6 +395,9 @@ can_merge "a1.mcpl" "ref_statsum_crash.mcpl": ok
 can_merge "a1.mcpl" "reffile_crash.mcpl": ok
    | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 can_merge "a1.mcpl" "reffile_truncated.mcpl": error: Input file is truncated (it has fewer particles than given in its header)
+can_merge "a1.mcpl" "u_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+   | MCPL WARNING: Marking stat:sum:nsim entry as not available (-1) since file not closed properly.
 can_merge "a2.mcpl" "a2.mcpl": ok
 can_merge "a2.mcpl" "a5.mcpl": ok
 can_merge "a2.mcpl" "b_dp.mcpl": ok
@@ -403,6 +410,7 @@ can_merge "a2.mcpl" "n_pol_nan.mcpl": ok
 can_merge "a2.mcpl" "n_x_nan.mcpl": ok
 can_merge "a2.mcpl" "reffile_1.mcpl": ok
 can_merge "a2.mcpl" "reffile_empty.mcpl": ok
+can_merge "a2.mcpl" "u1.mcpl": ok
 can_merge "a3.mcpl" "a3.mcpl": ok
 can_merge "a3.mcpl" "a_empty.mcpl": ok
 can_merge "a3.mcpl" "b_empty_pol.mcpl": ok
@@ -415,6 +423,7 @@ can_merge "a3.mcpl" "n_t_inf.mcpl": ok
 can_merge "a3.mcpl" "ref_statsum.mcpl.gz": ok
 can_merge "a3.mcpl" "reffile_5.mcpl.gz": ok
 can_merge "a3.mcpl" "reffile_skip123.mcpl": ok
+can_merge "a3.mcpl" "u2.mcpl": ok
 can_merge "a4.mcpl" "a4.mcpl": ok
 can_merge "a4.mcpl" "agz.mcpl.gz": ok
 can_merge "a4.mcpl" "b_pol.mcpl": ok
@@ -431,6 +440,9 @@ can_merge "a4.mcpl" "ref_statsum_crash.mcpl": ok
 can_merge "a4.mcpl" "reffile_crash.mcpl": ok
    | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 can_merge "a4.mcpl" "reffile_truncated.mcpl": error: Input file is truncated (it has fewer particles than given in its header)
+can_merge "a4.mcpl" "u_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+   | MCPL WARNING: Marking stat:sum:nsim entry as not available (-1) since file not closed properly.
 can_merge "a5.mcpl" "a5.mcpl": ok
 can_merge "a5.mcpl" "b_dp.mcpl": ok
 can_merge "a5.mcpl" "b_uf.mcpl": ok
@@ -442,6 +454,7 @@ can_merge "a5.mcpl" "n_pol_nan.mcpl": ok
 can_merge "a5.mcpl" "n_x_nan.mcpl": ok
 can_merge "a5.mcpl" "reffile_1.mcpl": ok
 can_merge "a5.mcpl" "reffile_empty.mcpl": ok
+can_merge "a5.mcpl" "u1.mcpl": ok
 can_merge "a_empty.mcpl" "a_empty.mcpl": ok
 can_merge "a_empty.mcpl" "b_empty_pol.mcpl": ok
 can_merge "a_empty.mcpl" "b_updg.mcpl": ok
@@ -453,6 +466,7 @@ can_merge "a_empty.mcpl" "n_t_inf.mcpl": ok
 can_merge "a_empty.mcpl" "ref_statsum.mcpl.gz": ok
 can_merge "a_empty.mcpl" "reffile_5.mcpl.gz": ok
 can_merge "a_empty.mcpl" "reffile_skip123.mcpl": ok
+can_merge "a_empty.mcpl" "u2.mcpl": ok
 can_merge "agz.mcpl.gz" "agz.mcpl.gz": ok
 can_merge "agz.mcpl.gz" "b_pol.mcpl": ok
 can_merge "agz.mcpl.gz" "b_updg2.mcpl": ok
@@ -468,6 +482,9 @@ can_merge "agz.mcpl.gz" "ref_statsum_crash.mcpl": ok
 can_merge "agz.mcpl.gz" "reffile_crash.mcpl": ok
    | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 can_merge "agz.mcpl.gz" "reffile_truncated.mcpl": error: Input file is truncated (it has fewer particles than given in its header)
+can_merge "agz.mcpl.gz" "u_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+   | MCPL WARNING: Marking stat:sum:nsim entry as not available (-1) since file not closed properly.
 can_merge "b_dp.mcpl" "b_dp.mcpl": ok
 can_merge "b_dp.mcpl" "b_uf.mcpl": ok
 can_merge "b_dp.mcpl" "b_updg_g.mcpl": ok
@@ -478,6 +495,7 @@ can_merge "b_dp.mcpl" "n_pol_nan.mcpl": ok
 can_merge "b_dp.mcpl" "n_x_nan.mcpl": ok
 can_merge "b_dp.mcpl" "reffile_1.mcpl": ok
 can_merge "b_dp.mcpl" "reffile_empty.mcpl": ok
+can_merge "b_dp.mcpl" "u1.mcpl": ok
 can_merge "b_empty_pol.mcpl" "b_empty_pol.mcpl": ok
 can_merge "b_empty_pol.mcpl" "b_updg.mcpl": ok
 can_merge "b_empty_pol.mcpl" "b_uw.mcpl": ok
@@ -488,6 +506,7 @@ can_merge "b_empty_pol.mcpl" "n_t_inf.mcpl": ok
 can_merge "b_empty_pol.mcpl" "ref_statsum.mcpl.gz": ok
 can_merge "b_empty_pol.mcpl" "reffile_5.mcpl.gz": ok
 can_merge "b_empty_pol.mcpl" "reffile_skip123.mcpl": ok
+can_merge "b_empty_pol.mcpl" "u2.mcpl": ok
 can_merge "b_pol.mcpl" "b_pol.mcpl": ok
 can_merge "b_pol.mcpl" "b_updg2.mcpl": ok
 can_merge "b_pol.mcpl" "b_uw2.mcpl": ok
@@ -502,6 +521,9 @@ can_merge "b_pol.mcpl" "ref_statsum_crash.mcpl": ok
 can_merge "b_pol.mcpl" "reffile_crash.mcpl": ok
    | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 can_merge "b_pol.mcpl" "reffile_truncated.mcpl": error: Input file is truncated (it has fewer particles than given in its header)
+can_merge "b_pol.mcpl" "u_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+   | MCPL WARNING: Marking stat:sum:nsim entry as not available (-1) since file not closed properly.
 can_merge "b_uf.mcpl" "b_uf.mcpl": ok
 can_merge "b_uf.mcpl" "b_updg_g.mcpl": ok
 can_merge "b_uf.mcpl" "c_blob.mcpl": ok
@@ -511,6 +533,7 @@ can_merge "b_uf.mcpl" "n_pol_nan.mcpl": ok
 can_merge "b_uf.mcpl" "n_x_nan.mcpl": ok
 can_merge "b_uf.mcpl" "reffile_1.mcpl": ok
 can_merge "b_uf.mcpl" "reffile_empty.mcpl": ok
+can_merge "b_uf.mcpl" "u1.mcpl": ok
 can_merge "b_updg.mcpl" "b_updg.mcpl": ok
 can_merge "b_updg.mcpl" "b_uw.mcpl": ok
 can_merge "b_updg.mcpl" "c_comment.mcpl": ok
@@ -520,6 +543,7 @@ can_merge "b_updg.mcpl" "n_t_inf.mcpl": ok
 can_merge "b_updg.mcpl" "ref_statsum.mcpl.gz": ok
 can_merge "b_updg.mcpl" "reffile_5.mcpl.gz": ok
 can_merge "b_updg.mcpl" "reffile_skip123.mcpl": ok
+can_merge "b_updg.mcpl" "u2.mcpl": ok
 can_merge "b_updg2.mcpl" "b_updg2.mcpl": ok
 can_merge "b_updg2.mcpl" "b_uw2.mcpl": ok
 can_merge "b_updg2.mcpl" "c_statkey.mcpl": ok
@@ -533,6 +557,9 @@ can_merge "b_updg2.mcpl" "ref_statsum_crash.mcpl": ok
 can_merge "b_updg2.mcpl" "reffile_crash.mcpl": ok
    | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 can_merge "b_updg2.mcpl" "reffile_truncated.mcpl": error: Input file is truncated (it has fewer particles than given in its header)
+can_merge "b_updg2.mcpl" "u_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+   | MCPL WARNING: Marking stat:sum:nsim entry as not available (-1) since file not closed properly.
 can_merge "b_updg_g.mcpl" "b_updg_g.mcpl": ok
 can_merge "b_updg_g.mcpl" "c_blob.mcpl": ok
 can_merge "b_updg_g.mcpl" "fmt2_reffile_1.mcpl": ok
@@ -541,6 +568,7 @@ can_merge "b_updg_g.mcpl" "n_pol_nan.mcpl": ok
 can_merge "b_updg_g.mcpl" "n_x_nan.mcpl": ok
 can_merge "b_updg_g.mcpl" "reffile_1.mcpl": ok
 can_merge "b_updg_g.mcpl" "reffile_empty.mcpl": ok
+can_merge "b_updg_g.mcpl" "u1.mcpl": ok
 can_merge "b_uw.mcpl" "b_uw.mcpl": ok
 can_merge "b_uw.mcpl" "c_comment.mcpl": ok
 can_merge "b_uw.mcpl" "fmt2_reffile_5.mcpl": ok
@@ -549,6 +577,7 @@ can_merge "b_uw.mcpl" "n_t_inf.mcpl": ok
 can_merge "b_uw.mcpl" "ref_statsum.mcpl.gz": ok
 can_merge "b_uw.mcpl" "reffile_5.mcpl.gz": ok
 can_merge "b_uw.mcpl" "reffile_skip123.mcpl": ok
+can_merge "b_uw.mcpl" "u2.mcpl": ok
 can_merge "b_uw2.mcpl" "b_uw2.mcpl": ok
 can_merge "b_uw2.mcpl" "c_statkey.mcpl": ok
 can_merge "b_uw2.mcpl" "n_dir_inf.mcpl": ok
@@ -561,6 +590,9 @@ can_merge "b_uw2.mcpl" "ref_statsum_crash.mcpl": ok
 can_merge "b_uw2.mcpl" "reffile_crash.mcpl": ok
    | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 can_merge "b_uw2.mcpl" "reffile_truncated.mcpl": error: Input file is truncated (it has fewer particles than given in its header)
+can_merge "b_uw2.mcpl" "u_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+   | MCPL WARNING: Marking stat:sum:nsim entry as not available (-1) since file not closed properly.
 can_merge "c_blob.mcpl" "c_blob.mcpl": ok
 can_merge "c_blob.mcpl" "fmt2_reffile_1.mcpl": ok
 can_merge "c_blob.mcpl" "n_dir_nan.mcpl": ok
@@ -568,6 +600,7 @@ can_merge "c_blob.mcpl" "n_pol_nan.mcpl": ok
 can_merge "c_blob.mcpl" "n_x_nan.mcpl": ok
 can_merge "c_blob.mcpl" "reffile_1.mcpl": ok
 can_merge "c_blob.mcpl" "reffile_empty.mcpl": ok
+can_merge "c_blob.mcpl" "u1.mcpl": ok
 can_merge "c_comment.mcpl" "c_comment.mcpl": ok
 can_merge "c_comment.mcpl" "fmt2_reffile_5.mcpl": ok
 can_merge "c_comment.mcpl" "n_dir_valid_inf.mcpl": ok
@@ -575,6 +608,7 @@ can_merge "c_comment.mcpl" "n_t_inf.mcpl": ok
 can_merge "c_comment.mcpl" "ref_statsum.mcpl.gz": ok
 can_merge "c_comment.mcpl" "reffile_5.mcpl.gz": ok
 can_merge "c_comment.mcpl" "reffile_skip123.mcpl": ok
+can_merge "c_comment.mcpl" "u2.mcpl": ok
 can_merge "c_statkey.mcpl" "c_statkey.mcpl": ok
 can_merge "c_statkey.mcpl" "n_dir_inf.mcpl": ok
 can_merge "c_statkey.mcpl" "n_ekin_inf.mcpl": ok
@@ -586,18 +620,23 @@ can_merge "c_statkey.mcpl" "ref_statsum_crash.mcpl": ok
 can_merge "c_statkey.mcpl" "reffile_crash.mcpl": ok
    | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 can_merge "c_statkey.mcpl" "reffile_truncated.mcpl": error: Input file is truncated (it has fewer particles than given in its header)
+can_merge "c_statkey.mcpl" "u_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+   | MCPL WARNING: Marking stat:sum:nsim entry as not available (-1) since file not closed properly.
 can_merge "fmt2_reffile_1.mcpl" "fmt2_reffile_1.mcpl": ok
 can_merge "fmt2_reffile_1.mcpl" "n_dir_nan.mcpl": ok
 can_merge "fmt2_reffile_1.mcpl" "n_pol_nan.mcpl": ok
 can_merge "fmt2_reffile_1.mcpl" "n_x_nan.mcpl": ok
 can_merge "fmt2_reffile_1.mcpl" "reffile_1.mcpl": ok
 can_merge "fmt2_reffile_1.mcpl" "reffile_empty.mcpl": ok
+can_merge "fmt2_reffile_1.mcpl" "u1.mcpl": ok
 can_merge "fmt2_reffile_5.mcpl" "fmt2_reffile_5.mcpl": ok
 can_merge "fmt2_reffile_5.mcpl" "n_dir_valid_inf.mcpl": ok
 can_merge "fmt2_reffile_5.mcpl" "n_t_inf.mcpl": ok
 can_merge "fmt2_reffile_5.mcpl" "ref_statsum.mcpl.gz": ok
 can_merge "fmt2_reffile_5.mcpl" "reffile_5.mcpl.gz": ok
 can_merge "fmt2_reffile_5.mcpl" "reffile_skip123.mcpl": ok
+can_merge "fmt2_reffile_5.mcpl" "u2.mcpl": ok
 can_merge "n_dir_inf.mcpl" "n_dir_inf.mcpl": ok
 can_merge "n_dir_inf.mcpl" "n_ekin_inf.mcpl": ok
 can_merge "n_dir_inf.mcpl" "n_w_nan.mcpl": ok
@@ -608,16 +647,21 @@ can_merge "n_dir_inf.mcpl" "ref_statsum_crash.mcpl": ok
 can_merge "n_dir_inf.mcpl" "reffile_crash.mcpl": ok
    | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 can_merge "n_dir_inf.mcpl" "reffile_truncated.mcpl": error: Input file is truncated (it has fewer particles than given in its header)
+can_merge "n_dir_inf.mcpl" "u_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+   | MCPL WARNING: Marking stat:sum:nsim entry as not available (-1) since file not closed properly.
 can_merge "n_dir_nan.mcpl" "n_dir_nan.mcpl": ok
 can_merge "n_dir_nan.mcpl" "n_pol_nan.mcpl": ok
 can_merge "n_dir_nan.mcpl" "n_x_nan.mcpl": ok
 can_merge "n_dir_nan.mcpl" "reffile_1.mcpl": ok
 can_merge "n_dir_nan.mcpl" "reffile_empty.mcpl": ok
+can_merge "n_dir_nan.mcpl" "u1.mcpl": ok
 can_merge "n_dir_valid_inf.mcpl" "n_dir_valid_inf.mcpl": ok
 can_merge "n_dir_valid_inf.mcpl" "n_t_inf.mcpl": ok
 can_merge "n_dir_valid_inf.mcpl" "ref_statsum.mcpl.gz": ok
 can_merge "n_dir_valid_inf.mcpl" "reffile_5.mcpl.gz": ok
 can_merge "n_dir_valid_inf.mcpl" "reffile_skip123.mcpl": ok
+can_merge "n_dir_valid_inf.mcpl" "u2.mcpl": ok
 can_merge "n_ekin_inf.mcpl" "n_ekin_inf.mcpl": ok
 can_merge "n_ekin_inf.mcpl" "n_w_nan.mcpl": ok
 can_merge "n_ekin_inf.mcpl" "ref_statsum_crash.mcpl": ok
@@ -627,14 +671,19 @@ can_merge "n_ekin_inf.mcpl" "ref_statsum_crash.mcpl": ok
 can_merge "n_ekin_inf.mcpl" "reffile_crash.mcpl": ok
    | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 can_merge "n_ekin_inf.mcpl" "reffile_truncated.mcpl": error: Input file is truncated (it has fewer particles than given in its header)
+can_merge "n_ekin_inf.mcpl" "u_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+   | MCPL WARNING: Marking stat:sum:nsim entry as not available (-1) since file not closed properly.
 can_merge "n_pol_nan.mcpl" "n_pol_nan.mcpl": ok
 can_merge "n_pol_nan.mcpl" "n_x_nan.mcpl": ok
 can_merge "n_pol_nan.mcpl" "reffile_1.mcpl": ok
 can_merge "n_pol_nan.mcpl" "reffile_empty.mcpl": ok
+can_merge "n_pol_nan.mcpl" "u1.mcpl": ok
 can_merge "n_t_inf.mcpl" "n_t_inf.mcpl": ok
 can_merge "n_t_inf.mcpl" "ref_statsum.mcpl.gz": ok
 can_merge "n_t_inf.mcpl" "reffile_5.mcpl.gz": ok
 can_merge "n_t_inf.mcpl" "reffile_skip123.mcpl": ok
+can_merge "n_t_inf.mcpl" "u2.mcpl": ok
 can_merge "n_w_nan.mcpl" "n_w_nan.mcpl": ok
 can_merge "n_w_nan.mcpl" "ref_statsum_crash.mcpl": ok
    | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
@@ -643,12 +692,17 @@ can_merge "n_w_nan.mcpl" "ref_statsum_crash.mcpl": ok
 can_merge "n_w_nan.mcpl" "reffile_crash.mcpl": ok
    | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 can_merge "n_w_nan.mcpl" "reffile_truncated.mcpl": error: Input file is truncated (it has fewer particles than given in its header)
+can_merge "n_w_nan.mcpl" "u_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+   | MCPL WARNING: Marking stat:sum:nsim entry as not available (-1) since file not closed properly.
 can_merge "n_x_nan.mcpl" "n_x_nan.mcpl": ok
 can_merge "n_x_nan.mcpl" "reffile_1.mcpl": ok
 can_merge "n_x_nan.mcpl" "reffile_empty.mcpl": ok
+can_merge "n_x_nan.mcpl" "u1.mcpl": ok
 can_merge "ref_statsum.mcpl.gz" "ref_statsum.mcpl.gz": ok
 can_merge "ref_statsum.mcpl.gz" "reffile_5.mcpl.gz": ok
 can_merge "ref_statsum.mcpl.gz" "reffile_skip123.mcpl": ok
+can_merge "ref_statsum.mcpl.gz" "u2.mcpl": ok
 can_merge "ref_statsum_crash.mcpl" "ref_statsum_crash.mcpl": ok
    | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
    | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
@@ -665,18 +719,40 @@ can_merge "ref_statsum_crash.mcpl" "reffile_truncated.mcpl": error: Input file i
    | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
    | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
    | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+can_merge "ref_statsum_crash.mcpl" "u_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+   | MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+   | MCPL WARNING: Marking stat:sum:nsim entry as not available (-1) since file not closed properly.
 can_merge "reffile_1.mcpl" "reffile_1.mcpl": ok
 can_merge "reffile_1.mcpl" "reffile_empty.mcpl": ok
+can_merge "reffile_1.mcpl" "u1.mcpl": ok
 can_merge "reffile_5.mcpl.gz" "reffile_5.mcpl.gz": ok
 can_merge "reffile_5.mcpl.gz" "reffile_skip123.mcpl": ok
+can_merge "reffile_5.mcpl.gz" "u2.mcpl": ok
 can_merge "reffile_crash.mcpl" "reffile_crash.mcpl": ok
    | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
    | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
 can_merge "reffile_crash.mcpl" "reffile_truncated.mcpl": error: Input file is truncated (it has fewer particles than given in its header)
    | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+can_merge "reffile_crash.mcpl" "u_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+   | MCPL WARNING: Marking stat:sum:nsim entry as not available (-1) since file not closed properly.
 can_merge "reffile_empty.mcpl" "reffile_empty.mcpl": ok
+can_merge "reffile_empty.mcpl" "u1.mcpl": ok
 can_merge "reffile_skip123.mcpl" "reffile_skip123.mcpl": ok
+can_merge "reffile_skip123.mcpl" "u2.mcpl": ok
 can_merge "reffile_truncated.mcpl" "reffile_truncated.mcpl": error: Input file is truncated (it has fewer particles than given in its header)
+can_merge "reffile_truncated.mcpl" "u_crash.mcpl": error: Input file is truncated (it has fewer particles than given in its header)
+can_merge "u1.mcpl" "u1.mcpl": ok
+can_merge "u2.mcpl" "u2.mcpl": ok
+can_merge "u_crash.mcpl" "u_crash.mcpl": ok
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+   | MCPL WARNING: Marking stat:sum:nsim entry as not available (-1) since file not closed properly.
+   | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+   | MCPL WARNING: Marking stat:sum:nsim entry as not available (-1) since file not closed properly.
 gzip_file "a1.mcpl": ok
    | MCPL: Compressing file a1.mcpl
    | MCPL: Compressed file into a1.mcpl.gz
@@ -1025,4 +1101,4 @@ Script "random script 146": error: enable_userflags called too late.
 Script "random script 147": error: enable_universal_pdgcode must be called with non-zero pdgcode.
 Script "random script 148": ok
 Script "random script 149": ok
-Compared 640 operations
+Compared 682 operations
