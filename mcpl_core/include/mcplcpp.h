@@ -299,12 +299,32 @@ namespace mcpl {
     struct PrintHandlerState {
       std::mutex mtx;
       std::unique_ptr<PrintFct> current;
+      PrintHandlerState() = default;
+      PrintHandlerState( const PrintHandlerState& ) = delete;
+      PrintHandlerState& operator=( const PrintHandlerState& ) = delete;
+      ~PrintHandlerState()
+      {
+        if ( current )
+          mcpl_set_print_handler( nullptr );
+      }
     };
 
-    inline PrintHandlerState& print_handler_state()
+    //The state is shared with all file objects, so a handler is kept as long
+    //as any of them exist, also when they are destroyed at program exit
+    //(after this, messages go to standard output again). Returns nullptr
+    //during the destruction of static objects, once the state is gone:
+    inline std::shared_ptr<PrintHandlerState> print_handler_state()
     {
-      static PrintHandlerState state;
-      return state;
+      static bool destroyed = false;
+      struct Holder {
+        std::shared_ptr<PrintHandlerState> state
+          = std::make_shared<PrintHandlerState>();
+        ~Holder() { destroyed = true; }
+      };
+      static Holder holder;
+      if ( destroyed )
+        return nullptr;
+      return holder.state;
     }
 
     //Output of dumps to a std::ostream (exceptions are rethrown after the C
@@ -348,19 +368,22 @@ namespace mcpl {
    * Handlers should be set before using MCPL from several threads, and
    * handlers which might be called from several threads must be thread safe
    * themselves. Handlers must not throw exceptions (`std::terminate` is called
-   * if they do).
+   * if they do). At program exit, the handler is kept until the MCPL file
+   * objects are destroyed, also static ones.
    *
    * @param handler Function called with the messages, or `nullptr` (or an empty function) to restore the default.
    */
   inline void set_print_handler( std::function<void(const char*)> handler )
   {
-    auto& state = detail::print_handler_state();
-    std::lock_guard<std::mutex> lock(state.mtx);
-    std::unique_ptr<detail::PrintFct> previous = std::move(state.current);
+    auto state = detail::print_handler_state();
+    if ( !state )
+      return;//(only at program exit)
+    std::lock_guard<std::mutex> lock(state->mtx);
+    std::unique_ptr<detail::PrintFct> previous = std::move(state->current);
     if ( handler ) {
-      state.current = std::make_unique<detail::PrintFct>(std::move(handler));
+      state->current = std::make_unique<detail::PrintFct>(std::move(handler));
       mcpl_set_print_handler_ctx( detail::mcplcpp_print_trampoline,
-                                  state.current.get() );
+                                  state->current.get() );
     } else {
       mcpl_set_print_handler( nullptr );
     }
@@ -1391,6 +1414,9 @@ namespace mcpl {
       return v;
     }
     mcpl_file_t m_f = { nullptr };
+    //(keeps the handler of set_print_handler alive while the file exists):
+    std::shared_ptr<detail::PrintHandlerState> m_printstate
+      = detail::print_handler_state();
     std::uint32_t m_udsize = 0;
   };
 
@@ -1898,6 +1924,9 @@ namespace mcpl {
     }
 
     mcpl_outfile_t m_f = { nullptr };
+    //(keeps the handler of set_print_handler alive while the file exists):
+    std::shared_ptr<detail::PrintHandlerState> m_printstate
+      = detail::print_handler_state();
     std::string m_pending_layout;//fields not yet given to the C library
     std::vector<std::uint8_t> m_ud;//userdata of new_particle()
     mcpl_particle_t * m_puser = nullptr;
