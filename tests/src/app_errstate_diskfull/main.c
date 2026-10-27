@@ -191,8 +191,10 @@ static void test_header_too_large(void)
 
 static void test_particles( const char * filename, int gzip )
 {
+  //(gzip=2: closing with the function without _es)
   printf("\n==> Particles exceeding the file size limit%s:\n",
-         gzip ? " (closing with gzip)" : "");
+         gzip == 2 ? " (closing with gzip, without _es)"
+         : ( gzip ? " (closing with gzip)" : "" ) );
   mcpl_errstate_t es;
   set_filesize_limit(20000);
   es_reset(&es);
@@ -202,7 +204,11 @@ static void test_particles( const char * filename, int gzip )
   printf("  %s particles were added before the error\n",
          n > 100 ? "more than 100" : "less than 100");
   es_reset(&es);
-  if ( gzip ) {
+  if ( gzip == 2 ) {
+    //(the unfinished file is not compressed, so it can be repaired):
+    if ( mcpl_closeandgzip_outfile(f) != 0 )
+      test_fail("closeandgzip_outfile did not report the failure");
+  } else if ( gzip ) {
     int rc = mcpl_closeandgzip_outfile_es(f,&es);
     if ( rc != 0 || es.code != 0 )
       test_fail("closing file after error failed");
@@ -403,6 +409,7 @@ int main( int argc, char ** argv )
   test_header_too_large();
   test_particles("df_particles.mcpl",0);
   test_particles("df_particles2.mcpl",1);
+  test_particles("df_particles3.mcpl",2);
   test_error_at_close();
   test_fileops();
   test_close_unfinished();
