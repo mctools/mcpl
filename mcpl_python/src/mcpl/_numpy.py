@@ -42,7 +42,12 @@ if np.lib.NumpyVersion(np.__version__) < '1.22.0':
     print(f"MCPL WARNING: Unsupported numpy version ({np.__version__!s}) detected")
 
 def _fma_exact( a, b, c ):
-    #Correctly rounded a*b+c with exact rational arithmetic:
+    #Correctly rounded a*b+c with exact rational arithmetic (which is only
+    #possible for finite values, otherwise the result is NaN or infinite, like
+    #a*b+c):
+    import math
+    if not ( math.isfinite(a) and math.isfinite(b) and math.isfinite(c) ):
+        return a * b + c
     from fractions import Fraction
     return float( Fraction(a) * Fraction(b) + Fraction(c) )
 

@@ -435,16 +435,16 @@ class MCPLParticleBlock:
         in0sq = np.square(in0)
         in1sq = np.square(in1)
         self._ux = np.where(conda,
-                            in2 * np.sqrt(np.clip(1.0-(in1sq+np.square(in0inv)),0.0,1.0)),
+                            in2 * np.sqrt(np.fmax(0.0,1.0-(in1sq+np.square(in0inv)))),
                             in0)
         self._uy = np.where(condb,
-                            in2 * np.sqrt(np.clip(1.0-(in0sq+np.square(in1inv)),0.0,1.0)),
+                            in2 * np.sqrt(np.fmax(0.0,1.0-(in0sq+np.square(in1inv)))),
                             in1)
         self._uz = np.where(conda,
                             in0inv,
                             np.where(condb,
                                      in1inv,
-                                     in2 * np.sqrt(np.clip(1.0-(in0sq+in1sq),0.0,1.0))))
+                                     in2 * np.sqrt(np.fmax(0.0,1.0-(in0sq+in1sq)))))
 
     def _unpack_legacy(self):
         in0 = self._data['uve1'].astype(float)
@@ -452,10 +452,11 @@ class MCPLParticleBlock:
         abs_in0 = np.abs(in0)
         abs_in1 = np.abs(in1)
         self._uz = (1.0 - abs_in0) - abs_in1
+        #(np.fmax, np.where and copies of the input as in
+        #mcpl_unitvect_unpack_oct in C, also for NaN and -0.0):
         zneg = ( self._uz < 0.0 )
-        not_zneg = np.logical_not(zneg)
-        self._ux = not_zneg * in0 + zneg * ( 1.0 - abs_in1 ) * np.where(in0 >= 0.0,1.0,-1.0)
-        self._uy = not_zneg * in1 + zneg * ( 1.0 - abs_in0 ) * np.where(in1 >= 0.0,1.0,-1.0)
+        self._ux = np.where(zneg,( 1.0 - abs_in1 ) * np.where(in0 >= 0.0,1.0,-1.0),in0)
+        self._uy = np.where(zneg,( 1.0 - abs_in0 ) * np.where(in1 >= 0.0,1.0,-1.0),in1)
         #Like mcpl_unitvect_unpack_oct in C, which uses fma() to get identical
         #results on all platforms:
         n = 1.0 / np.sqrt(np_fma(self._uz,self._uz,
