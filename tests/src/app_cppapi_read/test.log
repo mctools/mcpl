@@ -65,9 +65,12 @@ j(particle 1 of another file) = 1e+100
 ==> Errors:
 MCPLFile("nosuchfile.mcpl") -> mcpl::IOError: Unable to open file!
 MCPLFile("") -> mcpl::IOError: Unable to open file!
+MCPL: Compressing file trunc_gz.mcpl
+MCPL: Compressed file into trunc_gz.mcpl.gz
 MCPLFile("trunc_hdr.mcpl") -> mcpl::Error: Errors encountered while attempting to read header
 MCPLFile("garbage.mcpl") -> mcpl::Error: File is not an MCPL file!
-trunc_data.mcpl opened, reading: 1 2 3 4
+MCPLFile("trunc_data.mcpl") -> mcpl::Error: Input file is truncated (it has fewer particles than given in its header)
+trunc_gz.mcpl.gz opened, reading: 1 2 3 4
   -> mcpl::Error: Errors encountered while attempting to read particle data.
 read() after the error -> mcpl::Error: Errors encountered while attempting to read particle data.
 rewind() after the error -> mcpl::Error: Errors encountered while attempting to read particle data.

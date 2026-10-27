@@ -350,31 +350,7 @@ Opened MCPL file reffile_empty.mcpl:
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
 ===> mcpltool ended with exit code 0
-Opened MCPL file reffile_truncated.mcpl:
-
-  Basic info
-    Format             : MCPL-3
-    No. of particles   : 15
-    Header storage     : 148 bytes
-    Data storage       : 480 bytes
-
-  Custom meta data
-    Source             : "ESS/dgcode/MCPLTests/genisotrop"
-    Number of comments : 1
-          -> comment 0 : "A simple file with isotropically generated particles."
-    Number of blobs    : 0
-
-  Particle data format
-    User flags         : no
-    Polarisation info  : no
-    Fixed part. type   : no
-    Fixed part. weight : yes (weight 1)
-    FP precision       : single
-    Endianness         : little
-    Storage            : 32 bytes/particle
-
-index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]
-===> mcpltool ended with MCPLError exception: Errors encountered while attempting to read particle data.
+===> mcpltool ended with MCPLError exception: Input file is truncated (it has fewer particles than given in its header)
 Opened MCPL file reffile_truncated.mcpl.gz:
 
   Basic info

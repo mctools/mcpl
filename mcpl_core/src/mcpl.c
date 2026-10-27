@@ -3254,6 +3254,23 @@ MCPL_LOCAL int mcpl_internal_open_file( mcpl_fileinternal_t * f,
                                                    //might just be that we are
                                                    //at EOF with no particles.
     }
+  } else if ( !f->filegz && f->file && !MCPL_FSEEK_END( f->file ) ) {
+    //Uncompressed files with particles must have exactly the size given by
+    //their header (if SEEK_END does not work, the file is not checked):
+    int64_t endpos = MCPL_FTELL(f->file);
+    uint64_t maxnp = ( UINT64_MAX - f->first_particle_pos ) / f->particle_size;
+    if ( endpos < 0 || f->nparticles > maxnp
+         || (uint64_t)endpos < ( f->first_particle_pos
+                                 + f->nparticles * f->particle_size ) )
+      MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"Input file is truncated (it has"
+                       " fewer particles than given in its header)");
+    if ( (uint64_t)endpos > ( f->first_particle_pos
+                              + f->nparticles * f->particle_size ) )
+      MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,"Input file has unexpected data after"
+                       " its particles");
+    if ( MCPL_FSEEK( f->file, f->first_particle_pos ) )
+      MCPLIMP_OPENFAIL(MCPL_ERROR_IO,"Unexpected issue skipping to the first"
+                       " particle");
   }
 
   return 1;

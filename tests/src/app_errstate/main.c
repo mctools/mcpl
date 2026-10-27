@@ -539,15 +539,17 @@ static void test_read_failure( const char * filename, int print_count )
 static void test_truncated_data(void)
 {
   //Particle data ending in the middle of the 7th particle (the header still
-  //says 10 particles):
+  //says 10 particles). Uncompressed files can then not be opened, since their
+  //size does not agree with the header, while gzipped files fail when the
+  //missing particles are read:
   buffer_t a = file_load("a.mcpl");
   mcpl_file_t f = mcpl_open_file("a.mcpl");
   size_t hdr = (size_t)mcpl_hdr_header_size(f);
   size_t psize = (size_t)mcpl_hdr_particle_size(f);
   mcpl_close_file(f);
   save_modified("trdata.mcpl",&a,hdr + 6 * psize + psize / 2,0,NULL,0);
-  test_read_failure("trdata.mcpl",1);
-  save_modified("trdata.mcpl",&a,hdr + 6 * psize + psize / 2,0,NULL,0);
+  printf("\n==> Opening trdata.mcpl:\n");
+  check_open("trdata.mcpl");
   quiet_gzip("trdata.mcpl");
   test_read_failure("trdata.mcpl.gz",1);
   free(a.data);
@@ -555,7 +557,7 @@ static void test_truncated_data(void)
   //Seeking to the missing particles works, but reading them fails:
   printf("\n==> Seeking in truncated files:\n");
   const char * fns[2] = { "trdata2.mcpl", "trdata2.mcpl.gz" };
-  for ( int i = 0; i < 2; ++i ) {
+  for ( int i = 1; i < 2; ++i ) {
     mcpl_errstate_t es;
     a = file_load("a.mcpl");
     save_modified("trdata2.mcpl",&a,hdr + 6 * psize + psize / 2,0,NULL,0);

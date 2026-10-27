@@ -1,3 +1,5 @@
+MCPL: Compressing file es_data.mcpl
+MCPL: Compressed file into es_data.mcpl.gz
 === open_missing
 Got error from _es variant: Unable to open file!
 Got expected MCPL ERROR: Unable to open file!

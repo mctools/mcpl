@@ -158,7 +158,10 @@ static void test_merge_files(void)
   create_file("m2.mcpl",2,11,20.0,0);
   create_file("m3_dp.mcpl",2,21,30.0,1);
   truncate_copy("m2.mcpl","m2_trunc.mcpl",10);
-  //m2_trunc.mcpl claims 2 particles, but only has one complete one.
+  quiet_gzip("m2_trunc.mcpl");
+  //m2_trunc.mcpl.gz claims 2 particles, but only has one complete one (it is
+  //gzipped, since uncompressed files with a wrong size can not be opened, and
+  //errors are wanted while transferring the particles).
 
   struct { const char * what; const char * out; unsigned n;
     const char * f[3]; } cases[] = {
@@ -192,7 +195,7 @@ static void test_merge_files(void)
   //Input file which turns out to be truncated while transferring particles:
   //the output is left unfinished (and can be repaired):
   {
-    const char * files[2] = { "m1.mcpl", "m2_trunc.mcpl" };
+    const char * files[2] = { "m1.mcpl", "m2_trunc.mcpl.gz" };
     es_reset(&es);
     mcpl_outfile_t f = mcpl_merge_files_es("mout.mcpl",2,files,&es);
     if ( f.internal )
@@ -278,7 +281,7 @@ static void test_forcemerge_files(void)
     test_fail("input file modified");
   //Truncated input file (output left unfinished):
   {
-    const char * files[2] = { "m3_dp.mcpl", "m2_trunc.mcpl" };
+    const char * files[2] = { "m3_dp.mcpl", "m2_trunc.mcpl.gz" };
     es_reset(&es);
     mcpl_outfile_t f = mcpl_forcemerge_files_es("fout.mcpl",2,files,0,&es);
     if ( f.internal )
@@ -368,7 +371,7 @@ static void test_merge_inplace(void)
   //File 2 truncated: errors during the transfer leave file 1 unfinished (and
   //repairable):
   es_reset(&es);
-  mcpl_merge_inplace_es("i1.mcpl","m2_trunc.mcpl",&es);
+  mcpl_merge_inplace_es("i1.mcpl","m2_trunc.mcpl.gz",&es);
   print_result("merge_inplace (truncated file 2)",&es);
   printf("  file 1 left unfinished:\n");
   dump_file("i1.mcpl");
@@ -668,10 +671,12 @@ static void test_dump(void)
     printf("  check_error without errors -> ok\n");
     mcpl_close_file(f);
 
-    //Truncated data: the header can be dumped, but listing the particles
+    //Truncated data (gzipped, since uncompressed files with a wrong size can
+    //not be opened): the header can be dumped, but listing the particles
     //fails (and the file is then unusable):
     truncate_copy("d1.mcpl","d1_trunc.mcpl",10);
-    f = mcpl_open_file("d1_trunc.mcpl");
+    quiet_gzip("d1_trunc.mcpl");
+    f = mcpl_open_file("d1_trunc.mcpl.gz");
     collected_reset(&c);
     es_reset(&es);
     mcpl_dump_file_es(f,1,0,0,collect,&c,&es);
@@ -685,7 +690,7 @@ static void test_dump(void)
     mcpl_dump_file_es(f,1,0,0,collect,&c,&es);
     print_result("dump_file(d1_trunc.mcpl,parts=1) afterwards",&es);
     mcpl_close_file(f);
-    remove("d1_trunc.mcpl");
+    remove("d1_trunc.mcpl.gz");
   }
   free(c.data);
   free(ref.data);
@@ -706,7 +711,7 @@ int main( int argc, char ** argv )
   test_gzip();
   test_dump();
   const char * tmpfiles[] = { "m1.mcpl", "m2.mcpl", "m3_dp.mcpl",
-                              "m2_trunc.mcpl", "m_fmt2.mcpl", "m_nan.mcpl" };
+                              "m2_trunc.mcpl.gz", "m_fmt2.mcpl", "m_nan.mcpl" };
   for ( unsigned i = 0; i < sizeof(tmpfiles)/sizeof(tmpfiles[0]); ++i )
     remove(tmpfiles[i]);
   return 0;
