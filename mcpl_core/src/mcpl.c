@@ -100,6 +100,7 @@
 #include <assert.h>
 #include <math.h>
 #include <limits.h>
+#include <locale.h>
 
 #ifdef Z_SOLO
 #  error "MCPL needs zlib with gzip functionality"
@@ -1124,6 +1125,59 @@ typedef struct MCPL_LOCAL {
   char key[MCPL_STATSUMKEY_MAXLENGTH+1];
 } mcpl_internal_statsum_t;
 
+//Numbers in stat:sum: comments always use "." as the decimal point (as in the
+//"C" locale), whatever the locale of the application. These functions convert
+//between that and the decimal point of the current locale, which snprintf and
+//strtod use:
+MCPL_LOCAL const char * mcpl_internal_locale_decimal_point(void)
+{
+  const struct lconv * lc = localeconv();
+  const char * dp = lc ? lc->decimal_point : NULL;
+  return ( dp && *dp ) ? dp : ".";
+}
+
+//Replace the decimal point of the current locale in buf (a number formatted
+//with snprintf) with ".", keeping the length of buf (right-aligned, by adding
+//leading spaces if the decimal point of the locale has several characters):
+MCPL_LOCAL void mcpl_internal_to_c_decimal_point( char * buf )
+{
+  const char * dp = mcpl_internal_locale_decimal_point();
+  if ( strcmp( dp, "." ) == 0 )
+    return;
+  char * p = strstr( buf, dp );
+  if ( !p )
+    return;
+  size_t ldp = strlen( dp );
+  *p = '.';
+  if ( ldp > 1 ) {
+    memmove( p + 1, p + ldp, strlen( p + ldp ) + 1 );
+    memmove( buf + ( ldp - 1 ), buf, strlen( buf ) + 1 );
+    memset( buf, ' ', ldp - 1 );
+  }
+}
+
+//Parse a number with "." as the decimal point (like strtod in the "C" locale).
+//Returns 0 if not all of s could be parsed:
+MCPL_LOCAL int mcpl_internal_strtod_c( const char * s, double * val )
+{
+  const char * dp = mcpl_internal_locale_decimal_point();
+  size_t ldp = strlen( dp );
+  char buf[256];
+  size_t n = 0;
+  for ( ; *s; ++s ) {
+    const char * add = ( *s == '.' ? dp : s );
+    size_t ladd = ( *s == '.' ? ldp : 1 );
+    if ( n + ladd >= sizeof(buf) )
+      return 0;
+    memcpy( buf + n, add, ladd );
+    n += ladd;
+  }
+  buf[n] = '\0';
+  char * str_end;
+  *val = strtod( buf, &str_end );
+  return n > 0 && str_end == buf + n;
+}
+
 MCPL_LOCAL void mcpl_internal_statsumparse( const char * comment,
                                             mcpl_internal_statsum_t* res )
 {
@@ -1172,10 +1226,10 @@ MCPL_LOCAL void mcpl_internal_statsumparse( const char * comment,
     return;
   }
 
-  //We will ultimately use strtod to parse the value, but first we will
-  //explicitly strip trailing or leading simply space (' ') chars:
+  //We will ultimately use strtod to parse the value (via
+  //mcpl_internal_strtod_c), but first we will explicitly strip trailing or
+  //leading simply space (' ') chars:
   char bufval[MCPL_STATSUMVAL_LENGTH+1];
-  const char * expected_str_end = NULL;
   {
     const char * cE = c + MCPL_STATSUMVAL_LENGTH;
     while ( *c == ' ' )
@@ -1188,7 +1242,6 @@ MCPL_LOCAL void mcpl_internal_statsumparse( const char * comment,
     }
     memcpy(bufval,c,cE-c);
     bufval[cE-c] = 0;
-    expected_str_end = &(bufval[cE-c]);
   }
   {
     //check that only chars in "0123456789.-+eE" are allowed.
@@ -1207,9 +1260,8 @@ MCPL_LOCAL void mcpl_internal_statsumparse( const char * comment,
     }
   }
 
-  char * str_end;
-  double val = strtod( bufval, &str_end );
-  if ( str_end != expected_str_end ) {
+  double val;
+  if ( !mcpl_internal_strtod_c( bufval, &val ) ) {
     res->errmsg = "could not decode contents of value field";
     return;
   }
@@ -1677,8 +1729,9 @@ MCPL_LOCAL int mcpl_internal_encodestatsum_es( const char * key,
                        value );
     if ( w1 != MCPL_STATSUMVAL_LENGTH )
       return mcpl_internal_raise_runtime( es, "stat:sum: value encoding length error" );
-    double v = strtod( targetbuf, NULL );
-    if ( v != value ) {
+    mcpl_internal_to_c_decimal_point( targetbuf );
+    double v;
+    if ( !mcpl_internal_strtod_c( targetbuf, &v ) || v != value ) {
       //ok, .15g was not good enough, go for full .17g:
       int w2 = snprintf( targetbuf,
                          nbufleft,
@@ -1686,6 +1739,7 @@ MCPL_LOCAL int mcpl_internal_encodestatsum_es( const char * key,
                          value );
       if ( w2 != MCPL_STATSUMVAL_LENGTH )
         return mcpl_internal_raise_runtime( es, "stat:sum: value encoding length error" );
+      mcpl_internal_to_c_decimal_point( targetbuf );
     }
   }
 

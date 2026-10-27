@@ -1,0 +1,8 @@
+stat:sum:v0:                  1234.5
+stat:sum:v1:                     0.1
+stat:sum:v2:                  1e-300
+stat:sum:v3:             25000000000
+stat:sum:v4:           123456789.123
+stat:sum:v5:                      -1
+stat:sum:v6:                       0
+All values written and read correctly
