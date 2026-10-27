@@ -512,6 +512,25 @@ def test_header_limits():
     (input_dir/'limits.mcpl').unlink()
     return ok
 
+def test_header_start():
+    #The first bytes of files: the magic number "MCPL" and the format version
+    #(three digits):
+    ok = True
+    lib = getlib('pywriter')
+    lib.mcpltest_script(str(input_dir/'start_src'),
+                        script('srcname src', parts(2), 'close'))
+    data = (input_dir/'start_src.mcpl').read_bytes()
+    variants = [ ( f'version "{v}"', b'MCPL' + v.encode() + data[7:] )
+                 for v in ( '003', '005', '0/=', ' 03', '+03', '0a3' ) ]
+    variants += [ ( f'only {n} bytes', data[:n] ) for n in ( 2, 3, 6 ) ]
+    variants += [ ( 'not starting with MCPL', b'XCPL' + data[4:] ) ]
+    for what, d in variants:
+        (input_dir/'start.mcpl').write_bytes(d)
+        ok &= compare(f'repair file with {what}', 'mcpltest_repair',
+                      ('start.mcpl',), mcpl.repair)
+    (input_dir/'start.mcpl').unlink()
+    return ok
+
 def py_name_helper(f, mode):
     return mcpl.name_helper(f, mode.decode() if isinstance(mode,bytes) else mode)
 
@@ -575,7 +594,7 @@ def test_random_scripts(n):
 def main():
     make_inputs()
     results = [ test_writer_scripts(), test_file_functions(), test_truncated_files(),
-                test_header_limits(), test_name_helper(), test_mpi(), test_random_scripts(150) ]
+                test_header_limits(), test_header_start(), test_name_helper(), test_mpi(), test_random_scripts(150) ]
     print(f'Compared {ncases} operations')
     assert all(results), 'C and Python APIs give different results'
 
