@@ -2554,6 +2554,12 @@ int mcpl_closeandgzip_outfile(mcpl_outfile_t of)
   //Not via mcpl_closeandgzip_outfile_es, since failures to compress files are
   //not errors here (they are reported, and 0 is returned):
   MCPLIMP_OUTFILEDECODE;
+  if ( f->failed ) {
+    //An earlier error left the file unfinished: it is closed but not
+    //compressed, so it can still be repaired:
+    mcpl_close_outfile(of);
+    return 0;
+  }
   char * filename = f->filename;
   f->filename = NULL;//prevent free in mcpl_close_outfile
   mcpl_close_outfile(of);
@@ -6259,7 +6265,9 @@ int mcpl_tool(int argc,char** argv) {
     uint32_t ldata;
     const char * data;
     if (!mcpl_hdr_blob(mcplfile, blobkey, &ldata, &data)) {
+      //(no error message, since the output is usually piped elsewhere)
       mcpl_close_file(mcplfile);
+      free(filenames);
       return 1;
     }
     mcpl_internal_dump_to_stdout( data, ldata );
