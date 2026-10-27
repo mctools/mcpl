@@ -149,12 +149,11 @@ extern "C" {
   MCPL_API void mcpl_hdr_add_comment(mcpl_outfile_t, const char *);/* Add one or more human-readable comments    */
   MCPL_API void mcpl_hdr_add_data(mcpl_outfile_t, const char * key,
                                   uint32_t ldata, const char * data);/* add binary blobs by key                  */
-  /* (keys: unique, non-empty, ASCII, no non-printable characters,           */
-  /* whitespace, backslash, or quotation marks)                              */
+  /* (keys: unique, non-empty, ASCII, no non-printable characters,            */
+  /* whitespace, backslash, or quotation marks)                               */
   /* (blobs are stored byte for byte, so binary numbers in them are in the    */
   /* byte order chosen by the application, unlike all other numbers in MCPL   */
   /* files, which are in the byte order of the file)                          */
-  /* (headers are limited to 1.9GB and 1000000 comments and blobs together)  */
   MCPL_API void mcpl_enable_userflags(mcpl_outfile_t);/* to write the "userflags" info                           */
   MCPL_API void mcpl_enable_polarisation(mcpl_outfile_t);/* to write the "polarisation" info                     */
   MCPL_API void mcpl_enable_doubleprec(mcpl_outfile_t);/* use double precision FP numbers in storage             */
@@ -273,7 +272,8 @@ extern "C" {
 
   /* Attempt to merge incompatible files, by throwing away meta-data and otherwise */
   /* selecting a configuration which is suitable to contain the data of all files. */
-  /* Userflags will be discarded unless keep_userflags=1.                          */
+  /* Userflags will be discarded unless keep_userflags=1, and userdata will be     */
+  /* discarded if the files have different userdata layouts.                       */
   /* If called with compatible files, the code will fall back to calling the usual */
   /* mcpl_merge_files function instead.                                            */
   MCPL_API mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
@@ -326,31 +326,26 @@ extern "C" {
   /* Per-particle userdata    */
   /****************************/
 
-  /* Particles can optionally carry a fixed number of bytes of custom data   */
-  /* ("userdata"), in addition to the 32 bit userflags. The contents are     */
-  /* described by a layout string, which is stored in the file header, and   */
-  /* which is a comma-separated list of fields "name:type" or "name:type[n]" */
-  /* (arrays of n values), like "temp:float32,origin:int32,tags:uint8[3]".   */
-  /* The types are int8, uint8, int16, uint16, int32, uint32, int64, uint64, */
-  /* float32 and float64. Names must start with a lowercase letter followed  */
-  /* by lowercase letters, digits or underscores (names are required, also   */
-  /* for plain bytes like "data:uint8[27]", to avoid mixing up different     */
-  /* data with the same types when merging files). The names of the fields   */
-  /* of particles (x, ekin, userflags, ...) and position, direction,         */
-  /* polarisation and wavelength can not be used.                            */
-  /* Values are packed without any padding, in the byte order of the file    */
-  /* (which is the native one of the platform). At most 65535 bytes per      */
-  /* particle are allowed. Files with userdata are written in MCPL format    */
-  /* version 4 (which older MCPL releases can not read), while all other     */
-  /* files are still written in format version 3.                            */
-  /*                                                                         */
-  /* Files can only be merged if their userdata layouts are identical.       */
-  /* Forced merges of files with different layouts discard the userdata.     */
+  /* In the MCPL-4 format, particles can optionally carry a fixed number of   */
+  /* bytes of custom data ("userdata"), described by a layout string like:    */
+  /*                                                                          */
+  /*          "temp:float32:K,tags:uint8[3],flux:float64:cm^-2.MeV"           */
+  /*                                                                          */
+  /* Allowed types are int8, uint8, int16, uint16, int32, uint32, int64,      */
+  /* uint64, float32, and float64, and fields can be scalars or arrays.       */
+  /* Field names are lowercase alphanumeric+underscore (a-z0-9_) with         */
+  /* leading letter (a-z). Some names are reserved (e.g. "ekin", "if", ...).  */
+  /* Units are supported as well: cm, MeV, ms, K, deg (in that order), and    */
+  /* can be combined by multiplication (.). Powers of units are also          */
+  /* supported in single digits from 2 to 9 or -1 to -9, like cm^2 or MeV^-1. */
+  /* At most 65535 bytes per particle are allowed. Files with userdata are    */
+  /* written in MCPL format 4.                                                */
 
   /* Enable userdata with the given layout when writing a file. Particles    */
   /* must then be added with mcpl_add_particle_with_userdata (and it is an   */
   /* error to use mcpl_add_particle):                                        */
   MCPL_API void mcpl_enable_userdata(mcpl_outfile_t, const char * layout);
+
   /* Add particle with userdata (an array of mcpl_hdr_userdata_size bytes,   */
   /* or NULL for explicitly giving the particle userdata with all bytes      */
   /* zero):                                                                  */
@@ -362,6 +357,7 @@ extern "C" {
   /* and the number of bytes per particle (0 if no userdata):             */
   MCPL_API const char * mcpl_hdr_userdata_layout(mcpl_file_t);
   MCPL_API uint32_t mcpl_hdr_userdata_size(mcpl_file_t);
+
   /* Like mcpl_read, but also provides the userdata of the particle (set to */
   /* NULL if the file has no userdata or there is no particle):             */
   MCPL_API const mcpl_particle_t* mcpl_read_with_userdata(mcpl_file_t,
@@ -374,6 +370,7 @@ extern "C" {
   /* Helpers for encoding and decoding fields. Number of bytes described by */
   /* a layout (error if the layout is invalid):                             */
   MCPL_API uint32_t mcpl_userdata_layout_size(const char * layout);
+
   /* Offset in bytes of a field in the layout. The type must be the one in  */
   /* the layout, including any array size (e.g. "float32" or "uint8[3]"),   */
   /* and errors are raised in case of mismatches. Elements i of array       */

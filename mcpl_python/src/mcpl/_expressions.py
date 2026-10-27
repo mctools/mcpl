@@ -36,10 +36,15 @@ _expr_fields = ( 'x', 'y', 'z', 'ux', 'uy', 'uz', 'polx', 'poly', 'polz',
                  'ekin', 'time', 'weight', 'pdgcode', 'userflags',
                  'wavelength', 'fileidx' )
 _expr_constants = { 'pi' : math.pi, **_particle_names }
-#Dimensions (length,energy,time) and units of quantities in expressions. Values
-#are internally in the units of MCPL (cm, MeV, ms), also for wavelengths:
-_dim_none = (0,0,0)
-_dim_L, _dim_E, _dim_T = (1,0,0), (0,1,0), (0,0,1)
+#Dimensions (length,energy,time,temperature) and units of quantities in
+#expressions. Values are internally in the units of MCPL (cm, MeV, ms), also
+#for wavelengths, and temperatures (of userdata fields) in K:
+_dim_none = (0,0,0,0)
+_dim_L, _dim_E, _dim_T, _dim_K = (1,0,0,0), (0,1,0,0), (0,0,1,0), (0,0,0,1)
+#(the dimension of userdata fields when expressions are checked without a
+#file, since their units are given by the layouts of files: everything
+#computed from them has unknown units, which are never refused):
+_dim_unknown = 'unknown'
 _expr_units = { 'meV' : (1e-9,_dim_E), 'eV' : (1e-6,_dim_E),
                 'keV' : (1e-3,_dim_E), 'MeV' : (1.0,_dim_E),
                 'GeV' : (1e3,_dim_E), 'TeV' : (1e6,_dim_E),
@@ -48,14 +53,14 @@ _expr_units = { 'meV' : (1e-9,_dim_E), 'eV' : (1e-6,_dim_E),
                 'Aa' : (1e-8,_dim_L), 'nm' : (1e-7,_dim_L),
                 'um' : (1e-4,_dim_L), 'mm' : (0.1,_dim_L),
                 'cm' : (1.0,_dim_L), 'm' : (100.0,_dim_L),
-                'km' : (1e5,_dim_L),
+                'km' : (1e5,_dim_L), 'K' : (1.0,_dim_K),
                 'deg' : (math.pi/180,None), 'rad' : (1.0,None) }
 _expr_field_dims = { 'x' : _dim_L, 'y' : _dim_L, 'z' : _dim_L,
                      'ekin' : _dim_E, 'time' : _dim_T,
                      'wavelength' : _dim_L }
 _expr_wl_unit = 1e-8#wavelengths are in Aa in the Python API
 #Example units to suggest in error messages:
-_expr_unit_hints = { _dim_L : 'cm', _dim_E : 'MeV', _dim_T : 'ms' }
+_expr_unit_hints = { _dim_L : 'cm', _dim_E : 'MeV', _dim_T : 'ms', _dim_K : 'K' }
 #Functions requiring dimensionless arguments:
 _expr_functions_nodim = { 'exp' : np.exp, 'log' : np.log, 'log10' : np.log10,
                           'sin' : np.sin, 'cos' : np.cos, 'tan' : np.tan,
@@ -128,6 +133,14 @@ _expr_unsupported_ops = ( ( '&&', 'and', 'x > 0 and y > 0' ),
 def _expr_check_ops( expr ):
     #NB: Do not add support for these: ! and % break command lines in some
     #shells (bash history expansion, Windows batch files).
+    if '//' in expr:
+        raise MCPLError('The operator // is not supported in expressions (use /,'
+                        ' which divides integers like in C, e.g. 7/2 is 3),'
+                        f' in expression "{expr}"')
+    if '~' in expr:
+        raise MCPLError('The operator ~ is not supported in expressions (e.g.'
+                        ' "(userflags & 0x10) == 0" tests that a bit is not set),'
+                        f' in expression "{expr}"')
     for op, alt, example in _expr_unsupported_ops:
         found = ( re.search(r'!(?!=)',expr) if op == '!' else op in expr )
         if found:
@@ -150,8 +163,8 @@ def _expr_check( node, expr, variables = () ):
     """Check that only supported constructs are used in parsed expression
     (variables are names of variables defined in edits)"""
     ok_nodes = ( ast.Expression, ast.BoolOp, ast.And, ast.Or, ast.UnaryOp,
-                 ast.Not, ast.USub, ast.UAdd, ast.Invert, ast.BinOp, ast.Add,
-                 ast.Sub, ast.Mult, ast.Div, ast.Pow, ast.FloorDiv,
+                 ast.Not, ast.USub, ast.UAdd, ast.BinOp, ast.Add,
+                 ast.Sub, ast.Mult, ast.Div, ast.Pow,
                  ast.BitAnd, ast.BitOr, ast.Compare, ast.Eq, ast.NotEq,
                  ast.Lt, ast.LtE, ast.Gt, ast.GtE, ast.Name, ast.Load,
                  ast.Constant, ast.Call )
@@ -169,6 +182,7 @@ def _expr_check( node, expr, variables = () ):
                             ' (available functions are: '
                             + ', '.join(sorted(_expr_functions)) + ')')
         if isinstance(n,ast.Name) and not ( n.id in _expr_fields
+                                            or n.id.startswith('userdata.')
                                             or n.id in variables
                                             or n.id in _expr_constants
                                             or n.id in _expr_units
@@ -183,26 +197,130 @@ def _expr_parse( expr, mode = 'eval' ):
     except SyntaxError:
         hint = ' (use == for comparisons)' if mode == 'eval' and '=' in expr else ''
         raise MCPLError(f'Syntax error in expression "{expr}"{hint}')
-    return tree
+    return _UserdataNames(expr).visit(tree)
+
+class _UserdataNames(ast.NodeTransformer):
+    """Replaces fields of the userdata, userdata.NAME and
+    userdata.NAME.at(INDEX) (for values of arrays), by single names (like
+    "userdata.NAME.at(2)")."""
+    def __init__( self, expr ):
+        self._expr = expr
+    def _error( self, msg ):
+        raise MCPLError(f'{msg} in expression "{self._expr}"')
+    @staticmethod
+    def _field( node ):
+        """The NAME of userdata.NAME, or None"""
+        if ( isinstance(node,ast.Attribute) and isinstance(node.value,ast.Name)
+             and node.value.id == 'userdata' ):
+            return node.attr
+        return None
+    def visit_Call( self, node ):
+        f = node.func
+        field = self._field(f.value) if isinstance(f,ast.Attribute) else None
+        if field is None:
+            return self.generic_visit(node)
+        if f.attr != 'at':
+            self._error(f'Unknown function userdata.{field}.{f.attr}(..) (values of'
+                        f' arrays in the userdata are written as userdata.{field}.at(INDEX))')
+        a = node.args[0] if len(node.args) == 1 and not node.keywords else None
+        if not ( isinstance(a,ast.Constant) and type(a.value) is int ):
+            self._error(f'The index in userdata.{field}.at(INDEX) must be a'
+                        f' non-negative integer, like userdata.{field}.at(0)')
+        return ast.copy_location(ast.Name( id = f'userdata.{field}.at({a.value})',
+                                           ctx = node.func.ctx ), node)
+    def visit_Attribute( self, node ):
+        field = self._field(node)
+        if field is not None:
+            return ast.copy_location(ast.Name( id = f'userdata.{field}',
+                                               ctx = node.ctx ), node)
+        inner = node.value
+        if isinstance(inner,ast.Attribute) and self._field(inner) is not None:
+            self._error(f'Values of arrays in the userdata are written as'
+                        f' userdata.{inner.attr}.at(INDEX), not'
+                        f' userdata.{inner.attr}.{node.attr}')
+        return self.generic_visit(node)
+    def visit_Name( self, node ):
+        if node.id == 'userdata':
+            self._error('Fields of the userdata are written as userdata.NAME')
+        return node
 
 class _Q:
-    """Value with dimension (length,energy,time) in an expression. Values
-    without units (like plain numbers, or ux) have dimension None. A plain 0
-    (zero is the same in all units) is marked with zero=True, and can be used
-    with any units."""
+    """Value with dimension (length,energy,time,temperature) in an expression.
+    Values without units (like plain numbers, or ux) have dimension None. A
+    plain 0 (zero is the same in all units) is marked with zero=True, and can
+    be used with any units. Integers are numpy arrays with the integer types of
+    C after its integer promotions (int32, uint32, int64 or uint64)."""
     __slots__ = ('d','v','zero')
     def __init__( self, v, d = None, zero = False ):
         self.v, self.d = v, ( None if d == _dim_none else d )
         self.zero = zero
 
+#Integers in expressions work like in C (with its integer promotions and usual
+#arithmetic conversions), but results which do not fit their type are errors
+#instead of wrapping around, and so are unsigned values combined with negative
+#values (e.g. in comparisons, which are therefore exact):
+_int_types = { (4,False) : np.int32, (4,True) : np.uint32,
+               (8,False) : np.int64, (8,True) : np.uint64 }
+
+def _is_int( v ):
+    return np.asarray(v).dtype.kind in 'iu'
+
+def _ctype( dtype ):
+    """The type of integers (or booleans) after the integer promotions of C"""
+    dt = np.dtype(dtype)
+    if dt.kind == 'b' or dt.itemsize < 4:
+        return np.dtype(np.int32)
+    return np.dtype(_int_types[(dt.itemsize,dt.kind == 'u')])
+
+def _common_ctype( *dtypes ):
+    """The type of results of integers with these types (the usual arithmetic
+    conversions of C)"""
+    res = None
+    for dt in dtypes:
+        dt = _ctype(dt)
+        if res is None or dt == res:
+            res = dt
+            continue
+        u = [ t for t in (res,dt) if t.kind == 'u' ]
+        si = [ t for t in (res,dt) if t.kind == 'i' ]
+        if len(u) == 2 or len(si) == 2:
+            res = max(res,dt,key=lambda t : t.itemsize)
+        else:
+            res = u[0] if u[0].itemsize >= si[0].itemsize else si[0]
+    return res
+
+def _int_constant( v ):
+    """Integer constants typed like in C (as int if they fit, then as int64,
+    then as uint64), or None if they are too large"""
+    for t in ( np.int32, np.int64, np.uint64 ):
+        info = np.iinfo(t)
+        if info.min <= v <= info.max:
+            return np.asarray(v,dtype=t)
+    return None
+
 def _dimstr( d ):
     if d is None:
         return 'value without units'
     res = []
-    for n, e in zip(('length','energy','time'),d):
+    for n, e in zip(('length','energy','time','temperature'),d):
         if e:
             res.append( n if e == 1 else f'{n}^{e}' )
     return '*'.join(res)
+
+def _userdata_unit( layout, field ):
+    """The size (in the units of expressions) and dimension of the unit of the
+    field of the userdata layout, as (1.0, None) for fields without a unit"""
+    from ._userdata import userdata_units
+    unit = userdata_units(layout).get(field)
+    factor, dim = 1.0, [ 0, 0, 0, 0 ]
+    for part in ( unit.split('.') if unit else () ):
+        name, _, power = part.partition('^')
+        size, d = _expr_units[name]
+        e = int(power) if power else 1
+        factor *= size ** e
+        if d is not None:
+            dim = [ a + b * e for a, b in zip(dim,d) ]
+    return factor, ( tuple(dim) if any(dim) else None )
 
 def _unit_hint( d ):
     u = _expr_unit_hints.get(d)
@@ -236,14 +354,60 @@ class _ExprEvaluator:
         if n in self.state:
             return self.state[n]
         if n in _expr_constants:
-            return _Q(_expr_constants[n])
+            v = _expr_constants[n]
+            return _Q(_int_constant(v) if isinstance(v,int) else v)
         if n in _expr_units:
             v, d = _expr_units[n]
             return _Q(v,d)
         if n not in self._cache:
-            q = _Q(getattr(self._block,n),_expr_field_dims.get(n))
-            self._cache[n] = self.finite(q,f'The particle field {n} has')
-        return self._cache[n]
+            if n.startswith('userdata.'):
+                field, _, index = n[9:].partition('.at(')
+                q = self._userdata(field,int(index[:-1]) if index else None)
+            else:
+                q = _Q(getattr(self._block,n),_expr_field_dims.get(n))
+            v = np.asarray(q.v)
+            if v.dtype.kind in 'iub':
+                v = v.astype(_ctype(v.dtype),copy=False)
+            elif v.dtype != np.float64:
+                v = v.astype(np.float64)#(e.g. float32 userdata)
+            self._cache[n] = _Q(v,q.d)
+        #(checked for each use, for the particles in use there):
+        what = ( f'The userdata field {n[9:].partition(".at(")[0]} has'
+                 if n.startswith('userdata.') else f'The particle field {n} has' )
+        return self.finite(self._cache[n],what)
+    def _userdata( self, field, index = None ):
+        """The values of the field of the userdata (with the unit of the field
+        in the layout, if any), or of the value with the index (from 0) of a
+        field with an array of values"""
+        if isinstance(self._block,_EmptyBlock):
+            #(all fields, when checked without a file, with unknown units, and
+            #as integers, which can be used in all places):
+            return _Q(np.zeros(0,dtype=np.int64),_dim_unknown)
+        ud = getattr(self._block,'userdata',None)
+        udinfo = getattr(self._block,'_udinfo',None)
+        name = f'userdata.{field}' + ( '' if index is None else f'.at({index})' )
+        if ud is None or udinfo is None:
+            self.error(f'The particles have no userdata (for {name})')
+        names = ud.dtype.names
+        if field not in names:
+            self.error(f'No userdata field "{field}" (the fields are: {", ".join(names)})')
+        v = ud[field]
+        n = v.shape[1] if v.ndim == 2 else None
+        if n is None and index is not None:
+            self.error(f'The userdata field "{field}" has one value per particle'
+                       f' (use userdata.{field} without .at({index}))')
+        if n is not None and index is None:
+            self.error(f'The userdata field "{field}" has {n} values per particle'
+                       f' (use userdata.{field}.at(0) to userdata.{field}.at({n-1}))')
+        if index is not None:
+            if index >= n:
+                self.error(f'The index {index} is too large for the userdata field "{field}",'
+                           f' which has {n} values per particle (from .at(0) to .at({n-1}))')
+            v = v[:,index]
+        factor, dim = _userdata_unit(udinfo[0],field)
+        if factor != 1.0:
+            v = v * factor#(e.g. mm in cm, or deg in radians)
+        return _Q(v,dim)
     def _wavelength( self ):
         #Wavelengths (NaN for particles other than neutrons and gammas, for
         #which they are not used), also of modified particles in edits:
@@ -290,6 +454,8 @@ class _ExprEvaluator:
     def same( self, a, b, what ):
         """Check that a and b have the same dimension (for +, -, comparisons,
         etc.) and return their values and the dimension."""
+        if _dim_unknown in ( a.d, b.d ):
+            return a.v, b.v, _dim_unknown
         if a.d != b.d and ( a.zero or b.zero ):
             return a.v, b.v, ( a.d or b.d )
         if a.d != b.d:
@@ -298,7 +464,7 @@ class _ExprEvaluator:
                        f' {_dimstr(b.d)}{hint}')
         return a.v, b.v, a.d
     def nodim( self, q, what ):
-        if q.d is not None:
+        if q.d not in ( None, _dim_unknown ):
             self.error(f'{what} requires a value without units, not {_dimstr(q.d)}')
         return q.v
     def __call__( self, node ):
@@ -306,7 +472,14 @@ class _ExprEvaluator:
         if isinstance(node,ast.Expression):
             return ev(node.body)
         if isinstance(node,ast.Constant):
-            return self.finite(_Q(node.value,zero=(node.value==0)),'A constant has')
+            v = node.value
+            if type(v) is int:
+                c = _int_constant(v)
+                if c is None:
+                    self.error(f'The integer {v} is too large (integers must fit'
+                               ' in 64 bits)')
+                return _Q(c,zero=(v==0))
+            return self.finite(_Q(v,zero=(v==0)),'A constant has')
         if isinstance(node,ast.Name):
             return self.name(node.id)
         if isinstance(node,ast.BoolOp):
@@ -320,18 +493,22 @@ class _ExprEvaluator:
                 res = fct(res,b)
             return _Q(res)
         if isinstance(node,ast.UnaryOp):
-            q = ev(node.operand)
+            c = node.operand
+            if ( isinstance(node.op,ast.USub) and isinstance(c,ast.Constant)
+                 and type(c.value) is int ):
+                #(negative integer constants, like -2147483648):
+                return ev(ast.Constant(-c.value))
+            q = ev(c)
             if isinstance(node.op,ast.Not):
                 return _Q(np.logical_not(self.boolval(q)))
             if isinstance(node.op,ast.USub):
+                if _is_int(q.v):
+                    return _Q(self.int_negate(q.v,'Negation'),q.d,zero=q.zero)
                 return _Q(-q.v,q.d,zero=q.zero)
-            if isinstance(node.op,ast.Invert):
-                return _Q(np.invert(self._int(q,'~')))
             return q
         if isinstance(node,ast.BinOp):
             what = { ast.Add : 'Addition', ast.Sub : 'Subtraction',
                      ast.Mult : 'Multiplication', ast.Div : 'Division',
-                     ast.FloorDiv : 'Floor division',
                      ast.Pow : 'Raising to a power' }.get(type(node.op),'An operation')
             return self.finite(self.binop(node.op,ev(node.left),ev(node.right)),
                                f'{what} gives')
@@ -343,7 +520,7 @@ class _ExprEvaluator:
             for op, c in zip(node.ops,node.comparators):
                 right = ev(c)
                 a, b, _ = self.same(left,right,'comparison')
-                res = np.logical_and(res,fcts[type(op)](a,b))
+                res = np.logical_and(res,self.compare(fcts[type(op)],a,b))
                 left = right
             return _Q(res)
         if isinstance(node,ast.Call):
@@ -352,36 +529,151 @@ class _ExprEvaluator:
         raise MCPLError('Unsupported expression')#should not happen
     def binop( self, op, a, b ):
         if isinstance(op,(ast.BitAnd,ast.BitOr)):
-            sym = '&' if isinstance(op,ast.BitAnd) else '|'
-            fct = np.bitwise_and if sym == '&' else np.bitwise_or
-            return _Q(fct(self._int(a,sym),self._int(b,sym)))
+            return self.bitwise(op,a,b)
+        what = { ast.Add : 'Addition', ast.Sub : 'Subtraction',
+                 ast.Mult : 'Multiplication',
+                 ast.Pow : 'Raising to a power' }.get(type(op),'Division')
+        if ( not isinstance(op,ast.Pow) and np.asarray(a.v).dtype.kind in 'iub'
+             and np.asarray(b.v).dtype.kind in 'iub' ):
+            return self.int_arith(op,a,b,what)
+        #(otherwise integers are used as doubles, like in C):
+        a, b = self.as_float(a), self.as_float(b)
         with np.errstate(divide='ignore',invalid='ignore'):
-            if isinstance(op,(ast.Add,ast.Sub,ast.FloorDiv)):
+            if isinstance(op,(ast.Add,ast.Sub)):
                 x, y, d = self.same(a,b,'arithmetic')
-                fct = { ast.Add : np.add, ast.Sub : np.subtract,
-                        ast.FloorDiv : np.floor_divide }[type(op)]
-                return _Q(fct(x,y),d)
+                return _Q(np.add(x,y) if isinstance(op,ast.Add) else np.subtract(x,y),d)
             if isinstance(op,(ast.Mult,ast.Div)):
                 if isinstance(op,ast.Mult):
                     v, sign = a.v * b.v, 1
                 else:
                     v, sign = np.true_divide(a.v,b.v), -1
-                da, db = a.d or _dim_none, b.d or _dim_none
-                d = tuple( i + sign * j for i,j in zip(da,db) )
-                return _Q(v,d)
+                return _Q(v,self.muldim(a.d,b.d,sign))
             #Power:
-            if b.d is not None:
+            if b.d not in ( None, _dim_unknown ):
                 self.error(f'Exponent with units ({_dimstr(b.d)})')
-            if a.d is None:
-                return _Q(np.power(np.asarray(a.v,dtype=float),b.v))
+            if a.d in ( None, _dim_unknown ):
+                return _Q(np.power(a.v,b.v),a.d)
             e = np.asarray(b.v)
             if e.ndim or float(e) != round(float(e)):
                 self.error('Values with units can only be raised to integer powers')
             e = round(float(e))
-            return _Q(np.power(np.asarray(a.v,dtype=float),e),
-                      tuple( i * e for i in a.d ))
+            return _Q(np.power(a.v,e),tuple( i * e for i in a.d ))
+    @staticmethod
+    def as_float( q ):
+        v = np.asarray(q.v)
+        return _Q(v.astype(np.float64),q.d,zero=q.zero) if v.dtype.kind in 'iub' else q
+    @staticmethod
+    def muldim( da, db, sign ):
+        """Dimension of products (sign=1) and quotients (sign=-1)"""
+        if _dim_unknown in ( da, db ):
+            return _dim_unknown
+        da, db = da or _dim_none, db or _dim_none
+        return tuple( i + sign * j for i,j in zip(da,db) )
+    def masked( self, bad ):
+        """The values of bad for the particles in use"""
+        return bad if self.active is None else ( bad & self.active )
+    def int_operands( self, values, what ):
+        """The type of the result of integers (like in C) and the values in
+        that type, which must not be negative for unsigned types"""
+        values = [ np.asarray(v) for v in values ]
+        rt = _common_ctype(*( v.dtype for v in values ))
+        if rt.kind == 'u':
+            for v in values:
+                if v.dtype.kind != 'u' and np.any(self.masked( v < 0 )):
+                    self.error(f'Unsigned integers (like userflags) can not be'
+                               f' combined with negative values (in {what.lower()})')
+        with np.errstate(invalid='ignore'):
+            return rt, [ v.astype(rt,copy=False) for v in values ]
+    def int_overflow( self, bad, rt, what ):
+        if np.any(self.masked(bad)):
+            desc = ( f'{"unsigned " if rt.kind == "u" else ""}'
+                     f'{8*rt.itemsize}-bit integers' )
+            self.error(f'{what} of integers gives values outside the range of'
+                       f' the result ({desc})')
+    def int_arith( self, op, a, b, what ):
+        """+, -, * and / of integers, like in C (division truncates towards 0),
+        but with errors instead of wrapping around"""
+        if isinstance(op,(ast.Add,ast.Sub)):
+            _, _, d = self.same(a,b,'arithmetic')
+        else:
+            d = self.muldim(a.d,b.d,1 if isinstance(op,ast.Mult) else -1)
+        rt, ( x, y ) = self.int_operands((a.v,b.v),what)
+        info = np.iinfo(rt)
+        if isinstance(op,ast.Div):
+            zero = y == 0
+            if np.any(self.masked(zero)):
+                self.error('Division by zero (of integers)')
+            y = np.where(zero,np.ones_like(y),y)
+        if rt.itemsize == 4:
+            #(computed in 64 bits, where the results of 32-bit integers fit):
+            wide = np.uint64 if rt.kind == 'u' else np.int64
+            x, y = x.astype(wide), y.astype(wide)
+            if isinstance(op,ast.Sub) and rt.kind == 'u':
+                x, y = x.astype(np.int64), y.astype(np.int64)
+            v = self._int_op(op,x,y)
+            self.int_overflow( ( v < info.min ) | ( v > info.max ),rt,what)
+            return _Q(v.astype(rt),d)
+        with np.errstate(over='ignore'):
+            v = self._int_op(op,x,y)
+            if isinstance(op,ast.Add):
+                bad = ( v < x ) if rt.kind == 'u' else ( ( ( x ^ v ) & ( y ^ v ) ) < 0 )
+            elif isinstance(op,ast.Sub):
+                bad = ( x < y ) if rt.kind == 'u' else ( ( ( x ^ y ) & ( x ^ v ) ) < 0 )
+            elif isinstance(op,ast.Mult):
+                nz = x != 0
+                bad = nz & ( v // np.where(nz,x,np.ones_like(x)) != y )
+                if rt.kind == 'i':
+                    bad |= ( ( x == -1 ) & ( y == info.min ) ) | ( ( y == -1 ) & ( x == info.min ) )
+            else:
+                bad = ( ( x == info.min ) & ( y == -1 ) ) if rt.kind == 'i' else False
+        self.int_overflow(bad,rt,what)
+        return _Q(v,d)
+    @staticmethod
+    def _int_op( op, x, y ):
+        if isinstance(op,ast.Add):
+            return x + y
+        if isinstance(op,ast.Sub):
+            return x - y
+        if isinstance(op,ast.Mult):
+            return x * y
+        #Division, truncating towards 0 like in C:
+        with np.errstate(over='ignore'):
+            q = np.floor_divide(x,y)
+            if x.dtype.kind == 'i':
+                q = q + ( ( q * y != x ) & ( ( x < 0 ) != ( y < 0 ) ) )
+        return q
+    def int_negate( self, v, what ):
+        rt, ( v, ) = self.int_operands((v,),what)
+        if rt.kind == 'u':
+            if np.any(self.masked( v != 0 )):
+                self.error(f'{what} of unsigned integers (like userflags) gives'
+                           ' negative values, which they can not have')
+            return v
+        self.int_overflow( v == np.iinfo(rt).min,rt,what)
+        return -v
+    def compare( self, fct, a, b ):
+        """Comparisons, of integers like in C, but where unsigned integers can
+        not be compared with negative values"""
+        if np.asarray(a).dtype.kind in 'iub' and np.asarray(b).dtype.kind in 'iub':
+            _, ( a, b ) = self.int_operands((a,b),'a comparison')
+        return fct(a,b)
+    def bitwise( self, op, a, b ):
+        """& and | of integers, like in C"""
+        sym = '&' if isinstance(op,ast.BitAnd) else '|'
+        for q in (a,b):
+            if not _is_int(q.v):
+                self.error(f'The bitwise operator {sym} can only be used with integers'
+                           ' (use "and" and "or" for logical and/or)')
+        _, ( x, y ) = self.int_operands((a.v,b.v),f'the operation {sym}')
+        return _Q(np.bitwise_and(x,y) if sym == '&' else np.bitwise_or(x,y))
     def call( self, fname, args ):
         fct = _expr_functions[fname]
+        what = f'{fname}(..)'
+        if fname in ('mod','abs','floor','ceil','min','max','clamp') and all(
+                np.asarray(q.v).dtype.kind in 'iub' for q in args ):
+            return self.int_call(fname,args,what)
+        #(otherwise integers are used as doubles, like in C):
+        args = [ self.as_float(q) for q in args ]
         with np.errstate(divide='ignore',invalid='ignore'):
             if fname in _expr_functions_nodim:
                 return _Q(fct(*[self.nodim(q,f'{fname}(..)') for q in args]))
@@ -389,7 +681,7 @@ class _ExprEvaluator:
                 if len(args) != 1:
                     self.error('sqrt(..) takes one argument')
                 q = args[0]
-                if q.d is None:
+                if q.d in ( None, _dim_unknown ):
                     return _Q(np.sqrt(q.v))
                 if any( i % 2 for i in q.d ):
                     self.error(f'sqrt(..) of value with {_dimstr(q.d)}')
@@ -408,16 +700,8 @@ class _ExprEvaluator:
                 u = tuple( self.name(c).v for c in ('ux','uy','uz') )
                 return _Q(_angle_highres(u,(vx,vy,vz)))
             if fname == 'mod':
-                if len(args) != 2:
-                    self.error('mod(a,b) takes two arguments')
-                for q in args:
-                    if np.asarray(q.v).dtype.kind not in 'iu' or q.d is not None:
-                        self.error('mod(a,b) requires integers without units'
-                                   ' (like userflags or pdgcode)')
-                a, b = ( np.asarray(q.v) for q in args )
-                if np.any( b == 0 ):
-                    self.error('Division by zero in mod(a,b)')
-                return _Q(np.mod(a,b))
+                self.error('mod(a,b) requires integers without units'
+                           ' (like userflags or pdgcode)')
             #Functions keeping units:
             if fname == 'hypot':
                 if len(args) < 2:
@@ -442,26 +726,58 @@ class _ExprEvaluator:
                 d = d or d2
                 res = fct(res,y)
             return _Q(res,d)
+    def int_call( self, fname, args, what ):
+        """mod, abs, floor, ceil, min, max and clamp of integers"""
+        if fname == 'mod':
+            if len(args) != 2:
+                self.error('mod(a,b) takes two arguments')
+            if any( q.d not in ( None, _dim_unknown ) for q in args ):
+                self.error('mod(a,b) requires integers without units'
+                           ' (like userflags or pdgcode)')
+            _, ( a, b ) = self.int_operands((args[0].v,args[1].v),what)
+            if np.any(self.masked( ( a < 0 ) | ( b < 0 ) )):
+                self.error('mod(a,b) can not be used with negative values')
+            zero = b == 0
+            if np.any(self.masked(zero)):
+                self.error('Division by zero in mod(a,b)')
+            return _Q(np.mod(a,np.where(zero,np.ones_like(b),b)))
+        if fname in ('abs','floor','ceil'):
+            if len(args) != 1:
+                self.error(f'{what} takes one argument')
+            q = args[0]
+            rt, ( v, ) = self.int_operands((q.v,),what)
+            if fname == 'abs' and rt.kind == 'i':
+                neg = v < 0
+                v = np.where(neg,self.int_negate(np.where(neg,v,0),what),v)
+            return _Q(v,q.d,zero=q.zero)
+        if fname == 'clamp' and len(args) != 3:
+            self.error('clamp(value,low,high) takes three arguments')
+        if fname != 'clamp' and len(args) < 2:
+            self.error(f'Wrong number of arguments for {what}')
+        d = args[0].d
+        for q in args[1:]:
+            _, _, d2 = self.same(args[0],q,what)
+            d = d or d2
+        _, vals = self.int_operands([ q.v for q in args ],what)
+        if fname == 'clamp':
+            return _Q(np.minimum(np.maximum(vals[0],vals[1]),vals[2]),d)
+        fct = np.minimum if fname == 'min' else np.maximum
+        res = vals[0]
+        for v in vals[1:]:
+            res = fct(res,v)
+        return _Q(res,d)
     @staticmethod
     def boolval( q ):
         return np.asarray(q.v).astype(bool) if np.asarray(q.v).dtype != bool else q.v
-    @staticmethod
-    def _int( q, op ):
-        a = np.asarray(q.v)
-        if a.dtype.kind not in 'iub':
-            hint = ( 'use "not" for logical not' if op == '~'
-                     else 'use "and" and "or" for logical and/or' )
-            raise MCPLError(f'The bitwise operator {op} requires integer operands'
-                            f' ({hint})')
-        return a
 
 class _EmptyBlock:
     """Block without particles, for checking expressions before use"""
     def __len__( self ):
         return 0
     def __getattr__( self, name ):
-        return np.zeros(0,dtype = int if name in ('pdgcode','userflags','fileidx')
-                        else float)
+        dtypes = { 'pdgcode' : np.int32, 'userflags' : np.uint32,
+                   'fileidx' : np.int64 }
+        return np.zeros(0,dtype = dtypes.get(name,float))
 
 class ParticleFilter:
     """Picks particles with an expression, which is evaluated with numpy on
@@ -481,15 +797,18 @@ class ParticleFilter:
     uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, and
     wavelength), fileidx (the position of the particles in the file,
     counting from 0, e.g. "mod(fileidx,10) == 0" for every tenth particle),
+    fields of the userdata (userdata.NAME, and userdata.NAME.at(INDEX) for
+    the values of arrays, counting from 0, with the units of the fields in
+    the userdata layout, e.g. "userdata.temp > 300K"),
     numbers, arithmetic (+, -, *, /, and ^ or ** for powers),
     comparisons (which can be chained, as in "0 < x < 2cm"), logical operations
-    (and, or, not), bitwise &, | and ~ on integers (e.g. on userflags, as in
+    (and, or, not), bitwise & and | on integers (e.g. on userflags, as in
     "userflags & 0x10", where integers which are not 0 are true), functions
     (sqrt, abs, floor, ceil, exp, log, log10, sin, cos, tan, asin, acos,
     atan, atan2, hypot, min, max, clamp, mod(a,b) for the remainder of the
-    division of integers, and angle_to(x,y,z) for the angle between the
-    direction of the particles and the vector (x,y,z), which is precise also
-    for small angles), the constant
+    division of non-negative integers, and angle_to(x,y,z) for the angle
+    between the direction of the particles and the vector (x,y,z), which is
+    precise also for small angles), the constant
     pi, and the names neutron, antineutron, proton, antiproton, electron,
     positron (or antielectron), muon, antimuon, and gamma (or photon), which
     can be used for pdgcode values. The wavelength is only defined for
@@ -502,11 +821,16 @@ class ParticleFilter:
     Values with units must always be given with units (except for a plain 0,
     as in "x > 0"): meV, eV, keV, MeV,
     GeV, TeV (energy), ns, us, ms, s (time), Aa, nm, um, mm, cm, m, km
-    (length, also for wavelengths), as in "ekin < 25meV", "wavelength >
-    0.18nm" or "x^2 + y^2 < 4cm^2". The units deg and rad can be used for
-    angles (which are otherwise in radians), as in "acos(uz) < 10deg".
-    Expressions with missing or inconsistent units, like "x < 2" or "x <
-    1meV", are rejected.
+    (length, also for wavelengths), K (temperature, for userdata fields), as
+    in "ekin < 25meV", "wavelength > 0.18nm" or "x^2 + y^2 < 4cm^2". The
+    units deg and rad can be used for angles (which are otherwise in
+    radians), as in "acos(uz) < 10deg". Expressions with missing or
+    inconsistent units, like "x < 2" or "x < 1meV", are rejected.
+
+    Integers (like pdgcode, userflags, and integer userdata) work essentially
+    as in C (e.g. dividing integers gives integers), but with more protection
+    against problems like overflow, which gives an error, as does combining
+    unsigned integers (like userflags) with negative values.
     """
     def __init__( self, expression ):
         expression = _expr_normalise(expression)
@@ -558,12 +882,12 @@ class ParticleValue:
     def __call__( self, block ):
         """Return array with the values for the particles in the block"""
         q = _ExprEvaluator(block,self._expr)(self._tree)
-        if q.d is not None:
+        if q.d not in ( None, _dim_unknown ):
             u = _expr_unit_hints.get(q.d)
             if u == 'cm' and 'wavelength' in self._expr:
                 u = 'Aa'
             e = self._expr.strip()
-            e = e if e.isidentifier() else f'({e})'
+            e = e if re.fullmatch(r'\w+|userdata\.\w+(\.at\(\d+\))?',e) else f'({e})'
             hint = f', e.g. {e}/{u}' if u else ''
             raise MCPLError(f'Expression "{self._expr}" has units'
                             f' ({_dimstr(q.d)}), so divide it by a unit{hint}')
@@ -612,6 +936,9 @@ class ParticleEdit:
         self._statements = []
         variables, used = set(), set()
         def check_var( name ):
+            if name.startswith('userdata.'):
+                raise MCPLError(f'Fields of the userdata ({name}) can not be'
+                                f' changed, in "{expression}"')
             if name in _expr_fields:
                 raise MCPLError(f'{name} (the position of the particles in the'
                                 f' file) can not be changed, in "{expression}"')
@@ -691,6 +1018,9 @@ class ParticleEdit:
                     raise MCPLError('fileidx (the position of the particles in'
                                     ' the file) can not be changed, in'
                                     f' "{self._expr}"')
+                if n.startswith('userdata.'):
+                    raise MCPLError(f'Fields of the userdata ({n}) can not be'
+                                    f' changed, in "{self._expr}"')
                 if n not in self._assignable and n not in variables:
                     raise MCPLError(f'Can not swap "{n}" in "{self._expr}"'
                                     ' (it is not a field or variable)')
@@ -752,7 +1082,7 @@ class ParticleEdit:
                 q = ev(value)
                 if name in self._assignable:
                     d = _expr_field_dims.get(name)
-                    if q.d != d and not q.zero:
+                    if q.d != d and not q.zero and q.d != _dim_unknown:
                         what = _dimstr(q.d) if q.d is None else f'value with {_dimstr(q.d)}'
                         dname = 'unitless' if d is None else f'a {_dimstr(d)}'
                         dname = dname.replace('a energy','an energy')
@@ -765,6 +1095,8 @@ class ParticleEdit:
                     if name == 'wavelength':
                         self._set_wavelength(ev,v,modified)
                         continue
+                    if name in ('pdgcode','userflags'):
+                        v = self._int_field_values(name,v)
                     q = _Q(v,d)
                     modified.add(name)
                 state[name] = q
@@ -777,7 +1109,7 @@ class ParticleEdit:
             else:
                 fname, angle = st
                 qa = ev(angle)
-                if qa.d is not None:
+                if qa.d not in ( None, _dim_unknown ):
                     ev.error(f'{fname}(..) requires an angle (e.g. 90deg), not'
                              f' {_dimstr(qa.d)}')
                 c, s = np.cos(qa.v), np.sin(qa.v)
@@ -804,13 +1136,23 @@ class ParticleEdit:
         res = {}
         for name in sorted(modified):
             v = np.asarray(state[name].v)
-            if name in ('pdgcode','userflags') and v.dtype.kind not in 'iub':
-                vi = np.round(v).astype(np.int64)
-                if not np.all( vi == v ):
-                    raise MCPLError(f'Non-integer values assigned to {name}')
-                v = vi
+            if name in ('pdgcode','userflags'):
+                v = self._int_field_values(name,v)#(e.g. after swap(..))
             res[name] = np.broadcast_to(v,(n,))
         return res
+
+    def _int_field_values( self, name, v ):
+        """Values for pdgcode or userflags, which must be integers in the range
+        of their types (int32 and uint32)"""
+        v = np.asarray(v)
+        if v.dtype.kind not in 'iub' and not np.all( np.round(v) == v ):
+            raise MCPLError(f'Non-integer values assigned to {name} in'
+                            f' expression "{self._expr}"')
+        info = np.iinfo(np.int32 if name == 'pdgcode' else np.uint32)
+        if np.any( ( v < info.min ) | ( v > info.max ) ):
+            raise MCPLError(f'Values assigned to {name} must be integers from'
+                            f' {info.min} to {info.max}, in expression "{self._expr}"')
+        return v.astype(info.dtype)
 
     def _set_wavelength( self, ev, wl, modified ):
         """Set kinetic energy from wavelength (given in cm)"""

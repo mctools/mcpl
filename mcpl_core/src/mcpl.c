@@ -471,6 +471,23 @@ MCPL_LOCAL int mcpl_internal_udname_reserved( const char * name, size_t n )
   return 0;
 }
 
+//Whether the name (n characters) is one of the other reserved names (which
+//can not be used in expressions):
+MCPL_LOCAL int mcpl_internal_udname_reserved_other( const char * name,
+                                                   size_t n )
+{
+  static const char * reserved[32] = {
+    "and", "as", "assert", "async", "await", "break", "class", "continue",
+    "def", "del", "elif", "else", "except", "finally", "for", "from",
+    "global", "if", "import", "in", "is", "lambda", "nonlocal", "not", "or",
+    "pass", "raise", "return", "try", "while", "with", "yield"
+  };
+  for ( int i = 0; i < 32; ++i )
+    if ( strlen(reserved[i]) == n && strncmp( reserved[i], name, n ) == 0 )
+      return 1;
+  return 0;
+}
+
 //Checks the unit of a field (n characters at u): base units in the order
 //cm, MeV, ms, K, deg, each at most once, separated by dots, each with an
 //optional power of a single non-zero digit (not 1), possibly negative (e.g.
@@ -577,6 +594,8 @@ MCPL_LOCAL const char * mcpl_internal_udlayout_parse( const char * layout,
     if ( mcpl_internal_udname_reserved( fld.name, fld.lname ) )
       return ( "reserved field name (the names of particle fields, like x, ekin,"
                " position or wavelength, can not be used)" );
+    if ( mcpl_internal_udname_reserved_other( fld.name, fld.lname ) )
+      return "reserved field name";
     //type and optional array size:
     const char * bracket = (const char*)memchr( fld.typespec, '[', fld.ltypespec );
     size_t ltype = bracket ? (size_t)(bracket - fld.typespec) : fld.ltypespec;

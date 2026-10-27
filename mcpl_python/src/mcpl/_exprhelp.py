@@ -77,6 +77,12 @@ _hints = (
     ( 'fields', 'wavelength',
       'wavelength (a length)',
       'wavelength, calculated from ekin, only for neutrons and gammas (a length: e.g. pdgcode == neutron and wavelength > 1.8Aa, or wavelength/Aa)' ),
+    ( 'fields', 'userdata.NAME',
+      'a field of the userdata',
+      'the field NAME of the userdata of the particles, in files with userdata, with the unit of the field in the userdata layout (e.g. userdata.nscat > 2, or userdata.temp > 300K for a field temp:float32:K; it can not be changed)' ),
+    ( 'fields', 'userdata.NAME.at(INDEX)',
+      'a value of an array in the userdata',
+      'the value with the INDEX (counting from 0) of the field NAME of the userdata, for fields with several values per particle (e.g. userdata.origdir.at(2) for the third value of a field origdir:float32[3])' ),
     ( 'constants', 'pi',
       'pi (no unit)',
       'pi = 3.14159... (no unit: e.g. atan2(y,x) > pi/2)' ),
@@ -164,6 +170,9 @@ _hints = (
     ( 'units', 'km',
       'length unit, 1e5 cm',
       'unit of length: 1km = 1e5 cm (e.g. hypot(x,y,z) > 1km)' ),
+    ( 'units', 'K',
+      'temperature unit (kelvin)',
+      'unit of temperature, the kelvin, for userdata fields (e.g. userdata.temp > 300K)' ),
     ( 'units', 'deg',
       'angle unit, pi/180',
       'unit of angle: 1deg = pi/180 (e.g. angle_to(0,0,1) < 1deg, or rotate_z(90deg))' ),
@@ -193,7 +202,7 @@ _hints = (
       'sqrt(a^2 + b^2 + ...), of values with the same unit (e.g. hypot(x,y) < 10cm, the distance from the z axis)' ),
     ( 'functions', 'mod(a,b)',
       'remainder of a/b (integers)',
-      'remainder of the division a/b of integers without units (e.g. mod(userflags,4) == 1)' ),
+      'remainder of the division a/b of non-negative integers without units (e.g. mod(userflags,4) == 1)' ),
     ( 'functions', 'clamp(v,low,high)',
       'v limited to [low,high] (same unit)',
       'v limited to the range from low to high, all with the same unit (e.g. in edits x = clamp(x, -5cm, 5cm))' ),
@@ -287,10 +296,12 @@ _intro = {
   -p "hypot(x,y) < 10cm and angle_to(0,0,1) < 1deg"
   -p "(userflags & 0xff) == 7 or time > 10us"
 The operators are: + - * / (and ^ for powers), == != < <= > >=, and, or,
-not (and & | ~ for bits). Values with units must be written with units
+not (and & | for bits). Values with units must be written with units
 (e.g. 25meV or 10cm), except for a plain 0 (e.g. x > 0), and the wavelength
 can only be used for neutrons and gammas, which must be picked first (e.g.
-"pdgcode == neutron and wavelength > 1.8Aa").''',
+"pdgcode == neutron and wavelength > 1.8Aa"). Integers (like pdgcode,
+userflags, and integer userdata) work essentially as in C, but with more
+protection against problems like overflow.''',
     'edit' : '''EDIT: statements separated by ";", executed in order, e.g.
   -E "z += 1cm;weight *= 0.5"
   -E "rotate_y(90deg);x += 10cm"

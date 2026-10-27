@@ -35,6 +35,7 @@ from ._blocks import (
     _block_fields,
     _EditedParticleBlock,
     _nonfinite_masks,
+    _UserdataView,
 )
 from ._common import MCPLError, _native_endianness
 from ._messages import _error, _info, _warning
@@ -880,13 +881,16 @@ class MCPLOutFile:
                 ocols, _ = self._collect_fields(fields)
                 self._resolve_wavelength(ocols, ocols.get('pdgcode', b.pdgcode))
                 b = _EditedParticleBlock(b,ocols)
+            #(picks and edits use the userdata given, if any):
+            def view( b ):
+                return b if udarr is None else _UserdataView(b,udarr,self._udlayout)
             if self._flt is not None:
-                keep = self._flt(b)
+                keep = self._flt(view(b))
                 b = b[keep]
                 if udarr is not None:
                     udarr = udarr[keep]
             if self._edt is not None and len(b):
-                b = _EditedParticleBlock(b,self._edt(b))
+                b = _EditedParticleBlock(b,self._edt(view(b)))
             self._transfer(b,slice(None),
                            None if udarr is None else { 'userdata' : udarr })
             return
@@ -901,16 +905,16 @@ class MCPLOutFile:
         if self._flt is not None or self._edt is not None:
             defaults = { 'pdgcode' : self._opt_universalpdgcode,
                          'weight' : self._opt_universalweight }
-            blk = _ArrayBlock(cols,n,defaults)
+            blk = _ArrayBlock(cols,n,defaults,udarr,self._udlayout)
             if self._flt is not None:
                 keep = np.flatnonzero(self._flt(blk))
                 if not len(keep):
                     return
                 n = len(keep)
-                blk = _ArrayBlock({ f : getattr(blk,f)[keep] for f in _block_fields },
-                                  n,defaults)
                 if udarr is not None:
                     udarr = udarr[keep]
+                blk = _ArrayBlock({ f : getattr(blk,f)[keep] for f in _block_fields },
+                                  n,defaults,udarr,self._udlayout)
             cols = { f : getattr(blk,f) for f in _block_fields if f in cols }
             if self._edt is not None:
                 cols.update(self._edt(blk))
