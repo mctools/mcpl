@@ -527,7 +527,11 @@ def _absolute_path(path):
     #Like mctools_absolute_path in C. Not with pathlib, which would also
     #remove "." components (unlike the C code on non-Windows platforms):
     if os.name == 'nt':
-        return os.path.abspath(path)
+        #(keeping a trailing separator, which os.path.abspath removes):
+        res = os.path.abspath(path)
+        if path.endswith(('/','\\')) and not res.endswith(('/','\\')):
+            res += '\\'
+        return res
     return path if os.path.isabs(path) else os.path.join(os.getcwd(), path)
 
 def _namehelper(filename, iproc, mode):
@@ -555,8 +559,9 @@ def name_helper(filename, mode):
     if mode not in ('M', 'G', 'B', 'm', 'g', 'b'):
         raise MCPLError('name_helper: invalid mode')
     res = _namehelper(filename, 0, mode.upper())
-    import pathlib
-    return res if mode.isupper() else pathlib.PurePath(res).name
+    #(the part after the last separator, like in the C API, which is empty if
+    #res ends with a separator):
+    return res if mode.isupper() else res.replace('\\','/').rsplit('/',1)[-1]
 
 def create_outfile_mpi(filename, iproc, nproc, **kwargs):
     """Create output file for worker process iproc out of nproc (like

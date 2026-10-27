@@ -342,7 +342,9 @@ namespace MCFILEUTILS_CPPNAMESPACE {
   {
     if ( str->owns_memory )
       return;
-    mcu8str str2 = mcu8str_copy( str );
+    //(not mcu8str_copy, which gives a static buffer for empty strings):
+    mcu8str str2 = mcu8str_create( str->size ? str->size : 1 );
+    mcu8str_assign( &str2, str );
     mcu8str_swap( &str2, str );
     assert( !str2.owns_memory );
     assert( str->owns_memory );
@@ -1474,7 +1476,8 @@ namespace {
       res.c_str[used] = native_sep;
       ++used;
     }
-    STDNS memcpy( res.c_str + used, p2.c_str, s2+1 );//+1 to include null char
+    STDNS memcpy( res.c_str + used, p2.c_str + iB2, s2 );
+    res.c_str[newsize] = '\0';
     res.size = (unsigned)newsize;//cast ok due to mcu8str_create
     mctools_pathseps_platform(&res);
     return res;
