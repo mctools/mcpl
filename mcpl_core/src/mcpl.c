@@ -4579,6 +4579,13 @@ MCPL_LOCAL int mcpl_file_certainly_exists(const char * filename)
   return mctools_is_file( &fn );
 }
 
+//Whether anything (a file, a directory, ...) exists at the path:
+MCPL_LOCAL int mcpl_internal_path_exists(const char * path)
+{
+  mcu8str fn = mcu8str_view_cstr( path );
+  return mctools_exists( &fn );
+}
+
 //Whether the file which mcpl_create_outfile would create already exists (so
 //it is never one of the input files of the merge functions). Returns -1 in
 //case of errors:
@@ -4588,7 +4595,7 @@ MCPL_LOCAL int mcpl_internal_outfile_exists_es( const char * filename,
   char * fn = mcpl_internal_outfile_name_es( filename, es );
   if ( !fn )
     return -1;
-  int res = mcpl_file_certainly_exists(fn);
+  int res = mcpl_internal_path_exists(fn);
   free(fn);
   return res;
 }
@@ -5708,7 +5715,7 @@ MCPL_LOCAL const char * mcpl_internal_tool_outfn( char * fn, char ** outfn,
   //error message in case of problems. If *outfn != fn, it must be freed.
   *outfn = fn;
   *attempt_gzip = 0;
-  if (mcpl_file_certainly_exists(fn))
+  if (mcpl_internal_path_exists(fn))
     return "Requested output file already exists.";
   size_t lfn = strlen(fn);
   if( lfn > 8 && !strcmp(fn + (lfn - 8), ".mcpl.gz")) {
@@ -5716,7 +5723,7 @@ MCPL_LOCAL const char * mcpl_internal_tool_outfn( char * fn, char ** outfn,
     *outfn = mcpl_internal_malloc(lfn-2);//lfn+1-3
     memcpy(*outfn,fn,lfn-3);
     (*outfn)[lfn-3] = '\0';
-    if (mcpl_file_certainly_exists(*outfn)) {
+    if (mcpl_internal_path_exists(*outfn)) {
       free(*outfn);
       *outfn = fn;
       return "Requested output file already exists (without .gz extension).";
@@ -5838,16 +5845,23 @@ MCPL_LOCAL int mcpl_internal_tool_extract( mcpl_file_t fi, const char * outfn,
   size_t nn = strlen(outfile_fn);
   *fo_filename = mcpl_internal_malloc(nn+4);
   memcpy(*fo_filename,outfile_fn,nn+1);
-  if (attempt_gzip) {
-    if (mcpl_closeandgzip_outfile_es(fo,es))
-      memcpy(*fo_filename+nn,".gz",4);
-  } else {
-    mcpl_close_outfile_es(fo,es);
-  }
+  mcpl_close_outfile_es(fo,es);
   if ( es->code ) {
     free(*fo_filename);
     *fo_filename = NULL;
     return 0;
+  }
+  if (attempt_gzip) {
+    //If compressing fails, the uncompressed output is kept (as for --merge):
+    mcpl_errstate_t es_gzip;
+    if ( mcpl_gzip_file_es(*fo_filename,&es_gzip) ) {
+      memcpy(*fo_filename+nn,".gz",4);
+    } else {
+      mcpl_print("MCPL WARNING: Failed to gzip output. Non-gzipped output is"
+                 " found in ");
+      mcpl_print(*fo_filename);
+      mcpl_print("\n");
+    }
   }
   return 1;
 }
