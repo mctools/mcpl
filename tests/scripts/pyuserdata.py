@@ -363,7 +363,8 @@ def test_layouts():
                     'a'*65+':int8', 'p:float64[8192]',
                     #(reserved names, and similar names which are not):
                     'x:float32', 'a:int8,ekin:float64', 'position:float32[3]',
-                    'wavelength:float32', 'userflags:uint32',
+                    'wavelength:float32', 'userflags:uint32', 'class:int8',
+                    'a:int8,from:float64',
                     'xx:float32,ekin2:float32,pos:int8',
                     #(units, as in the test of the C API, app_errstate):
                     'a:float32:cm', 'a:float64:MeV,b:float32:ms,c:float32:K,d:float32:deg',
@@ -385,6 +386,75 @@ def test_layouts():
     from mcpldev._userdata import userdata_units
     print('units:', userdata_units('temp:float32:K,n:int32,dir:float32[3]:cm,q:float64:cm^-1'))
 
+def test_expressions():
+    print('Userdata fields in expressions:')
+    layout = 'temp:float32:K,nscat:uint8,d:float32[3]:cm,theta:float64:deg,big:uint64'
+    with mcpl.MCPLOutFile('udexpr.mcpl', userdata_layout = layout) as o:
+        o.add_particles( ekin = [1.0,2.0,3.0], uz = 1.0, pdgcode = 2112,
+                         weight = 1.0,
+                         userdata = { 'temp' : [290,300,310], 'nscat' : [0,1,255],
+                                      'd' : [[1,2,3],[4,5,6],[7,8,9]],
+                                      'theta' : [0,90,180],
+                                      'big' : [0,2**63+5,2**64-1] } )
+    with mcpl.MCPLFile('udexpr.mcpl') as f:
+        b = f.read_block()
+    def show( cls, expr ):
+        try:
+            res = cls(expr)(b)
+            print(f'  {expr}: {res.tolist() if hasattr(res,"tolist") else res}')
+        except mcpl.MCPLError as e:
+            print(f'  {expr}: MCPLError: {e}')
+    for e in ( 'userdata.temp > 295K', 'userdata.nscat >= 1',
+               'userdata.d.at(2) > 5cm', 'userdata.theta > 45deg',
+               'sin(userdata.theta) > 0.5', 'userdata.nscat - 1 < 0',
+               'userdata.temp > 299.99999K', 'userdata.temp == 300.00001K',
+               'userdata.big >= 0x8000000000000000',
+               'userdata.big == 0xFFFFFFFFFFFFFFFF', 'userdata.big & 1 == 1',
+               'userdata.big > 0 and userdata.big - 1 >= 0x8000000000000004',
+               #Errors:
+               'userdata.temp > 295', 'userdata.d > 1cm', 'userdata.d.at(3) > 0cm',
+               'userdata.nope > 0', 'userdata > 0', 'userdata.d.x > 0',
+               'userdata.d.at(x) > 0', 'userdata.big + 1 > 0',
+               'userdata.big > -1', 'userdata.big - 1 > 0' ):
+        show(mcpl.ParticleFilter,e)
+    for e in ( 'userdata.temp/K', 'userdata.d.at(0)/mm', 'userdata.nscat',
+               'userdata.temp' ):
+        show(mcpl.ParticleValue,e)
+    for e in ( 'x = userdata.d.at(0)', 'ekin = userdata.temp*1MeV/K',
+               'userdata.temp = 3K', 'swap(userdata.temp,x)' ):
+        show(mcpl.ParticleEdit,e)
+    #Without userdata:
+    with mcpl.MCPLFile(test_data_dir.joinpath('example.mcpl')) as f:
+        b = f.read_block()
+        show(mcpl.ParticleFilter,'userdata.temp > 0K')
+    #Picks of particles added as arrays to output files:
+    with mcpl.MCPLOutFile('udexpr2.mcpl', userdata_layout = layout,
+                          pick = 'userdata.temp > 295K') as o:
+        o.add_particles( ekin = [1.0,2.0,3.0], uz = 1.0, pdgcode = 2112,
+                         weight = 1.0,
+                         userdata = { 'temp' : [290,300,310] } )
+    with mcpl.MCPLFile('udexpr2.mcpl') as f:
+        print('  picked from arrays added to MCPLOutFile:',
+              f.read_block().userdata['temp'].tolist())
+    #Picks of blocks added with other userdata use that userdata:
+    with mcpl.MCPLFile('udexpr.mcpl') as f, mcpl.MCPLOutFile(
+            'udexpr3.mcpl', userdata_layout = layout,
+            pick = 'userdata.temp > 295K') as o:
+        o.add_particles( f.read_block(),
+                         userdata = { 'temp' : [300,10,320] } )
+    with mcpl.MCPLFile('udexpr3.mcpl') as f:
+        print('  picked from a block added with other userdata:',
+              f.read_block().userdata['temp'].tolist())
+    #mcpltool:
+    for args in ( [ '-p', 'userdata.temp > 295K', '-n', 'udexpr.mcpl' ],
+                  [ '-H', 'userdata.temp/K;print;bins=3', 'udexpr.mcpl' ] ):
+        print(f'  mcpltool {" ".join(args)}:',flush=True)
+        try:
+            mcpl.app_mcpltool(['mcpltool']+args)
+        except SystemExit as e:
+            print(f'  exit: {e}')
+        sys.stdout.flush()
+
 def main():
     make_inputs()
     ok = test_compare_with_mcpltool()
@@ -392,6 +462,7 @@ def main():
     test_python_writing()
     test_example()
     test_layouts()
+    test_expressions()
     if not ok:
         raise SystemExit('Problems found')
 

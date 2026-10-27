@@ -673,7 +673,8 @@ static void test_layouts(void)
     "abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcde:int8",
     /* reserved names (and similar names which are not): */
     "x:float32", "a:int8,ekin:float64", "position:float32[3]",
-    "wavelength:float32", "userflags:uint32", "xx:float32,ekin2:float32,pos:int8",
+    "wavelength:float32", "userflags:uint32", "class:int8", "a:int8,from:float64",
+    "xx:float32,ekin2:float32,pos:int8",
     /* units: */
     "a:float32:cm", "a:float64:MeV,b:float32:ms,c:float32:K,d:float32:deg",
     "a:float32[3]:cm", "a:float64:cm^2.MeV", "a:float64:MeV^-1",

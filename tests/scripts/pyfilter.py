@@ -66,7 +66,7 @@ def test_expressions():
               ('time < 10us', b.time < 0.01),
               ('(userflags & 1) == 0 and weight == 1', np.ones(len(b),dtype=bool)),
               ('mod(userflags,4) == 0', np.mod(b.userflags,4) == 0),
-              ('mod(pdgcode,2) == 0', np.mod(b.pdgcode,2) == 0),
+              ('mod(abs(pdgcode),2) == 0', np.mod(np.abs(b.pdgcode),2) == 0),
               ('max(abs(x),abs(y)) < 3cm', np.maximum(np.abs(b.x),np.abs(b.y)) < 3),
               ('ekin/keV > 500', b.ekin/1e-3 > 500),
               ('abs(x) < 1cm + 2mm', np.abs(b.x) < 1.2),
@@ -75,8 +75,8 @@ def test_expressions():
               ('0 < x < 2cm', (b.x>0)&(b.x<2)),
               ('ekin > 0 and time > 0 or z == 0', ((b.ekin>0)&(b.time>0))|(b.z==0)),
               ('userflags & 0x10', (b.userflags & 0x10) != 0),
-              ('(~userflags & 0xff) == 0xff', ((~b.userflags) & 0xff) == 0xff),
-              ('pdgcode == ~2111', b.pdgcode == -2112),
+              ('(userflags & 0xff) != 0xff', (b.userflags & 0xff) != 0xff),
+              ('pdgcode == -2111-1', b.pdgcode == -2112),
               ('atan2(uy,ux) > 90deg', np.arctan2(b.uy,b.ux) > np.pi/2),
               ('angle_to(0,0,1) < 30deg', np.degrees(np.arccos(np.clip(b.uz,-1,1))) < 30),
               #(the angle to -z is above 150 degrees when the angle to +z is below 30):
@@ -322,7 +322,51 @@ def test_angle_to():
         except mcpl.MCPLError as e:
             print(f'{bad}: {e}')
 
+def test_integers():
+    #Integers work essentially as in C, but results which do not fit in their
+    #type (like in C) are errors instead of wrapping around, and so are
+    #unsigned integers combined with negative values:
+    print('Integers:')
+    with mcpl.MCPLOutFile('ints.mcpl', opt_userflags = True) as o:
+        o.add_particles( ekin = 1.0, uz = 1.0, weight = 1.0,
+                         pdgcode = [2112,2212,-2212],
+                         userflags = [0,1,0xFFFFFFFF] )
+    with mcpl.MCPLFile('ints.mcpl') as f:
+        b = f.read_block()
+    for e in ( 'userflags > 0', 'userflags & 0x80000000', '(userflags & 0xff) == 0xff',
+               'userflags | 0x10 == 0x11', 'userflags + 1 > 1',
+               'userflags * 2 > 1', 'userflags/2 == 0', 'pdgcode/1000 == 2',
+               'pdgcode/1000 == -2', 'pdgcode * 1000000 > 0',
+               'mod(abs(pdgcode),2) == 0', 'abs(pdgcode) == 2212', '-pdgcode < 0',
+               'min(pdgcode,0) < 0', 'clamp(pdgcode,0,2200) == 2200',
+               'userflags == 4294967295', 'pdgcode/1000.0 < 0',
+               '2^31 > 2147483647', 'pdgcode == -2147483648 + 2147481436',
+               #Errors:
+               'userflags - 1 > 0', 'userflags + 4294967295 > 0',
+               'pdgcode * 1000000000 > 0', 'userflags > -1', 'userflags & -1',
+               'userflags / 0 > 0', 'mod(pdgcode,3) == 1', 'mod(userflags,0) == 0',
+               '-userflags < 0', 'userflags & 2^3', '(x > 0) & (y > 0)',
+               '~userflags == 0', 'userflags // 2 > 0',
+               '18446744073709551616 > 0' ):
+        try:
+            print(f'  {e}: {mcpl.ParticleFilter(e)(b).tolist()}')
+        except mcpl.MCPLError as err:
+            print(f'  {e}: MCPLError: {err}')
+    #Errors only for the particles in use:
+    print('  userflags > 0 and userflags - 1 == 0:',
+          mcpl.ParticleFilter('userflags > 0 and userflags - 1 == 0')(b).tolist())
+    #Values assigned to pdgcode and userflags must fit:
+    for e in ( 'userflags = userflags + 1', 'userflags = userflags / 2',
+               'pdgcode = pdgcode * 1.0', 'pdgcode = 2.5',
+               'pdgcode = 4294967295', 'swap(pdgcode,userflags)' ):
+        try:
+            res = mcpl.ParticleEdit(e)(b)
+            print(f'  edit {e}: { {k:v.tolist() for k,v in res.items()} }')
+        except mcpl.MCPLError as err:
+            print(f'  edit {e}: MCPLError: {err}')
+
 if __name__ == '__main__':
+    test_integers()
     test_angle_to()
     test_exact_rotations()
     test_whitespace()

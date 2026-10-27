@@ -37,6 +37,12 @@ _maxnamelength = 64
 _reserved_names = ( 'x', 'y', 'z', 'ux', 'uy', 'uz', 'polx', 'poly', 'polz',
                     'ekin', 'time', 'weight', 'pdgcode', 'userflags',
                     'position', 'direction', 'polarisation', 'wavelength' )
+#Other reserved names (which can not be used in expressions):
+_reserved_other = ( 'and', 'as', 'assert', 'async', 'await', 'break', 'class',
+                    'continue', 'def', 'del', 'elif', 'else', 'except',
+                    'finally', 'for', 'from', 'global', 'if', 'import', 'in',
+                    'is', 'lambda', 'nonlocal', 'not', 'or', 'pass', 'raise',
+                    'return', 'try', 'while', 'with', 'yield' )
 _types = { 'int8' : 'i1', 'uint8' : 'u1', 'int16' : 'i2', 'uint16' : 'u2',
            'int32' : 'i4', 'uint32' : 'u4', 'int64' : 'i8', 'uint64' : 'u8',
            'float32' : 'f4', 'float64' : 'f8' }
@@ -104,6 +110,8 @@ def _parse_error( layout ):
         if name in _reserved_names:
             return ( 'reserved field name (the names of particle fields, like x,'
                      ' ekin, position or wavelength, can not be used)' )
+        if name in _reserved_other:
+            return 'reserved field name'
         typespec, colon2, unit = typespec.partition(':')
         tname, bracket, arr = typespec.partition('[')
         if tname not in _types:

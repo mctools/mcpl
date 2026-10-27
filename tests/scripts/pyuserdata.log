@@ -1336,6 +1336,8 @@ pyexample.mcpl: format version 4, userdata layout "temp:float32,nscat:uint32,vol
 'position:float32[3]': MCPLError: Invalid userdata layout "position:float32[3]": reserved field name (the names of particle fields, like x, ekin, position or wavelength, can not be used)
 'wavelength:float32': MCPLError: Invalid userdata layout "wavelength:float32": reserved field name (the names of particle fields, like x, ekin, position or wavelength, can not be used)
 'userflags:uint32': MCPLError: Invalid userdata layout "userflags:uint32": reserved field name (the names of particle fields, like x, ekin, position or wavelength, can not be used)
+'class:int8': MCPLError: Invalid userdata layout "class:int8": reserved field name
+'a:int8,from:float64': MCPLError: Invalid userdata layout "a:int8,from:float64": reserved field name
 'xx:float32,ekin2:float32,pos:int8': size 9
 'a:float32:cm': size 4
 'a:float64:MeV,b:float32:ms,c:float32:K,d:float32:deg': size 20
@@ -1370,3 +1372,53 @@ pyexample.mcpl: format version 4, userdata layout "temp:float32,nscat:uint32,vol
 'a:float32:cm^(-1)': MCPLError: Invalid userdata layout "a:float32:cm^(-1)": parentheses are not allowed in units (give each unit its own power, like cm^-2.MeV^-1 for 1/(cm^2*MeV))
 'a:float32:cm^-1/ms': MCPLError: Invalid userdata layout "a:float32:cm^-1/ms": division is not allowed in units (use negative powers, like MeV.cm^-1 for MeV/cm)
 units: {'temp': 'K', 'n': None, 'dir': 'cm', 'q': 'cm^-1'}
+Userdata fields in expressions:
+  userdata.temp > 295K: [False, True, True]
+  userdata.nscat >= 1: [False, True, True]
+  userdata.d.at(2) > 5cm: [False, True, True]
+  userdata.theta > 45deg: [False, True, True]
+  sin(userdata.theta) > 0.5: [False, True, False]
+  userdata.nscat - 1 < 0: [True, False, False]
+  userdata.temp > 299.99999K: [False, True, True]
+  userdata.temp == 300.00001K: [False, False, False]
+  userdata.big >= 0x8000000000000000: [False, True, True]
+  userdata.big == 0xFFFFFFFFFFFFFFFF: [False, False, True]
+  userdata.big & 1 == 1: [False, True, True]
+  userdata.big > 0 and userdata.big - 1 >= 0x8000000000000004: [False, True, True]
+  userdata.temp > 295: MCPLError: Incompatible units in comparison: temperature and value without units (add units, e.g. 2K) in expression "userdata.temp > 295"
+  userdata.d > 1cm: MCPLError: The userdata field "d" has 3 values per particle (use userdata.d.at(0) to userdata.d.at(2)) in expression "userdata.d > 1cm"
+  userdata.d.at(3) > 0cm: MCPLError: The index 3 is too large for the userdata field "d", which has 3 values per particle (from .at(0) to .at(2)) in expression "userdata.d.at(3) > 0cm"
+  userdata.nope > 0: MCPLError: No userdata field "nope" (the fields are: temp, nscat, d, theta, big) in expression "userdata.nope > 0"
+  userdata > 0: MCPLError: Fields of the userdata are written as userdata.NAME in expression "userdata > 0"
+  userdata.d.x > 0: MCPLError: Values of arrays in the userdata are written as userdata.d.at(INDEX), not userdata.d.x in expression "userdata.d.x > 0"
+  userdata.d.at(x) > 0: MCPLError: The index in userdata.d.at(INDEX) must be a non-negative integer, like userdata.d.at(0) in expression "userdata.d.at(x) > 0"
+  userdata.big + 1 > 0: MCPLError: Addition of integers gives values outside the range of the result (unsigned 64-bit integers) in expression "userdata.big + 1 > 0"
+  userdata.big > -1: MCPLError: Unsigned integers (like userflags) can not be combined with negative values (in a comparison) in expression "userdata.big > -1"
+  userdata.big - 1 > 0: MCPLError: Subtraction of integers gives values outside the range of the result (unsigned 64-bit integers) in expression "userdata.big - 1 > 0"
+  userdata.temp/K: [290.0, 300.0, 310.0]
+  userdata.d.at(0)/mm: [10.0, 40.0, 70.0]
+  userdata.nscat: [0, 1, 255]
+  userdata.temp: MCPLError: Expression "userdata.temp" has units (temperature), so divide it by a unit, e.g. userdata.temp/K
+  x = userdata.d.at(0): {'x': array([1., 4., 7.])}
+  ekin = userdata.temp*1MeV/K: {'ekin': array([290., 300., 310.])}
+  userdata.temp = 3K: MCPLError: Fields of the userdata (userdata.temp) can not be changed, in "userdata.temp = 3K"
+  swap(userdata.temp,x): MCPLError: Fields of the userdata (userdata.temp) can not be changed, in "swap(userdata.temp,x)"
+  userdata.temp > 0K: MCPLError: The particles have no userdata (for userdata.temp) in expression "userdata.temp > 0K"
+  picked from arrays added to MCPLOutFile: [300.0, 310.0]
+  picked from a block added with other userdata: [300.0, 320.0]
+  mcpltool -p userdata.temp > 295K -n udexpr.mcpl:
+Opened MCPL file udexpr.mcpl:
+Showing particles picked with: userdata.temp > 295K
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userdata
+    1        2112           2           0           0           0           0           0           1           0           1  0000964301000080400000a0400000c0...
+    2        2112           3           0           0           0           0           0           1           0           1  00009b43ff0000e04000000041000010...
+  exit: 0
+  mcpltool -H userdata.temp/K;print;bins=3 udexpr.mcpl:
+# histogram of: userdata.temp/K
+# values: weights per bin
+# lower edge | upper edge | value
+290 296.66667 1
+296.66667 303.33333 1
+303.33333 310 1
+  exit: 0

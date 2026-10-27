@@ -1,3 +1,44 @@
+Integers:
+  userflags > 0: [False, True, True]
+  userflags & 0x80000000: [False, False, True]
+  (userflags & 0xff) == 0xff: [False, False, True]
+  userflags | 0x10 == 0x11: [False, True, False]
+  userflags + 1 > 1: MCPLError: Addition of integers gives values outside the range of the result (unsigned 32-bit integers) in expression "userflags + 1 > 1"
+  userflags * 2 > 1: MCPLError: Multiplication of integers gives values outside the range of the result (unsigned 32-bit integers) in expression "userflags * 2 > 1"
+  userflags/2 == 0: [True, True, False]
+  pdgcode/1000 == 2: [True, True, False]
+  pdgcode/1000 == -2: [False, False, True]
+  pdgcode * 1000000 > 0: MCPLError: Multiplication of integers gives values outside the range of the result (32-bit integers) in expression "pdgcode * 1000000 > 0"
+  mod(abs(pdgcode),2) == 0: [True, True, True]
+  abs(pdgcode) == 2212: [False, True, True]
+  -pdgcode < 0: [True, True, False]
+  min(pdgcode,0) < 0: [False, False, True]
+  clamp(pdgcode,0,2200) == 2200: [False, True, False]
+  userflags == 4294967295: [False, False, True]
+  pdgcode/1000.0 < 0: [False, False, True]
+  2^31 > 2147483647: [True, True, True]
+  pdgcode == -2147483648 + 2147481436: [False, False, True]
+  userflags - 1 > 0: MCPLError: Subtraction of integers gives values outside the range of the result (unsigned 32-bit integers) in expression "userflags - 1 > 0"
+  userflags + 4294967295 > 0: [True, True, True]
+  pdgcode * 1000000000 > 0: MCPLError: Multiplication of integers gives values outside the range of the result (32-bit integers) in expression "pdgcode * 1000000000 > 0"
+  userflags > -1: MCPLError: Unsigned integers (like userflags) can not be combined with negative values (in a comparison) in expression "userflags > -1"
+  userflags & -1: MCPLError: Unsigned integers (like userflags) can not be combined with negative values (in the operation &) in expression "userflags & -1"
+  userflags / 0 > 0: MCPLError: Division by zero (of integers) in expression "userflags / 0 > 0"
+  mod(pdgcode,3) == 1: MCPLError: mod(a,b) can not be used with negative values in expression "mod(pdgcode,3) == 1"
+  mod(userflags,0) == 0: MCPLError: Division by zero in mod(a,b) in expression "mod(userflags,0) == 0"
+  -userflags < 0: MCPLError: Negation of unsigned integers (like userflags) gives negative values, which they can not have in expression "-userflags < 0"
+  userflags & 2^3: MCPLError: The bitwise operator & can only be used with integers (use "and" and "or" for logical and/or) in expression "userflags & 2^3"
+  (x > 0) & (y > 0): MCPLError: The bitwise operator & can only be used with integers (use "and" and "or" for logical and/or) in expression "(x > 0) & (y > 0)"
+  ~userflags == 0: MCPLError: The operator ~ is not supported in expressions (e.g. "(userflags & 0x10) == 0" tests that a bit is not set), in expression "~userflags == 0"
+  userflags // 2 > 0: MCPLError: The operator // is not supported in expressions (use /, which divides integers like in C, e.g. 7/2 is 3), in expression "userflags // 2 > 0"
+  18446744073709551616 > 0: MCPLError: The integer 18446744073709551616 is too large (integers must fit in 64 bits) in expression "18446744073709551616 > 0"
+  userflags > 0 and userflags - 1 == 0: [False, True, False]
+  edit userflags = userflags + 1: MCPLError: Addition of integers gives values outside the range of the result (unsigned 32-bit integers) in expression "userflags = userflags + 1"
+  edit userflags = userflags / 2: {'userflags': [0, 0, 2147483647]}
+  edit pdgcode = pdgcode * 1.0: {'pdgcode': [2112, 2212, -2212]}
+  edit pdgcode = 2.5: MCPLError: Non-integer values assigned to pdgcode in expression "pdgcode = 2.5"
+  edit pdgcode = 4294967295: MCPLError: Values assigned to pdgcode must be integers from -2147483648 to 2147483647, in expression "pdgcode = 4294967295"
+  edit swap(pdgcode,userflags): MCPLError: Values assigned to pdgcode must be integers from -2147483648 to 2147483647, in expression "swap(pdgcode,userflags)"
 angle_to(x,y,z)/deg of the first particles: [14.360296 22.479602  5.704463]
 angle between (1,1e-06,0) and (1,0,0): 1e-06 (acos of dot product: 1.00004e-06)
 angle between (1,1e-09,0) and (1,0,0): 1e-09 (acos of dot product: 0)
@@ -45,7 +86,7 @@ ParticleFilter('acos(uz) < 10deg'): selects 54
 ParticleFilter('time < 10us'): selects 1006
 ParticleFilter('(userflags & 1) == 0 and weight == 1'): selects 1006
 ParticleFilter('mod(userflags,4) == 0'): selects 1006
-ParticleFilter('mod(pdgcode,2) == 0'): selects 976
+ParticleFilter('mod(abs(pdgcode),2) == 0'): selects 976
 ParticleFilter('max(abs(x),abs(y)) < 3cm'): selects 245
 ParticleFilter('ekin/keV > 500'): selects 648
 ParticleFilter('abs(x) < 1cm + 2mm'): selects 247
@@ -54,8 +95,8 @@ ParticleFilter('x > 0 and y <= -0'): selects 251
 ParticleFilter('0 < x < 2cm'): selects 195
 ParticleFilter('ekin > 0 and time > 0 or z == 0'): selects 1006
 ParticleFilter('userflags & 0x10'): selects 0
-ParticleFilter('(~userflags & 0xff) == 0xff'): selects 1006
-ParticleFilter('pdgcode == ~2111'): selects 0
+ParticleFilter('(userflags & 0xff) != 0xff'): selects 1006
+ParticleFilter('pdgcode == -2111-1'): selects 0
 ParticleFilter('atan2(uy,ux) > 90deg'): selects 212
 ParticleFilter('angle_to(0,0,1) < 30deg'): selects 313
 ParticleFilter('angle_to(0,0,-2cm) > 150deg'): selects 313
@@ -107,7 +148,7 @@ ParticleFilter('is_neutron'): Unknown name "is_neutron" in expression "is_neutro
 ParticleFilter('neutron_wl > 1Aa'): Unknown name "neutron_wl" in expression "neutron_wl > 1Aa" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, fileidx)
 ParticleFilter('degrees(acos(uz)) < 10'): Unsupported function call in expression "degrees(acos(uz)) < 10" (available functions are: abs, acos, angle_to, asin, atan, atan2, ceil, clamp, cos, exp, floor, hypot, log, log10, max, min, mod, sin, sqrt, tan)
 ParticleFilter('ekin = 1MeV'): Syntax error in expression "ekin = 1MeV" (use == for comparisons)
-ParticleFilter('ekin > 1MeV & x < 2cm'): The bitwise operator & requires integer operands (use "and" and "or" for logical and/or)
+ParticleFilter('ekin > 1MeV & x < 2cm'): The bitwise operator & can only be used with integers (use "and" and "or" for logical and/or) in expression "ekin > 1MeV & x < 2cm"
 ParticleFilter('foo > 1'): Unknown name "foo" in expression "foo > 1" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, fileidx)
 ParticleFilter("__import__('os').system('ls')"): The character ' can not be used in expressions (in "__import__('os').system('ls')")
 ParticleFilter('ekin'): Expression "ekin" is not a condition (e.g. a comparison)
@@ -134,8 +175,8 @@ ParticleFilter('mod(fileidx,2.0) == 0'): mod(a,b) requires integers without unit
 ParticleFilter('1e999 > x/cm'): A constant has NaN or infinite values in expression "1e999 > x/cm"
 ParticleFilter('(-1)^(x/cm) > 0'): Raising to a power gives NaN or infinite values in expression "(-1)^(x/cm) > 0"
 ParticleFilter('x != x and 1/(x/cm - x/cm) > 1'): no error
-ParticleFilter('~x > 0cm'): The bitwise operator ~ requires integer operands (use "not" for logical not)
-ParticleFilter('~uz > 0'): The bitwise operator ~ requires integer operands (use "not" for logical not)
+ParticleFilter('~x > 0cm'): The operator ~ is not supported in expressions (e.g. "(userflags & 0x10) == 0" tests that a bit is not set), in expression "~x > 0cm"
+ParticleFilter('~uz > 0'): The operator ~ is not supported in expressions (e.g. "(userflags & 0x10) == 0" tests that a bit is not set), in expression "~uz > 0"
 ParticleFilter('x > 0cm if ux > 0 else x < 0cm'): Unsupported syntax in expression "x > 0cm if ux > 0 else x < 0cm"
 ParticleEdit('x = 2*ux'): Can not assign value without units to x, which is a length (add units, e.g. 2cm), in expression "x = 2*ux"
 ParticleEdit('x = 2'): Can not assign value without units to x, which is a length (add units, e.g. 2cm), in expression "x = 2"
@@ -172,7 +213,7 @@ ParticleEdit('swap(fileidx,pdgcode)'): fileidx (the position of the particles in
 ParticleEdit('x = y = 1cm'): Unsupported assignment "x = y = 1cm" in "x = y = 1cm"
 ParticleEdit('x, y = y, x'): Separate the statements of edits with ";" (not ",") in "x, y = y, x"
 ParticleEdit(''): Empty edit expression
-ParticleEdit('pdgcode = 1.5'): Non-integer values assigned to pdgcode
+ParticleEdit('pdgcode = 1.5'): Non-integer values assigned to pdgcode in expression "pdgcode = 1.5"
 ParticleEdit('x = sqrt(x/cm)*1cm'): sqrt(..) gives NaN or infinite values in expression "x = sqrt(x/cm)*1cm"
 ParticleEdit('weight = 1/(x/cm - x/cm)'): Division gives NaN or infinite values in expression "weight = 1/(x/cm - x/cm)"
 ParticleEdit('wavelength = 0') on neutrons: wavelength must be assigned positive values in expression "wavelength = 0"

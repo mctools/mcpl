@@ -513,11 +513,26 @@ def _concat_blocks(blocks):
     res._indices = np.concatenate([ b.fileidx for b in blocks ])
     return res
 
+class _UserdataView:
+    """A block of particles with other userdata (e.g. for picks and edits of
+    particles added to MCPLOutFile with new userdata)."""
+    def __init__(self, block, userdata, udlayout):
+        self._block = block
+        self.userdata = userdata
+        self._udinfo = ( udlayout, None )
+    def __len__(self):
+        return len(self._block)
+    def __getattr__(self, name):
+        return getattr(self._block,name)
+
 class _ArrayBlock:
     """Block-like object with particle fields given as arrays (for selecting
-    and editing particles added to MCPLOutFile as arrays)."""
-    def __init__(self, cols, n, defaults):
+    and editing particles added to MCPLOutFile as arrays), with the userdata
+    (structured array) and userdata layout of the file, if any."""
+    def __init__(self, cols, n, defaults, userdata = None, udlayout = None):
         self._n = n
+        self.userdata = userdata
+        self._udinfo = None if udlayout is None else ( udlayout, None )
         for f in _block_fields:
             v = cols.get(f)
             if v is None:
