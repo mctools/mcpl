@@ -183,7 +183,12 @@ close_outfile (frees, leaves the file unfinished) -> ok
   reading back -> ERROR RUNTIME: Error while reading first bytes of file!
 
 ==> Transferring particles:
-transfer_last_read_particle (nothing read) -> ERROR RUNTIME: mcpl_transfer_last_read_particle called with source file in invalid state (did you forget to first call mcpl_read() on the source file before calling this function?)
+transfer_last_read_particle (nothing read) -> ERROR RUNTIME: mcpl_transfer_last_read_particle called without a particle just read from the source file
+transfer_last_read_particle (after read) -> ok
+transfer_last_read_particle (after the end of the file) -> ERROR RUNTIME: mcpl_transfer_last_read_particle called without a particle just read from the source file
+transfer_last_read_particle (after rewind) -> ERROR RUNTIME: mcpl_transfer_last_read_particle called without a particle just read from the source file
+transfer_last_read_particle (after dump) -> ERROR RUNTIME: mcpl_transfer_last_read_particle called without a particle just read from the source file
+  transferred 1 particle(s)
 transfer_last_read_particle (pdgcode differs from universal one) -> ERROR RUNTIME: mcpl_transfer_last_read_particle asked to transfer particle with pdgcode 2112 into a file with universal pdgcode of 22
 transfer_last_read_particle (weight differs from universal one) -> ERROR RUNTIME: mcpl_transfer_last_read_particle asked to transfer particle with weight 2 into a file with universal weight of 3
 transfer_last_read_particle (source without userdata) -> ERROR RUNTIME: mcpl_transfer_last_read_particle asked to transfer particle without userdata into a file with userdata

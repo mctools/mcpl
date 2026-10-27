@@ -333,7 +333,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     2        2112         0.5           0           0           0           0         0.6         0.8           0           0           1           0           0  0000000000608f400400000007000000
     3        2112         0.6           0           0           0           0         0.6         0.8           0           0           1           0           0  0000000000688f400500000007000000
     4        2112           5           0           0           0           0           0           1           0           0           0           0           0  000000000000f0bf0000000000000000
-transfer_last_read_particle before reading -> mcpl::Error: mcpl_transfer_last_read_particle called with source file in invalid state (did you forget to first call mcpl_read() on the source file before calling this function?)
+transfer_last_read_particle before reading -> mcpl::Error: mcpl_transfer_last_read_particle called without a particle just read from the source file
 transfer_metadata (different userdata) -> mcpl::Error: mcpl_enable_userdata called multiple times with different layouts
 
 ==> Moving output files:

@@ -66,6 +66,13 @@ static void print_es( const char * what, mcpl_errstate_t * es )
     print_es( what, &es );                                              \
   } while (0)
 
+//Output function which discards the output:
+static void discard_output( const char * msg, void * ctx )
+{
+  (void)msg;
+  (void)ctx;
+}
+
 //Print the contents of a file:
 static void dump_file( const char * filename )
 {
@@ -521,6 +528,31 @@ static void test_transfers(void)
   f = mcpl_create_outfile_es("tr5.mcpl",&es);
   CHECK("transfer_last_read_particle (nothing read)",
         mcpl_transfer_last_read_particle_es(fin,f,&es));
+  {
+    //Only directly after mcpl_read returned a particle:
+    mcpl_file_t fx = mcpl_open_file("src_plain.mcpl");
+    mcpl_outfile_t fo = mcpl_create_outfile("tr8.mcpl");
+    mcpl_read(fx);
+    CHECK("transfer_last_read_particle (after read)",
+          mcpl_transfer_last_read_particle_es(fx,fo,&es));
+    while ( mcpl_read(fx) ) {}
+    CHECK("transfer_last_read_particle (after the end of the file)",
+          mcpl_transfer_last_read_particle_es(fx,fo,&es));
+    mcpl_rewind(fx);
+    CHECK("transfer_last_read_particle (after rewind)",
+          mcpl_transfer_last_read_particle_es(fx,fo,&es));
+    mcpl_read(fx);
+    mcpl_dump_file_es(fx,2,0,0,discard_output,NULL,&es);
+    CHECK("transfer_last_read_particle (after dump)",
+          mcpl_transfer_last_read_particle_es(fx,fo,&es));
+    mcpl_close_outfile(fo);
+    mcpl_close_file(fx);
+    fx = mcpl_open_file("tr8.mcpl");
+    printf("  transferred %lu particle(s)\n",
+           (unsigned long)mcpl_hdr_nparticles(fx));
+    mcpl_close_file(fx);
+    remove("tr8.mcpl");
+  }
   mcpl_read(fin);
   mcpl_read(fplain);
   mcpl_enable_universal_pdgcode(f,22);

@@ -22,8 +22,8 @@ Got expected MCPL ERROR: attempting to add particle with NaN or infinite kinetic
 Got error from _es variant: mcpl_hdr_set_srcname called too late.
 Got expected MCPL ERROR: mcpl_hdr_set_srcname called too late.
 === transfer_before_read
-Got error from _es variant: mcpl_transfer_last_read_particle called with source file in invalid state (did you forget to first call mcpl_read() on the source file before calling this function?)
-Got expected MCPL ERROR: mcpl_transfer_last_read_particle called with source file in invalid state (did you forget to first call mcpl_read() on the source file before calling this function?)
+Got error from _es variant: mcpl_transfer_last_read_particle called without a particle just read from the source file
+Got expected MCPL ERROR: mcpl_transfer_last_read_particle called without a particle just read from the source file
 === merge_incompatible
 Got error from _es variant: Attempting to merge incompatible files (FP precision: single vs double).
 Got expected MCPL ERROR: Attempting to merge incompatible files (FP precision: single vs double).
