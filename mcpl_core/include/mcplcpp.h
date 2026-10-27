@@ -352,6 +352,16 @@ namespace mcpl {
       }
     }
 
+    //Whether From converts to To without narrowing (like in To{from}):
+    template<class From, class To, class = void>
+    struct IsNonNarrowing : std::false_type {};
+    template<class From, class To>
+    struct IsNonNarrowing<From,To,
+                          std::void_t<decltype(To{std::declval<From>()})>>
+      : std::true_type {};
+    template<class From, class To>
+    inline constexpr bool is_nonnarrowing_v = IsNonNarrowing<From,To>::value;
+
     inline std::uint64_t new_outfile_id() noexcept
     {
       static std::atomic<std::uint64_t> last_id{0};
@@ -808,7 +818,10 @@ namespace mcpl {
      * @brief Set the value of a userdata field (see mcpl::UserdataField).
      *
      * Values of single-value fields are converted to the type of the field,
-     * and values of array fields can be given as `T[N]`.
+     * which must be possible without narrowing, as in C++ brace
+     * initialisation (e.g. `std::uint8_t(5)`, `300.0f` or `double(i)` for an
+     * integer `i` must be written instead of `5`, `300.0` or `i`). Values of
+     * array fields can be given as `T[N]`.
      *
      * @tparam T Type of the values of the field.
      * @tparam N Number of values of array fields (0 for single values).
@@ -834,16 +847,19 @@ namespace mcpl {
     /**
      * @brief Set one element of an array field.
      *
+     * The value is converted like by the set_userdata for single values.
+     *
      * @tparam T Type of the values of the field.
      * @tparam N Number of values of array fields (0 for single values).
+     * @tparam V Type of the value.
      * @param field The field.
      * @param i Index of the element.
      * @param value The value.
      * @throws std::out_of_range if `i>=N`.
      */
-    template<class T, std::size_t N>
+    template<class T, std::size_t N, class V>
     void set_userdata( const UserdataField<T,N>& field, std::size_t i,
-                       T value );
+                       const V& value );
 
 
     /** @brief Raw userdata bytes (`nullptr` if the file has no userdata). */
@@ -1024,9 +1040,10 @@ namespace mcpl {
                                          const V& value )
   {
     if constexpr ( N == 0 ) {
-      static_assert( std::is_convertible_v<V,T>,
-                     "value can not be converted to the type of the field" );
-      const T v = static_cast<T>(value);
+      static_assert( detail::is_nonnarrowing_v<V,T>,
+                     "value can not be converted to the type of the field"
+                     " without narrowing (convert it explicitly)" );
+      const T v = static_cast<T>(value);//(not narrowing, see above)
       field.set( m_ud, m_udsize, &v );
     } else if constexpr ( std::is_same_v<V,T[N]> ) {
       field.set( m_ud, m_udsize, &value[0] );
@@ -1044,11 +1061,14 @@ namespace mcpl {
     field.set( m_ud, m_udsize, values.data() );
   }
 
-  template<class T, std::size_t N>
+  template<class T, std::size_t N, class V>
   inline void OutParticle::set_userdata( const UserdataField<T,N>& field,
-                                         std::size_t i, T value )
+                                         std::size_t i, const V& value )
   {
-    field.set_element( m_ud, m_udsize, i, value );
+    static_assert( detail::is_nonnarrowing_v<V,T>,
+                   "value can not be converted to the type of the field"
+                   " without narrowing (convert it explicitly)" );
+    field.set_element( m_ud, m_udsize, i, static_cast<T>(value) );
   }
 
   //////////////////////////////////////////////////////////////////////////////
