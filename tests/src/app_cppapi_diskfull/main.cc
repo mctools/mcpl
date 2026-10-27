@@ -86,7 +86,7 @@ namespace {
       try {
         for ( ; n < 100000; ++n ) {
           p.set_x(n);
-          p.set_userdata(x,n);
+          p.set_userdata(x,static_cast<double>(n));
           f.add(p);
         }
         mcpltest::fail("no error");

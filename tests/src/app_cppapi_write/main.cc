@@ -39,6 +39,19 @@ static_assert( std::is_nothrow_move_constructible_v<mcpl::MCPLOutFile> );
 static_assert( std::is_nothrow_move_assignable_v<mcpl::MCPLOutFile> );
 static_assert( std::is_trivially_copyable_v<mcpl::OutParticle> );
 
+//Values of userdata fields are refused at compile time when they would be
+//narrowed (checked with the trait used by OutParticle::set_userdata):
+static_assert( !mcpl::detail::is_nonnarrowing_v<int,std::uint8_t> );
+static_assert( !mcpl::detail::is_nonnarrowing_v<double,std::int32_t> );
+static_assert( !mcpl::detail::is_nonnarrowing_v<double,float> );
+static_assert( !mcpl::detail::is_nonnarrowing_v<int,float> );
+static_assert( !mcpl::detail::is_nonnarrowing_v<std::int64_t,std::uint64_t> );
+static_assert( mcpl::detail::is_nonnarrowing_v<std::uint8_t,std::uint8_t> );
+static_assert( mcpl::detail::is_nonnarrowing_v<std::int16_t,std::int32_t> );
+static_assert( mcpl::detail::is_nonnarrowing_v<float,double> );
+//(integers to floating point, even if exact, as in C++ brace initialisation):
+static_assert( !mcpl::detail::is_nonnarrowing_v<std::uint32_t,double> );
+
 namespace {
 
   //Print the file with the C API (header and particles):
@@ -206,10 +219,11 @@ namespace {
       for ( int n = 0; n < 3; ++n ) {
         p.set_ekin(1.0+n);
         p.set_uz(1.0);
-        p.set_userdata(a,-n);
-        p.set_userdata(b,200+n);
-        p.set_userdata(c,-300*n);
-        p.set_userdata(d,60000+n);
+        //(values must be converted explicitly when narrowed):
+        p.set_userdata(a,static_cast<std::int8_t>(-n));
+        p.set_userdata(b,static_cast<std::uint8_t>(200+n));
+        p.set_userdata(c,static_cast<std::int16_t>(-300*n));
+        p.set_userdata(d,static_cast<std::uint16_t>(60000+n));
         p.set_userdata(e,-70000*n);
         p.set_userdata(g,4000000000u+static_cast<unsigned>(n));
         p.set_userdata(h,-(INT64_C(1)<<50)*n);
