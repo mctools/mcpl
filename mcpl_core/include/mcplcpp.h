@@ -1689,6 +1689,14 @@ namespace mcpl {
       if ( m_layout_locked || mcpl_outfile_userdata_layout( m_f ) )
         detail::throw_runtime( "userdata fields can not be added after the"
                                " userdata layout is fixed" );
+      //(no separators, which would make the field more than one field):
+      if ( name.find_first_of(",:") != std::string_view::npos )
+        detail::throw_runtime( "invalid userdata field name \""
+                               + std::string(name) + "\"" );
+      if ( unit.find_first_of(",:") != std::string_view::npos )
+        detail::throw_runtime( "invalid unit \"" + std::string(unit)
+                               + "\" of userdata field \""
+                               + std::string(name) + "\"" );
       std::string field = std::string(name) + ":" + detail::ud_type_str<T,N>();
       if ( !unit.empty() )
         field += ":" + std::string(unit);

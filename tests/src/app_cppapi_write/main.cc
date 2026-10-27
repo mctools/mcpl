@@ -316,6 +316,10 @@ namespace {
                   [&]{ f.add_userdata_field<double>(""); } );
     expect_throw( "add_userdata_field (name with colon)",
                   [&]{ f.add_userdata_field<double>("a:b"); } );
+    expect_throw( "add_userdata_field (name with a second field)",
+                  [&]{ f.add_userdata_field<double>("a:float64,b"); } );
+    expect_throw( "add_userdata_field (unit with a second field)",
+                  [&]{ f.add_userdata_field<double>("a","K,b:float64"); } );
     expect_throw( "add_userdata_field (too large)",
                   [&]{ f.add_userdata_field<std::uint8_t,70000>("big"); } );
     std::cout << "layout unchanged by these errors: \"" << f.userdata_layout()
