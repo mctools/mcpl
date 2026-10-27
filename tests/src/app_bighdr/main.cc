@@ -61,18 +61,17 @@ int do_test()
   FileDeleter guard;
   constexpr std::uint64_t nparticles = 1000;
   constexpr std::uint64_t bytes_per_particle = 96; //mcpl_hdr_particle_size
-  constexpr std::uint64_t nblobs = 50; //mcpl_hdr_header_size
-  constexpr std::uint64_t blobs_bytes = 4400000000; //mcpl_hdr_header_size
-  constexpr std::uint64_t header_bytes = 4400000749; //mcpl_hdr_header_size
+  //A header just below the limit of 1.9GB (minus the margin used when
+  //writing, for the parts of the header not counted then):
+  constexpr std::uint64_t nblobs = 19;
+  constexpr std::uint64_t blobs_bytes = 1899620000;
+  constexpr std::uint64_t header_bytes = 1899620315; //mcpl_hdr_header_size
   constexpr std::uint64_t file_size = nparticles*bytes_per_particle + header_bytes;
-  constexpr std::uint64_t val_uint32_max = std::numeric_limits<std::uint32_t>::max();
+  constexpr std::uint64_t val_int32_max = std::numeric_limits<std::int32_t>::max();
 
-  static_assert( header_bytes > val_uint32_max,
-                 "Test header large enough to exceed 32bit file positions" );
-  static_assert( file_size > val_uint32_max,
-                 "Test file large enough to exceed 32bit file positions" );
-  static_assert( file_size < 2*val_uint32_max,
-                 "Test file unnecessarily large" );
+  static_assert( header_bytes < 1900000000, "Header within the limit" );
+  static_assert( 1900000000 - header_bytes < 400000, "Header near the limit" );
+  static_assert( file_size < val_int32_max, "File within 2^31" );
 
   static_assert(blobs_bytes%nblobs == 0, "" );
   constexpr std::uint64_t blobsize = blobs_bytes/nblobs;
@@ -130,6 +129,13 @@ int do_test()
       snprintf(key,sizeof(key),"blob%i",(int)i);
       mcpl_hdr_add_data(f,key,blobsize,blob_buffer);
     }
+    //A further blob would make the header too large:
+    mcpl_errstate_t es;
+    mcpl_hdr_add_data_es(f,"toomuch",200000,blob_buffer,&es);
+    std::cout<<"Adding one more blob: "<<( es.code ? es.msg : "no error" )
+             <<std::endl;
+    if ( !es.code )
+      throw std::runtime_error("header limit not applied when writing");
     mcpl_enable_userflags(f);
     mcpl_enable_polarisation(f);
     mcpl_enable_doubleprec(f);

@@ -113,22 +113,27 @@
 #include "mcpl_fileutils.h"
 
 #define MCPLIMP_NPARTICLES_POS 8
-//Opening files fails if the header would need more memory than this (to
-//protect against corrupted or malicious files, e.g. small gzipped files with
-//huge headers), with the memory estimated roughly as the size of the header
-//plus an overhead per comment and blob:
-#define MCPLIMP_MAX_HEADER_MEMORY 5000000000
+//The MCPL format allows implementations to refuse headers larger than 1.9GB,
+//or with more than 1000000 comments and blobs (together), and headers are
+//limited to that here, so all sizes and positions in them, and the memory
+//needed to read them, stay below 2^31 (also protecting against corrupted or
+//malicious files, e.g. small gzipped files with huge headers):
+#define MCPLIMP_MAX_HEADER_SIZE 1900000000
+#define MCPLIMP_MAX_HEADER_ENTRIES 1000000
 #define MCPLIMP_HEADER_TOO_LARGE_MSG                                    \
-  "File header is too large (it would need more than 5GB of memory)"
+  "File header is too large (more than 1.9GB)"
 #define MCPLIMP_HEADER_TOO_LARGE_WRITE_MSG                              \
-  "File header would become too large (it would need more than 5GB of"   \
-  " memory when reading the file)"
-#define MCPLIMP_HEADER_ENTRY_OVERHEAD 64
-//When writing files, comments and blobs are only accepted up to a smaller
-//limit, so the files can always be read. The margin covers the parts of the
-//header which are not counted when writing (the fixed part, and the source
-//name and userdata layout strings, which are at most 65534 chars each):
-#define MCPLIMP_HEADER_WRITE_MARGIN 10000000
+  "File header would become too large (more than 1.9GB)"
+#define MCPLIMP_HEADER_TOO_MANY_MSG                                     \
+  "File header has too many comments and blobs (more than 1000000)"
+#define MCPLIMP_HEADER_TOO_MANY_WRITE_MSG                               \
+  "File header would get too many comments and blobs (more than 1000000)"
+//When writing files, the sizes of comments and blobs are only accepted up to a
+//smaller limit, so the header never becomes too large. The margin covers the
+//parts of the header which are not counted when writing (the fixed part, and
+//the source name and userdata layout strings, which are at most 65534 chars
+//each):
+#define MCPLIMP_HEADER_WRITE_MARGIN 200000
 #define MCPLIMP_MAX_PARTICLE_SIZE 96
 #define MCPL_STATIC_ASSERT0(COND,MSG) { typedef char mcpl_##MSG[(COND)?1:-1]; mcpl_##MSG dummy; (void)dummy; }
 #define MCPL_STATIC_ASSERT3(expr,x) MCPL_STATIC_ASSERT0(expr,fail_at_line_##x)
@@ -784,7 +789,7 @@ typedef struct MCPL_LOCAL {
   char * particle_buffer;//particle_size bytes
   mcpl_internal_statsuminfo_t * statsuminfo;
   unsigned nstatsuminfo;
-  uint64_t hdr_memory;//estimated memory needed for the header when reading
+  uint64_t hdr_entries_size;//size of the comments and blobs in the header
   //After errors while writing to the file, the file can only be closed (which
   //leaves it unfinished), and all other functions fail with the same error:
   int failed;
@@ -1021,7 +1026,7 @@ mcpl_outfile_t mcpl_create_outfile_es( const char * filename,
   f->particle_buffer = NULL;
   f->statsuminfo = NULL;
   f->nstatsuminfo = 0;
-  f->hdr_memory = 0;
+  f->hdr_entries_size = 0;
   f->failed = 0;
   if ( !mcpl_recalc_psize_es( f, es ) ) {
     mcpl_internal_cleanup_outfile(f);
@@ -1251,14 +1256,16 @@ MCPL_LOCAL void mcpl_internal_statsum_parse_or_emit_err( const char * comment,
 
 //Check that a header entry with the given number of bytes can be added
 //(returns 0 in case of errors):
-MCPL_LOCAL int mcpl_internal_check_hdr_memory( mcpl_outfileinternal_t * f,
-                                               uint64_t nbytes,
-                                               mcpl_errstate_t * es )
+MCPL_LOCAL int mcpl_internal_check_hdr_entry( mcpl_outfileinternal_t * f,
+                                              uint64_t nbytes,
+                                              mcpl_errstate_t * es )
 {
   MCPL_STATIC_ASSERT( MCPLIMP_HEADER_WRITE_MARGIN
                       >= 8 + 8 + 32 + 8 + 2 * ( 4 + 65534 ) );
-  if ( f->hdr_memory + nbytes + MCPLIMP_HEADER_ENTRY_OVERHEAD
-       > (uint64_t)MCPLIMP_MAX_HEADER_MEMORY - MCPLIMP_HEADER_WRITE_MARGIN )
+  if ( (uint64_t)f->ncomments + f->nblobs + 1 > MCPLIMP_MAX_HEADER_ENTRIES )
+    return mcpl_internal_raise_runtime( es, MCPLIMP_HEADER_TOO_MANY_WRITE_MSG );
+  if ( f->hdr_entries_size + nbytes
+       > (uint64_t)MCPLIMP_MAX_HEADER_SIZE - MCPLIMP_HEADER_WRITE_MARGIN )
     return mcpl_internal_raise_runtime( es, MCPLIMP_HEADER_TOO_LARGE_WRITE_MSG );
   return 1;
 }
@@ -1309,7 +1316,7 @@ void mcpl_hdr_add_comment_es( mcpl_outfile_t of, const char * comment,
     }
   }
   const uint64_t nbytes = sizeof(uint32_t) + strlen(comment);
-  if ( !mcpl_internal_check_hdr_memory( f, nbytes, es ) )
+  if ( !mcpl_internal_check_hdr_entry( f, nbytes, es ) )
     return;
   //Allocate everything before changing anything:
   char * newcomment = NULL;
@@ -1325,7 +1332,7 @@ void mcpl_hdr_add_comment_es( mcpl_outfile_t of, const char * comment,
   f->comments = (char **)newarr;
   f->comments[f->ncomments] = newcomment;
   f->ncomments += 1;
-  f->hdr_memory += nbytes + MCPLIMP_HEADER_ENTRY_OVERHEAD;
+  f->hdr_entries_size += nbytes;
 }
 
 void mcpl_hdr_add_comment(mcpl_outfile_t of,const char *comment)
@@ -1368,7 +1375,7 @@ MCPL_LOCAL void mcpl_internal_hdr_add_data_es( mcpl_outfile_t of,
     }
   }
   const uint64_t nbytes = 2*sizeof(uint32_t) + strlen(key) + (uint64_t)ldata;
-  if ( !mcpl_internal_check_hdr_memory( f, nbytes, es ) )
+  if ( !mcpl_internal_check_hdr_entry( f, nbytes, es ) )
     return;
   //Allocate everything before changing anything (the arrays might grow
   //without the new entry being added, which is harmless):
@@ -1400,7 +1407,7 @@ MCPL_LOCAL void mcpl_internal_hdr_add_data_es( mcpl_outfile_t of,
   f->blobs[f->nblobs] = newdata;
   f->bloblengths[f->nblobs] = ldata;
   f->nblobs = n;
-  f->hdr_memory += nbytes + MCPLIMP_HEADER_ENTRY_OVERHEAD;
+  f->hdr_entries_size += nbytes;
 }
 
 void mcpl_hdr_add_data_es( mcpl_outfile_t of, const char * key,
@@ -2523,7 +2530,6 @@ typedef struct {
   //be closed and all other such functions fail with the same error:
   int failed;
   mcpl_errstate_t failure;
-  uint64_t hdr_entries_overhead;//estimated memory for comments and blobs
 } mcpl_fileinternal_t;
 
 #define MCPLIMP_FILEDECODE mcpl_fileinternal_t * f = (mcpl_fileinternal_t *)ff.internal; assert(f)
@@ -2601,8 +2607,7 @@ MCPL_LOCAL int mcpl_read_lengthdata( mcpl_fileinternal_t* f, uint32_t * n,
     nb = fread(n, 1, sizeof(*n), f->file);
   if (nb!=sizeof(*n))
     return mcpl_internal_readerr( f, errmsg, es );
-  if ( (uint64_t)*pos + sizeof(*n) + *n + f->hdr_entries_overhead
-       > (uint64_t)MCPLIMP_MAX_HEADER_MEMORY )
+  if ( (uint64_t)*pos + sizeof(*n) + *n > MCPLIMP_MAX_HEADER_SIZE )
     return mcpl_internal_raise_runtime( es, MCPLIMP_HEADER_TOO_LARGE_MSG );
   //The buffer starts with (at most) 1MB and its capacity is doubled when
   //needed, so the copying when growing it stays proportional to the size of
@@ -2889,11 +2894,8 @@ MCPL_LOCAL int mcpl_internal_open_file( mcpl_fileinternal_t * f,
   const uint32_t nblobs_hdr = arr[1];
   f->ncomments = 0;
   f->nblobs = 0;
-  f->hdr_entries_overhead = ( (uint64_t)ncomments_hdr + nblobs_hdr )
-    * MCPLIMP_HEADER_ENTRY_OVERHEAD;
-  if ( (uint64_t)current_pos + f->hdr_entries_overhead
-       > (uint64_t)MCPLIMP_MAX_HEADER_MEMORY )
-    MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,MCPLIMP_HEADER_TOO_LARGE_MSG);
+  if ( (uint64_t)ncomments_hdr + nblobs_hdr > MCPLIMP_MAX_HEADER_ENTRIES )
+    MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,MCPLIMP_HEADER_TOO_MANY_MSG);
   //The flags in the header must have exactly the values of the format: 0x1 or
   //0x0 (for userflags, polarisation, single precision and universal weight).
   //In format version 4, the userflags field also holds 0x2 if the particles

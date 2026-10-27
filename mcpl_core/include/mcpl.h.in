@@ -154,6 +154,7 @@ extern "C" {
   /* (blobs are stored byte for byte, so binary numbers in them are in the    */
   /* byte order chosen by the application, unlike all other numbers in MCPL   */
   /* files, which are in the byte order of the file)                          */
+  /* (headers are limited to 1.9GB and 1000000 comments and blobs together)  */
   MCPL_API void mcpl_enable_userflags(mcpl_outfile_t);/* to write the "userflags" info                           */
   MCPL_API void mcpl_enable_polarisation(mcpl_outfile_t);/* to write the "polarisation" info                     */
   MCPL_API void mcpl_enable_doubleprec(mcpl_outfile_t);/* use double precision FP numbers in storage             */

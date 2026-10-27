@@ -258,6 +258,9 @@ static void test_usage_errors(void)
   CHECK("hdr_add_data(\"blob1\",3,\"abc\")",mcpl_hdr_add_data_es(f,"blob1",3,"abc",&es));
   CHECK("hdr_add_data(\"blob1\",2,\"de\")",mcpl_hdr_add_data_es(f,"blob1",2,"de",&es));
   CHECK("hdr_add_data(\"empty\",0,NULL)",mcpl_hdr_add_data_es(f,"empty",0,NULL,&es));
+  //(refused before the data is read, so a small buffer can be passed):
+  CHECK("hdr_add_data(\"big\",1900000000,...)",
+        mcpl_hdr_add_data_es(f,"big",1900000000u,"abc",&es));
 
   CHECK("enable_universal_pdgcode(0)",mcpl_enable_universal_pdgcode_es(f,0,&es));
   CHECK("enable_universal_pdgcode(2112)",mcpl_enable_universal_pdgcode_es(f,2112,&es));
@@ -722,6 +725,35 @@ static void test_close_unfinished(void)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+//Headers with at most 1000000 comments and blobs (together) can be written,
+//but not more:
+static void test_header_entries(void)
+{
+  printf("\n==> Number of comments and blobs:\n");
+  mcpl_errstate_t es;
+  mcpl_outfile_t f = mcpl_create_outfile("entries.mcpl");
+  for ( uint32_t i = 0; i < 999999; ++i ) {
+    mcpl_hdr_add_comment_es(f,"c",&es);
+    if ( es.code ) {
+      print_es("hdr_add_comment",&es);
+      break;
+    }
+  }
+  CHECK("hdr_add_data(\"k\") (entry 1000000)",
+        mcpl_hdr_add_data_es(f,"k",1,"x",&es));
+  CHECK("hdr_add_comment (entry 1000001)",mcpl_hdr_add_comment_es(f,"c",&es));
+  CHECK("hdr_add_data(\"k2\") (entry 1000001)",
+        mcpl_hdr_add_data_es(f,"k2",1,"x",&es));
+  CHECK("hdr_add_stat_sum(\"n\",1) (entry 1000001)",
+        mcpl_hdr_add_stat_sum_es(f,"n",1.0,&es));
+  mcpl_close_outfile(f);
+  mcpl_file_t fi = mcpl_open_file("entries.mcpl");
+  printf("  file has %u comments and %u blobs\n",
+         (unsigned)mcpl_hdr_ncomments(fi),(unsigned)mcpl_hdr_nblobs(fi));
+  mcpl_close_file(fi);
+  remove("entries.mcpl");
+}
+
 int main( int argc, char ** argv )
 {
   (void)argc;
@@ -732,6 +764,7 @@ int main( int argc, char ** argv )
   test_transfers();
   test_closeandgzip();
   test_close_unfinished();
+  test_header_entries();
   remove("usage.mcpl");
   return 0;
 }

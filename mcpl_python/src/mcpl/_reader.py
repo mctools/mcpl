@@ -37,6 +37,14 @@ from ._messages import _warning
 from ._numpy import np
 from ._statsum import _parse_statsum, _parse_statsum_comment, encode_stat_sum
 
+#The MCPL format allows implementations to refuse headers larger than 1.9GB,
+#or with more than 1000000 comments and blobs (together), and headers are
+#limited to that here (as in the C library):
+_max_header_size = 1900000000
+_max_header_entries = 1000000
+_header_too_large_msg = 'File header is too large (more than 1.9GB)'
+_header_too_many_msg = ( 'File header has too many comments and blobs (more'
+                         ' than 1000000)' )
 
 def blobkey_problem( key ):
     """Problem with a blob key (bytes), or None if it is valid: keys must be
@@ -616,6 +624,8 @@ class MCPLFile:
         #conversions like int+np.uint64->float, and flags to bool:
         nparticles = int(nparticles)
         self._np = nparticles#needs frequent access
+        if int(ncomments) + int(nblobs) > _max_header_entries:
+            raise MCPLError(_header_too_many_msg)
         particlesize = int(particlesize)
         opt_universalpdgcode = int(opt_universalpdgcode)
         #The flags in the header must have exactly the values of the format:
@@ -650,11 +660,18 @@ class MCPLFile:
         h['userdata_layout'] = None
         h['userdata_size'] = 0
 
+        #The size of the header read so far (to refuse too large headers before
+        #reading them):
+        hdrpos = [ 48 + ( 8 if _tmp else 0 ) ]
+
         def readarr():
             ll = self._fileread(dtype=np.dtype('u4').newbyteorder(endianness),
                                count=1)
             if len(ll)!=1:
                 raise MCPLError('Errors encountered while attempting to read header')
+            hdrpos[0] += 4 + int(ll[0])
+            if hdrpos[0] > _max_header_size:
+                raise MCPLError(_header_too_large_msg)
             if ll==0:
                 return b''
             cont = self._fileread(dtype='u1',count=ll)

@@ -185,9 +185,9 @@ v2.2.9  (work in progress)
         files. When closing, all data is written before the number of
         particles is updated in the header, so files with such errors look
         unfinished and can be recovered.
-      * Comments and blobs which would make the header of a file need more
-        than 5 GB of memory when reading it can not be added (with a margin
-        of 10 MB, so files written can always be read).
+      * Headers are limited to 1.9 GB and 1000000 comments and blobs
+        (together), when writing and reading files, in C and Python (as the
+        MCPL format allows).
       * Error messages of mcpl_transfer_last_read_particle about universal
         pdgcodes and weights no longer end with a newline.
       * New variants of the C functions for reading files, which report
@@ -210,9 +210,9 @@ v2.2.9  (work in progress)
         invalid lengths of strings or blobs, in their headers no longer
         allocates memory according to these numbers (which could exhaust the
         memory), but only as the data is actually read (with the buffers
-        growing geometrically, to keep this fast). Opening files fails
-        if the header would need more than 5 GB of memory (e.g. for small
-        gzipped files with huge headers).
+        growing geometrically, to keep this fast). Too large headers, and too
+        many comments and blobs, are refused before reading them (e.g. for
+        small gzipped files with huge headers).
       * New pymcpltool option --dry-run (-d), which does everything except
         writing files: the same checks, warnings, errors and messages as the
         real run (with "Would ..." instead of "Successfully ..."), followed

@@ -66,6 +66,7 @@ hdr_add_data(<65535 chars>,...) -> ERROR RUNTIME: string length out of range
 hdr_add_data("blob1",3,"abc") -> ok
 hdr_add_data("blob1",2,"de") -> ERROR RUNTIME: mcpl_hdr_add_data got duplicate key
 hdr_add_data("empty",0,NULL) -> ok
+hdr_add_data("big",1900000000,...) -> ERROR RUNTIME: File header would become too large (more than 1.9GB)
 enable_universal_pdgcode(0) -> ERROR RUNTIME: mcpl_enable_universal_pdgcode must be called with non-zero pdgcode.
 enable_universal_pdgcode(2112) -> ok
 enable_universal_pdgcode(2112) again -> ok
@@ -252,3 +253,10 @@ MCPL WARNING: Input file appears to not have been closed properly. Recovered 1 p
   file unf3.mcpl: nparticles=1 srcname="unknown" userflags=0 polarisation=0 doubleprec=0 universal pdgcode=0 weight=0 userdata layout=none
     particle x=3 pdgcode=2112 weight=2 userflags=0
   reading back -> ok
+
+==> Number of comments and blobs:
+hdr_add_data("k") (entry 1000000) -> ok
+hdr_add_comment (entry 1000001) -> ERROR RUNTIME: File header would get too many comments and blobs (more than 1000000)
+hdr_add_data("k2") (entry 1000001) -> ERROR RUNTIME: File header would get too many comments and blobs (more than 1000000)
+hdr_add_stat_sum("n",1) (entry 1000001) -> ERROR RUNTIME: File header would get too many comments and blobs (more than 1000000)
+  file has 999999 comments and 1 blobs

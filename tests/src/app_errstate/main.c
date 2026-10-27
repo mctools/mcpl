@@ -305,32 +305,28 @@ static void test_open_errors(void)
     check_open("x.mcpl");
     free(d.data);
   }
-  //Huge numbers of comments or blobs, exceeding the limit on the memory
-  //needed for headers (5 GB, estimated with 64 bytes per comment or blob in
-  //addition to their data). The arrays also only grow as entries are actually
-  //read, so smaller numbers do not lead to huge allocations either (here,
-  //with 70 million comments, reading beyond the real comments gives string
-  //lengths which exceed the limit as well):
+  //Numbers of comments or blobs above the limit (1000000 together) are refused
+  //before reading any of them, while numbers within the limit are accepted
+  //(here failing later, when reading beyond the real comments or blobs):
   {
-    uint32_t huge = 0xFFFFFFFF;
-    uint32_t many = 70000000;//4.48 GB
-    const char * fn[2] = { "huge_comments.mcpl", "huge_blobs.mcpl" };
+    uint32_t counts[3] = { 0xFFFFFFFF, 1000001, 999000 };
+    const char * fn[2] = { "many_comments.mcpl", "many_blobs.mcpl" };
     for ( int i = 0; i < 2; ++i ) {
-      save_modified(fn[i],&a,a.size,16+4*i,&huge,4);
-      check_open(fn[i]);
-      save_modified(fn[i],&a,a.size,16+4*i,&many,4);
-      check_open(fn[i]);
+      for ( int j = 0; j < 3; ++j ) {
+        save_modified(fn[i],&a,a.size,16+4*i,&counts[j],4);
+        check_open(fn[i]);
+      }
       remove(fn[i]);
     }
-    //Many comments and a long string, together exceeding the limit:
-    unsigned char * d = (unsigned char*)malloc(a.size);
-    memcpy(d,a.data,a.size);
-    memcpy(d+16,&many,4);
-    uint32_t len = 600000000;
-    memcpy(d+buf_find(&a,"errstate_test")-4,&len,4);
-    file_save("x.mcpl",d,a.size);
-    free(d);
-    check_open("x.mcpl");
+    //Strings making the header larger than the limit (1.9GB) are refused
+    //before reading them, while strings just within the limit are accepted
+    //(here failing later, when reading beyond the end of the file):
+    uint32_t lens[2] = { 1900000000, 1899999000 };
+    for ( int j = 0; j < 2; ++j ) {
+      save_modified("x.mcpl",&a,a.size,buf_find(&a,"errstate_test")-4,
+                    &lens[j],4);
+      check_open("x.mcpl");
+    }
   }
   remove("x.mcpl");
 
