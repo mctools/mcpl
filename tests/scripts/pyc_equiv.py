@@ -484,6 +484,34 @@ def test_truncated_files():
     (input_dir/'trunc.mcpl').unlink()
     return ok
 
+def test_header_limits():
+    #At most 1000000 comments and blobs (together) can be written:
+    ok = compare_script('1000001 comments and blobs',
+                        script(*(['comment c']*999999), 'blob k x', 'comment c',
+                               'close'))
+    #Files with too many comments and blobs, or a too large header (more than
+    #1.9GB), are refused before reading them, while files within the limits
+    #are accepted (here failing later, when reading beyond the end of the
+    #file):
+    lib = getlib('pywriter')
+    lib.mcpltest_script(str(input_dir/'limits_src'),
+                        script('srcname src', 'comment c', 'blob k x',
+                               parts(2), 'close'))
+    data = (input_dir/'limits_src.mcpl').read_bytes()
+    for what, offset, value in [ ('comments', 16, 1000000),
+                                 ('comments', 16, 999000),
+                                 ('blobs', 20, 1000000),
+                                 ('blobs', 20, 999000),
+                                 ('source name length', 48, 1900000000),
+                                 ('source name length', 48, 1899999000) ]:
+        d = bytearray(data)
+        d[offset:offset+4] = value.to_bytes(4,'little')
+        (input_dir/'limits.mcpl').write_bytes(bytes(d))
+        ok &= compare(f'repair file with {what} {value}', 'mcpltest_repair',
+                      ('limits.mcpl',), mcpl.repair)
+    (input_dir/'limits.mcpl').unlink()
+    return ok
+
 def py_name_helper(f, mode):
     return mcpl.name_helper(f, mode.decode() if isinstance(mode,bytes) else mode)
 
@@ -547,7 +575,7 @@ def test_random_scripts(n):
 def main():
     make_inputs()
     results = [ test_writer_scripts(), test_file_functions(), test_truncated_files(),
-                test_name_helper(), test_mpi(), test_random_scripts(150) ]
+                test_header_limits(), test_name_helper(), test_mpi(), test_random_scripts(150) ]
     print(f'Compared {ncases} operations')
     assert all(results), 'C and Python APIs give different results'
 

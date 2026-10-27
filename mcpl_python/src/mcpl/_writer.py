@@ -161,6 +161,7 @@ class MCPLOutFile:
         self._comments = []
         self._blobkeys = []
         self._blobs = {}
+        self._hdr_entries_size = 0#size of the comments and blobs in the header
         self._opt_userflags = False
         self._opt_polarisation = False
         self._opt_singleprec = True
@@ -360,7 +361,8 @@ class MCPLOutFile:
         self._srcname = self._to_bytes(srcname,'Source name')
 
     def hdr_add_comment(self, comment):
-        """Add human-readable comment"""
+        """Add human-readable comment (headers are limited to 1.9GB and
+        1000000 comments and blobs together)"""
         self._check_hdr_notwritten('hdr_add_comment')
         comment = self._to_bytes(comment,'Comments')
         if comment.startswith(b'stat:sum:'):
@@ -374,7 +376,23 @@ class MCPLOutFile:
             raise MCPLError('Refusing to create file with comments starting'
                             ' with "stat:" unless starting with "stat:sum:",'
                             ' as such syntax is reserved for future usage.')
+        self._check_hdr_entry(4 + len(comment))
         self._comments.append(comment)
+        self._hdr_entries_size += 4 + len(comment)
+
+    def _check_hdr_entry(self, nbytes):
+        #Check that a header entry with the given number of bytes can be added.
+        #The sizes of comments and blobs are only accepted up to a smaller
+        #limit, with a margin for the other parts of the header (the fixed
+        #part, and the source name and userdata layout strings), so the header
+        #never becomes too large:
+        from ._reader import _max_header_entries, _max_header_size
+        if len(self._comments) + len(self._blobs) + 1 > _max_header_entries:
+            raise MCPLError('File header would get too many comments and blobs'
+                            ' (more than 1000000)')
+        if self._hdr_entries_size + nbytes > _max_header_size - 200000:
+            raise MCPLError('File header would become too large (more than'
+                            ' 1.9GB)')
 
     def hdr_add_data(self, key, data):
         """Add binary blob (bytes-like object) by key (unique, non-empty,
@@ -399,8 +417,10 @@ class MCPLOutFile:
         data = bytes(data)
         if len(data) >= 4294967295:
             raise MCPLError('hdr_add_data got too large data')
+        self._check_hdr_entry(8 + len(key) + len(data))
         self._blobkeys.append(key)
         self._blobs[key] = data
+        self._hdr_entries_size += 8 + len(key) + len(data)
 
     def enable_userflags(self):
         """Write the userflags info"""

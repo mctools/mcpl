@@ -165,11 +165,14 @@ open(x.mcpl) -> ERROR RUNTIME: Syntax error: could not properly decode comment s
 MCPL WARNING: Input file appears to not have been closed properly. Recovered 3 particles.
 MCPL WARNING: Marking stat:sum:avail entry as not available (-1) since file not closed properly.
 open(x.mcpl) -> ok
-open(huge_comments.mcpl) -> ERROR RUNTIME: File header is too large (it would need more than 5GB of memory)
-open(huge_comments.mcpl) -> ERROR RUNTIME: File header is too large (it would need more than 5GB of memory)
-open(huge_blobs.mcpl) -> ERROR RUNTIME: File header is too large (it would need more than 5GB of memory)
-open(huge_blobs.mcpl) -> ERROR RUNTIME: File header is too large (it would need more than 5GB of memory)
-open(x.mcpl) -> ERROR RUNTIME: File header is too large (it would need more than 5GB of memory)
+open(many_comments.mcpl) -> ERROR RUNTIME: File header has too many comments and blobs (more than 1000000)
+open(many_comments.mcpl) -> ERROR RUNTIME: File header has too many comments and blobs (more than 1000000)
+open(many_comments.mcpl) -> ERROR RUNTIME: Errors encountered while attempting to read header
+open(many_blobs.mcpl) -> ERROR RUNTIME: File header has too many comments and blobs (more than 1000000)
+open(many_blobs.mcpl) -> ERROR RUNTIME: File header has too many comments and blobs (more than 1000000)
+open(many_blobs.mcpl) -> ERROR RUNTIME: Errors encountered while attempting to read header
+open(x.mcpl) -> ERROR RUNTIME: File header is too large (more than 1.9GB)
+open(x.mcpl) -> ERROR RUNTIME: Errors encountered while attempting to read header
 
 ==> Opening a.mcpl truncated to n bytes:
   n=[0,7] -> ERROR RUNTIME: Error while reading first bytes of file!

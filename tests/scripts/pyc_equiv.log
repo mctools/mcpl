@@ -723,6 +723,13 @@ repair file truncated to 577 bytes, header says 10 particles: ok
    | MCPL WARNING: Marking stat:sum:a entry as not available (-1) since file not closed properly.
    | MCPL: Successfully repaired file with 9 particles.
 repair file truncated to 578 bytes, header says 10 particles: error: File does not appear to be broken.
+Script "1000001 comments and blobs": error: File header would get too many comments and blobs (more than 1000000)
+repair file with comments 1000000: error: File header has too many comments and blobs (more than 1000000)
+repair file with comments 999000: error: File header is too large (more than 1.9GB)
+repair file with blobs 1000000: error: File header has too many comments and blobs (more than 1000000)
+repair file with blobs 999000: error: File header is too large (more than 1.9GB)
+repair file with source name length 1900000000: error: File header is too large (more than 1.9GB)
+repair file with source name length 1899999000: error: Errors encountered while attempting to read header
 name_helper("x","M") identical: True
 name_helper("x","G") identical: True
 name_helper("x","B") identical: True
@@ -1002,4 +1009,4 @@ Script "random script 146": error: enable_userflags called too late.
 Script "random script 147": error: enable_universal_pdgcode must be called with non-zero pdgcode.
 Script "random script 148": ok
 Script "random script 149": ok
-Compared 623 operations
+Compared 630 operations
