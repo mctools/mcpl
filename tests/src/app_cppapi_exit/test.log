@@ -1,0 +1,7 @@
+end of main
+GlobalWriter destructor
+[handler] MCPL: Compressing file global.mcpl
+[handler] MCPL: Compressed file into global.mcpl.gz
+LateCompression destructor
+MCPL: Compressing file late.mcpl
+MCPL: Compressed file into late.mcpl.gz
