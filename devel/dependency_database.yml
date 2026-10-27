@@ -12,9 +12,10 @@
 # can not be installed). They become environment markers in requirement
 # specifications, and tests needing such dependencies are not added at all
 # where they can not be installed (while missing dependencies are otherwise an
-# error with MCTOOLS_REQUIRE_ALL_TEST_DEPS=ON). The freebsd_pkgname field gives
-# the name of the FreeBSD package, with "{py}" for the Python flavour (like
-# py312), for the FreeBSD CI.
+# error with MCTOOLS_REQUIRE_ALL_TEST_DEPS=ON). The freebsd_origin field gives
+# the origin of the FreeBSD package (the port, like math/py-numpy), for the
+# FreeBSD CI (origins of Python packages always give the package for the
+# default Python version of FreeBSD).
 
 packages:
   mcpl-core:
@@ -67,14 +68,14 @@ dependencies:
     pypi_pkgname: tomli
     conda_pkgname: tomli
     in_pystdlib_from: "3.11"
-    freebsd_pkgname: "{py}-tomli"
+    freebsd_origin: textproc/py-tomli
   matplotlib:
     min_version: "3.6"
     import_check: "matplotlib.pyplot"
-    freebsd_pkgname: "{py}-matplotlib"
+    freebsd_origin: math/py-matplotlib
   numpy:
     min_version: "1.22"
-    freebsd_pkgname: "{py}-numpy"
+    freebsd_origin: math/py-numpy
   scipp:
     min_version: "26.9"
     min_python: "3.12"
@@ -84,10 +85,10 @@ dependencies:
     min_version: "0.8.1"
     import_check: null
     cmd_check: ruff
-    freebsd_pkgname: ruff
+    freebsd_origin: devel/ruff
   pyyaml:
     import_check: yaml
     pypi_pkgname: PyYAML
     conda_pkgname: pyyaml
     min_version: "6.0.0"
-    freebsd_pkgname: "{py}-pyyaml"
+    freebsd_origin: devel/py-pyyaml
