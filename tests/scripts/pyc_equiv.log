@@ -818,6 +818,7 @@ repair file with only 2 bytes: error: Error while reading first bytes of file!
 repair file with only 3 bytes: error: Error while reading first bytes of file!
 repair file with only 6 bytes: error: Error while reading first bytes of file!
 repair file with not starting with MCPL: error: File is not an MCPL file!
+repair file with only 52 bytes (universal weight): error: Errors encountered while attempting to read header
 name_helper("x","M") identical: True
 name_helper("x","G") identical: True
 name_helper("x","B") identical: True
@@ -1103,4 +1104,4 @@ Script "random script 146": error: enable_userflags called too late.
 Script "random script 147": error: enable_universal_pdgcode must be called with non-zero pdgcode.
 Script "random script 148": ok
 Script "random script 149": ok
-Compared 684 operations
+Compared 685 operations
