@@ -518,7 +518,7 @@ def py_name_helper(f, mode):
 def test_name_helper():
     ok = True
     lib = getlib('pywriter')
-    for f in ('x', 'x.mcpl', 'x.mcpl.gz', 'dir/x.mcpl', '/abs/dir/x.mcpl.gz',
+    for f in ('x', 'x.mcpl', 'x.mcpl.gz', 'dir/x.mcpl', '/abs/dir/x.mcpl.gz', 'dir/',
               'x.gz', 'x.mcpl.mcpl', '.x', 'x.mcpl.gz.mcpl'):
         for mode in 'MGBmgb':
             c = lib.mcpltest_name_helper(f, mode)

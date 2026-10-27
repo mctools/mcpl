@@ -760,6 +760,12 @@ name_helper("/abs/dir/x.mcpl.gz","B") identical: True
 name_helper("/abs/dir/x.mcpl.gz","m") identical: True
 name_helper("/abs/dir/x.mcpl.gz","g") identical: True
 name_helper("/abs/dir/x.mcpl.gz","b") identical: True
+name_helper("dir/","M") identical: True
+name_helper("dir/","G") identical: True
+name_helper("dir/","B") identical: True
+name_helper("dir/","m") identical: True
+name_helper("dir/","g") identical: True
+name_helper("dir/","b") identical: True
 name_helper("x.gz","M") identical: True
 name_helper("x.gz","G") identical: True
 name_helper("x.gz","B") identical: True
