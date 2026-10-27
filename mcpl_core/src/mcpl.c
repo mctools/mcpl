@@ -3960,9 +3960,10 @@ void mcpl_transfer_last_read_particle_es( mcpl_file_t source,
     return;
   }
 
-  if ( fs->current_particle_idx==0 && fs->particle->weight==0.0 && fs->particle->pdgcode==0 ) {
-    mcpl_internal_raise_runtime( es, "mcpl_transfer_last_read_particle called with source file in invalid state"
-               " (did you forget to first call mcpl_read() on the source file before calling this function?)" );
+  if ( !fs->last_read_valid ) {
+    mcpl_internal_raise_runtime( es, "mcpl_transfer_last_read_particle called"
+                                 " without a particle just read from the source"
+                                 " file" );
     return;
   }
 
