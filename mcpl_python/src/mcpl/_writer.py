@@ -49,6 +49,11 @@ from ._statsum import (
 )
 
 
+def _outfile_name(filename):
+    """The name which MCPLOutFile gives a file: the filename with ".mcpl"
+    appended unless it already ends with ".mcpl" (like in the C API)"""
+    return filename if filename.endswith('.mcpl') else filename + '.mcpl'
+
 class MCPLOutFile:
     """Python-only class for writing MCPL files, using numpy to process blocks of
     particles efficiently. The produced files are identical to those written by
@@ -150,9 +155,7 @@ class MCPLOutFile:
         if lastdot == 0 and len(filename) == 5:
             raise MCPLError('MCPLOutFile called with string with no'
                             ' basename part (".mcpl").')
-        if lastdot == -1 or filename[lastdot:] != '.mcpl':
-            filename += '.mcpl'
-        self._filename = filename
+        self._filename = _outfile_name(filename)
         self._blocklength = int(blocklength)
         if self._blocklength < 1:
             raise MCPLError('blocklength must be at least 1')
@@ -172,7 +175,7 @@ class MCPLOutFile:
         self._statsuminfo = {}#key -> [position of comment data in file, value]
         self._pending = []
         self._pdt = None
-        self._fh = _DryRunHandle() if self._dry_run else open(filename,'wb')  # noqa: SIM115
+        self._fh = _DryRunHandle() if self._dry_run else open(self._filename,'wb')  # noqa: SIM115
         if sourcename is not None:
             self.hdr_set_srcname(sourcename)
         for c in (comments or []):

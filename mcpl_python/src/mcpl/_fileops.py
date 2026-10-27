@@ -40,7 +40,7 @@ from ._common import MCPLError, _determine_version
 from ._messages import _info, _warning
 from ._reader import MCPLFile
 from ._statsum import _parse_statsum_comment, _statsum_syntax_error, encode_stat_sum
-from ._writer import MCPLOutFile
+from ._writer import MCPLOutFile, _outfile_name
 
 
 def dump_file(filename,header=True,particles=True,limit=10,skip=0,pick=None,**kwargs):
@@ -199,9 +199,11 @@ def can_merge(file1, file2):
     with _open_raw(file1) as f1, _open_raw(file2) as f2:
         return _actual_can_merge(f1, f2)
 
-def _file_certainly_exists(filename):
+def _outfile_exists(filename):
+    """Whether the file which MCPLOutFile would create already exists (so it is
+    never one of the input files of the merge functions), like in the C API"""
     import pathlib
-    return pathlib.Path(filename).is_file()
+    return pathlib.Path(_outfile_name(filename)).exists()
 
 def _is_same_file(f1, f2):
     import pathlib
@@ -247,7 +249,7 @@ def merge_files(file_output, files, dry_run = False):
             reason = _merge_incompat_reason(f1, f2)
         if reason is not None:
             raise MCPLError(f'Attempting to merge incompatible files ({reason}).')
-    if _file_certainly_exists(file_output):
+    if _outfile_exists(file_output):
         raise MCPLError('requested output file of merge_files already exists')
     out = MCPLOutFile(file_output, _dry_run = dry_run)
     try:
@@ -330,7 +332,7 @@ def forcemerge_files(file_output, files, keep_userflags = False, dry_run = False
     if not files:
         raise MCPLError('forcemerge_files must be called with at least one input file')
     _error_on_dups(files)
-    if _file_certainly_exists(file_output):
+    if _outfile_exists(file_output):
         raise MCPLError('requested output file of forcemerge_files already exists')
     if all( can_merge(files[0], f) for f in files[1:] ):
         _info(f'forcemerge_files called with {len(files)} files that are'
