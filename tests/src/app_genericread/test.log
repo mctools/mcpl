@@ -1,0 +1,6 @@
+MCPL: Compressing file gz.mcpl
+MCPL: Compressed file into gz.mcpl.gz
+after reading 100 bytes: current_pos 100 (plain) and 100 (gzipped)
+after reading 100000 bytes: current_pos 100100 (plain) and 100100 (gzipped)
+after reading 40000 bytes: current_pos 140100 (plain) and 140100 (gzipped)
+Positions agree
