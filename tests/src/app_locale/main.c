@@ -19,12 +19,13 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-//stat:sum: values are always written and read with "." as the decimal point,
-//also when the application uses a locale with another decimal point (like
-//","). The test is done with the first such locale available (there might be
-//none, but the output is the same either way):
+//Numbers in stat:sum: values, and in the text files of mcpltool --text, always
+//use "." as the decimal point, also when the application uses a locale with
+//another decimal point (like ","). The test is done with the first such locale
+//available (there might be none, but the output is the same either way):
 
 #include "mcpl.h"
+#include "mcpltest_errstate.h"
 #include <locale.h>
 #include <stdio.h>
 #include <string.h>
@@ -72,6 +73,45 @@ int main(void)
   }
   mcpl_close_file(fi);
   remove("statsumlocale.mcpl");
+
+  //mcpltool --text:
+  {
+    mcpl_outfile_t fo = mcpl_create_outfile("textlocale.mcpl");
+    mcpl_enable_polarisation(fo);
+    mcpl_particle_t * p = mcpl_get_empty_particle(fo);
+    p->pdgcode = 2112;
+    p->ekin = 1.5;
+    p->position[0] = 0.25;
+    p->direction[2] = 1.0;
+    p->polarisation[1] = 0.5;
+    p->time = 0.125;
+    p->weight = 2.5;
+    mcpl_add_particle(fo,p);
+    mcpl_close_outfile(fo);
+    char a0[] = "mcpltool";
+    char a1[] = "--text";
+    char a2[] = "textlocale.mcpl";
+    char a3[] = "textlocale.txt";
+    char * argv[] = { a0, a1, a2, a3, NULL };
+    if ( mcpl_tool(4,argv) != 0 )
+      ok = 0;
+    FILE * ft = mcpltest_fopen("textlocale.txt","r");
+    char line[1024];
+    while ( ft && fgets(line,sizeof(line),ft) ) {
+      if ( line[0] == '#' || strncmp(line,"index",5) == 0 )
+        continue;
+      if ( strchr(line,',') )
+        ok = 0;
+      printf("%s",line);
+    }
+    if ( ft )
+      fclose(ft);
+    else
+      ok = 0;
+    remove("textlocale.mcpl");
+    remove("textlocale.txt");
+  }
+
   printf(ok ? "All values written and read correctly\n" : "ERROR\n");
   return ok ? 0 : 1;
 }
