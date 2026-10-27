@@ -6,6 +6,7 @@ merge_files (same file twice) -> ERROR RUNTIME: Merging file with itself
 merge_files (missing input file) -> ERROR IO: Unable to open file!
 merge_files (incompatible files) -> ERROR RUNTIME: Attempting to merge incompatible files (FP precision: single vs double).
 merge_files (output file exists) -> ERROR RUNTIME: requested output file of mcpl_merge_files already exists
+merge_files (output file exists with .mcpl) -> ERROR RUNTIME: requested output file of mcpl_merge_files already exists
 merge_files (NULL output file) -> ERROR RUNTIME: mcpl_merge_files called with null string as output filename
 merge_files (truncated input file) -> ERROR RUNTIME: Unexpected read-error while merging
   output left unfinished:
@@ -44,6 +45,7 @@ forcemerge_files (no input files) -> ERROR RUNTIME: mcpl_forcemerge_files must b
 forcemerge_files (same file twice) -> ERROR RUNTIME: Merging file with itself
 forcemerge_files (missing input file) -> ERROR IO: Unable to open file!
 forcemerge_files (output file exists) -> ERROR RUNTIME: requested output file of mcpl_forcemerge_files already exists
+forcemerge_files (output file exists with .mcpl) -> ERROR RUNTIME: requested output file of mcpl_forcemerge_files already exists
 MCPL force-merge: Files have different FP precision (single and double), using double
 MCPL force-merge: Discarding comments and blobs of the input files
 MCPL force-merge: Transferring 2 particles from file m3_dp.mcpl
