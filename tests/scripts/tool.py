@@ -184,6 +184,10 @@ def main():
     cmd('-e','-p111','-l999999','-s150','--no-comment',fmiscnogz,'extracted_5.mcpl.gz')
     #invalid -p arguments must not leave output files behind:
     cmd('-e','-p0',fmiscnogz,'badpdg.mcpl',fail=True)
+    #Numbers which are too large, and leading zeros:
+    cmd('-e','-p99999999999999999999',fmiscnogz,'badpdg.mcpl',fail=True)
+    cmd(f1,'-l99999999999999999999',fail=True)
+    cmd('-e','-p022','--no-comment',fmisc,'extracted_6.mcpl.gz')
     cmd('-e','-pabc',fmiscnogz,'badpdg.mcpl',fail=True)
     cmd('-e','-pNeutron',fmiscnogz,'badpdg.mcpl',fail=True)
     cmd('-e','-pneutron',fmiscnogz,'extracted_names_1.mcpl')

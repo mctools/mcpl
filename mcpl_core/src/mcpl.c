@@ -5639,6 +5639,17 @@ MCPL_LOCAL int mcpl_tool_usage( char** argv, const char * errmsg ) {
   return 0;
 }
 
+//Append a decimal digit to the non-negative *v, returning 0 (and leaving *v
+//unchanged) if the result would be larger than INT64_MAX:
+MCPL_LOCAL int mcpl_internal_append_digit( int64_t * v, char digit )
+{
+  int64_t d = digit - '0';
+  if ( *v > ( INT64_MAX - d ) / 10 )
+    return 0;
+  *v = *v * 10 + d;
+  return 1;
+}
+
 MCPL_LOCAL int mcpl_str2int(const char* str, size_t len, int64_t* res)
 {
   //portable 64bit str2int with error checking (only INT64_MIN might not be
@@ -5660,11 +5671,8 @@ MCPL_LOCAL int mcpl_str2int(const char* str, size_t len, int64_t* res)
     if (str[i]<'0'||str[i]>'9') {
       return 0;
     }
-    int64_t prev = tmp;
-    tmp *= 10;
-    tmp += str[i] - '0';
-    if (prev>=tmp)
-      return 1;//overflow (hopefully it did not trigger a signal or FPE)
+    if ( !mcpl_internal_append_digit( &tmp, str[i] ) )
+      return 0;//too large
   }
   *res = sign * tmp;
   return 1;
@@ -5878,8 +5886,10 @@ int mcpl_tool(int argc,char** argv) {
             free(filenames);
             return mcpl_tool_usage(argv,"Bad option: expected number");
           }
-          *consume_digit *= 10;
-          *consume_digit += a[j] - '0';
+          if ( !mcpl_internal_append_digit( consume_digit, a[j] ) ) {
+            free(filenames);
+            return mcpl_tool_usage(argv,"Bad option: number too large");
+          }
           continue;
         }
         if (a[j]=='b') {
