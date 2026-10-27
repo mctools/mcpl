@@ -62,7 +62,7 @@ def _unit_error( unit ):
                  ' power, like cm^-2.MeV^-1 for 1/(cm^2*MeV))' )
     if '/' in unit:
         return ( 'division is not allowed in units (use negative powers, like'
-                 ' MeV.cm^-1 for MeV/cm)' )
+                 ' cm^-1.MeV for MeV/cm)' )
     if '*' in unit:
         return 'units are separated by dots, like cm.MeV for cm*MeV'
     last = -1

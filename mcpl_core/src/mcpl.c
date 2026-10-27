@@ -437,7 +437,7 @@ typedef struct {
   size_t lname;
   const char * typespec;//e.g. "float32[3]", not null-terminated
   size_t ltypespec;
-  const char * unit;//e.g. "MeV.cm^2", not null-terminated (NULL if none)
+  const char * unit;//e.g. "cm^2.MeV", not null-terminated (NULL if none)
   size_t lunit;
   unsigned typesize;
   uint32_t offset;
@@ -503,7 +503,7 @@ MCPL_LOCAL const char * mcpl_internal_udunit_problem( const char * u, size_t n )
              " power, like cm^-2.MeV^-1 for 1/(cm^2*MeV))" );
   if ( memchr( u, '/', n ) )
     return ( "division is not allowed in units (use negative powers, like"
-             " MeV.cm^-1 for MeV/cm)" );
+             " cm^-1.MeV for MeV/cm)" );
   if ( memchr( u, '*', n ) )
     return "units are separated by dots, like cm.MeV for cm*MeV";
   int last = -1;
