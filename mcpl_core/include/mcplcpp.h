@@ -90,7 +90,9 @@
  * out.set_srcname("my program");
  * auto temp = out.add_userdata_field<float>("temp");    // (if needed)
  * auto p = out.new_particle();
+ * p.set_pdgcode(2112);
  * p.set_ekin(1.5);
+ * p.set_direction(0,0,1);
  * p.set_userdata(temp,300.0f);
  * out.add(p);
  * //... add many more particles
