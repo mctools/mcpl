@@ -173,7 +173,9 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 add_userdata_field (duplicate name) -> mcpl::Error: Invalid userdata layout "p:float32,p:float64": duplicate field name
 add_userdata_field (invalid name) -> mcpl::Error: Invalid userdata layout "p:float32,Bad:float64": field names must start with a lowercase letter
 add_userdata_field (empty name) -> mcpl::Error: Invalid userdata layout "p:float32,:float64": empty field name
-add_userdata_field (name with colon) -> mcpl::Error: Invalid userdata layout "p:float32,a:b:float64": unknown type (must be one of int8, uint8, int16, uint16, int32, uint32, int64, uint64, float32, float64)
+add_userdata_field (name with colon) -> mcpl::Error: invalid userdata field name "a:b"
+add_userdata_field (name with a second field) -> mcpl::Error: invalid userdata field name "a:float64,b"
+add_userdata_field (unit with a second field) -> mcpl::Error: invalid unit "K,b:float64" of userdata field "a"
 add_userdata_field (too large) -> mcpl::Error: Invalid userdata layout "p:float32,big:uint8[70000]": too large userdata (at most 65535 bytes are allowed)
 layout unchanged by these errors: "p:float32"
 enable_userdata after add_userdata_field -> mcpl::Error: enable_userdata can not be used after add_userdata_field
