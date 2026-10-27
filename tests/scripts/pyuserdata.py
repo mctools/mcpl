@@ -320,6 +320,25 @@ def test_python_writing():
             o.add_particle(uz=1.0,ekin=1.0)
             o.enable_userdata('a:int8')
     expect_error('enable too late',late)
+    #64 bit integers given as plain Python integers are stored exactly (not via
+    #floating point numbers), up to the limits of the types:
+    for layout, values in ( ('c:uint64', [2**64-1, 2**63+1, 0]),
+                            ('c:int64', [-2**63, 2**63-1, -2**53-1]) ):
+        for single in ( False, True ):
+            with mcpl.MCPLOutFile(d/'ints.mcpl',userdata_layout=layout) as o:
+                if single:
+                    for v in values:
+                        o.add_particle(uz=1.0, ekin=1.0, userdata={'c':v})
+                else:
+                    o.add_particles(uz=1.0, ekin=1.0, userdata={'c':values})
+            got = [ int(x) for b in mcpl.MCPLFile(d/'ints.mcpl').particle_blocks
+                    for x in b.userdata['c'] ]
+            assert got == values, (layout, single, got)
+            print(f'{layout} values {values} stored exactly'
+                  f' (add_particle{"" if single else "s"})')
+    expect_error('above uint64',add(layout='c:uint64',userdata={'c':[2**64,1]}))
+    expect_error('above int64',add(layout='c:int64',userdata={'c':2**63}))
+    expect_error('below int64',add(layout='c:int64',userdata={'c':[-2**63-1]}))
 
 def test_example():
     print('=== pyexample_userdatamcpl')

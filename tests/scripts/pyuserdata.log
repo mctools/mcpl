@@ -297,6 +297,13 @@ transfer without userdata: MCPLError: add_particles asked to transfer particles 
 invalid layout: MCPLError: Invalid userdata layout "uint8[27]": fields must be given as name:type
 different layouts: MCPLError: enable_userdata called multiple times with different layouts
 enable too late: MCPLError: enable_userdata called too late.
+c:uint64 values [18446744073709551615, 9223372036854775809, 0] stored exactly (add_particles)
+c:uint64 values [18446744073709551615, 9223372036854775809, 0] stored exactly (add_particle)
+c:int64 values [-9223372036854775808, 9223372036854775807, -9007199254740993] stored exactly (add_particles)
+c:int64 values [-9223372036854775808, 9223372036854775807, -9007199254740993] stored exactly (add_particle)
+above uint64: MCPLError: userdata field c out of range for uint64
+above int64: MCPLError: userdata field c out of range for int64
+below int64: MCPLError: userdata field c out of range for int64
 === pyexample_userdatamcpl
 Userdata layout: temp:float32,nscat:uint32,volume:int32,origin:float32[3] (24 bytes per particle)
 501 of the first 1001 particles scattered at least twice
