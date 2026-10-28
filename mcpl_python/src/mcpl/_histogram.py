@@ -317,6 +317,38 @@ def _find_range( files, flt, vals, logx ):
         return ( lo/2, lo*2 ) if logx else ( lo - 1.0, hi + 1.0 )
     return lo, hi
 
+def _bins_arg( bins, ndims ):
+    """The bins argument of histogram() (ndims=1) or histogram2d() (ndims=2):
+    "auto", a positive number of bins, or for 2D histograms also two as
+    (nx,ny)"""
+    if isinstance(bins,str) and bins == 'auto':
+        return bins
+    def nbins( n ):
+        return ( isinstance(n,(int,np.integer)) and not isinstance(n,bool)
+                 and n > 0 )
+    if nbins(bins):
+        return int(bins)
+    if ( ndims == 2 and isinstance(bins,(tuple,list)) and len(bins) == 2
+         and all( nbins(n) for n in bins ) ):
+        return tuple( int(n) for n in bins )
+    two = ' (or two, as (nx,ny))' if ndims == 2 else ''
+    raise MCPLError(f'The histogram argument bins must be "auto" or a positive'
+                    f' number of bins{two}, not {bins!r}')
+
+def _range_arg( rng, name ):
+    """A range argument of the histograms (None, or (low,high) with finite
+    numbers and low < high)"""
+    if rng is None:
+        return None
+    try:
+        lo, hi = ( float(e) for e in rng )
+    except ( TypeError, ValueError ):
+        lo = hi = None
+    if lo is None or not ( np.isfinite(lo) and np.isfinite(hi) and lo < hi ):
+        raise MCPLError(f'The histogram argument {name} must be (low,high), with'
+                        f' finite numbers and low < high, not {rng!r}')
+    return ( lo, hi )
+
 def _make_edges( rng, bins, logx ):
     lo, hi = rng
     if logx:
@@ -428,6 +460,7 @@ def histogram( files, expression, pick = None, bins = 'auto', range = None,
         lethargy = lethargy or o['lethargy']
         split = o['split'] if o['split'] is not None else split
         logy = o['logy']
+    bins, range = _bins_arg(bins,1), _range_arg(range,'range')
     files = _as_files(files)
     flt = _as(ParticleFilter,pick)
     vals = _as(ParticleValue,expression)
@@ -527,6 +560,8 @@ def histogram2d( files, xexpression, yexpression, pick = None, bins = 'auto',
     number of particles if unweighted is True.
     """
     weighted = not unweighted
+    bins = _bins_arg(bins,2)
+    xrange, yrange = _range_arg(xrange,'xrange'), _range_arg(yrange,'yrange')
     files = _as_files(files)
     flt = _as(ParticleFilter,pick)
     xv, yv = _as(ParticleValue,xexpression), _as(ParticleValue,yexpression)
