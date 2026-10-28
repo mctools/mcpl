@@ -232,7 +232,7 @@ def _prepare_data_and_check_errors( rawdata ):
     #Then dependencies:
     known_keys = { 'min_version', 'max_version', 'import_check', 'cmd_check',
                    'pypi_pkgname', 'conda_pkgname', 'in_pystdlib_from',
-                   'min_python', 'unavailable_on', 'freebsd_origin' }
+                   'min_python', 'unavailable_on', 'freebsd_pkgname' }
     for depname,info in rawdata['dependencies'].items():
         check_name_ok(depname)
         if depname not in all_deps_used:
@@ -368,18 +368,19 @@ def minversion_reqs( db ):
         res.append( f'{info["pypi_pkgname"]}=={info["min_version"]}.*' )
     return res
 
-def freebsd_origins( db, group ):
-    """Origins of the FreeBSD packages needed for the given group of the
+def freebsd_pkgnames( db, group, pyflavour ):
+    """Names of the FreeBSD packages needed for the given group of the
     metapackage (like "all_and_devel"), skipping dependencies which are not
-    available there or not needed with the current Python version (run this
-    with the default Python of FreeBSD, whose packages the origins give)."""
+    available there or not needed with the Python version of pyflavour (like
+    "py312")."""
     deplist = _produce_expected_deplists_for_env_files(db)[group]
+    pyversion = ( int(pyflavour[2]), int(pyflavour[3:]) )
     res = []
     for dep in sorted(deplist):
         info = db['dependencies'][dep]
-        if not install_needed(info, system = 'FreeBSD'):
+        if not install_needed(info, pyversion = pyversion, system = 'FreeBSD'):
             continue
-        if not info.get('freebsd_origin'):
-            raise SystemExit(f'No freebsd_origin for "{dep}" in {dbfilerelpath}')
-        res.append( info['freebsd_origin'] )
+        if not info.get('freebsd_pkgname'):
+            raise SystemExit(f'No freebsd_pkgname for "{dep}" in {dbfilerelpath}')
+        res.append( info['freebsd_pkgname'].replace('{py}',pyflavour) )
     return res
