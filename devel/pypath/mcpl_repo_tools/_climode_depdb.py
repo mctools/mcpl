@@ -61,10 +61,13 @@ def main( parser ):
         help="""Mode (default: pprint). The "minversions" mode prints the
         minimum versions of the dependencies of all packages which can be
         installed in the current environment, in the requirements.txt format
-        (like "numpy==1.22.*"), and "freebsdpkgs" the origins of the FreeBSD
-        packages of the all_and_devel requirements (like math/py-numpy, for the
-        current Python version, which should be the default Python of
-        FreeBSD)."""
+        (like "numpy==1.22.*"), and "freebsdpkgs" the FreeBSD packages of the
+        all_and_devel requirements (for the Python flavour given with
+        --pyflavour)."""
+    )
+    parser.add_argument(
+        '--pyflavour', type = str, default = 'py312',
+        help="""Python flavour of FreeBSD packages (default: py312)."""
     )
 
     args = parser.parse_args()
@@ -85,8 +88,12 @@ def main( parser ):
         return
 
     if args.mode=='freebsdpkgs':
-        from .depdb import freebsd_origins
-        print(' '.join( freebsd_origins( load(), 'all_and_devel' ) ))
+        import re
+        if not re.fullmatch('py3[0-9]+',args.pyflavour):
+            parser.error(f'Invalid Python flavour: {args.pyflavour}')
+        from .depdb import freebsd_pkgnames
+        print(' '.join( freebsd_pkgnames( load(), 'all_and_devel',
+                                          args.pyflavour ) ))
         return
 
     if args.mode=='pprint':
