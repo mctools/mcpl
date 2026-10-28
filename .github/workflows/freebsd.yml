@@ -56,7 +56,7 @@ jobs:
             #The packages from devel/dependency_database.yml, by origin (like
             #math/py-numpy, which gives the package for the default Python of
             #FreeBSD, unlike names like py312-numpy):
-            sudo pkg install -y cmake python3 devel/py-pyyaml
+            sudo pkg install -y devel/cmake-core python3 devel/py-pyyaml
             FREEBSD_PKGS=$(python3 ./src/devel/bin/mcpldevtool depdb --mode freebsdpkgs) || exit 1
             echo "FREEBSD_PKGS=${FREEBSD_PKGS}"
             sudo pkg install -y ${FREEBSD_PKGS}
@@ -98,7 +98,7 @@ jobs:
             echo "CMAKE_BUILD_PARALLEL_LEVEL=${CMAKE_BUILD_PARALLEL_LEVEL}"
             echo "CTEST_PARALLEL_LEVEL=${CTEST_PARALLEL_LEVEL}"
             #(packages by origin, as in the ctest job):
-            sudo pkg install -y cmake python3 devel/py-pyyaml devel/py-pip devel/py-setuptools devel/py-wheel devel/py-scikit-build-core
+            sudo pkg install -y devel/cmake-core python3 devel/py-pyyaml devel/py-pip devel/py-setuptools devel/py-wheel devel/py-scikit-build-core
             FREEBSD_PKGS=$(python3 ./src/devel/bin/mcpldevtool depdb --mode freebsdpkgs) || exit 1
             echo "FREEBSD_PKGS=${FREEBSD_PKGS}"
             sudo pkg install -y ${FREEBSD_PKGS}
