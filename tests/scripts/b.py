@@ -54,7 +54,7 @@ def run_mcpltool(*args, check = False):
 
 
 files = {}
-for subdir in ('ref','reffmt2'):
+for subdir in ('ref','reffmt2','reffmt4'):
     for pat in ('*.mcpl','*.mcpl.gz'):
         for f in sorted(test_data_dir.joinpath(subdir).glob(pat)):
             key = f'{subdir}/{f.name}'
@@ -97,6 +97,15 @@ for file_key in sorted(files.keys()):
     if pathlib.Path('dump_pymcpltool.txt').read_bytes() != mcpltool_output:
         errors = True
         print("ERRORS DETECTED in mcpltool-like output")
+
+    #The small files of format 4 are also read in blocks of 3 particles (so
+    #across several blocks), which must give the same output:
+    if file_key.startswith('reffmt4/') and not expect_crash:
+        with RedirectStdout('dump_pymcpltool_bl3.txt'):
+            pymcpltool_dump_file(file_path,limit=0,blocklength=3)
+        if pathlib.Path('dump_pymcpltool_bl3.txt').read_bytes() != mcpltool_output:
+            errors = True
+            print("ERRORS DETECTED in mcpltool-like output with blocklength=3")
 
     #Now compare numbers based on high-res ascii output:
     if expect_crash:

@@ -95,3 +95,14 @@ Testing reffmt2/reffile_empty.mcpl
 Testing reffmt2/reffile_empty.mcpl.gz
 Testing reffmt2/reffile_skip123.mcpl
 Testing reffmt2/reffile_skip123.mcpl.gz
+Testing reffmt4/reffile_bad_udflag.mcpl
+ -- assuming this is a broken file which can't be read without errors
+Testing reffmt4/reffile_bad_udlayout.mcpl
+ -- assuming this is a broken file which can't be read without errors
+Testing reffmt4/reffile_bad_v3_with_ud.mcpl
+ -- assuming this is a broken file which can't be read without errors
+Testing reffmt4/reffile_noud_v4_dp.mcpl
+Testing reffmt4/reffile_noud_v4_sp.mcpl
+Testing reffmt4/reffile_ud_arrays.mcpl.gz
+Testing reffmt4/reffile_ud_empty.mcpl
+Testing reffmt4/reffile_ud_scalars.mcpl
