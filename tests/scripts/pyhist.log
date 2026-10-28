@@ -81,6 +81,21 @@ histogram('ekin/MeV',) {'pick': 'x > 1km'}: No values to histogram (no particles
 histogram('x/cm',) {'logx': True, 'range': (-1, 1)}: Logarithmic binning requires a positive range
 histogram('wavelength',) {}: Expression "wavelength" has units (length), so divide it by a unit, e.g. wavelength/Aa
 histogram('x/cm',) {'split': 'x'}: Expression "x" has units (length), so divide it by a unit, e.g. x/cm
+histogram('x/cm',) {'bins': 0}: The histogram argument bins must be "auto" or a positive number of bins, not 0
+histogram('x/cm',) {'bins': -3}: The histogram argument bins must be "auto" or a positive number of bins, not -3
+histogram('x/cm',) {'bins': 2.5}: The histogram argument bins must be "auto" or a positive number of bins, not 2.5
+histogram('x/cm',) {'bins': 'x'}: The histogram argument bins must be "auto" or a positive number of bins, not 'x'
+histogram('x/cm',) {'bins': True}: The histogram argument bins must be "auto" or a positive number of bins, not True
+histogram('x/cm',) {'range': (5, 1)}: The histogram argument range must be (low,high), with finite numbers and low < high, not (5, 1)
+histogram('x/cm',) {'range': (1, 1)}: The histogram argument range must be (low,high), with finite numbers and low < high, not (1, 1)
+histogram('x/cm',) {'range': (0, inf)}: The histogram argument range must be (low,high), with finite numbers and low < high, not (0, inf)
+histogram('x/cm',) {'range': 'a'}: The histogram argument range must be (low,high), with finite numbers and low < high, not 'a'
+histogram('x/cm',) {'range': (1, 2, 3)}: The histogram argument range must be (low,high), with finite numbers and low < high, not (1, 2, 3)
+histogram2d {'bins': (5, 0)}: The histogram argument bins must be "auto" or a positive number of bins (or two, as (nx,ny)), not (5, 0)
+histogram2d {'bins': [3]}: The histogram argument bins must be "auto" or a positive number of bins (or two, as (nx,ny)), not [3]
+histogram2d {'xrange': (1, 0)}: The histogram argument xrange must be (low,high), with finite numbers and low < high, not (1, 0)
+histogram2d {'yrange': 'a'}: The histogram argument yrange must be (low,high), with finite numbers and low < high, not 'a'
+bins as a numpy integer, and range as a list: 4 [-1.0, 1.0]
 Figure 1 (2x3): 'example.mcpl: 1006 particles, sum(weights) = 1006'
   Panel 'Kinetic energy (weighted)' xlabel='ekin [MeV]' ylabel=None logx logy xlim=[0.00139345,9724.96]
     StepHist label='n (2112)' color=0 bins=100 edges=[0.00139345,9724.96] sum=726 max=38 nonzero_bins=73

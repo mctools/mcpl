@@ -78,12 +78,26 @@ def test_histograms():
         print(f'empty histogram with split={split!r}:', h.to_text())
     for args, kwargs in ( (('ekin',),{}), (('ekin/MeV',),{'pick':'x > 1km'}),
                           (('x/cm',),{'logx':True,'range':(-1,1)}),
-                          (('wavelength',),{}), (('x/cm',),{'split':'x'}) ):
+                          (('wavelength',),{}), (('x/cm',),{'split':'x'}),
+                          #(the arguments bins and range):
+                          (('x/cm',),{'bins':0}), (('x/cm',),{'bins':-3}), (('x/cm',),{'bins':2.5}),
+                          (('x/cm',),{'bins':'x'}), (('x/cm',),{'bins':True}),
+                          (('x/cm',),{'range':(5,1)}), (('x/cm',),{'range':(1,1)}),
+                          (('x/cm',),{'range':(0,float('inf'))}), (('x/cm',),{'range':'a'}),
+                          (('x/cm',),{'range':(1,2,3)}) ):
         try:
             mcpl.histogram(example_file, *args, **kwargs)
             print(f'histogram{args} {kwargs}: no error')
         except mcpl.MCPLError as e:
             print(f'histogram{args} {kwargs}: {e}')
+    for kwargs in ( {'bins':(5,0)}, {'bins':[3]}, {'xrange':(1,0)}, {'yrange':'a'} ):
+        try:
+            mcpl.histogram2d(example_file, 'x/cm', 'y/cm', **kwargs)
+            print(f'histogram2d {kwargs}: no error')
+        except mcpl.MCPLError as e:
+            print(f'histogram2d {kwargs}: {e}')
+    h = mcpl.histogram(example_file, 'x/cm', bins=np.int64(4), range=[-1,1])
+    print('bins as a numpy integer, and range as a list:', len(h.edges)-1, h.edges[[0,-1]].tolist())
 
 def test_stats_figures():
     show(mcpl.stats_figures(mcpl.collect_stats(example_file)))
