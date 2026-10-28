@@ -1164,7 +1164,9 @@ def gzip_file(filename):
     bn = f.name
     _info(f'Compressing file {bn}')
     try:
-        with f.open('rb') as fi, gzip.open(f.parent / (bn + '.gz'),'wb') as fo:
+        #(compression level 1, as in C):
+        fout = f.parent / (bn + '.gz')
+        with f.open('rb') as fi, gzip.open(fout,'wb',compresslevel = 1) as fo:
             shutil.copyfileobj(fi, fo)
         f.unlink()
     except OSError:

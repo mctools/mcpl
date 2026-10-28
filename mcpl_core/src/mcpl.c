@@ -6341,8 +6341,9 @@ MCPL_LOCAL int mcpl_internal_do_gzip(const char *filename)
   memcpy(outfn,filename,nn);
   memcpy(outfn+nn,".gz",4);
 
-  //Open output file:
-  gzFile handle_out = mcpl_gzopen(outfn, "wb");
+  //Open output file (with compression level 1, which for MCPL files is much
+  //faster than higher levels, and makes files only slightly larger):
+  gzFile handle_out = mcpl_gzopen(outfn, "wb1");
   if (!handle_out) {
     //(nothing was created, so nothing to remove)
     free(outfn);

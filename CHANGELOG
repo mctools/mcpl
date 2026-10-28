@@ -1,4 +1,7 @@
 v2.2.9  (work in progress)
+      * Files are compressed with gzip level 1 (instead of 6 in C and 9 in
+        Python), which for MCPL files is several times faster and makes files
+        only slightly larger. Files compressed at any level can be read.
       * Expressions can use the fields of the userdata, as userdata.NAME (and
         userdata.NAME.at(INDEX) for arrays), with the units of their layout
         (and the new unit K), e.g. -p "userdata.temp > 300K". Integers work
