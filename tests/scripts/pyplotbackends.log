@@ -63,3 +63,10 @@ save(fig, 'auto'): MCPLError: The file name auto has no extension (the extension
    |          │███████████████████████
    |          │███████████████████████
 plot_stats with set_backend created ['stats.txt'], with warnings: ['DeprecationWarning: The set_backend parameter of plot_stats is deprecated, use matplotlib_backend instead']
+can show plots on freebsd15 with display '' and backend tkagg: False
+can show plots on freebsd15 with display ':0' and backend tkagg: True
+can show plots on linux with display '' and backend tkagg: False
+can show plots on darwin with display '' and backend macosx: True
+can show plots on freebsd15 with display '' and backend agg: False
+can show plots on freebsd15 with display '' and backend webagg: True
+can show plots on freebsd15 with display '' and backend module://matplotlib_inline.backend_inline: True

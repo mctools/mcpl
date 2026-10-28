@@ -148,9 +148,52 @@ def test_deprecated_set_backend():
     print(f'plot_stats with set_backend created {files}, with warnings:'
           f' {[ f"{w.category.__name__}: {w.message}" for w in wlist ]}')
 
+def test_can_show():
+    #Whether the matplotlib backend can show plots, also on systems where
+    #matplotlib picks a window backend without a display (like FreeBSD), with a
+    #stand-in for matplotlib (so this works without it):
+    import types
+
+    from mcpldev._plotbackend_mpl import Backend as MplBackend
+    saved = { k : sys.modules.get(k) for k in ( 'matplotlib', 'matplotlib.rcsetup',
+                                                'matplotlib.backends' ) }
+    saved_env = { k : os.environ.get(k) for k in ( 'DISPLAY', 'WAYLAND_DISPLAY' ) }
+    saved_platform = sys.platform
+    try:
+        for platform, display, name in ( ('freebsd15','','tkagg'), ('freebsd15',':0','tkagg'),
+                                         ('linux','','tkagg'), ('darwin','','macosx'),
+                                         ('freebsd15','','agg'), ('freebsd15','','webagg'),
+                                         ('freebsd15','','module://matplotlib_inline.backend_inline') ):
+            fake = types.ModuleType('matplotlib')
+            fake.get_backend = lambda n=name : n
+            fake.rcsetup = types.ModuleType('matplotlib.rcsetup')
+            fake.rcsetup.non_interactive_bk = [ 'agg', 'pdf', 'svg' ]
+            sys.modules['matplotlib'], sys.modules['matplotlib.rcsetup'] = fake, fake.rcsetup
+            sys.modules['matplotlib.backends'] = None#(as not available)
+            sys.platform = platform
+            for k in saved_env:
+                os.environ.pop(k,None)
+            if display:
+                os.environ['DISPLAY'] = display
+            print(f'can show plots on {platform} with display {display!r} and backend'
+                  f' {name}: {MplBackend.can_show()}')
+    finally:
+        sys.platform = saved_platform
+        for k, v in saved.items():
+            if v is None:
+                sys.modules.pop(k,None)
+            else:
+                sys.modules[k] = v
+        for k, v in saved_env.items():
+            if v is None:
+                os.environ.pop(k,None)
+            else:
+                os.environ[k] = v
+
 if __name__ == '__main__':
     test_registry()
     test_default()
     test_automatic()
     test_tool_backends()
     test_deprecated_set_backend()
+    test_can_show()
