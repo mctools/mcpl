@@ -81,6 +81,9 @@ ParticleFilter('sqrt(x**2+y**2) < 5cm'): selects 344
 ParticleFilter('sqrt(x^2+y^2) < 5cm'): selects 344
 ParticleFilter('hypot(x,y) < 0.05m'): selects 344
 ParticleFilter('hypot(x,y,z) < 25cm'): selects 669
+ParticleFilter('hypot(0,x) < 2cm'): selects 327
+ParticleFilter('max(0,x) > 1cm'): selects 358
+ParticleFilter('clamp(0,x,y) < 0cm'): selects 478
 ParticleFilter('x^2 + y^2 < 4cm^2'): selects 186
 ParticleFilter('x^2 + y^2 < 400 mm^2'): selects 186
 ParticleFilter('(pdgcode == neutron or pdgcode == gamma) and wavelength > 0.005Aa'): selects 158
@@ -150,6 +153,9 @@ ParticleFilter('atan2(x, ekin) > 0'): Incompatible units in atan2(..): length an
 ParticleFilter('hypot(x) > 1cm'): hypot(..) takes two or more arguments in expression "hypot(x) > 1cm"
 ParticleFilter('hypot(x,ekin) > 1cm'): Incompatible units in hypot(..): length and energy in expression "hypot(x,ekin) > 1cm"
 ParticleFilter('abs(y) > 1cm + 1'): Incompatible units in arithmetic: length and value without units (add units, e.g. 2cm) in expression "abs(y) > 1cm + 1"
+ParticleFilter('hypot(0,x,ekin) > 1cm'): Incompatible units in hypot(..): length and energy in expression "hypot(0,x,ekin) > 1cm"
+ParticleFilter('min(0,x,ekin) > 1cm'): Incompatible units in min(..): length and energy in expression "min(0,x,ekin) > 1cm"
+ParticleFilter('clamp(0,x,ekin) > 1cm'): Incompatible units in clamp(..): length and energy in expression "clamp(0,x,ekin) > 1cm"
 ParticleFilter('wl > 1Aa'): Unknown name "wl" in expression "wl > 1Aa" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, fileidx)
 ParticleFilter('dirx > 0'): Unknown name "dirx" in expression "dirx > 0" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, fileidx)
 ParticleFilter('t < 1ms'): Unknown name "t" in expression "t < 1ms" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, fileidx)
