@@ -1,11 +1,12 @@
 v2.2.9  (work in progress)
-      * Python fixes: MCPLFile closes the file of gzipped files, a plain 0
-        in hypot, min, max and clamp has the units of the other values,
-        histogram() checks its bins and range, text plots have no round-off
-        values in log scales, and matplotlib needs a display to show plots
-        also outside Linux. Statistics with picks no longer fail for blocks
-        without picked particles, swap(..) refuses wavelength, and split
-        values are only labelled as conditions if all are 0 or 1.
+      * Python fixes: MCPLFile closes the file of gzipped files, dump_file
+        closes the file it opened, a plain 0 in hypot, min, max and clamp has
+        the units of the other values, histogram() checks its bins and range,
+        text plots have no round-off values in log scales, and matplotlib
+        needs a display to show plots also outside Linux. Statistics with
+        picks no longer fail for blocks without picked particles, swap(..)
+        refuses wavelength, and split values are only labelled as conditions
+        if all are 0 or 1.
       * Files are compressed with gzip level 1 (instead of 6 in C and 9 in
         Python), which for MCPL files is several times faster and makes files
         only slightly larger. Files compressed at any level can be read.
@@ -67,6 +68,10 @@ v2.2.9  (work in progress)
         tenth particle, marking stat:sum entries as not available). They
         can only contain printable ASCII characters, and not the characters
         " ' { } [ ] # $ ` and backslash.
+      * MCPLFile has the new options skip and limit (like mcpltool -s and -l),
+        which choose a range of the particles in the file. All arguments of
+        MCPLFile after the file name must now be given by name (e.g.
+        blocklength=1000).
       * New option mcpltool --create-examples[=N], which creates three example
         files with N particles each (default 1000000) in the current
         directory: neutrons leaving a moderator surface, mixed particles
