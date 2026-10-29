@@ -26,7 +26,7 @@ __all__ = []
 
 from typing import ClassVar
 
-from ._figures import Bars, Hist2D, StepHist, Text
+from ._figures import Bars, Hist2D, Scatter3D, StepHist, Text
 from ._numpy import np
 from ._plotbackend import PlotBackend
 
@@ -51,6 +51,10 @@ def _describe_item( item ):
         return ( 'Bars ' + ', '.join(f'{lbl!r}={_fmt(v)}' for lbl,v in
                                      zip(item.labels,item.values))
                  + ( ' (horizontal)' if item.horizontal else '' ) )
+    if isinstance(item,Scatter3D):
+        return ( f'Scatter3D label={item.label!r} color={item.color} points={len(item.x)}'
+                 + ''.join( f' {n}=[{_fmt(min(v))},{_fmt(max(v))}]' for n, v in
+                            ( ('x',item.x), ('y',item.y), ('z',item.z) ) if len(v) ) )
     assert isinstance(item,Text)
     return f'Text {item.text!r}'
 
@@ -59,9 +63,14 @@ def describe( figures ):
     for i,f in enumerate(figures):
         lines.append(f'Figure {i+1} ({f.nrows}x{f.ncols}): {f.title!r}')
         for p in f.panels:
+            if p is None:
+                lines.append('  (empty cell)')
+                continue
             opts = [ o for o,v in (('logx',p.logx),('logy',p.logy)) if v ]
             if p.xlim:
                 opts.append(f'xlim=[{_fmt(p.xlim[0])},{_fmt(p.xlim[1])}]')
+            if p.aspect:
+                opts.append(f'aspect={_fmt(p.aspect)}')
             lines.append(f'  Panel {p.title!r} xlabel={p.xlabel!r} ylabel={p.ylabel!r} '
                          + ' '.join(opts))
             for item in p.items:

@@ -14,7 +14,7 @@ Figure 1 (2x2): 'Example'
     Text 'No data'
 save() created ['figs.txt'], with 11 lines
 Figure 1 (2x3): 'Overview of example.mcpl'
-  Panel None xlabel='ekin/MeV' ylabel='weights per bin' xlim=[0.00139345,9724.96]
+  Panel None xlabel='ekin/MeV' ylabel='weights per bin' logy xlim=[0.00139345,9724.96]
     StepHist label='n (2112)' color=0 bins=30 edges=[0.00139345,9724.96] sum=726 max=721 nonzero_bins=5
     StepHist label='gamma (22)' color=1 bins=30 edges=[0.00139345,9724.96] sum=239 max=239 nonzero_bins=1
     StepHist label='e- (11)' color=2 bins=30 edges=[0.00139345,9724.96] sum=15 max=15 nonzero_bins=1
@@ -23,7 +23,7 @@ Figure 1 (2x3): 'Overview of example.mcpl'
     StepHist label='pi+ (211)' color=5 bins=30 edges=[0.00139345,9724.96] sum=5 max=2 nonzero_bins=4
     StepHist label='pi- (-211)' color=6 bins=30 edges=[0.00139345,9724.96] sum=2 max=1 nonzero_bins=2
     StepHist label='nu_mu (14)' color=7 bins=30 edges=[0.00139345,9724.96] sum=1 max=1 nonzero_bins=1
-  Panel None xlabel='angle(dir,(0,0,1))/deg' ylabel='weights per bin' xlim=[0.196445,137.26]
+  Panel None xlabel='angle(dir,(0,0,1))/deg' ylabel='weights per bin' logy xlim=[0.196445,137.26]
     StepHist label='n (2112)' color=0 bins=30 edges=[0.196445,137.26] sum=726 max=67 nonzero_bins=19
     StepHist label='gamma (22)' color=1 bins=30 edges=[0.196445,137.26] sum=239 max=24 nonzero_bins=19
     StepHist label='e- (11)' color=2 bins=30 edges=[0.196445,137.26] sum=15 max=3 nonzero_bins=12
@@ -34,14 +34,14 @@ Figure 1 (2x3): 'Overview of example.mcpl'
     StepHist label='nu_mu (14)' color=7 bins=30 edges=[0.196445,137.26] sum=1 max=1 nonzero_bins=1
   Panel None xlabel='x/cm' ylabel='y/cm' 
     Hist2D shape=(10, 10) x=[-60.0882,65.8944] y=[-61.3354,57.6935] sum=1006 logz=True
-  Panel None xlabel='time/ms' ylabel='weights per bin' xlim=[7.01658e-07,0.00166018]
+  Panel None xlabel='time/ms' ylabel='weights per bin' logy xlim=[7.01658e-07,0.00166018]
     StepHist label=None color=0 bins=30 edges=[7.01658e-07,0.00166018] sum=1006 max=772 nonzero_bins=15
   Panel None xlabel='x/cm' ylabel='weights per bin' xlim=[-60.0882,65.8944]
     StepHist label=None color=0 bins=30 edges=[-60.0882,65.8944] sum=1006 max=313 nonzero_bins=28
   Panel 'Particle types (weighted)' xlabel=None ylabel=None logx
     Bars '2112'=726, '22'=239, '11'=15, '2212'=10, '-11'=8, '211'=5, '-211'=2, '14'=1 (horizontal)
 Figure 2 (1x1): None
-  Panel None xlabel='ekin/MeV' ylabel='weights per bin' xlim=[0.00139345,9724.96]
+  Panel None xlabel='ekin/MeV' ylabel='weights per bin' logy xlim=[0.00139345,9724.96]
     StepHist label='n (2112)' color=0 bins=30 edges=[0.00139345,9724.96] sum=726 max=721 nonzero_bins=5
     StepHist label='gamma (22)' color=1 bins=30 edges=[0.00139345,9724.96] sum=239 max=239 nonzero_bins=1
     StepHist label='e- (11)' color=2 bins=30 edges=[0.00139345,9724.96] sum=15 max=15 nonzero_bins=1
@@ -51,7 +51,7 @@ Figure 2 (1x1): None
     StepHist label='pi- (-211)' color=6 bins=30 edges=[0.00139345,9724.96] sum=2 max=1 nonzero_bins=2
     StepHist label='nu_mu (14)' color=7 bins=30 edges=[0.00139345,9724.96] sum=1 max=1 nonzero_bins=1
 Figure 3 (1x1): None
-  Panel None xlabel='angle(dir,(0,0,1))/deg' ylabel='weights per bin' xlim=[0.196445,137.26]
+  Panel None xlabel='angle(dir,(0,0,1))/deg' ylabel='weights per bin' logy xlim=[0.196445,137.26]
     StepHist label='n (2112)' color=0 bins=30 edges=[0.196445,137.26] sum=726 max=67 nonzero_bins=19
     StepHist label='gamma (22)' color=1 bins=30 edges=[0.196445,137.26] sum=239 max=24 nonzero_bins=19
     StepHist label='e- (11)' color=2 bins=30 edges=[0.196445,137.26] sum=15 max=3 nonzero_bins=12
@@ -64,7 +64,7 @@ Figure 4 (1x1): None
   Panel None xlabel='x/cm' ylabel='y/cm' 
     Hist2D shape=(10, 10) x=[-60.0882,65.8944] y=[-61.3354,57.6935] sum=1006 logz=True
 Figure 5 (1x1): None
-  Panel None xlabel='time/ms' ylabel='weights per bin' xlim=[7.01658e-07,0.00166018]
+  Panel None xlabel='time/ms' ylabel='weights per bin' logy xlim=[7.01658e-07,0.00166018]
     StepHist label=None color=0 bins=30 edges=[7.01658e-07,0.00166018] sum=1006 max=772 nonzero_bins=15
 Figure 6 (1x1): None
   Panel None xlabel='x/cm' ylabel='weights per bin' xlim=[-60.0882,65.8944]
@@ -72,3 +72,114 @@ Figure 6 (1x1): None
 Figure 7 (1x1): None
   Panel 'Particle types (weighted)' xlabel=None ylabel=None logx
     Bars '2112'=726, '22'=239, '11'=15, '2212'=10, '-11'=8, '211'=5, '-211'=2, '14'=1 (horizontal)
+Figure 1 (2x3): 'All items'
+  Panel '3D' xlabel='x' ylabel='y' 
+    Scatter3D label='helix' color=None points=50 x=[-0.999115,1] y=[-0.998241,0.999779] z=[0,6]
+  (empty cell)
+  Panel 'Same scales' xlabel=None ylabel=None aspect=1
+    Hist2D shape=(4, 4) x=[0,4] y=[0,4] sum=120 logz=True
+  Panel 'Coloured bars' xlabel=None ylabel=None 
+    Bars 'a'=1, 'b'=3, 'c'=2
+  Panel 'Curves' xlabel='x' ylabel=None 
+    StepHist label='c0' color=None bins=10 edges=[0,10] sum=10 max=1 nonzero_bins=10
+    StepHist label='γ' color=None bins=10 edges=[0,10] sum=20 max=2 nonzero_bins=10
+    StepHist label='c2' color=None bins=10 edges=[0,10] sum=30 max=3 nonzero_bins=10
+    StepHist label='c3' color=None bins=10 edges=[0,10] sum=40 max=4 nonzero_bins=10
+    StepHist label='c4' color=None bins=10 edges=[0,10] sum=50 max=5 nonzero_bins=10
+    StepHist label='c5' color=None bins=10 edges=[0,10] sum=60 max=6 nonzero_bins=10
+    StepHist label='c6' color=None bins=10 edges=[0,10] sum=70 max=7 nonzero_bins=10
+    StepHist label='c7' color=None bins=10 edges=[0,10] sum=80 max=8 nonzero_bins=10
+    StepHist label='c8' color=None bins=10 edges=[0,10] sum=90 max=9 nonzero_bins=10
+    StepHist label='c9' color=None bins=10 edges=[0,10] sum=100 max=10 nonzero_bins=10
+    StepHist label='c10' color=None bins=10 edges=[0,10] sum=110 max=11 nonzero_bins=10
+    StepHist label='c11' color=None bins=10 edges=[0,10] sum=120 max=12 nonzero_bins=10
+    StepHist label='c12' color=None bins=10 edges=[0,10] sum=130 max=13 nonzero_bins=10
+    StepHist label='c13' color=None bins=10 edges=[0,10] sum=140 max=14 nonzero_bins=10
+    StepHist label='c14' color=None bins=10 edges=[0,10] sum=150 max=15 nonzero_bins=10
+    StepHist label='c15' color=None bins=10 edges=[0,10] sum=160 max=16 nonzero_bins=10
+    StepHist label='c16' color=None bins=10 edges=[0,10] sum=170 max=17 nonzero_bins=10
+    StepHist label='c17' color=None bins=10 edges=[0,10] sum=180 max=18 nonzero_bins=10
+    StepHist label='c18' color=None bins=10 edges=[0,10] sum=190 max=19 nonzero_bins=10
+    StepHist label='c19' color=None bins=10 edges=[0,10] sum=200 max=20 nonzero_bins=10
+    StepHist label='c20' color=None bins=10 edges=[0,10] sum=210 max=21 nonzero_bins=10
+    StepHist label='c21' color=None bins=10 edges=[0,10] sum=220 max=22 nonzero_bins=10
+    StepHist label='c22' color=None bins=10 edges=[0,10] sum=230 max=23 nonzero_bins=10
+    StepHist label='c23' color=None bins=10 edges=[0,10] sum=240 max=24 nonzero_bins=10
+    StepHist label='c24' color=None bins=10 edges=[0,10] sum=250 max=25 nonzero_bins=10
+line styles of curves 0, 9, 10, 20 and 30: [(0, 'solid'), (9, 'solid'), (0, 'dashed'), (0, 'dotted'), (0, 'solid')]
+==> unicode:
+                         All items
+
+                             3D
+          (3D plots can only be shown in windows)
+
+                        Same scales
+       4 ┤▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓█████████████████████████
+         │▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓█████████████████████████
+         │▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓█████████████████████████
+         │░░░░░░░░░░░░▓▓▓▓▓▓▓▓▓▓▓▓▓████████████████████████
+         │············▒▓▓▓▓▓▓▓▓▓▓▓▓████████████████████████
+       0 ┤            ▒▓▓▓▓▓▓▓▓▓▓▓▓████████████████████████
+         └┬───────────────────────────────────────────────┬
+         0                        2                       4
+per cell: · = 0.5 ... ▒ = 2.739 ... █ = 15 (log scale)
+
+                       Coloured bars
+a │██████████████████ 1
+b │██████████████████████████████████████████████████████ 3
+c │████████████████████████████████████ 2
+
+                           Curves
+      25 ┤⡇□●⡇▲⡇■△⡇□●⡇▲⡇■△⡇□●⡇▲⡇■△⡇□●⡇▲⡇■△⡇□●⡇▲⡇■△⡇□●⡇▲⡇■△⡇
+         │◆⣿●◇⣿○  ◆⣿●◇⣿○  ◆⣿●◇⣿○  ◆⣿●◇⣿○  ◆⣿●◇⣿○  ◆⣿●◇⣿○  ◆
+         │⣿□  ▲⣿■△⣿□  ▲⣿■△⣿□  ▲⣿■△⣿□  ▲⣿■△⣿□  ▲⣿■△⣿□  ▲⣿■△⣿
+         │◆⣿●◇⣿○⣤⣤◆⣿●◇⣿○⣤⣤◆⣿●◇⣿○⣤⣤◆⣿●◇⣿○⣤⣤◆⣿●◇⣿○⣤⣤◆⣿●◇⣿○⣤⣤◆
+         │⣿□⣿⣿▲⣿■△⣿□⣿⣿▲⣿■△⣿□⣿⣿▲⣿■△⣿□⣿⣿▲⣿■△⣿□⣿⣿▲⣿■△⣿□⣿⣿▲⣿■△⣿
+       0 ┤◆⣿●◇⣿○⣿⣿◆⣿●◇⣿○⣿⣿◆⣿●◇⣿○⣿⣿◆⣿●◇⣿○⣿⣿◆⣿●◇⣿○⣿⣿◆⣿●◇⣿○⣿⣿◆
+         └┬───────────────────────────────────────────────┬
+         0                        5                      10
+                                  x
+⠒●⠒ c0    ⠒○⠒ γ     ⠒◆⠒ c2    ⠒◇⠒ c3    ⠒■⠒ c4    ⠒□⠒ c5
+⠒▲⠒ c6    ⠒△⠒ c7    ⠒●⠒ c8    ⠒○⠒ c9    ⠒◆⠒ c10   ⠒◇⠒ c11
+⠒■⠒ c12   ⠒□⠒ c13   ⠒▲⠒ c14   ⠒△⠒ c15   ⠒●⠒ c16   ⠒○⠒ c17
+⠒◆⠒ c18   ⠒◇⠒ c19   ⠒■⠒ c20   ⠒□⠒ c21   ⠒▲⠒ c22   ⠒△⠒ c23
+⠒●⠒ c24
+
+==> ascii:
+                         All items
+
+                             3D
+          (3D plots can only be shown in windows)
+
+                        Same scales
+       4 +++++++++++++############%@@@@@@@@@@@@@@@@@@@@@@@@
+         |++++++++++++############%@@@@@@@@@@@@@@@@@@@@@@@@
+         |============############%%%%%%%%%%%%@@@@@@@@@@@@@
+         |::::::::::::*############%%%%%%%%%%%%@@@@@@@@@@@@
+         |............************#%%%%%%%%%%%%@@@@@@@@@@@@
+       0 +            +***********#%%%%%%%%%%%%@@@@@@@@@@@@
+         ++-----------------------------------------------+
+         0                        2                       4
+per cell: . = 0.5 ... + = 2.739 ... @ = 15 (log scale)
+
+                       Coloured bars
+a |################## 1
+b |###################################################### 3
+c |#################################### 2
+
+                           Curves
+      25 +@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+         |*************************************************
+         |@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+         |*************************************************
+         |@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+       0 +*************************************************
+         ++-----------------------------------------------+
+         0                        5                      10
+                                  x
+* c0      o gamma   + c2      x c3      @ c4      % c5
+& c6      = c7      * c8      o c9      + c10     x c11
+@ c12     % c13     & c14     = c15     * c16     o c17
++ c18     x c19     @ c20     % c21     & c22     = c23
+* c24
+

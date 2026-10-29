@@ -39,7 +39,7 @@ import mcpldev as mcpl
 from mcpldev import _termcolor
 from mcpldev._plotbackend_text import AsciiBackend, UnicodeBackend
 from mcpldev._termcolor import _code256, _ncolors, _paint
-from mcpldev.plotting import Hist2D
+from mcpldev.plotting import Hist2D, StepHist
 from MCPLTestUtils.dirs import test_data_dir
 from MCPLTestUtils.plots import example_figures
 
@@ -118,10 +118,20 @@ def test_stripped():
                 print(f'{opt} {name}: colours used: {col != plain},'
                       f' same text without them: {same}')
                 has2d = any( isinstance(i,Hist2D) for p in fig.panels for i in p.items )
-                if has2d and opt == 'unicode':
+                curves = any( sum( isinstance(i,StepHist) for i in p.items ) > 1
+                              for p in fig.panels )
+                if ( has2d or curves ) and opt == 'unicode':
                     #(2D maps are drawn with half blocks, two cells per
-                    #character, but everything else is the same):
-                    print('   half blocks:', '\u2580' in col and '\u2580' not in plain)
+                    #character, and several curves are lines of braille dots,
+                    #without colour with their markers along them, but
+                    #everything else is the same):
+                    if has2d:
+                        print('   half blocks:', '\u2580' in col and '\u2580' not in plain)
+                    if curves:
+                        braille = [ any( 0x2800 < ord(ch) <= 0x28ff for ch in t )
+                                    for t in ( col, plain ) ]
+                        print('   braille lines:', all(braille), '| markers only without colour:',
+                              '\u25cb' in plain and '\u25cb' not in ansi.sub('',col))
                     assert not same
                 else:
                     assert same

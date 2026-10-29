@@ -29,7 +29,7 @@ import pathlib
 
 import mcpldev as mcpl
 from MCPLTestUtils.dirs import test_data_dir
-from MCPLTestUtils.plots import example_figures
+from MCPLTestUtils.plots import example_figures, items_figure
 
 example_file = test_data_dir.joinpath('example.mcpl')
 
@@ -68,5 +68,14 @@ def test_png():
         pathlib.Path(f).read_bytes()[:4] == b'\x89PNG' for f in created )
     print('mcpltool -H with -o tool.png created tool.png')
 
+def test_items():
+    #All kinds of items (a 3D plot, an empty cell, same scales, coloured
+    #bars and dashed curves), with the logo:
+    files = mcpl.plotting.save(items_figure(mcpl), 'items.png', backend='matplotlib',
+                               matplotlib_backend='agg')
+    assert pathlib.Path(files[0]).read_bytes()[:4] == b'\x89PNG'
+    print(f'Created {files} with all kinds of items')
+
 test_plots()
 test_png()
+test_items()

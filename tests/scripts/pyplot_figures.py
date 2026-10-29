@@ -31,7 +31,7 @@ import mcpldev as mcpl
 import numpy as np
 from mcpldev.plotting import Bars, Figure, Hist2D, Panel, StepHist, Text
 from MCPLTestUtils.dirs import test_data_dir
-from MCPLTestUtils.plots import example_figures
+from MCPLTestUtils.plots import example_figures, items_figure
 
 example_file = test_data_dir.joinpath('example.mcpl')
 
@@ -67,7 +67,23 @@ def test_figures():
 def test_example_figures():
     mcpl.plotting.show(example_figures(mcpl,example_file), backend='test')
 
+def test_items():
+    #All kinds of items, also as text (where 3D plots give a message, and the
+    #symbol of the gamma is written as its name with the ascii backend):
+    from mcpldev._figures import _line_style
+    fig = items_figure(mcpl)
+    mcpl.plotting.show(fig, backend='test')
+    print('line styles of curves 0, 9, 10, 20 and 30:',
+          [ _line_style(k) for k in (0, 9, 10, 20, 30) ])
+    for backend in ('unicode','ascii'):
+        files = mcpl.plotting.save(fig, f'items_{backend}.txt', backend=backend,
+                                   **{ f'{backend}_width' : 60, f'{backend}_height' : 6 })
+        text = pathlib.Path(files[0]).read_text(encoding='utf-8')
+        print(f'==> {backend}:')
+        print(text)
+
 if __name__ == '__main__':
     test_backends()
     test_figures()
     test_example_figures()
+    test_items()

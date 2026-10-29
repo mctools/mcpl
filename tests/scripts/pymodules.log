@@ -18,14 +18,15 @@ Modules of the mcpl package and their imports from the package (in parentheses: 
   _fileops             <- _common, _messages, _reader, _statsum, _writer
   _helptext            <- -
   _histogram           <- _common, _expressions, _numpy, _physics, _reader, (_exprcore), (plotting)
+  _logo                <- -
   _messages            <- -
   _numpy               <- -
   _particles           <- -
   _physics             <- _common, _numpy, _particles, constants
   _plotbackend         <- _common
-  _plotbackend_mpl     <- _common, _figures, _numpy, _plotbackend
+  _plotbackend_mpl     <- _common, _figures, _numpy, _plotbackend, (_logo)
   _plotbackend_test    <- _figures, _numpy, _plotbackend
-  _plotbackend_text    <- _figures, _numpy, _plotbackend, _termcolor
+  _plotbackend_text    <- _figures, _numpy, _particles, _physics, _plotbackend, _termcolor
   _plotregistry        <- _common, _plotbackend, (_messages), [_plotbackend_mpl], [_plotbackend_test], [_plotbackend_text]
   _reader              <- _blocks, _common, _messages, _numpy, (_expressions), (_scipp), (_statsum), (_userdata)
   _records             <- _blocks, _common, _numpy, (_particles), (_physics)
