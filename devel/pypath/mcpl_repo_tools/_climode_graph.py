@@ -62,13 +62,48 @@ def code_lines( name ):
     return sum( 1 for line in f.read_text().splitlines()
                 if line.strip() and not line.lstrip().startswith('#') )
 
-def graph_to_dot( graph, sizes ):
-    s = 'digraph G {\n    node [ fontsize = "12" ];\n'
+def imported( graph, names, kinds ):
+    """The modules imported by the named ones, also indirectly, following only
+    imports of the given kinds (including the named modules)"""
+    seen, todo = set(), list(names)
+    while todo:
+        n = todo.pop()
+        if n not in seen:
+            seen.add(n)
+            todo += [ d for d, k in graph[n].items() if k in kinds ]
+    return seen
+
+def used_modules( graph, names ):
+    """The modules loaded when the named modules are imported (with the
+    package, i.e. __init__, which Python always imports first), and those which
+    they import on demand (inside functions or by name), when that code runs"""
+    for n in names:
+        if n not in graph:
+            raise SystemExit(f'no module "{n}" (modules: {", ".join(sorted(graph))})')
+    loaded = imported( graph, [ '__init__', *names ], ( 0, ) )
+    on_demand = { d for n in names for d, k in graph[n].items() if k != 0 }
+    return loaded, imported( graph, on_demand, ( 0, 1, 2 ) ) - loaded
+
+def graph_to_dot( graph, sizes, area, loaded, on_demand ):
+    s = 'digraph G {\n    node [ fontsize = "12" shape=box ];\n'
+    largest = max(sizes.values()) if sizes else 1
     for n in sorted(graph):
         public = not n.startswith('_') or n in ( '__init__', '__main__' )
         color = 'red' if public else 'black'
+        if loaded is not None and n not in loaded | on_demand:
+            color = 'pink' if public else 'grey'
         lbl = n if sizes is None else f'{n}\\n{sizes[n]}'
-        s += f'    "{n}" [ label="{lbl}" color="{color}" fontcolor="{color}" shape=box ];\n'
+        opts = f'label="{lbl}" color="{color}" fontcolor="{color}"'
+        if loaded is not None and n in loaded | on_demand:
+            fill = 'lightskyblue' if n in loaded else '#d4ebfc'
+            opts += f' style=filled fillcolor="{fill}"'
+        if area:
+            #(the area of the box proportional to the lines of code, and the
+            #font size growing with it):
+            r = ( sizes[n] / largest ) ** 0.5
+            w = 3.0 * r
+            opts += f' width={max(w,0.6):.2f} height={max(0.5*w,0.4):.2f} fontsize={10+18*r:.1f}'
+        s += f'    "{n}" [ {opts} ];\n'
     for n in sorted(graph):
         for d, kind in sorted(graph[n].items()):
             s += f'    "{d}" -> "{n}" [ color="grey" style={edge_styles[kind]} ];\n'
@@ -108,20 +143,28 @@ def main( parser ):
     outside of functions, dashed if only inside functions, and dotted if only
     by name (when used). Public modules are red. Imports implied by others are
     not shown, unless --all is given.""" )
-    parser.add_argument( '-a', '--all', action = 'store_true',
+    parser.add_argument( '--all', action = 'store_true',
                          help = 'Show all imports, also those implied by others.' )
     parser.add_argument( '-s', '--sloc', action = 'store_true',
                          help = 'Show the number of lines of code of each module (without blank and comment lines).' )
+    parser.add_argument( '-a', '--area', action = 'store_true',
+                         help = 'Make the area of each module proportional to its lines of code (implies --sloc).' )
+    parser.add_argument( '-u', '--uses', metavar = 'MODULES',
+                         help = ('Highlight the modules loaded when importing these modules (separated by commas,'
+                                 ' e.g. _reader, _writer or _scipp), in blue, and those they import on demand,'
+                                 ' when that code runs, in light blue.') )
     parser.add_argument( '-o', '--output', metavar = 'FILE',
                          help = 'Write the graph to this file (e.g. graph.png, graph.svg or graph.pdf) instead of showing it.' )
     args = parser.parse_args()
 
     import pathlib
-    graph = load_graph()
-    if not args.all:
-        graph = remove_implied( graph )
-    sizes = { n : code_lines(n) for n in graph } if args.sloc else None
-    dot_str = graph_to_dot( graph, sizes )
+    full_graph = load_graph()
+    loaded, on_demand = None, set()
+    if args.uses:
+        loaded, on_demand = used_modules( full_graph, [ n for n in args.uses.split(',') if n ] )
+    graph = full_graph if args.all else remove_implied( full_graph )
+    sizes = { n : code_lines(n) for n in graph } if args.sloc or args.area else None
+    dot_str = graph_to_dot( graph, sizes, args.area, loaded, on_demand )
     if args.output:
         out = pathlib.Path(args.output)
         fmt = out.suffix[1:] or 'png'
