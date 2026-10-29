@@ -29,52 +29,24 @@
 import contextlib
 import gzip
 import io
-import json
 import math
 import os
 import pathlib
 import shutil
 
 import mcpldev as mcpl
+from MCPLTestUtils.childproc import ChildProcess, call_lib_fct
 from MCPLTestUtils.dirs import test_data_dir
 from MCPLTestUtils.loadlib import getlib
 from MCPLTestUtils.mcplpatch import set_values
 
-
-def _c_child(resfile, fctname, args):
-    lib = getlib('pywriter')
-    prints = []
-    def write_result(**kw):
-        pathlib.Path(resfile).write_text(json.dumps(dict(prints=''.join(prints),**kw)))
-    def on_print(msg):
-        prints.append(msg)
-    def on_error(msg):
-        write_result(error=msg)
-        os._exit(0)
-    lib.mcpltestdetail_set_print_handler(on_print)
-    lib.mcpltestdetail_set_error_handler(on_error)
-    rv = getattr(lib,fctname)(*args)
-    write_result(error=None, rv=rv)
+_c_process = None
 
 def run_c(fctname, *args, cwd):
     """Run function from the C test library in a child process (since errors
     end the process). Returns (error message or None, printouts, return
     value)."""
-    import multiprocessing as mp
-    resfile = pathlib.Path(cwd).absolute().parent / 'c_result.json'
-    if resfile.exists():
-        resfile.unlink()
-    oldcwd = pathlib.Path.cwd()
-    os.chdir(cwd)
-    try:
-        p = mp.get_context(None).Process( target = _c_child,
-                                          args = (str(resfile), fctname, args) )
-        p.start()
-        p.join()
-    finally:
-        os.chdir(oldcwd)
-    r = json.loads(resfile.read_text())
-    return r['error'], r['prints'], r.get('rv')
+    return _c_process.call(call_lib_fct, 'pywriter', fctname, args, cwd=cwd)
 
 def run_py(fct, *args, cwd):
     oldcwd = pathlib.Path.cwd()
@@ -620,9 +592,12 @@ def test_random_scripts(n):
     return ok
 
 def main():
+    global _c_process
     make_inputs()
-    results = [ test_writer_scripts(), test_file_functions(), test_truncated_files(),
-                test_header_limits(), test_header_start(), test_name_helper(), test_mpi(), test_random_scripts(150) ]
+    with ChildProcess() as _c_process:
+        results = [ test_writer_scripts(), test_file_functions(), test_truncated_files(),
+                    test_header_limits(), test_header_start(), test_name_helper(), test_mpi(),
+                    test_random_scripts(150) ]
     print(f'Compared {ncases} operations')
     assert all(results), 'C and Python APIs give different results'
 
