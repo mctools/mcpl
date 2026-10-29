@@ -69,13 +69,16 @@ class MCPLFile:
     blocks of particles as requested."""
 
     def __del__(self):
-        self._fileclose()
+        #(also for objects whose __init__ failed before the file was opened):
+        getattr(self,'_fileclose',lambda : None)()
         self._fileclose = lambda : None
 
-    def __init__(self,filename,blocklength = 10000, raw_strings = False,
-                 pick = None, edit = None, _recover = True):
+    def __init__(self,filename,*,blocklength = 10000, raw_strings = False,
+                 pick = None, edit = None, skip = 0, limit = None,
+                 _recover = True):
         """Open indicated mcpl file, which can either be uncompressed (.mcpl) or
-        compressed (.mcpl.gz). The blocklength parameter can be used to control
+        compressed (.mcpl.gz). The other arguments must be given by name. The
+        blocklength parameter can be used to control
         the number of particles read by each call to read_block(). The parameter
         raw_strings will prevent UTF-8 decoding of string data loaded from the
         file.
@@ -90,11 +93,19 @@ class MCPLFile:
            for block in f.particle_blocks:
                ...
 
+        With skip and limit, only the particles in a range of the file are
+        returned (and then picked and edited): without the first skip
+        particles of the file, and at most limit particles (all if limit is
+        None), like the -s and -l options of mcpltool:
+
+           f = MCPLFile("in.mcpl", skip=1000, limit=500, pick="ekin > 1MeV")
+
         The picked particles are returned in blocks of about blocklength
         particles (small picks from several blocks in the file are
         merged). The nparticles attribute is still the number of particles in
         the file, and the fileidx of the particles their position in the
-        file. Picked particles can not be skipped with skip_forward(). Edited
+        file. Picked particles (and those of a range) can not be skipped with
+        skip_forward(). Edited
         particles can be passed to MCPLOutFile.add_particles like any other
         particles, in which case their unmodified fields are transferred
         exactly.
@@ -109,6 +120,12 @@ class MCPLFile:
             from ._expressions import _as_edit, _as_filter
             self._flt = None if pick is None else _as_filter(pick)
             self._edt = None if edit is None else _as_edit(edit)
+        for name, value in ( ('skip',skip), ('limit',limit) ):
+            if value is not None and ( not isinstance(value,(int,float,np.integer))
+                                       or isinstance(value,bool) or int(value) != value
+                                       or value < 0 ):
+                raise MCPLError(f'{name} must be a number of particles (not {value!r})')
+        self._skip, self._limit = int(skip or 0), None if limit is None else int(limit)
         self._fblocks, self._fparts = None, None
         #NaN or infinite values are not allowed, but files might have them, so
         #we warn when reading the first such particle (unless the check is
@@ -342,7 +359,7 @@ class MCPLFile:
         particles, and the fields on it are thus (numpy) arrays of numbers
         rather than single numbers.  See also the particle_blocks property for
         an iterator-based access to blocks."""
-        if self._flt is None and self._edt is None:
+        if not self._filtered:
             b = self._read_raw_block()
             if self._nonfinite_mask is not None:
                 self._warn_nonfinite()
@@ -351,22 +368,33 @@ class MCPLFile:
             self._fblocks = self._picked_blocks()
         return next(self._fblocks,None)
 
+    @property
+    def _filtered(self):
+        """Whether the particles are picked, edited or in a range"""
+        return not ( self._flt is None and self._edt is None
+                     and not self._skip and self._limit is None )
+
     def _picked_blocks(self):
-        """Blocks of picked and edited particles, merging small picks"""
+        """Blocks of picked and edited particles (in the range of skip and
+        limit), merging small picks"""
+        start, end = _particle_range(self.nparticles,self._skip,self._limit)
+        #(the blocks before the range are not read):
+        first = start // self._blocklength
+        if first and self._iblock == 0:
+            self._iblock, self._ipos = first, first * self._blocklength
+            self._fileseek(self.headersize+first*self._blocklength*self.particlesize)
         pending, npending = [], 0
         def finish():
             b = _concat_blocks(pending)
             if self._edt is not None:
                 b = _EditedParticleBlock(b,self._edt(b))
             return b
-        while True:
-            b = self._read_raw_block()
-            if b is None:
-                break
+        raw = iter(self._read_raw_block,None) if start < end else ()
+        for b in _blocks_in_range(raw,start,end):
             if self._nonfinite_mask is not None:
                 self._warn_nonfinite()
-            #NB: always index, since the block object is reused by the next read:
-            b = b[self._flt(b)] if self._flt is not None else b[:]
+            if self._flt is not None:
+                b = b[self._flt(b)]
             if len(b):
                 pending.append(b)
                 npending += len(b)
@@ -438,7 +466,7 @@ class MCPLFile:
         particles. Furthermore, note that the read_blocks() function and
         the particle_blocks property provides block-based access, which can
         improve performance dramatically."""
-        if self._flt is not None or self._edt is not None:
+        if self._filtered:
             if self._fparts is None:
                 self._fparts = self._picked_particles()
             return next(self._fparts,None)
@@ -465,9 +493,9 @@ class MCPLFile:
 
         """skip n positions forward in file. (returns False when there is no
            particle at the new position, otherwise True)"""
-        if self._flt is not None or self._edt is not None:
+        if self._filtered:
             raise MCPLError('skip_forward can not be used with files opened'
-                            ' with pick or edit')
+                            ' with pick, edit, skip or limit')
         inew = self._ipos + int(n)
         if inew <= self._ipos:
             if inew == self._ipos:
@@ -848,8 +876,8 @@ class MCPLFile:
     def dump_particles(self,limit=10,skip=0,pick=None,_view=None):
         """Dump a list of particles to stdout (like the mcpltool command). The
         limit and skip parameters can be used to respectively limit the
-        number of particles printed and to skip past particles at the head of
-        the file. Use limit=0 to disable the limit. If pick is given (an
+        number of particles printed and to skip past the first particles
+        (after any skip, limit and pick given when opening the file). Use limit=0 to disable the limit. If pick is given (an
         expression or a ParticleFilter), only the picked particles are shown,
         and limit and skip apply to those."""
 
@@ -858,7 +886,7 @@ class MCPLFile:
         if _view is not None:
             #(the particles of a _FileView of this file, for mcpltool):
             particles = _picked_particles(_view,pick,skip)
-        elif pick is None and self._flt is None and self._edt is None:
+        elif pick is None and not self._filtered:
             self.skip_forward(skip)
             particles = iter(self.read,None)
         else:
@@ -899,11 +927,11 @@ class MCPLFile:
                 s += '  ' + raw[:16].hex() + ( '...' if udsize > 16 else '' )
             print(s)
 
-    def to_scipp(self, skip = 0, limit = None, pick = None, coords = None,
+    def to_scipp(self, *, skip = 0, limit = None, pick = None, coords = None,
                  vectors = False, variances = True, dim = 'particle'):
         """Particles of the file as a scipp DataArray. The particles are read
-        from the start of the file (after any pick and edit given when
-        opening the file), skipping the first skip of them, and picking
+        from the start of the file (after any skip, limit, pick and edit given
+        when opening the file), skipping the first skip of them, and picking
         only those matching pick if given (an expression or a
         ParticleFilter, in which case skip applies to the picked
         particles). At most limit particles are converted: by default at most
@@ -939,7 +967,7 @@ class MCPLFile:
                               coord_functions = fcts, vectors = vectors,
                               variances = variances, dim = dim )
 
-    def scipp_blocks(self, pick = None, coords = None, vectors = False,
+    def scipp_blocks(self, *, pick = None, coords = None, vectors = False,
                      variances = True, dim = 'particle'):
         """Iterate over the particles of the file as scipp DataArrays, one for
         each block of particles (see the particle_blocks property), with the
@@ -979,6 +1007,25 @@ def _picked_particles(mcplfile,pick,skip=0):
 
 
 
+def _particle_range( n, skip, limit ):
+    """The range of particles (first, end) of a file of n particles, without
+    the first skip of them and with at most limit (all if limit is None; the
+    -l option of mcpltool, where 0 means all, is given as limit or None)"""
+    first = min( skip or 0, n )
+    return first, n if limit is None else min( n, first + limit )
+
+def _blocks_in_range( blocks, first, end ):
+    """The parts of the blocks (of a file, in their order) with the particles
+    from first to end (see _particle_range), as new blocks, since the blocks of
+    files are reused by the next read"""
+    for b in blocks:
+        off = b.file_offset
+        if off + len(b) <= first:
+            continue
+        if off >= end:
+            break
+        yield b[max(0,first-off):min(len(b),end-off)]
+
 class _FileView:
     """Read-only view of the particles of an MCPLFile, for the -s, -l, -p and
     -E options of mcpltool: in a range of the file (without the first skip
@@ -988,9 +1035,7 @@ class _FileView:
     def __init__(self, mcplfile, skip = 0, limit = None, pick = None,
                  edit = None):
         self._f = mcplfile
-        n = mcplfile.nparticles
-        self._skip = min( skip or 0, n )
-        self._end = n if not limit else min( n, self._skip + limit )
+        self._skip, self._end = _particle_range(mcplfile.nparticles,skip,limit or None)
         self.pick, self.edit = pick, edit
         self._n = None if pick is not None else self._end - self._skip
     def __getattr__(self, name):
@@ -1002,13 +1047,7 @@ class _FileView:
         return self._n
     @property
     def particle_blocks(self):
-        for b in self._f.particle_blocks:
-            off = b.file_offset
-            if off + len(b) <= self._skip:
-                continue
-            if off >= self._end:
-                break
-            b = b[max(0,self._skip-off):min(len(b),self._end-off)]
+        for b in _blocks_in_range(self._f.particle_blocks,self._skip,self._end):
             if self.pick is not None:
                 b = b[self.pick(b)]
             if self.edit is not None:
@@ -1020,13 +1059,13 @@ def dump_file(filename,header=True,particles=True,limit=10,skip=0,pick=None,**kw
     dump both header and particle contents of a file to stdout. If pick is
     given (an expression or a ParticleFilter), only the picked particles are
     shown."""
-    f = MCPLFile(filename,**kwargs)
-    print(f"Opened MCPL file {os.path.basename(filename)}:")
-    if header:
-        f.dump_hdr()
-    if particles:
-        if pick is not None:
-            from ._expressions import _as_filter
-            print(f"Showing particles picked with: {_as_filter(pick).expression}")
-            print()
-        f.dump_particles(limit=limit,skip=skip,pick=pick)
+    with MCPLFile(filename,**kwargs) as f:
+        print(f"Opened MCPL file {os.path.basename(filename)}:")
+        if header:
+            f.dump_hdr()
+        if particles:
+            if pick is not None:
+                from ._expressions import _as_filter
+                print(f"Showing particles picked with: {_as_filter(pick).expression}")
+                print()
+            f.dump_particles(limit=limit,skip=skip,pick=pick)
