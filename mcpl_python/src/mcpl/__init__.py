@@ -86,30 +86,30 @@ __all__ = [
 
 __version__ = '2.2.9'
 
-from . import constants
 from ._blocks import MCPLParticle, MCPLParticleBlock
 from ._common import MCPLError
-from ._fileops import (
-            can_merge,
-            convert2ascii,
-            create_outfile_mpi,
-            dump_file,
-            forcemerge_files,
-            merge_files,
-            merge_inplace,
-            merge_outfiles_mpi,
-            name_helper,
-            repair,
-)
 from ._messages import use_logging
 from ._reader import MCPLFile
-from ._statsum import encode_stat_sum, is_valid_stat_sum_key
-from ._writer import MCPLOutFile, gzip_file
 
-#Expressions, statistics, histograms, plotting and the mcpltool command are
-#only imported when used (so the code for reading and writing files does not
-#depend on them in any way):
+#All other parts (writing, file operations, stat:sum, expressions, statistics,
+#histograms, plotting and the mcpltool command) are only imported when used, so
+#reading files does not depend on them in any way:
 _on_demand = {
+    'MCPLOutFile' : '_writer',
+    'can_merge' : '_fileops',
+    'constants' : 'constants',
+    'convert2ascii' : '_fileops',
+    'create_outfile_mpi' : '_fileops',
+    'dump_file' : '_fileops',
+    'encode_stat_sum' : '_statsum',
+    'forcemerge_files' : '_fileops',
+    'gzip_file' : '_writer',
+    'is_valid_stat_sum_key' : '_statsum',
+    'merge_files' : '_fileops',
+    'merge_inplace' : '_fileops',
+    'merge_outfiles_mpi' : '_fileops',
+    'name_helper' : '_fileops',
+    'repair' : '_fileops',
     'Histogram' : '_histogram',
     'ParticleEdit' : '_expressions',
     'ParticleFilter' : '_expressions',

@@ -35,7 +35,6 @@ from ._blocks import (
 from ._common import MCPLError, _output_bytearray_raw
 from ._messages import _warning
 from ._numpy import np
-from ._statsum import _parse_statsum, _parse_statsum_comment, encode_stat_sum
 
 #The MCPL format allows implementations to refuse headers larger than 1.9GB,
 #or with more than 1000000 comments and blobs (together), and headers are
@@ -156,6 +155,7 @@ class MCPLFile:
                     _warning("Input file appears to not have been closed"
                              f" properly. Recovered {np_rec} particles.")
 
+                    from ._statsum import _parse_statsum_comment, encode_stat_sum
                     comments = ( self._hdr.get('comments_raw')
                                  or self._hdr['comments'] )[:]
                     for ic in range(len(comments)):
@@ -613,6 +613,8 @@ class MCPLFile:
         if d is not None:
             return d
         from types import MappingProxyType  # read-only view of dict
+
+        from ._statsum import _parse_statsum
         d = MappingProxyType(
             _parse_statsum( h.get('comments_raw',None) or h.get('comments') )
         )

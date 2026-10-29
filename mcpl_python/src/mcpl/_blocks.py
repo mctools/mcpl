@@ -25,7 +25,6 @@ __all__ = ['MCPLParticle', 'MCPLParticleBlock']
 
 from ._common import MCPLError
 from ._numpy import np, np_fma
-from ._physics import wavelength_checked
 
 
 class MCPLParticle:
@@ -110,6 +109,7 @@ class MCPLParticle:
     def wavelength(self):
         """wavelength [Aa] (only for neutrons and gammas with non-zero kinetic
         energy, otherwise MCPLError is raised)"""
+        from ._physics import wavelength_checked
         return wavelength_checked(self.ekin, self.pdgcode)
     @property
     def pdgcode(self):
@@ -243,6 +243,7 @@ class MCPLParticleBlock:
     def wavelength(self):
         """wavelength [Aa] (only for blocks with just neutrons and gammas, with
         non-zero kinetic energy, otherwise MCPLError is raised)"""
+        from ._physics import wavelength_checked
         return wavelength_checked(self.ekin, self.pdgcode)
 
     @property
@@ -545,6 +546,7 @@ class _ArrayBlock:
         raise MCPLError('fileidx can only be used for particles read from files')
     @property
     def wavelength(self):
+        from ._physics import wavelength_checked
         return wavelength_checked(self.ekin,self.pdgcode)
 
 def _surely_finite( b ):
