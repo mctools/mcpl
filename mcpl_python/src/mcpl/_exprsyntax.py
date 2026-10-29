@@ -146,7 +146,7 @@ class _ExprParser:
                 if ( t.type == tokenize.ERRORTOKEN and len(t.string) == 1
                      and t.string not in '"\'' ):
                     t = t._replace(type = tokenize.OP)#(as from Python 3.12)
-                if t.type not in kinds:
+                if t.type not in kinds or not t.string.isascii():
                     raise _ExprSyntaxError(t.start[1],f'"{t.string}" can not be used here')
                 if ( t.type == tokenize.NUMBER and self._toks and self._toks[-1][0] == 'number'
                      and self._pos[-1] + len(self._toks[-1][1]) == t.start[1] ):
