@@ -166,6 +166,11 @@ class _ExprParser:
                     t = t._replace(type = tokenize.OP)#(as from Python 3.12)
                 if t.type not in kinds:
                     raise _ExprSyntaxError(t.start[1],f'"{t.string}" can not be used here')
+                if ( t.type == tokenize.NUMBER and self._toks and self._toks[-1][0] == 'number'
+                     and self._pos[-1] + len(self._toks[-1][1]) == t.start[1] ):
+                    #(Python before 3.12 splits numbers like 090 in two):
+                    self._toks[-1] = ( 'number', self._toks[-1][1] + t.string )
+                    continue
                 self._toks.append( ( kinds[t.type], t.string ) )
                 self._pos.append(t.start[1])
         except tokenize.TokenError:
