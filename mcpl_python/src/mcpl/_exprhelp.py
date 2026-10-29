@@ -25,7 +25,8 @@ the help texts of mcpltool -p help, -E help and -H help."""
 
 __all__ = []
 
-import textwrap
+
+from ._particles import _particle_help
 
 #(group, name, short description, long description):
 _hints = (
@@ -70,7 +71,28 @@ _hints = (
       'particle type, as a PDG code (an integer: e.g. pdgcode == 2112, or pdgcode == neutron)' ),
     ( 'fields', 'userflags',
       'user flags (an integer)',
-      'user flags (a 32 bit integer: e.g. userflags & 0x10, or (userflags & 0xff) == 7)' ),
+      'user flags (an unsigned 32-bit integer: e.g. userflags & 0x10, or (userflags & 0xff) == 7)' ),
+    ( 'vectors', 'pos',
+      'position (x,y,z) (a vector of lengths)',
+      'position, the vector (x,y,z) (lengths: e.g. abs(pos) < 1m)' ),
+    ( 'vectors', 'dir',
+      'direction (ux,uy,uz) (a unit vector)',
+      'direction, the unit vector (ux,uy,uz) (no unit: e.g. dir.z > 0.9, the same as uz > 0.9)' ),
+    ( 'vectors', 'pol',
+      'polarisation (polx,poly,polz) (a vector)',
+      'polarisation, the vector (polx,poly,polz) (no unit: e.g. abs(pol) > 0.5)' ),
+    ( 'vectors', 'dot(v,w)',
+      'dot product of vectors',
+      'dot product of two vectors of the same size (e.g. dot(pos,dir) > 0cm)' ),
+    ( 'vectors', 'cross(v,w)',
+      'cross product of 3D vectors (a vector)',
+      'cross product of two 3D vectors, a vector (e.g. abs(cross(pos,dir)) < 1cm, the distance of the line of flight from the origin)' ),
+    ( 'vectors', 'angle(v,w)',
+      'angle between vectors (an angle)',
+      'angle between two vectors of the same size, precise also for small angles (e.g. angle(dir,(0,0,1)) < 1deg, or angle(pos,dir) for the angle between position and direction)' ),
+    ( 'vectors', 'through_sphere(c,r)',
+      'line of flight through a sphere',
+      'whether the line through the position along the direction (forwards and backwards) passes through the sphere with the center c (a 3D vector) and the radius r (e.g. through_sphere((0,0,1m),5cm) for the particles which would pass within 5 cm of the point (0,0,1m))' ),
     ( 'fields', 'fileidx',
       'position in the file (an integer)',
       'position of the particle in the file, counting from 0 (an integer, which can not be changed: e.g. mod(fileidx,10) == 0 for every tenth particle)' ),
@@ -86,39 +108,9 @@ _hints = (
     ( 'constants', 'pi',
       'pi (no unit)',
       'pi = 3.14159... (no unit: e.g. atan2(y,x) > pi/2)' ),
-    ( 'particles', 'neutron',
-      'PDG code 2112',
-      'the PDG code of neutrons, 2112 (e.g. pdgcode == neutron)' ),
-    ( 'particles', 'antineutron',
-      'PDG code -2112',
-      'the PDG code of antineutrons, -2112 (e.g. pdgcode == antineutron)' ),
-    ( 'particles', 'proton',
-      'PDG code 2212',
-      'the PDG code of protons, 2212 (e.g. pdgcode == proton)' ),
-    ( 'particles', 'antiproton',
-      'PDG code -2212',
-      'the PDG code of antiprotons, -2212 (e.g. pdgcode == antiproton)' ),
-    ( 'particles', 'electron',
-      'PDG code 11',
-      'the PDG code of electrons, 11 (e.g. pdgcode == electron)' ),
-    ( 'particles', 'positron',
-      'PDG code -11',
-      'the PDG code of positrons, -11 (e.g. pdgcode == positron)' ),
-    ( 'particles', 'antielectron',
-      'PDG code -11',
-      'the PDG code of positrons (same as positron), -11 (e.g. pdgcode == antielectron)' ),
-    ( 'particles', 'muon',
-      'PDG code 13',
-      'the PDG code of muons (negative), 13 (e.g. pdgcode == muon)' ),
-    ( 'particles', 'antimuon',
-      'PDG code -13',
-      'the PDG code of antimuons (positive muons), -13 (e.g. pdgcode == antimuon)' ),
-    ( 'particles', 'gamma',
-      'PDG code 22',
-      'the PDG code of gammas (photons), 22 (e.g. pdgcode == gamma)' ),
-    ( 'particles', 'photon',
-      'PDG code 22',
-      'the PDG code of photons (same as gamma), 22 (e.g. pdgcode == photon)' ),
+    *( ( 'particles', name, f'PDG code {pdg}',
+         f'the PDG code of {descr}, {pdg} (e.g. pdgcode == {name})' )
+       for name, pdg, descr in _particle_help ),
     ( 'units', 'meV',
       'energy unit, 1e-9 MeV',
       'unit of energy: 1meV = 1e-9 MeV (e.g. ekin < 25meV)' ),
@@ -154,7 +146,7 @@ _hints = (
       'unit of length, the angstrom: 1Aa = 1e-8 cm (e.g. wavelength > 1.8Aa)' ),
     ( 'units', 'nm',
       'length unit, 1e-7 cm',
-      'unit of length: 1nm = 1e-7 cm (e.g. wavelength > 0.18nm)' ),
+      'unit of length: 1nm = 1e-7 cm (e.g. wavelength/nm)' ),
     ( 'units', 'um',
       'length unit, 1e-4 cm (micrometre)',
       'unit of length, the micrometre: 1um = 1e-4 cm (e.g. abs(x) < 50um)' ),
@@ -171,26 +163,29 @@ _hints = (
       'length unit, 1e5 cm',
       'unit of length: 1km = 1e5 cm (e.g. hypot(x,y,z) > 1km)' ),
     ( 'units', 'K',
-      'temperature unit (kelvin)',
-      'unit of temperature, the kelvin, for userdata fields (e.g. userdata.temp > 300K)' ),
+      'temperature unit',
+      'unit of temperature, for fields of the userdata with the unit K (e.g. userdata.temp > 293K)' ),
     ( 'units', 'deg',
       'angle unit, pi/180',
-      'unit of angle: 1deg = pi/180 (e.g. angle_to(0,0,1) < 1deg, or rotate_z(90deg))' ),
+      'unit of angle: 1deg = pi/180 (e.g. angle(dir,(0,0,1)) < 1deg, or rotate_z(90deg))' ),
     ( 'units', 'rad',
       'angle unit, 1',
-      'unit of angle: 1rad = 1 (e.g. angle_to(0,0,1) < 0.01rad)' ),
+      'unit of angle: 1rad = 1 (e.g. angle(dir,(0,0,1)) < 0.01rad)' ),
     ( 'functions', 'sqrt(a)',
       'square root',
-      'square root, of a value without unit or with a squared unit (e.g. sqrt(x^2 + y^2) < 1cm; sqrt(ekin) is an error)' ),
+      'square root, of a value without unit or with a squared unit (or half powers of units: e.g. sqrt(x^2 + y^2) < 1cm, or sqrt(ekin)/sqrt(eV))' ),
     ( 'functions', 'abs(a)',
       'absolute value (same unit)',
       'absolute value (same unit as a: e.g. abs(x) < 5cm)' ),
+    ( 'functions', 'round(a)',
+      'nearest integer',
+      'the nearest integer, of a value without units (e.g. round(x/cm))' ),
     ( 'functions', 'floor(a)',
-      'round down (same unit)',
-      'round down to an integer (same unit as a: e.g. floor(time/ms))' ),
+      'round down to an integer',
+      'round down to an integer, of a value without units (e.g. floor(time/ms))' ),
     ( 'functions', 'ceil(a)',
-      'round up (same unit)',
-      'round up to an integer (same unit as a: e.g. ceil(ekin/MeV))' ),
+      'round up to an integer',
+      'round up to an integer, of a value without units (e.g. ceil(ekin/MeV))' ),
     ( 'functions', 'min(a,b,...)',
       'smallest value (same unit)',
       'smallest of the values, which must have the same unit (e.g. min(x,y) > 0cm)' ),
@@ -229,16 +224,13 @@ _hints = (
       'arcsine, as an angle (a must have no unit: e.g. asin(uz) > 80deg)' ),
     ( 'functions', 'acos(a)',
       'arccosine (an angle)',
-      'arccosine, as an angle (a must have no unit: e.g. acos(uz) < 10deg; for small angles angle_to is more precise)' ),
+      'arccosine, as an angle (a must have no unit: e.g. acos(uz) < 10deg; for small angles angle(dir,(0,0,1)) is more precise)' ),
     ( 'functions', 'atan(a)',
       'arctangent (an angle)',
       'arctangent, as an angle (a must have no unit: e.g. atan(ux/uz) < 5deg)' ),
     ( 'functions', 'atan2(y,x)',
       'angle of the point (x,y) (an angle)',
       'angle of the point (x,y) from the x axis, from -180deg to 180deg (x and y with the same unit: e.g. atan2(y,x) > 0deg)' ),
-    ( 'functions', 'angle_to(x,y,z)',
-      'angle between direction and (x,y,z) (an angle)',
-      'angle between the direction of the particle and the vector (x,y,z), precise also for small angles (e.g. angle_to(0,0,1) < 1deg, or angle_to(x,y,z) for the angle between direction and position)' ),
     ( 'statements', 'swap(a,b)',
       'exchange two fields (same unit)',
       'exchange the values of two fields or variables with the same unit (e.g. swap(x,y))' ),
@@ -251,6 +243,12 @@ _hints = (
     ( 'statements', 'rotate_z(angle)',
       'rotate around the z axis',
       'rotate position, direction and polarisation around the z axis, counter-clockwise (e.g. rotate_z(90deg))' ),
+    ( 'statements', 'rotate_around(axis,angle)',
+      'rotate around the axis (a vector)',
+      'rotate position, direction and polarisation around the axis (a vector) through the origin, counter-clockwise (e.g. rotate_around((1,1,0),30deg))' ),
+    ( 'statements', 'rotate_frame(v,vout,u,uout)',
+      'rotate v to vout and u to uout',
+      'rotate position, direction and polarisation so that the direction of the vector v becomes that of vout, and u that of uout (e.g. rotate_frame((0,0,1),(1,0,0),(0,1,0),(0,1,0)) turns z into x and keeps y; the angles between v and u and between vout and uout must be the same)' ),
     ( 'histoptions', 'bins=N',
       'number of bins',
       'number of bins (default: chosen from the number of particles, e.g. bins=50)' ),
@@ -282,66 +280,156 @@ _hints = (
       'print contents instead of plotting',
       'print the contents of the histogram instead of plotting it' ),)
 
-_group_titles = { 'histoptions' : 'Options (after the expression, separated by ";")',
+_group_titles = { 'histoptions' : 'Options',
                   'fields' : 'Fields of the particles',
+                  'vectors' : 'Vectors',
                   'constants' : 'Constants',
                   'particles' : 'Particle names (PDG codes)',
                   'units' : 'Units',
                   'functions' : 'Functions',
                   'statements' : 'Statements' }
 
+#The examples of expressions, by topic, in groups of (title, the sentence
+#before them or None, and the examples as (expression, what it does)):
+examples = {
+    'pick' : (
+        ( 'Particle types', None, (
+            ( 'pdgcode == neutron', 'Neutrons.' ),
+            ( 'pdgcode in (neutron,gamma)', 'Neutrons and gammas.' ),
+            ( 'abs(pdgcode) in (electron,muon)', 'Electrons, muons and their antiparticles.' ) ) ),
+        ( 'Values and ranges', None, (
+            ( 'ekin < 25meV', 'Kinetic energies below 25 meV.' ),
+            ( '0cm < z < 10cm', 'Positions between z = 0 and 10 cm.' ),
+            ( 'pdgcode == neutron and wavelength > 1.8Aa',
+              ( 'Neutrons with wavelengths above 1.8 Aa (only neutrons and gammas have'
+                ' wavelengths, so they are picked first).' ) ),
+            ( 'not ( time > 10us or weight < 0.1 )', 'Early particles with large weights.' ) ) ),
+        ( 'Variables', ( 'Values can be given names before the condition, as NAME = VALUE'
+                         ' separated by ";", and then used in it:' ), (
+            ( 'r = hypot(x,y); r > 2cm and r < 5cm',
+              'Between 2 and 5 cm from the z axis, with the distance named r.' ),
+            ( 'e = ekin/MeV; e > 1 and e < 10',
+              'Energies from 1 to 10 MeV (e is a number, without a unit).' ) ) ),
+        ( 'Vectors', ( 'The position, direction and polarisation are the vectors pos, dir and'
+                       ' pol, vectors are written as (a,b,c), and abs(v), angle(v,w) and'
+                       ' dot(v,w) give lengths, angles and dot products:' ), (
+            ( 'angle(dir,(0,0,1)) < 1deg', 'Moving within 1 degree of the z axis.' ),
+            ( 'd = pos - (0,0,1m); abs(d) < 10cm',
+              'Within 10 cm of the point (0,0,1m), with the vector from it named d.' ),
+            ( 'dot(dir,(1,0,0)) < 0', 'Moving towards negative x.' ),
+            ( 'through_sphere((0,0,1m),5cm)',
+              'Lines of flight passing within 5 cm of the point (0,0,1m), forwards or backwards.' ) ) ),
+        ( 'Bits, positions in the file and userdata', None, (
+            ( '(userflags & 0xff) == 7', 'The lowest 8 bits of the user flags are 7.' ),
+            ( 'mod(fileidx,10) == 0', 'Every tenth particle in the file.' ),
+            ( 'userdata.nscat >= 2', 'The userdata field nscat is 2 or more (in files with userdata).' ),
+            ( 'userdata.origdir.at(2) > 0.99',
+              'The third value (counting from 0) of the userdata field origdir is above 0.99.' ) ) ),
+    ),
+    'edit' : (
+        ( 'Changing values', None, (
+            ( 'z += 1cm', 'Move the particles 1 cm along z.' ),
+            ( 'weight *= 0.5', 'Halve the weights.' ),
+            ( 'wavelength = 1.8Aa',
+              'Give neutrons and gammas the energy of a wavelength of 1.8 Aa (other particles give an error, so pick neutrons first, e.g. -p "pdgcode == neutron").' ),
+            ( 'swap(x,y)', 'Swap the x and y coordinates.' ),
+            ( 'time += hypot(x,y,z)/(2200m/s)', 'Add the time to fly to the origin at 2200 m/s.' ) ) ),
+        ( 'Rotations', None, (
+            ( 'rotate_y(90deg);x += 10cm', 'Rotate around the y axis, then move along x.' ),
+            ( 'rotate_around((1,1,0),30deg)', 'Rotate by 30 degrees around the axis (1,1,0).' ),
+            ( 'rotate_frame((0,0,1),(1,0,0),(0,1,0),(0,1,0))',
+              'Turn the z axis into the x axis, keeping the y axis (v=z to vout=x, u=y to uout=y).' ) ) ),
+        ( 'Variables', ( 'Values can be given names, as NAME = VALUE, and then used in the'
+                         ' statements after it:' ), (
+            ( 'r = hypot(x,y);x = r;y = 0cm', 'Move the particles onto the x axis, at the same distance.' ), ) ),
+        ( 'Vectors', ( 'The position, direction and polarisation are the vectors pos, dir and'
+                       ' pol, which can be changed as a whole:' ), (
+            ( 'pos += 50cm*dir', 'Move the particles 50 cm along their directions.' ),
+            ( 'dir = (0,0,1)', 'Make all particles move along z.' ) ) ),
+    ),
+    'hist' : (
+        ( 'Histograms', None, (
+            ( 'ekin/MeV;logx;split=pdgcode',
+              'The energies in MeV, on a logarithmic axis, with a curve for each particle type.' ),
+            ( 'x/cm : y/cm;xrange=-10:10;yrange=-10:10', 'The positions in the x-y plane.' ) ) ),
+    ),
+}
+
+def example_rows( topic ):
+    """All examples of the topic, as (expression, what it does)"""
+    return [ row for _, _, rows in examples[topic] for row in rows ]
+
 _intro = {
-    'pick' : '''PICK: an expression which is true for the particles to use, e.g.
-  -p "pdgcode == neutron and ekin < 25meV"
-  -p "hypot(x,y) < 10cm and angle_to(0,0,1) < 1deg"
-  -p "(userflags & 0xff) == 7 or time > 10us"
-The operators are: + - * / // (and ^ for powers), == != < <= > >=, and, or,
-not (and & | for bits). Values with units must be written with units
+    'pick' : ( 'PICK: an expression which is true for the particles to use, for example:',
+               '''The operators are: + - * / // (and ^ for powers), == != < <= > >=, in and
+not in (one of the values in parentheses), and, or, not (and & | for
+bits). Values with units must be written with units
 (e.g. 25meV or 10cm), except for a plain 0 (e.g. x > 0), and the wavelength
 can only be used for neutrons and gammas, which must be picked first (e.g.
 "pdgcode == neutron and wavelength > 1.8Aa"). Integers (like pdgcode,
 userflags, and integer userdata) work essentially as in C, but with more
 protection against problems like overflow. The operator / always divides as
 floating point numbers (e.g. 1/2 is 0.5), and // divides non-negative
-integers (e.g. 7//2 is 3).''',
-    'edit' : '''EDIT: statements separated by ";", executed in order, e.g.
-  -E "z += 1cm;weight *= 0.5"
-  -E "rotate_y(90deg);x += 10cm"
-  -E "tmp = x;x = y;y = tmp"
-The statements are assignments to fields (=, +=, -=, *=, /= and //=, with values
+integers (e.g. 7//2 is 3).''' ),
+    'edit' : ( 'EDIT: statements separated by ";", executed in order, for example:',
+               '''The statements are assignments to fields (=, +=, -=, *=, /=, //=, ^=, &= and |=, with values
 in the units of the field, and wavelength = ... changing ekin), assignments
 to variables (other lowercase names, which can be used in later statements),
 and the statements listed below. The expressions are written as for -p (see
--p help).''',
-    'hist' : '''HIST: an expression without units (divide values with units by a unit,
+-p help).''' ),
+    'hist' : ( '''HIST: an expression without units (divide values with units by a unit,
 e.g. ekin/MeV), or two separated by ":" for a 2D histogram, followed by
-options separated by ";", e.g.
-  -H "ekin/MeV;logx;split=pdgcode"
-  -H "wavelength/Aa;bins=100;range=0:10"
-  -H "x/cm : y/cm;xrange=-10:10;yrange=-10:10"
-The expressions are written as for -p (see -p help).''',
+options separated by ";", for example:''',
+               'The expressions are written as for -p (see -p help).' ),
+}
+
+#(the end of the help texts, if any):
+_outro = {}
+
+#(texts at the start of groups in the help texts):
+_group_notes = {
+    'vectors' : ( 'Vectors are written as (a,b,c), or (a,b) in 2D, with the same unit'
+                  ' for all values (except a plain 0, as in (0,0,1m)). Their values are'
+                  ' v.x, v.y and v.z, or v.at(0), v.at(1) and v.at(2) (counting from 0):'
+                  ' x is just an alias of pos.x (or pos.at(0)), and uz of dir.z. Vectors'
+                  ' can be added and subtracted, and multiplied and divided by numbers,'
+                  ' abs(v) is their length, and v^2 their length squared. Edits can'
+                  ' assign pos, dir and pol (e.g. pos += (0,0,1m)).' ),
 }
 
 _topic_groups = {
-    'pick' : ( 'fields', 'constants', 'particles', 'units', 'functions' ),
-    'edit' : ( 'statements', 'fields', 'constants', 'particles', 'units',
+    'pick' : ( 'fields', 'vectors', 'constants', 'particles', 'units', 'functions' ),
+    'edit' : ( 'statements', 'fields', 'vectors', 'constants', 'particles', 'units',
                'functions' ),
-    'hist' : ( 'histoptions', 'fields', 'constants', 'particles', 'units',
+    'hist' : ( 'histoptions', 'fields', 'vectors', 'constants', 'particles', 'units',
                'functions' ),
 }
 
+def _help_blocks( topic ):
+    """Help for -p help ('pick'), -E help ('edit') or -H help ('hist'), as
+    blocks (see _helptext)"""
+    head, tail = _intro[topic]
+    opt = { 'pick' : '-p', 'edit' : '-E', 'hist' : '-H' }[topic]
+    blocks = [ ( 'text', head ) ]
+    for title, note, rows in examples[topic]:
+        blocks += [ ( 'gap', ), ( 'subsection', title ) ]
+        if note:
+            blocks.append( ( 'note', note ) )
+        blocks.append( ( 'examples', [ ( f'{opt} "{expr}"', what ) for expr, what in rows ] ) )
+    blocks += [ ( 'gap', ), ( 'text', tail ) ]
+    for g in _topic_groups[topic]:
+        blocks += [ ( 'gap', ), ( 'section', _group_titles[g] ) ]
+        if g in _group_notes:
+            blocks.append( ( 'note', _group_notes[g] ) )
+        blocks += [ ( 'item', name, long ) for grp, name, _short, long in _hints if grp == g ]
+    if topic in _outro:
+        blocks += [ ( 'gap', ), ( 'text', _outro[topic] ) ]
+    return blocks
+
 def _help_text( topic ):
     """Help text for -p help ('pick'), -E help ('edit') or -H help ('hist')"""
-    lines = [ _intro[topic] ]
-    for g in _topic_groups[topic]:
-        lines += [ '', _group_titles[g] + ':' ]
-        for grp, name, _short, long in _hints:
-            if grp != g:
-                continue
-            lines += textwrap.wrap( long, width = 79,
-                                    initial_indent = f'  {name}: ',
-                                    subsequent_indent = '      ' )
-    return '\n'.join(lines)
+    from ._helptext import plain_text
+    return plain_text(_help_blocks(topic))
 
 def _short_hint( name ):
     """Short description of a name (for completion), or None"""

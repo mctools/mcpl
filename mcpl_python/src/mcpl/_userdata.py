@@ -138,6 +138,22 @@ def _parse_error( layout ):
             return 'too large userdata (at most 65535 bytes are allowed)'
     return None
 
+def _split_fields( layout ):
+    """The fields of a (valid) userdata layout, as (name, type, number of
+    values or None, unit or None)"""
+    res = []
+    for fld in layout.split(','):
+        name, _, typespec = fld.partition(':')
+        typespec, _, unit = typespec.partition(':')
+        tname, bracket, arr = typespec.partition('[')
+        res.append( ( name, tname, int(arr[:-1]) if bracket else None, unit or None ) )
+    return res
+
+def userdata_fields( layout ):
+    """The fields of a (valid) userdata layout, as (name, type, number of
+    values, or None for fields of one value)"""
+    return [ f[:3] for f in _split_fields(layout) ]
+
 def userdata_dtype( layout ):
     """Numpy dtype (in native byte order) for the userdata of one particle,
     with a field for each field of the layout. An MCPLError is raised for
@@ -149,26 +165,16 @@ def userdata_dtype( layout ):
             s = layout if isinstance(layout,str) else repr(layout)
             raise MCPLError(f'Invalid userdata layout "{s[:200]}'
                             f'{"..." if len(s) > 200 else ""}": {err}')
-        fields = []
-        for fld in layout.split(','):
-            name, _, typespec = fld.partition(':')
-            tname, bracket, arr = typespec.partition(':')[0].partition('[')
-            if bracket:
-                fields.append( ( name, _types[tname], ( int(arr[:-1]), ) ) )
-            else:
-                fields.append( ( name, _types[tname] ) )
-        dt = _cache[layout] = np.dtype(fields)
+        dt = _cache[layout] = np.dtype([ ( name, _types[t] ) if n is None else
+                                         ( name, _types[t], ( n, ) )
+                                         for name, t, n in userdata_fields(layout) ])
     return dt
 
 def userdata_units( layout ):
     """The units of the fields of the layout, as {name : unit}, with None for
     fields without a unit (e.g. {'temp': 'K', 'n': None})"""
     userdata_dtype(layout)#(checks the layout)
-    res = {}
-    for fld in layout.split(','):
-        name, _, typespec = fld.partition(':')
-        res[name] = typespec.partition(':')[2] or None
-    return res
+    return { name : unit for name, _, _, unit in _split_fields(layout) }
 
 def _exact_ints( v, base ):
     """Plain Python integers (single numbers or lists) as an array of the

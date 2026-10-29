@@ -557,30 +557,26 @@ mcpltool -H x/cm -o hist.png -d example.mcpl: exit code 1
    | ERROR: -d can not be used with -o (which saves plots in files).
    | 
    | Run with -h or --help for usage information
-mcpltool -p x > 0; example.mcpl: exit code 1
-   | ERROR: Syntax error in expression "x > 0;"
-   | 
-   | Run with -h or --help for usage information
 mcpltool -p x > "1" example.mcpl: exit code 1
    | ERROR: The character " can not be used in expressions (in "x > "1"")
    | 
    | Run with -h or --help for usage information
 mcpltool -E z = 1cm, x = 0 example.mcpl: exit code 1
-   | ERROR: Separate the statements of edits with ";" (not ",") in "z = 1cm, x = 0"
+   | ERROR: Separate statements with ";" (not ",") in "z = 1cm, x = 0"
    | 
    | Run with -h or --help for usage information
-mcpltool -p help: exit code 0, 131 lines, starting with:
-   | PICK: an expression which is true for the particles to use, e.g.
-   |   -p "pdgcode == neutron and ekin < 25meV"
-   |   -p "hypot(x,y) < 10cm and angle_to(0,0,1) < 1deg"
-mcpltool --edit=help: exit code 0, 137 lines, starting with:
-   | EDIT: statements separated by ";", executed in order, e.g.
-   |   -E "z += 1cm;weight *= 0.5"
-   |   -E "rotate_y(90deg);x += 10cm"
-mcpltool -H help example.mcpl: exit code 0, 143 lines, starting with:
+mcpltool -p help: exit code 0, 206 lines, starting with:
+   | PICK: an expression which is true for the particles to use, for example:
+   | 
+   | Particle types:
+mcpltool --edit=help: exit code 0, 202 lines, starting with:
+   | EDIT: statements separated by ";", executed in order, for example:
+   | 
+   | Changing values:
+mcpltool -H help example.mcpl: exit code 0, 173 lines, starting with:
    | HIST: an expression without units (divide values with units by a unit,
    | e.g. ekin/MeV), or two separated by ":" for a 2D histogram, followed by
-   | options separated by ";", e.g.
+   | options separated by ";", for example:
 nice numbers of bins: [(1200, 1080), (400, 360), (239, 216), (83, 72), (37, 36), (15, 15), (8, 8)]
 neff=1: bins of 1080 -> 10, of 216 -> 9, 2D of 216 -> 9
 neff=100: bins of 1080 -> 10, of 216 -> 9, 2D of 216 -> 9
