@@ -453,6 +453,7 @@ ParticleEdit('x = 1cm, y = 1cm'): Separate statements with ";" (not ",") in "x =
 ParticleEdit('fileidx = 2'): fileidx (the position of the particles in the file) can not be changed, in "fileidx = 2"
 ParticleEdit('fileidx += 1'): fileidx (the position of the particles in the file) can not be changed, in "fileidx += 1"
 ParticleEdit('swap(fileidx,pdgcode)'): fileidx (the position of the particles in the file) can not be changed, in "swap(fileidx,pdgcode)"
+ParticleEdit('swap(x,wavelength)'): swap(..) can not be used with wavelength (which is computed from ekin; set it with "wavelength = ..." instead), in "swap(x,wavelength)"
 ParticleEdit('x = y = 1cm'): Syntax error in expression "x = y = 1cm", after "x = y": unexpected "="
 ParticleEdit('x, y = y, x'): Separate statements with ";" (not ",") in "x, y = y, x"
 ParticleEdit(''): Empty expression
