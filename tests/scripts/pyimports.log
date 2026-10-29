@@ -1,4 +1,5 @@
 import mcpl                             : no other modules
+open file and read the header           : no other modules
 read blocks and single particles        : no other modules
 read gzipped file                       : no other modules
 read file with stat:sum entries         : _statsum
@@ -6,19 +7,20 @@ wavelengths                             : _physics constants
 write blocks and single particles       : _writer
 copy blocks with numpy mask             : _writer
 merge files                             : _fileops _statsum _writer
+convert to text                         : _ascii
 repair                                  : _fileops _statsum _writer
 read with pick and edit                 : _expressions _physics constants
 statistics                              : _physics _stats _statsum constants
 statistics with pick                    : _expressions _physics _stats _statsum constants
 histogram as text                       : _expressions _histogram _physics constants
-mcpltool FILE                           : _cli _fileops _physics _statsum _writer constants
-mcpltool --pick                         : _cli _expressions _fileops _physics _statsum _writer constants
-mcpltool --stats                        : _cli _clistats _fileops _physics _stats _statsum _writer constants
-mcpltool --hist with print              : _cli _clistats _expressions _fileops _histogram _physics _statsum _writer constants
-mcpltool --extract                      : _cli _fileops _physics _statsum _writer constants
-mcpltool --extract --edit               : _cli _expressions _fileops _physics _statsum _writer constants
-mcpltool --merge                        : _cli _fileops _physics _statsum _writer constants
-mcpltool --repair                       : _cli _fileops _physics _statsum _writer constants
-mcpltool --text                         : _cli _fileops _physics _statsum _writer constants
+mcpltool FILE                           : _cli
+mcpltool --pick                         : _cli _expressions _physics constants
+mcpltool --stats                        : _cli _clistats _physics _stats _statsum constants
+mcpltool --hist with print              : _cli _clistats _expressions _histogram _physics constants
+mcpltool --extract                      : _cli _statsum _writer
+mcpltool --extract --edit               : _cli _expressions _physics _statsum _writer constants
+mcpltool --merge                        : _cli _fileops _statsum _writer
+mcpltool --repair                       : _cli _fileops _statsum _writer
+mcpltool --text                         : _ascii _cli
 plot with the test backend              : _expressions _histogram _physics _plotbackend _plotbackend_test constants plotting
-mcpltool --hist with the test backend   : _cli _clistats _expressions _fileops _histogram _physics _plotbackend _plotbackend_test _statsum _writer constants plotting
+mcpltool --hist with the test backend   : _cli _clistats _expressions _histogram _physics _plotbackend _plotbackend_test constants plotting
