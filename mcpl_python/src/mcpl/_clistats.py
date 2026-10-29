@@ -42,7 +42,8 @@ def _plot_backend( outfn, backend, terminal, color = None ):
     """Backend object for showing plots (or saving them in outfn), with the
     options for mcpltool (e.g. a backend of matplotlib which needs no display
     when saving files, and the --color setting for plots in the terminal)"""
-    from ._plotbackend import PlotBackend, _create, _save_backend, _show_backend
+    from ._plotbackend import PlotBackend
+    from ._plotregistry import _create, _save_backend, _show_backend
     if outfn:
         if os.path.exists(outfn):
             raise MCPLError("Requested output file already exists.")

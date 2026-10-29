@@ -129,10 +129,10 @@ cases = [
     ( 'mcpltool --text', '_ascii _cli', tool('--text','example.mcpl','t.txt') ),
     #Plotting with the test backend loads only that backend:
     ( 'plot with the test backend',
-      '_expressions _histogram _physics _plotbackend _plotbackend_test constants plotting',
+      '_expressions _figures _histogram _physics _plotbackend _plotbackend_test _plotregistry constants plotting',
       "mcpl.histogram('example.mcpl','ekin/MeV',bins=4).plot(backend='test')" ),
     ( 'mcpltool --hist with the test backend',
-      '_cli _clistats _expressions _histogram _physics _plotbackend _plotbackend_test constants plotting',
+      '_cli _clistats _expressions _figures _histogram _physics _plotbackend _plotbackend_test _plotregistry constants plotting',
       tool('--hist','ekin/MeV','--backend','test','example.mcpl') ),
 ]
 
