@@ -24,7 +24,8 @@
 # Tests of the parser of expressions alone (_exprsyntax): the trees of valid
 # expressions and statements (by precedence, units, vectors, userdata, in,
 # numbers), that writing and parsing them again gives the same trees, the
-# errors of invalid ones, and random expressions and random input.
+# errors of invalid ones, and random expressions and random input. The output
+# is the same with all Python versions.
 
 import ast
 import random
@@ -121,7 +122,8 @@ def test_valid():
                               '-userdata.n ^ 2' ),
         'In and not in' : ( 'pdgcode in (neutron,gamma)', 'x not in (1,2)', 'a in (b)',
                             'not a in (1,2)', 'a + 1 in (2,3) and b' ),
-        'Numbers' : ( '0', '7', '0.5', '.5', '5.', '1e-3', '1E3', '0x10', '1_000', '0.0' ),
+        'Numbers (decimal and hexadecimal, as in C)' : (
+            '0', '7', '0.5', '.5', '5.', '1e-3', '1E3', '1.e3', '0x10', '0X1F', '0.0', '007.5', '1eV' ),
     }
     for title, texts in groups.items():
         print(f'{title}:')
@@ -138,7 +140,8 @@ def test_errors():
     for text in ( '', ' ', 'x +', '(x', 'x)', '((x)', 'x y', '1 2', 'x = 1',
                   'a in (1) < 2', 'a < b in (1)', 'a in 1', 'a in ()', '(1,2,3,4)', '()',
                   'pos.w', 'pos.at(x)', 'pos.at(-1)', 'pos.at(1.5)', 'pos.', 'userdata.',
-                  'userdata.d.x', 'userdata.d.at()', '090', '007', 'x && y', 'x || y',
+                  'userdata.d.x', 'userdata.d.at()', '090', '007', '00', '1_000', '1_0.5',
+                  '0x_10', '0o17', '0b101', '0x', '0xg', '1.2.3', '1e', '1e+', 'x && y', 'x || y',
                   '!x', 'x % 2', '~x', '"a"', "'a'", 'x[0]', 'lambda: 1',
                   'x if y else z', '[1]', '{1}', 'f(x=1)', 'cm^x', 'cm^(1/0)', 'cm^0.3',
                   'cm^', 'and', 'x and', 'not', '@', '$', 'x # comment', '\u03b1',

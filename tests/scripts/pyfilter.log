@@ -175,11 +175,11 @@ sqrt(x: Syntax error in expression "sqrt(x", at the end: ")" is missing
 x > 1cm and and y < 1cm: Syntax error in expression "x > 1cm and and y < 1cm", after "x > 1cm and": a value is expected, not "and"
 f(1,): Syntax error in expression "f(1,)", after "f(1,": a value is expected, not ")"
 not: Syntax error in expression "not", at the end: a value is missing
-x ? 1: Syntax error in expression "x ? 1", after "x": unexpected "?"
-hypot(x,y) > 3cm or (ekin < 25meV and pdgcode == neutron and time >: Syntax error in expression "hypot(x,y) > 3cm or (ekin < 25meV and pdgcode == neutron and time >", at the end: ")" is missing
+x ? 1: Syntax error in expression "x ? 1", after "x": "?" can not be used here
+hypot(x,y) > 3cm or (ekin < 25meV and pdgcode == neutron and time >: Syntax error in expression "hypot(x,y) > 3cm or (ekin < 25meV and pdgcode == neutron and time >", at the end: a value is missing
 z += 1cm; x = : Syntax error in expression "z += 1cm; x =", at the end: a value is missing
 x = 2cm;  y + ;z=1cm: Syntax error in expression "x = 2cm; y + ;z=1cm", after "x = 2cm; y +": a value is missing
-rotate_x(90deg;x=1cm: Syntax error in expression "rotate_x(90deg;x=1cm", at the end: ")" is missing
+rotate_x(90deg;x=1cm: Syntax error in expression "rotate_x(90deg;x=1cm", after "rotate_x(90deg": ")" is expected, not ";"
 pick 'pdgcode==neutron and (ekin<1MeV)': 'pdgcode==neutron and ekin<1MeV'
 pick 'not (x > 1cm) or y<0': 'not x>1cm or y<0'
 pick '(x>0 or y>0) and z>0': '(x>0 or y>0) and z>0'
@@ -312,7 +312,7 @@ ParticleFilter('(userflags & 0xff) != 0xff'): selects 1006
 ParticleFilter('pdgcode == -2111-1'): selects 0
 ParticleFilter('atan2(uy,ux) > 90deg'): selects 212
 ParticleFilter('angle(dir,(0,0,1)) < 30deg'): selects 313
-ParticleFilter('not (userflags & 1) and pdgcode != 0b0'): selects 1006
+ParticleFilter('not (userflags & 1) and pdgcode != 0x0'): selects 1006
 ParticleFilter('pdgcode == electron or pdgcode == positron'): selects 23
 ParticleFilter('pdgcode == antielectron or pdgcode == photon'): selects 247
 ParticleFilter('pdgcode == muon or pdgcode == antimuon or pdgcode == antiproton or pdgcode == antineutron'): selects 0

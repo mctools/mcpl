@@ -292,7 +292,8 @@ v2.2.9  (work in progress)
         "angle(dir,(0,0,1)) < 1deg"), round, through_sphere(center,radius),
         in and not in, and variables before the condition of picks. Edits
         have rotate_around and rotate_frame. Errors say where in the
-        expression the problem is.
+        expression the problem is. Numbers are decimal or hexadecimal (like
+        0x1f), as in C.
       * New plotting backends "unicode" and "ascii" in the Python API and
         mcpltool, which draw plots as text: in the terminal (e.g. with
         mcpltool -H ... -t), or in .txt files. They need
