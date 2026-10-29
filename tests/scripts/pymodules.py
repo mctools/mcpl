@@ -41,6 +41,8 @@
 import ast
 import pathlib
 
+from MCPLTestUtils.pymoddeps import package_imports
+
 dependencies = {
     '_ascii'            : ( '_reader', ),
     '_blocks'           : ( '_common', '_numpy', '_physics' ),
@@ -91,46 +93,6 @@ allowed_external_imports = {
     'matplotlib' : ['_plotbackend_mpl'],
     'scipp' : ['_scipp'],
 }
-
-def imports_of( path ):
-    """Returns (modules of the package imported outside of functions, those
-    only imported inside functions, external top level modules) imported
-    anywhere in the file."""
-    internal, infunc, external = set(), set(), set()
-    def visit( node, in_function ):
-        for child in ast.iter_child_nodes(node):
-            f = in_function or isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef,
-                                                  ast.Lambda))
-            if isinstance(child, ast.Import):
-                for a in child.names:
-                    assert not a.name.startswith('mcpl'), f'{path.name}: absolute import of {a.name}'
-                    external.add(a.name.split('.')[0])
-            elif isinstance(child, ast.ImportFrom):
-                if child.level == 0:
-                    assert not child.module.startswith('mcpl'), f'{path.name}: absolute import of {child.module}'
-                    external.add(child.module.split('.')[0])
-                else:
-                    assert child.level == 1, f'{path.name}: import from parent package'
-                    names = ( [child.module] if child.module
-                              else [ a.name for a in child.names ] )
-                    ( infunc if f else internal ).update(names)
-            visit(child, f)
-    visit(ast.parse(path.read_text()), False)
-    return internal, infunc - internal, external
-
-#Modules imported by name (with importlib), from the tables of these variables
-#(the values are names of modules, optionally followed by ":" and a name):
-imports_by_name = { '__init__' : ( '_on_demand', ),
-                    '_plotregistry' : ( '_registry', '_hidden' ) }
-
-def imported_by_name( path, variables ):
-    """Names of the modules in the dictionaries assigned to the variables"""
-    res = set()
-    for node in ast.parse(path.read_text()).body:
-        if ( isinstance(node, ast.Assign) and len(node.targets) == 1
-             and getattr(node.targets[0], 'id', None) in variables ):
-            res.update( v.split(':')[0] for v in ast.literal_eval(node.value).values() )
-    return res
 
 def find_cycle( graph ):
     """A cycle of the graph (as a list of names), or None"""
@@ -194,10 +156,9 @@ def main():
     print('Modules of the mcpl package and their imports from the package (in'
           ' parentheses: only inside functions, in brackets: by name):')
     external_users = {}
+    imports = package_imports(pkgdir)
     for name in sorted(dependencies):
-        internal, infunc, external = imports_of(files[name])
-        byname = imported_by_name(files[name], imports_by_name.get(name, ()))
-        byname -= internal | infunc
+        internal, infunc, byname, external = imports[name]
         for e in external:
             external_users.setdefault(e,set()).add(name)
         actual, expected = internal | infunc | byname, set(dependencies[name])
