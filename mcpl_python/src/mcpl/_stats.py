@@ -304,6 +304,8 @@ def collect_stats(mcplfile,stats='all',bin_data=True,pick=None):
         for s in std_stats:
             collected_stats[s] = _StatCollector()
         for pb in mcplfile.particle_blocks:
+            if not len(pb):
+                continue#(no particles picked in this block)
             vals_weight=pb.weight
             for s,sc in collected_stats.items():
                 if s=='weight':
@@ -330,6 +332,8 @@ def collect_stats(mcplfile,stats='all',bin_data=True,pick=None):
         if weight_sum is None:
             sumw = 0.0
         for pb in mcplfile.particle_blocks:
+            if not len(pb):
+                continue#(no particles picked in this block)
             vals_weight = pb.weight
             disable=[]
             for s in freq_stats:
