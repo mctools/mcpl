@@ -26,9 +26,11 @@
 # structure requires updating the tables below, which makes it a deliberate
 # decision:
 #
-# * Each module only imports modules of the package in lower layers (no import
-#   cycles), also inside functions. The modules at the top layer are the public
-#   entry points and only import private modules.
+# * The table "dependencies" gives for each module exactly the modules of the
+#   package it imports (also inside functions, and by name, like the names of
+#   the package which are only imported when used). This graph must have no
+#   cycles, and no module may import the public entry points (__init__,
+#   __main__ and the deprecated mcpl.mcpl).
 # * Only _numpy imports numpy, and only the listed modules import the optional
 #   dependencies.
 # * Each module has an __all__. For private modules, it lists the public names
@@ -39,41 +41,42 @@
 import ast
 import pathlib
 
-top = 99
-layers = {
-    'constants' : 0,
-    '_numpy' : 0,
-    '_common' : 0,
-    '_messages' : 0,
-    '_exprhelp' : 0,
-    '_physics' : 1,
-    '_statsum' : 1,
-    '_userdata' : 1,
-    '_scipp' : 2,
-    '_termcolor' : 1,
-    '_blocks' : 2,
-    '_expressions' : 2,
-    '_reader' : 3,
-    '_ascii' : 4,
-    '_writer' : 4,
-    '_fileops' : 5,
-    '_examples' : 5,
-    '_figures' : 0,
-    '_plotbackend' : 6,
-    '_plotregistry' : 7,
-    'plotting' : 8,
-    '_plotbackend_mpl' : 9,
-    '_plotbackend_test' : 9,
-    '_plotbackend_text' : 9,
-    '_stats' : 6,
-    '_histogram' : 9,
-    '_statsplot' : 10,
-    '_clistats' : 11,
-    '_cli' : 12,
-    '__init__' : top,
-    '__main__' : top,
-    'mcpl' : top,
+dependencies = {
+    '_ascii'            : ( '_reader', ),
+    '_blocks'           : ( '_common', '_numpy', '_physics' ),
+    '_cli'              : ( '_ascii', '_clistats', '_common', '_examples', '_expressions', '_exprhelp', '_fileops', '_messages', '_physics', '_reader', '_writer' ),
+    '_clistats'         : ( '_common', '_histogram', '_plotbackend', '_plotregistry', '_reader', '_stats', '_statsplot' ),
+    '_common'           : (  ),
+    'constants'         : (  ),
+    '_examples'         : ( '_common', '_messages', '_numpy', '_writer' ),
+    '_expressions'      : ( '_common', '_numpy', '_physics', '_userdata' ),
+    '_exprhelp'         : (  ),
+    '_figures'          : (  ),
+    '_fileops'          : ( '_common', '_messages', '_reader', '_statsum', '_writer' ),
+    '_histogram'        : ( '_common', '_expressions', '_numpy', '_physics', '_reader', 'plotting' ),
+    '_messages'         : (  ),
+    '_numpy'            : (  ),
+    '_physics'          : ( '_common', '_numpy', 'constants' ),
+    '_plotbackend'      : ( '_common', ),
+    '_plotbackend_mpl'  : ( '_common', '_figures', '_numpy', '_plotbackend' ),
+    '_plotbackend_test' : ( '_figures', '_numpy', '_plotbackend' ),
+    '_plotbackend_text' : ( '_figures', '_numpy', '_plotbackend', '_termcolor' ),
+    '_plotregistry'     : ( '_common', '_messages', '_plotbackend', '_plotbackend_mpl', '_plotbackend_test', '_plotbackend_text' ),
+    'plotting'          : ( '_figures', '_plotbackend', '_plotregistry' ),
+    '_reader'           : ( '_blocks', '_common', '_expressions', '_messages', '_numpy', '_scipp', '_statsum', '_userdata' ),
+    '_scipp'            : ( '_common', '_messages', '_numpy', '_userdata' ),
+    '_stats'            : ( '_common', '_expressions', '_messages', '_numpy', '_physics', '_reader' ),
+    '_statsplot'        : ( '_common', '_numpy', '_physics', '_plotbackend', '_plotregistry', '_stats', 'plotting' ),
+    '_statsum'          : ( '_common', ),
+    '_termcolor'        : ( '_common', ),
+    '_userdata'         : ( '_common', '_numpy' ),
+    '_writer'           : ( '_blocks', '_common', '_expressions', '_messages', '_numpy', '_physics', '_reader', '_statsum', '_userdata' ),
+    '__init__'          : ( '_ascii', '_blocks', '_cli', '_common', '_expressions', '_fileops', '_histogram', '_messages', '_reader', '_stats', '_statsplot', '_statsum', '_writer', 'constants', 'plotting' ),
+    '__main__'          : ( '_cli', ),
+    'mcpl'              : ( '_ascii', '_blocks', '_cli', '_common', '_reader', '_stats', '_statsplot', '_statsum' ),
 }
+
+entry_points = ( '__init__', '__main__', 'mcpl' )
 
 public_submodules = ['constants', 'plotting']
 
@@ -84,25 +87,65 @@ allowed_external_imports = {
 }
 
 def imports_of( path ):
-    """Returns (modules of the package, external top level modules) imported
+    """Returns (modules of the package imported outside of functions, those
+    only imported inside functions, external top level modules) imported
     anywhere in the file."""
-    internal, external = set(), set()
-    for node in ast.walk(ast.parse(path.read_text())):
-        if isinstance(node, ast.Import):
-            for a in node.names:
-                assert not a.name.startswith('mcpl'), f'{path.name}: absolute import of {a.name}'
-                external.add(a.name.split('.')[0])
-        elif isinstance(node, ast.ImportFrom):
-            if node.level == 0:
-                assert not node.module.startswith('mcpl'), f'{path.name}: absolute import of {node.module}'
-                external.add(node.module.split('.')[0])
-                continue
-            assert node.level == 1, f'{path.name}: import from parent package'
-            if node.module:
-                internal.add(node.module)
-            else:
-                internal.update(a.name for a in node.names)
-    return internal, external
+    internal, infunc, external = set(), set(), set()
+    def visit( node, in_function ):
+        for child in ast.iter_child_nodes(node):
+            f = in_function or isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef,
+                                                  ast.Lambda))
+            if isinstance(child, ast.Import):
+                for a in child.names:
+                    assert not a.name.startswith('mcpl'), f'{path.name}: absolute import of {a.name}'
+                    external.add(a.name.split('.')[0])
+            elif isinstance(child, ast.ImportFrom):
+                if child.level == 0:
+                    assert not child.module.startswith('mcpl'), f'{path.name}: absolute import of {child.module}'
+                    external.add(child.module.split('.')[0])
+                else:
+                    assert child.level == 1, f'{path.name}: import from parent package'
+                    names = ( [child.module] if child.module
+                              else [ a.name for a in child.names ] )
+                    ( infunc if f else internal ).update(names)
+            visit(child, f)
+    visit(ast.parse(path.read_text()), False)
+    return internal, infunc - internal, external
+
+#Modules imported by name (with importlib), from the tables of these variables
+#(the values are names of modules, optionally followed by ":" and a name):
+imports_by_name = { '__init__' : ( '_on_demand', ),
+                    '_plotregistry' : ( '_registry', '_hidden' ) }
+
+def imported_by_name( path, variables ):
+    """Names of the modules in the dictionaries assigned to the variables"""
+    res = set()
+    for node in ast.parse(path.read_text()).body:
+        if ( isinstance(node, ast.Assign) and len(node.targets) == 1
+             and getattr(node.targets[0], 'id', None) in variables ):
+            res.update( v.split(':')[0] for v in ast.literal_eval(node.value).values() )
+    return res
+
+def find_cycle( graph ):
+    """A cycle of the graph (as a list of names), or None"""
+    state = {}
+    def visit( n, path ):
+        state[n] = 'active'
+        for d in sorted(graph[n]):
+            if state.get(d) == 'active':
+                return path[path.index(d):] + [d]
+            if d not in state:
+                c = visit(d, path + [d])
+                if c:
+                    return c
+        state[n] = 'done'
+        return None
+    for n in sorted(graph):
+        if n not in state:
+            c = visit(n, [n])
+            if c:
+                return c
+    return None
 
 #External modules which are slow to import, and which must therefore only be
 #imported inside functions (i.e. on demand, when plots are made):
@@ -137,40 +180,46 @@ def main():
     import mcpldev
     pkgdir = pathlib.Path(mcpldev.__file__).parent
     files = { f.stem: f for f in pkgdir.glob('*.py') }
-    assert set(files) == set(layers), ( 'Modules not in table: '
-                                        f'{sorted(set(files)-set(layers))}, '
-                                        'modules in table but missing: '
-                                        f'{sorted(set(layers)-set(files))}' )
+    assert set(files) == set(dependencies), ( 'Modules not in table: '
+                                              f'{sorted(set(files)-set(dependencies))}, '
+                                              'modules in table but missing: '
+                                              f'{sorted(set(dependencies)-set(files))}' )
 
-    def layername(n):
-        return 'top' if layers[n] == top else str(layers[n])
-    print('Modules of the mcpl package and their imports from the package:')
+    print('Modules of the mcpl package and their imports from the package (in'
+          ' parentheses: only inside functions, in brackets: by name):')
     external_users = {}
-    for name in sorted(layers, key=lambda n: (layers[n], n)):
-        internal, external = imports_of(files[name])
+    for name in sorted(dependencies):
+        internal, infunc, external = imports_of(files[name])
+        byname = imported_by_name(files[name], imports_by_name.get(name, ()))
+        byname -= internal | infunc
         for e in external:
             external_users.setdefault(e,set()).add(name)
-        for i in internal:
-            assert i in layers, f'{name} imports unknown module {i}'
-            if layers[name] == top:
-                assert layers[i] != top, f'{name} imports {i} at the same top layer'
-            else:
-                assert layers[i] < layers[name], ( f'{name} (layer {layers[name]})'
-                                                   f' imports {i} (layer {layers[i]})' )
-        print(f'  layer {layername(name):>3} : {name:<20} <- {", ".join(sorted(internal)) or "-"}')
+        actual, expected = internal | infunc | byname, set(dependencies[name])
+        assert actual == expected, ( f'{name} imports modules not in the table:'
+                                     f' {sorted(actual-expected)}, and does not'
+                                     f' import modules in the table:'
+                                     f' {sorted(expected-actual)}' )
+        bad = actual & set(entry_points)
+        assert not bad, f'{name} imports the entry points {sorted(bad)}'
+        listed = ( sorted(internal) + [ f'({n})' for n in sorted(infunc) ]
+                   + [ f'[{n}]' for n in sorted(byname) ] )
+        print(f'  {name:<20} <- {", ".join(listed) or "-"}')
+    cycle = find_cycle({ n : set(d) for n, d in dependencies.items() })
+    assert cycle is None, f'Import cycle: {" -> ".join(cycle or [])}'
+    print('The imports have no cycles.')
 
     for ext, allowed in allowed_external_imports.items():
         users = external_users.get(ext,set())
         assert users <= set(allowed), f'{ext} imported by {sorted(users-set(allowed))}'
         print(f'{ext} is imported by: {", ".join(sorted(users)) or "-"}')
 
-    for name in sorted(layers):
+    for name in sorted(dependencies):
         early = import_time_externals(files[name]) & set(on_demand_external_imports)
         assert not early, f'{name} imports {sorted(early)} outside of functions'
     print(f'{", ".join(on_demand_external_imports)} are only imported inside functions')
 
     public_names = {}
-    for name in layers:
+    for name in dependencies:
         a = literal_all(files[name])
         if name == '__main__':
             continue
@@ -189,7 +238,7 @@ def main():
                                                'missing names: '
                                                f'{sorted(expected-set(mcpldev.__all__))}' )
     print(f'mcpl.__all__ has {len(mcpldev.__all__)} names, provided by:')
-    for name in sorted(set(public_names.values()), key=lambda n: (layers[n], n)):
+    for name in sorted(set(public_names.values())):
         print(f'  {name:<20} : {", ".join(sorted(n for n,m in public_names.items() if m == name))}')
 
 if __name__ == '__main__':
