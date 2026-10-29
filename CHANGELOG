@@ -285,9 +285,12 @@ v2.2.9  (work in progress)
         with the Python API are now always double precision numbers (like in
         the C API), also for files which store numbers in single precision
         (before, they were single precision numpy values for such files).
-      * New function angle_to(x,y,z) in expressions, giving the angle between
-        the direction of the particles and the vector (x,y,z), precise also for
-        small angles (e.g. "angle_to(0,0,1) < 1deg").
+      * Expressions have vectors (pos, dir, pol, and (a,b,c)) with the
+        functions dot, cross and angle (precise also for small angles, e.g.
+        "angle(dir,(0,0,1)) < 1deg"), round, through_sphere(center,radius),
+        in and not in, and variables before the condition of picks. Edits
+        have rotate_around and rotate_frame. Errors say where in the
+        expression the problem is.
       * New plotting backends "unicode" and "ascii" in the Python API and
         mcpltool, which draw plots as text: in the terminal (e.g. with
         mcpltool -H ... -t), or in .txt files. They need

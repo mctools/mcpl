@@ -3,18 +3,23 @@ Modules of the mcpl package and their imports from the package (in parentheses: 
   __main__             <- _cli
   _ascii               <- _reader
   _blocks              <- _common, _numpy, (_physics)
-  _cli                 <- _common, _messages, _reader, (_ascii), (_clistats), (_examples), (_expressions), (_exprhelp), (_fileops), (_physics), (_writer)
+  _cli                 <- _common, _messages, _reader, (_ascii), (_clistats), (_examples), (_expressions), (_exprhelp), (_fileops), (_particles), (_writer)
   _clistats            <- _common, _reader, (_histogram), (_plotbackend), (_plotregistry), (_stats), (_statsplot)
   _common              <- -
   _examples            <- _common, _messages, _numpy, (_writer)
-  _expressions         <- _common, _numpy, _physics, (_userdata)
-  _exprhelp            <- -
+  _exprcore            <- _common, _exprsyntax, _numpy, _particles, _physics, (_userdata)
+  _expressions         <- _common, _exprcore, _exprrotation, _exprsyntax, _numpy, _particles, _physics
+  _exprhelp            <- _particles, (_helptext)
+  _exprrotation        <- _numpy
+  _exprsyntax          <- _common
   _figures             <- -
   _fileops             <- _common, _messages, _reader, _statsum, _writer
-  _histogram           <- _common, _expressions, _numpy, _physics, _reader, (plotting)
+  _helptext            <- -
+  _histogram           <- _common, _expressions, _numpy, _physics, _reader, (_exprcore), (plotting)
   _messages            <- -
   _numpy               <- -
-  _physics             <- _common, _numpy, constants
+  _particles           <- -
+  _physics             <- _common, _numpy, _particles, constants
   _plotbackend         <- _common
   _plotbackend_mpl     <- _common, _figures, _numpy, _plotbackend
   _plotbackend_test    <- _figures, _numpy, _plotbackend

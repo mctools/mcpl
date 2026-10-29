@@ -361,7 +361,7 @@ def _app_mcpltool(argv):
     pick = edit = None
     if '--pick' in values:
         v = values['--pick'].strip()
-        from ._physics import _particle_names
+        from ._particles import _particle_names
         if v in _particle_names or re.fullmatch(r'[-+]?[0-9]+',v):
             bad(f'-p takes an expression (PICK): to pick particles of a type,'
                 f' use -p "pdgcode == {v}"')

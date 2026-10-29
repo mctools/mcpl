@@ -69,7 +69,7 @@ def _parse_hist( text ):
     "ekin/MeV;logx;bins=50" or "x/cm : y/cm;xrange=-10:10". Returns a
     dict with the expressions (a list of one or two), and the options (with
     defaults for those not given)."""
-    from ._expressions import _check_chars
+    from ._exprcore import _check_chars
     _check_chars(text,'histogram')
     parts = [ e.strip() for e in text.split(';') ]
     exprs = [ e.strip() for e in parts[0].split(':') ]

@@ -49,4 +49,4 @@ MCPLOutFile({'pick': 'wavelength > 1Aa'}): The wavelength is only defined for ne
 MCPLOutFile with pick using fileidx: 11 particles
 fileidx with arrays: fileidx can only be used for particles read from files
 MCPLFile with a bytes filename: ok
-MCPLFile with an invalid pick: Syntax error in expression "blah +"
+MCPLFile with an invalid pick: Syntax error in expression "blah +", at the end: a value is missing
