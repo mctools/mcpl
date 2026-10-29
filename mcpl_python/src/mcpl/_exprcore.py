@@ -29,17 +29,15 @@ import functools
 import math
 
 from ._common import MCPLError
-from ._exprsyntax import (
+from ._exprsyntax import _expr_parse, _expr_unparse, _Unit
+from ._exprunits import (
     _dim_E,
     _dim_K,
     _dim_L,
     _dim_none,
     _dim_T,
     _dim_unknown,
-    _expr_parse,
     _expr_units,
-    _expr_unparse,
-    _Unit,
 )
 from ._numpy import np
 from ._particles import _particle_names, _wavelength_pdgcodes
@@ -188,7 +186,7 @@ class _Expr:
     edits, with their variables), and the text is then used in messages."""
     def __init__( self, text, tree = None, variables = () ):
         self.text = _expr_normalise(text)
-        self.tree = _expr_parse(self.text) if tree is None else ast.Expression(body = tree)
+        self.tree = _expr_parse(self.text,units = _expr_units) if tree is None else ast.Expression(body = tree)
         _expr_check(self.tree, self.text, variables)
 
     @functools.cached_property

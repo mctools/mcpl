@@ -19,37 +19,18 @@
 ##                                                                            ##
 ################################################################################
 
-"""The syntax of particle expressions (see _expressions): their units, the
-parser giving trees of ast nodes, and the writer of their (normalised)
-texts."""
+"""The syntax of particle expressions (see _expressions): the parser giving
+trees of ast nodes, and the writer of their (normalised) texts. The names of
+the units are given to the parser, which otherwise knows nothing about the
+meaning of the expressions."""
 
 __all__ = []
 
 import ast
-import math
 import re
 
 from ._common import MCPLError
 
-#Dimensions (length,energy,time,temperature) and units of quantities in
-#expressions. Values are internally in the units of MCPL (cm, MeV, ms), also for
-#wavelengths, and temperatures (of userdata) in K:
-_dim_none = (0,0,0,0)
-_dim_L, _dim_E, _dim_T, _dim_K = (1,0,0,0), (0,1,0,0), (0,0,1,0), (0,0,0,1)
-#(the dimension of fields of the userdata when expressions are checked
-#without a file, which have units only in the layouts of files: everything
-#computed from them has unknown units, which are never refused):
-_dim_unknown = 'unknown'
-_expr_units = { 'meV' : (1e-9,_dim_E), 'eV' : (1e-6,_dim_E),
-                'keV' : (1e-3,_dim_E), 'MeV' : (1.0,_dim_E),
-                'GeV' : (1e3,_dim_E), 'TeV' : (1e6,_dim_E),
-                'ns' : (1e-6,_dim_T), 'us' : (1e-3,_dim_T),
-                'ms' : (1.0,_dim_T), 's' : (1e3,_dim_T),
-                'Aa' : (1e-8,_dim_L), 'nm' : (1e-7,_dim_L),
-                'um' : (1e-4,_dim_L), 'mm' : (0.1,_dim_L),
-                'cm' : (1.0,_dim_L), 'm' : (100.0,_dim_L),
-                'km' : (1e5,_dim_L), 'K' : (1.0,_dim_K),
-                'deg' : (math.pi/180,None), 'rad' : (1.0,None) }
 #C-style operators, which give errors saying what to use instead:
 _expr_unsupported_ops = ( ( '&&', 'and', 'x > 0 and y > 0' ),
                           ( '||', 'or', 'x > 0 or y > 0' ),
@@ -69,13 +50,14 @@ def _expr_check_ops( expr ):
             raise MCPLError(f'Use "{alt}" instead of "{op}" in expressions (e.g.'
                             f' "{example}"), in expression "{expr}"')
 
-def _expr_parse( expr, mode = 'eval', context = None ):
+def _expr_parse( expr, mode = 'eval', context = None, *, units ):
     """Parse an expression (mode 'eval') or an edit statement (mode 'exec') to
-    a tree of ast nodes, with _ExprParser. For a statement of an edit, context
-    is (the edit, the position of the statement in it), for messages."""
+    a tree of ast nodes, with _ExprParser, where units are the names of the
+    units (which are _Unit nodes). For a statement of an edit, context is (the
+    edit, the position of the statement in it), for messages."""
     _expr_check_ops(expr)
     try:
-        return _ExprParser(expr).parse(mode)
+        return _ExprParser(expr,units).parse(mode)
     except _ExprSyntaxError as e:
         text, pos = ( expr, e.pos ) if context is None else ( context[0], context[1] + e.pos )
         hint = ( ' (use == for comparisons)'
@@ -144,10 +126,10 @@ class _ExprParser:
     right-associative, with unary - and + allowed in exponents). Units are values (MeV is 1MeV), and a power
     directly after a unit applies to the unit only (as in 4cm^2 or cm^(1/2)),
     and must be a constant."""
-    def __init__( self, expr ):
+    def __init__( self, expr, units ):
         import io
         import tokenize
-        self._expr = expr
+        self._expr, self._units = expr, frozenset(units)
         self._toks = []
         skip = ( tokenize.NEWLINE, tokenize.NL, tokenize.ENDMARKER, tokenize.INDENT,
                  tokenize.DEDENT )
@@ -306,7 +288,7 @@ class _ExprParser:
     def _implied( self ):
         node = self._power()
         prev, nxt = self._toks[self._i-1], self._peek()
-        if ( nxt[0] == 'name' and nxt[1] in _expr_units and not isinstance(node,_Unit)
+        if ( nxt[0] == 'name' and nxt[1] in self._units and not isinstance(node,_Unit)
              and ( prev[0] == 'number' or prev == ( 'op', ')' ) ) ):
             node = ast.BinOp( left = node, op = ast.Mult(), right = self._unit() )
         return node
@@ -346,7 +328,7 @@ class _ExprParser:
         if kind != 'name' or s in ( 'and', 'or', 'not' ):
             err.what = err.what.format(s)
             raise err
-        if s in _expr_units:
+        if s in self._units:
             self._i -= 1
             return self._unit()
         if self._accept('op','('):

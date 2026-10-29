@@ -51,13 +51,8 @@ from ._exprcore import (
     _unit_hint,
 )
 from ._exprrotation import _exact_cos_sin, _rotation_matrix
-from ._exprsyntax import (
-    _dim_E,
-    _dim_unknown,
-    _expr_parse,
-    _expr_units,
-    _expr_unparse,
-)
+from ._exprsyntax import _expr_parse, _expr_unparse
+from ._exprunits import _dim_E, _dim_unknown, _expr_units
 from ._numpy import np
 from ._particles import _particle_names, _wavelength_pdgcodes
 from ._physics import (
@@ -75,7 +70,8 @@ def _expr_canonical( expr, edit = False ):
     parts = _split_statements(expr,positions = True)
     if not edit and len(parts) == 1:
         return _Expr(parts[0][0]).canonical
-    return ';'.join( _expr_unparse(_expr_parse(part, mode = 'exec', context = ( expr, pos )))
+    return ';'.join( _expr_unparse(_expr_parse(part, mode = 'exec', context = ( expr, pos ),
+                                               units = _expr_units))
                      for part, pos in parts )
 
 def _check_conditions( node, expr ):
@@ -263,7 +259,7 @@ class _Statements:
         self.condition = None
         if pick:
             try:
-                tree = _expr_parse(last, context = ( self.text, lastpos ))
+                tree = _expr_parse(last, context = ( self.text, lastpos ), units = _expr_units)
             except MCPLError:
                 if ';' in self.text and self._is_assignment(last):
                     raise MCPLError('A pick ends with its condition, as in'
@@ -282,7 +278,7 @@ class _Statements:
     def _is_assignment( part ):
         """Whether the text is an assignment (as of a variable)"""
         try:
-            stmt = _expr_parse(part, mode = 'exec').body
+            stmt = _expr_parse(part, mode = 'exec', units = _expr_units).body
         except MCPLError:
             return False
         return len(stmt) == 1 and isinstance(stmt[0],( ast.Assign, ast.AugAssign ))
@@ -304,7 +300,7 @@ class _Statements:
     def _parse( self, part, pos, pick ):
         """Parse a statement (in a pick, only assignments of variables)"""
         variables = self.variables
-        tree = _expr_parse(part, mode = 'exec', context = ( self.text, pos ))
+        tree = _expr_parse(part, mode = 'exec', context = ( self.text, pos ), units = _expr_units)
         stmt = tree.body[0] if len(tree.body) == 1 else None
         if ( isinstance(stmt,ast.Expr) and isinstance(stmt.value,ast.Call)
              and isinstance(stmt.value.func,ast.Name)
