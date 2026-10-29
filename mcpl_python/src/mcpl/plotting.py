@@ -44,11 +44,11 @@ For instance:
    save( Figure( panels = [ panel ] ), 'myplot.pdf' )
 """
 
-__all__ = [ 'Backend', 'Bars', 'Figure', 'Hist2D', 'Panel', 'StepHist', 'Text',
+__all__ = [ 'Backend', 'Bars', 'Figure', 'Hist2D', 'Panel', 'Scatter3D', 'StepHist', 'Text',
             'available_backends', 'formats', 'register_backend', 'resolution',
             'save', 'set_default_backend', 'show' ]
 
-from ._figures import Bars, Figure, Hist2D, Panel, StepHist, Text
+from ._figures import Bars, Figure, Hist2D, Panel, Scatter3D, StepHist, Text
 from ._plotbackend import PlotBackend
 from ._plotregistry import (
     _available_backends,
