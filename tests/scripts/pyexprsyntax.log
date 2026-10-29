@@ -1,0 +1,172 @@
+Precedence and associativity:
+  'a or b and c'                     -> (or a (and b c))   written: 'a or b and c'
+  'a and b or c'                     -> (or (and a b) c)   written: 'a and b or c'
+  'not a and b'                      -> (and (not a) b)   written: 'not a and b'
+  'not a == b'                       -> (not (cmp a == b))   written: 'not a==b'
+  'not not a'                        -> (not (not a))   written: 'not not a'
+  'a | b & c'                        -> (| a (& b c))   written: 'a|b&c'
+  'a & b | c'                        -> (| (& a b) c)   written: 'a&b|c'
+  'a & 1 == 0'                       -> (cmp (& a 1) == 0)   written: 'a&1==0'
+  'a | b == c'                       -> (cmp (| a b) == c)   written: 'a|b==c'
+  'a + b * c'                        -> (+ a (* b c))   written: 'a+b*c'
+  'a * b + c'                        -> (+ (* a b) c)   written: 'a*b+c'
+  'a - b - c'                        -> (- (- a b) c)   written: 'a-b-c'
+  'a - (b - c)'                      -> (- a (- b c))   written: 'a-(b-c)'
+  'a / b / c'                        -> (/ (/ a b) c)   written: 'a/b/c'
+  'a // b * c'                       -> (* (// a b) c)   written: 'a//b*c'
+  'a * b // c'                       -> (// (* a b) c)   written: 'a*b//c'
+  '-a ^ 2'                           -> (neg (^ a 2))   written: '-a^2'
+  '(-a) ^ 2'                         -> (^ (neg a) 2)   written: '(-a)^2'
+  'a ^ b ^ c'                        -> (^ a (^ b c))   written: 'a^b^c'
+  '(a ^ b) ^ c'                      -> (^ (^ a b) c)   written: '(a^b)^c'
+  'a ^ -b'                           -> (^ a (neg b))   written: 'a^-b'
+  '2 ^ -x ^ 2'                       -> (^ 2 (neg (^ x 2)))   written: '2^-x^2'
+  'a ** b'                           -> (^ a b)   written: 'a^b'
+  '-(a + b)'                         -> (neg (+ a b))   written: '-(a+b)'
+  '+a'                               -> (pos a)   written: '+a'
+  '- - a'                            -> (neg (neg a))   written: '--a'
+  '-a * b'                           -> (* (neg a) b)   written: '-a*b'
+  'a < b < c'                        -> (cmp a < b < c)   written: 'a<b<c'
+  'a == b != c'                      -> (cmp a == b != c)   written: 'a==b!=c'
+  'a <= b >= c'                      -> (cmp a <= b >= c)   written: 'a<=b>=c'
+  '(a < b) == c'                     -> (cmp (cmp a < b) == c)   written: '(a<b)==c'
+  'a < b and b < c'                  -> (and (cmp a < b) (cmp b < c))   written: 'a<b and b<c'
+Units:
+  '25meV'                            -> (* 25 <meV>)   written: '25meV'
+  '25 meV'                           -> (* 25 <meV>)   written: '25meV'
+  '1e3cm'                            -> (* 1000.0 <cm>)   written: '1000.0cm'
+  '0.5m'                             -> (* 0.5 <m>)   written: '0.5m'
+  'x/cm'                             -> (/ x <cm>)   written: 'x/cm'
+  'MeV'                              -> <MeV>   written: 'MeV'
+  '4cm^2'                            -> (* 4 <cm^2>)   written: '4cm^2'
+  '2cm^-1 * x'                       -> (* (* 2 <cm^-1>) x)   written: '2cm^-1*x'
+  'cm^(1/2)'                         -> <cm^0.5>   written: 'cm^0.5'
+  'cm^-0.5'                          -> <cm^-0.5>   written: 'cm^-0.5'
+  'cm^2.5'                           -> <cm^2.5>   written: 'cm^2.5'
+  'cm^+2'                            -> <cm^2>   written: 'cm^2'
+  'cm^--2'                           -> <cm^2>   written: 'cm^2'
+  '2^(x)MeV'                         -> (* (^ 2 x) <MeV>)   written: '2^x*MeV'
+  '(a + b)cm'                        -> (* (+ a b) <cm>)   written: '(a+b)cm'
+  '1/cm^2'                           -> (/ 1 <cm^2>)   written: '1/cm^2'
+  'x > 0'                            -> (cmp x > 0)   written: 'x>0'
+  'x > 2cm - 1mm'                    -> (cmp x > (- (* 2 <cm>) (* 1 <mm>)))   written: 'x>2cm-1mm'
+  'ekin/MeV ^ 2'                     -> (/ ekin <MeV^2>)   written: 'ekin/MeV^2'
+  'deg'                              -> <deg>   written: 'deg'
+Vectors and their values:
+  '(a,b)'                            -> [a, b]   written: '(a,b)'
+  '(a,b,c)'                          -> [a, b, c]   written: '(a,b,c)'
+  '(0,0,1m)'                         -> [0, 0, (* 1 <m>)]   written: '(0,0,1m)'
+  'pos.x'                            -> (at pos 0)   written: 'pos.x'
+  'pos.y.z'                          -> (at (at pos 1) 2)   written: 'pos.y.z'
+  'pos.at(2)'                        -> (at pos 2)   written: 'pos.z'
+  '(x,y,z).y'                        -> (at [x, y, z] 1)   written: '(x,y,z).y'
+  'dir.x ^ 2'                        -> (^ (at dir 0) 2)   written: 'dir.x^2'
+  '-pos.x'                           -> (neg (at pos 0))   written: '-pos.x'
+  'f(a,b)'                           -> f(a, b)   written: 'f(a,b)'
+  'f()'                              -> f()   written: 'f()'
+  'abs((0,0,1m))'                    -> abs([0, 0, (* 1 <m>)])   written: 'abs((0,0,1m))'
+  'dot(dir,(0,0,1))'                 -> dot(dir, [0, 0, 1])   written: 'dot(dir,(0,0,1))'
+  'f(g(a))'                          -> f(g(a))   written: 'f(g(a))'
+Userdata fields:
+  'userdata.temp'                    -> userdata.temp   written: 'userdata.temp'
+  'userdata.d.at(1)'                 -> userdata.d.at(1)   written: 'userdata.d.at(1)'
+  'userdata.temp > 300K'             -> (cmp userdata.temp > (* 300 <K>))   written: 'userdata.temp>300K'
+  '-userdata.n ^ 2'                  -> (neg (^ userdata.n 2))   written: '-userdata.n^2'
+In and not in:
+  'pdgcode in (neutron,gamma)'       -> (cmp pdgcode in [neutron, gamma])   written: 'pdgcode in (neutron,gamma)'
+  'x not in (1,2)'                   -> (cmp x not in [1, 2])   written: 'x not in (1,2)'
+  'a in (b)'                         -> (cmp a in [b])   written: 'a in (b)'
+  'not a in (1,2)'                   -> (not (cmp a in [1, 2]))   written: 'not a in (1,2)'
+  'a + 1 in (2,3) and b'             -> (and (cmp (+ a 1) in [2, 3]) b)   written: 'a+1 in (2,3) and b'
+Numbers:
+  '0'                                -> 0   written: '0'
+  '7'                                -> 7   written: '7'
+  '0.5'                              -> 0.5   written: '0.5'
+  '.5'                               -> 0.5   written: '0.5'
+  '5.'                               -> 5.0   written: '5.0'
+  '1e-3'                             -> 0.001   written: '0.001'
+  '1E3'                              -> 1000.0   written: '1000.0'
+  '0x10'                             -> 16   written: '16'
+  '1_000'                            -> 1000   written: '1000'
+  '0.0'                              -> 0.0   written: '0.0'
+Statements of edits:
+  'x = 1cm'                          -> {(= x (* 1 <cm>))}   written: 'x=1cm'
+  'x += 2'                           -> {(+= x 2)}   written: 'x+=2'
+  'x -= y'                           -> {(-= x y)}   written: 'x-=y'
+  'x *= 2'                           -> {(*= x 2)}   written: 'x*=2'
+  'x /= 2'                           -> {(/= x 2)}   written: 'x/=2'
+  'x //= 2'                          -> {(//= x 2)}   written: 'x//=2'
+  'x ^= 2'                           -> {(^= x 2)}   written: 'x^=2'
+  'x **= 2'                          -> {(^= x 2)}   written: 'x^=2'
+  'x &= 3'                           -> {(&= x 3)}   written: 'x&=3'
+  'x |= 4'                           -> {(|= x 4)}   written: 'x|=4'
+  'tmp = x + y'                      -> {(= tmp (+ x y))}   written: 'tmp=x+y'
+  'swap(x,y)'                        -> {swap(x, y)}   written: 'swap(x,y)'
+  'rotate_z(90deg)'                  -> {rotate_z((* 90 <deg>))}   written: 'rotate_z(90deg)'
+  'pos += (0,0,1m)'                  -> {(+= pos [0, 0, (* 1 <m>)])}   written: 'pos+=(0,0,1m)'
+  'x > 0'                            -> {(cmp x > 0)}   written: 'x>0'
+Errors:
+  ''                       -> Syntax error in expression "", at the start: a value is missing
+  ' '                      -> Syntax error in expression " ", at the start: a value is missing
+  'x +'                    -> Syntax error in expression "x +", at the end: a value is missing
+  '(x'                     -> Syntax error in expression "(x", at the end: ")" is missing
+  'x)'                     -> Syntax error in expression "x)", after "x": unexpected ")"
+  '((x)'                   -> Syntax error in expression "((x)", at the end: ")" is missing
+  'x y'                    -> Syntax error in expression "x y", after "x": an operator is missing
+  '1 2'                    -> Syntax error in expression "1 2", after "1": an operator is missing
+  'x = 1'                  -> Syntax error in expression "x = 1", after "x": unexpected "=" (use == for comparisons)
+  'a in (1) < 2'           -> Syntax error in expression "a in (1) < 2", after "a in (1)": "in" can not be used in a chain of comparisons
+  'a < b in (1)'           -> Syntax error in expression "a < b in (1)", after "a < b": "in" can not be used in a chain of comparisons
+  'a in 1'                 -> Syntax error in expression "a in 1", after "a in": "(" is expected, not "1"
+  'a in ()'                -> Syntax error in expression "a in ()", after "a in (": a value is expected, not ")"
+  '(1,2,3,4)'              -> Syntax error in expression "(1,2,3,4)", at the end: vectors have two or three values
+  '()'                     -> Syntax error in expression "()", after "(": a value is expected, not ")"
+  'pos.w'                  -> Syntax error in expression "pos.w", after "pos.": the values of vectors are written as .x, .y, .z or .at(INDEX) (as in pos.x or pos.at(0))
+  'pos.at(x)'              -> Syntax error in expression "pos.at(x)", after "pos.at(": the index of a value of a vector must be a whole number (counting from 0)
+  'pos.at(-1)'             -> Syntax error in expression "pos.at(-1)", after "pos.at(": the index of a value of a vector must be a whole number (counting from 0)
+  'pos.at(1.5)'            -> Syntax error in expression "pos.at(1.5)", after "pos.at(": the index of a value of a vector must be a whole number (counting from 0)
+  'pos.'                   -> Syntax error in expression "pos.", at the end: the values of vectors are written as .x, .y, .z or .at(INDEX) (as in pos.x or pos.at(0))
+  'userdata.'              -> Syntax error in expression "userdata.", at the end: the name of a userdata field is missing
+  'userdata.d.x'           -> Syntax error in expression "userdata.d.x", after "userdata.d.": values of arrays in the userdata are written as userdata.NAME.at(INDEX)
+  'userdata.d.at()'        -> Syntax error in expression "userdata.d.at()", after "userdata.d.at(": the index of a value in an array must be a whole number (counting from 0)
+  '090'                    -> Invalid number 090 (integers can not start with 0) in expression "090"
+  '007'                    -> Invalid number 007 (integers can not start with 0) in expression "007"
+  'x && y'                 -> Use "and" instead of "&&" in expressions (e.g. "x > 0 and y > 0"), in expression "x && y"
+  'x || y'                 -> Use "or" instead of "||" in expressions (e.g. "x > 0 or y > 0"), in expression "x || y"
+  '!x'                     -> Use "not" instead of "!" in expressions (e.g. "not (x > 0)"), in expression "!x"
+  'x % 2'                  -> Use "mod(a,b)" instead of "%" in expressions (e.g. "mod(userflags,4) == 1"), in expression "x % 2"
+  '~x'                     -> The operator ~ is not supported in expressions (e.g. "(userflags & 0x10) == 0" tests that a bit is not set), in expression "~x"
+  '"a"'                    -> Syntax error in expression ""a"", at the start: ""a"" can not be used here
+  "'a'"                    -> Syntax error in expression "'a'", at the start: "'a'" can not be used here
+  'x[0]'                   -> Syntax error in expression "x[0]", after "x": unexpected "["
+  'lambda: 1'              -> Syntax error in expression "lambda: 1", after "lambda": unexpected ":"
+  'x if y else z'          -> Syntax error in expression "x if y else z", after "x": an operator is missing
+  '[1]'                    -> Syntax error in expression "[1]", at the start: a value is expected, not "["
+  '{1}'                    -> Syntax error in expression "{1}", at the start: a value is expected, not "{"
+  'f(x=1)'                 -> Syntax error in expression "f(x=1)", after "f(x": ")" is expected, not "=" (use == for comparisons)
+  'cm^x'                   -> Syntax error in expression "cm^x", after "cm^": the power of a unit must be a number, like cm^2 or cm^(1/2)
+  'cm^(1/0)'               -> Powers of units must be numbers (like cm^2 or cm^(1/2)), in expression "cm^(1/0)"
+  'cm^0.3'                 -> Units can only have whole or half powers (like cm^2 or cm^0.5), in expression "cm^0.3"
+  'cm^'                    -> Syntax error in expression "cm^", at the end: the power of a unit must be a number, like cm^2 or cm^(1/2)
+  'and'                    -> Syntax error in expression "and", at the start: a value is expected, not "and"
+  'x and'                  -> Syntax error in expression "x and", at the end: a value is missing
+  'not'                    -> Syntax error in expression "not", at the end: a value is missing
+  '@'                      -> Syntax error in expression "@", at the start: a value is expected, not "@"
+  '$'                      -> Syntax error in expression "$", at the start: a value is expected, not "$"
+  'x # comment'            -> Syntax error in expression "x # comment", after "x": "# comment" can not be used here
+  'α'                      -> Syntax error in expression "α", at the start: "α" can not be used here
+  'a,b'                    -> Syntax error in expression "a,b", after "a": unexpected ","
+  '1j'                     -> Unsupported value in expression "1j"
+  'x == = 1'               -> Syntax error in expression "x == = 1", after "x ==": a value is expected, not "=" (use == for comparisons)
+  'x =< 1'                 -> Syntax error in expression "x =< 1", after "x": unexpected "=" (use == for comparisons)
+Errors of statements:
+  'x ='                    -> Syntax error in expression "x =", at the end: a value is missing
+  '= 1'                    -> Syntax error in expression "= 1", at the start: a value is expected, not "="
+  'userdata.t = 1'         -> Syntax error in expression "userdata.t = 1", at the start: fields of the userdata can not be changed
+  'userdata.t.at(0) += 1'  -> Syntax error in expression "userdata.t.at(0) += 1", at the start: fields of the userdata can not be changed
+  'x = y = 1'              -> Syntax error in expression "x = y = 1", after "x = y": unexpected "="
+  'x += '                  -> Syntax error in expression "x += ", at the end: a value is missing
+  '1 = x'                  -> Syntax error in expression "1 = x", after "1": unexpected "="
+  'x, y = 1, 2'            -> Syntax error in expression "x, y = 1, 2", after "x": unexpected ","
+Random expressions: 1603 written and parsed again to the same trees, 397 errors
+Random input: only trees or MCPLError (in total 637 trees and 9363 errors)
