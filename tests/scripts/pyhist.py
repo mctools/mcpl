@@ -76,6 +76,14 @@ def test_histograms():
         h = mcpl.histogram(example_file, 'ekin/MeV', pick='x > 1km',
                            range=(0,10), bins=2, split=split)
         print(f'empty histogram with split={split!r}:', h.to_text())
+    #Labels of split values, which are conditions only if all values in all
+    #blocks are 0 or 1 (here only the first block has just zeros):
+    with mcpl.MCPLFile('reffile_1.mcpl',blocklength=2) as f:
+        h = mcpl.histogram(f, 'x/cm', split='fileidx // 2', bins=1)
+    print('labels of split=fileidx // 2:', sorted(h.contents))
+    with mcpl.MCPLFile('reffile_1.mcpl',blocklength=2) as f:
+        h = mcpl.histogram(f, 'x/cm', split='fileidx > 1', bins=1)
+    print('labels of split=fileidx > 1:', sorted(h.contents))
     for args, kwargs in ( (('ekin',),{}), (('ekin/MeV',),{'pick':'x > 1km'}),
                           (('x/cm',),{'logx':True,'range':(-1,1)}),
                           (('wavelength',),{}), (('x/cm',),{'split':'x'}),

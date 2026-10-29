@@ -483,8 +483,10 @@ def histogram( files, expression, pick = None, bins = 'auto', range = None,
             w = b.weight if weighted else np.ones(len(v))
             if spl is not None:
                 sv = np.asarray(spl(b),dtype=float)
-                if spl._is_bool is None and len(sv):
-                    spl._is_bool = bool(np.all((sv==0)|(sv==1)))
+                if len(sv):
+                    #(labels as a condition only if all values are 0 or 1):
+                    b01 = bool(np.all((sv==0)|(sv==1)))
+                    spl._is_bool = b01 if spl._is_bool is None else spl._is_bool and b01
                 keys = np.unique(sv)
                 if len(keys) > 1000:
                     raise MCPLError(f'Split expression "{spl.expression}" has'
