@@ -3,7 +3,9 @@ v2.2.9  (work in progress)
         in hypot, min, max and clamp has the units of the other values,
         histogram() checks its bins and range, text plots have no round-off
         values in log scales, and matplotlib needs a display to show plots
-        also outside Linux.
+        also outside Linux. Statistics with picks no longer fail for blocks
+        without picked particles, swap(..) refuses wavelength, and split
+        values are only labelled as conditions if all are 0 or 1.
       * Files are compressed with gzip level 1 (instead of 6 in C and 9 in
         Python), which for MCPL files is several times faster and makes files
         only slightly larger. Files compressed at any level can be read.
