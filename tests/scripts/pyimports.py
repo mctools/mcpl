@@ -74,9 +74,9 @@ expected = {
     'tool_pick' : f'_cli {_expr}',
     'tool_stats' : '_cli _clistats _particles _physics _stats _statsum constants',
     'tool_hist' : f'_cli _clistats {_expr} _histogram',
-    'tool_extract' : '_cli _statsum _records _writer',
-    'tool_extract_edit' : f'_cli {_expr} _statsum _records _writer',
-    'tool_merge' : '_cli _fileops _statsum _records _writer',
+    'tool_extract' : '_cli _extract _statsum _records _writer',
+    'tool_extract_edit' : f'_cli _extract {_expr} _statsum _records _writer',
+    'tool_merge' : '_cli _extract _fileops _statsum _records _writer',
     'tool_repair' : '_cli _fileops _statsum _records _writer',
     'tool_text' : '_ascii _cli',
     #Plotting with the test backend loads only that backend:
