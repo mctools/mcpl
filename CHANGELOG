@@ -5,8 +5,8 @@ v2.2.9  (work in progress)
         text plots have no round-off values in log scales, and matplotlib
         needs a display to show plots also outside Linux. Statistics with
         picks no longer fail for blocks without picked particles, swap(..)
-        refuses wavelength, and split values are only labelled as conditions
-        if all are 0 or 1.
+        refuses wavelength, and values of display_by are only labelled as
+        conditions if all are 0 or 1.
       * Files are compressed with gzip level 1 (instead of 6 in C and 9 in
         Python), which for MCPL files is several times faster and makes files
         only slightly larger. Files compressed at any level can be read.
@@ -309,9 +309,12 @@ v2.2.9  (work in progress)
         from mcpltool -H without bins=N are made at the resolution of
         the plot, with a whole number of columns per bin (the number of
         columns is given by mcpl.plotting.resolution(..)).
+      * Histogram strings (of mcpltool -H and mcpl.histogram) with three
+        expressions, like "x : y : z", give 3D plots of a sample of the
+        particles (in windows).
       * Unless the number of bins is given, mcpl.histogram, mcpl.histogram2d
         and mcpltool -H now choose it from the effective number of
-        entries N: sqrt(N) bins (the fourth root per axis for 2D histograms),
+        entries N: sqrt(N) bins (the cube root per axis for 2D histograms),
         between 10 and 400, rather than always 100.
       * Particles can now carry custom per-particle data ("userdata"): a fixed
         number of bytes per particle, described by a layout string stored in
@@ -471,23 +474,18 @@ v2.2.9  (work in progress)
         particles. The --pdf and --gui options are removed.
       * New histogram API: histograms of values given by expressions, e.g.
         mcpl.histogram(FILE,"ekin/eV",lethargy=True).plot(), with options for
-        picking particles, logarithmic axes, separate curves for each particle type
-        (split="pdgcode") or file, 2D histograms (mcpl.histogram2d), and
-        printing the contents as text. mcpl.plot_histograms shows or saves
-        several histograms, also on top of each other in one plot with
-        overlay=True (e.g. to compare simulations).
+        picking particles, logarithmic axes, separate curves for each particle
+        type (by default, see display_by) or file, 2D histograms
+        (mcpl.histogram2d), and printing the contents as text.
+        mcpl.plot_histograms shows or saves several histograms, also on top of
+        each other in one plot with overlay=True (e.g. to compare
+        simulations).
       * New mcpltool -H (--hist) option for histograms of expressions, with
-        options in the same string separated by ";", e.g. mcpltool -H
-        "ekin/eV;lethargy" -p "pdgcode == neutron" FILE: the binning (bins=N,
-        range=LOW:HIGH, logx), logy, separate curves for each value of an
-        expression (split=pdgcode) or file, 2D histograms ("x/cm : y/cm",
-        with xrange=LOW:HIGH and yrange=LOW:HIGH),
-        unweighted histograms, and printing the contents as text (print).
-        Plots are shown in a window (matplotlib), or in the terminal (always
-        with -t), and saved with -o FILE in the format given by the
-        extension (.png, .pdf, .svg or .txt). The backend can be chosen
-        with -B. mcpl.histogram also accepts these strings, e.g.
-        mcpl.histogram(FILE,"ekin/eV;lethargy").
+        options NAME=VALUE separated by ";" (see mcpltool -H help), e.g.
+        mcpltool -H "ekin;logx" -p "pdgcode == neutron" FILE, also for 2D
+        histograms and bar charts, and several at once. Plots are shown in a
+        window (matplotlib) or in the terminal (with -t), or saved with -o
+        FILE. mcpl.histogram also accepts these strings.
       * mcpltool --extract no longer leaves a broken output file behind when
         given an invalid -p argument.
       * ssw2mcpl and phits2mcpl no longer leave an unfinished output file behind

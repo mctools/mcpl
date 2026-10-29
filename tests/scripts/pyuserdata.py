@@ -456,7 +456,7 @@ def test_expressions():
         sys.stdout.flush()
 
 def test_units():
-    print('=== Units of userdata fields in expressions')
+    print('=== Units of userdata fields in expressions and plots')
     layout = 'temp:float32:K,theta:float32:deg,d:float64:cm,q:float64:cm^-1,n:int32'
     with mcpl.MCPLOutFile('units.mcpl',userdata_layout=layout) as o:
         for i in range(4):
@@ -475,6 +475,14 @@ def test_units():
             print(f'{e}: {list(v)}')
         except mcpl.MCPLError as err:
             print(f'{e}: MCPLError: {err}')
+    for p in ( 'userdata.temp', 'userdata.d : userdata.temp', 'userdata.d;range=0cm:20cm',
+               'userdata.d;range=0:20', 'userdata.temp;range=0cm:2cm', 'userdata.n;bar',
+               'userdata.d;bar' ):
+        try:
+            panel = mcpl.histogram(f,p).figure().panels[0]
+            print(f'plot {p}: {panel.xlabel} | {panel.ylabel}')
+        except mcpl.MCPLError as err:
+            print(f'plot {p}: MCPLError: {err}')
 
 def main():
     make_inputs()

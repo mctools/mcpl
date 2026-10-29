@@ -37,7 +37,7 @@ Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.
 Usage:
   PROGNAME [options] FILE                  Show the header and first particles
   PROGNAME -S [options] FILE               Summary of the particles
-  PROGNAME -H HIST [options] FILE [...]    Histogram
+  PROGNAME -H HIST [options] FILE [...]    Histograms
   PROGNAME -e [options] FILE OUT.mcpl.gz   Extract particles into a new file
   PROGNAME -m OUT.mcpl.gz FILE1 FILE2 ...  Merge compatible files
   PROGNAME -r FILE                         Repair a file not properly closed
@@ -52,7 +52,7 @@ Common options:
   -d             Dry run: do everything except writing files.
 
 Examples:
-  PROGNAME -H "ekin/MeV;logx;split=pdgcode" file.mcpl.gz
+  PROGNAME -H "ekin/MeV;logx;display_only=neutron" file.mcpl.gz
   PROGNAME -e -p "pdgcode == neutron" file.mcpl.gz neutrons.mcpl.gz
   PROGNAME -S file.mcpl.gz
 
@@ -68,7 +68,7 @@ Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.
 Usage:
   PROGNAME [options] FILE                  Show the header and first particles
   PROGNAME -S [options] FILE               Summary of the particles
-  PROGNAME -H HIST [options] FILE [...]    Histogram
+  PROGNAME -H HIST [options] FILE [...]    Histograms
   PROGNAME -e [options] FILE OUT.mcpl.gz   Extract particles into a new file
   PROGNAME -m OUT.mcpl.gz FILE1 FILE2 ...  Merge compatible files
   PROGNAME --forcemerge OUT.mcpl.gz FILE1 FILE2 ...
@@ -93,12 +93,14 @@ Showing particles:
   -bKEY            Write the blob stored under KEY to standard output.
 
 Histogram (-H, --hist HIST):
-  HIST is an expression with options, e.g. "ekin/MeV;logx;split=pdgcode" (see
-  -H help). With more files, there is a curve for each file.
-  -t, --term       Show the plot in the terminal.
+  HIST is an expression with options, e.g.
+  "ekin/MeV;logx;display_only=neutron" (see -H help). With more files, there
+  is a curve for each file. -H can be given more than once, for several plots.
+  -t, --term       Show the plots in the terminal.
   -o, --output FILE
-                   Save the plot in FILE, in the format given by the extension:
-                   .png, .pdf, .svg or .txt.
+                   Save the plots in FILE, in the format given by the
+                   extension: .png, .pdf, .svg or .txt (one page of a .pdf
+                   file for each plot, or else one file for each, numbered).
   -B, --backend NAME
                    Plotting backend: matplotlib, unicode or ascii. By
                    default, plots are shown in a window with matplotlib, or
@@ -136,10 +138,17 @@ Other options:
 Output files are gzipped if their names end with .mcpl.gz.
 """
 
-def _mcpltool_usage(progname,errmsg=None,full=False):
+#Where errors in the values of options are explained (see _mcpltool_usage):
+_option_help = { '--pick' : 'Run with "-p help" for how to pick particles with expressions',
+                 '--edit' : 'Run with "-E help" for how to edit particles with expressions',
+                 '--hist' : 'Run with "-H help" for how to write histograms' }
+
+def _mcpltool_usage(progname,errmsg=None,full=False,option=None):
+    """Print the usage information, or the error (in the value of the option,
+    if given, see _option_help) and exit"""
     if errmsg:
         print(f"ERROR: {errmsg}\n")
-        print("Run with -h or --help for usage information")
+        print(_option_help.get(option,"Run with -h or --help for usage information"))
         sys.exit(1)
     msg = _full_help if full else _short_help
     print(msg.strip().replace('PROGNAME',progname)
@@ -194,8 +203,8 @@ def _app_mcpltool(argv):
     if not args:
         print('ERROR: No input file specified\n\nRun with -h or --help for usage information')
         sys.exit(1)
-    def bad(errmsg):
-        _mcpltool_usage(progname,errmsg)
+    def bad(errmsg,option=None):
+        _mcpltool_usage(progname,errmsg,option=option)
     args = list(args)
     #(--create-examples can only be combined with --dry-run):
     opt_examples = None
@@ -226,8 +235,13 @@ def _app_mcpltool(argv):
     #name), -l, -s and -b, and the list of files:
     flags, values, filelist = set(), {}, []
     opt_limit = opt_skip = opt_blobkey = None
+    hists = []#(all -H strings, since there can be several)
     longtoshort = { v : k for k,v in _value_opts.items() }
     def set_value(name, value):
+        if name == '--hist':
+            hists.append(value)
+            values.setdefault(name,value)
+            return
         if name in values:
             bad(f"{longtoshort.get(name,name)} specified more than once")
         values[name] = value
@@ -294,7 +308,9 @@ def _app_mcpltool(argv):
     if '--full-help' in flags:
         _mcpltool_usage(progname,full=True)
     for name, topic in (('--pick','pick'),('--edit','edit'),('--hist','hist')):
-        if values.get(name,'').strip() == 'help':
+        #(any of the -H strings can be help):
+        given = hists if name == '--hist' else [ values.get(name,'') ]
+        if any( v.strip().lower() == 'help' for v in given ):
             _topic_help(topic)
 
     #The mode:
@@ -356,18 +372,27 @@ def _app_mcpltool(argv):
         from ._particles import _particle_names
         if v in _particle_names or re.fullmatch(r'[-+]?[0-9]+',v):
             bad(f'-p takes an expression (PICK): to pick particles of a type,'
-                f' use -p "pdgcode == {v}"')
+                f' use -p "pdgcode == {v}"','--pick')
         from ._expressions import ParticleFilter
         try:
             pick = ParticleFilter(values['--pick'])
         except MCPLError as e:
-            bad(str(e))
+            bad(str(e),'--pick')
     if '--edit' in values:
         from ._expressions import ParticleEdit
         try:
             edit = ParticleEdit(values['--edit'])
         except MCPLError as e:
-            bad(str(e))
+            bad(str(e),'--edit')
+    #(and -H, with the same checks as when the histograms are made):
+    if hists:
+        from ._histogram import _filler_for
+        from ._histstring import _parse_hist
+        for h in hists:
+            try:
+                _filler_for(_parse_hist(h))
+            except MCPLError as e:
+                bad(str(e),'--hist')
 
     if mode == '--version':
         if filelist:
@@ -391,7 +416,7 @@ def _app_mcpltool(argv):
 
     if mode == '--hist':
         from ._clistats import mcpltool_hist
-        mcpltool_hist(filelist,values['--hist'],opt_skip,opt_limit,pick,edit,
+        mcpltool_hist(filelist,hists,opt_skip,opt_limit,pick,edit,
                       values.get('--output'),values.get('--backend'),
                       '--term' in flags,bad,color=values.get('--color'))
         sys.exit(0)

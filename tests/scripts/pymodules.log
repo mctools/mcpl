@@ -3,13 +3,14 @@ Modules of the mcpl package and their imports from the package (in parentheses: 
   __main__             <- _cli
   _ascii               <- _reader
   _blocks              <- _common, _numpy, (_physics)
-  _cli                 <- _common, _messages, _reader, (_ascii), (_clistats), (_examples), (_expressions), (_exprhelp), (_extract), (_fileops), (_particles)
-  _clistats            <- _common, _reader, (_histogram), (_plotbackend), (_plotregistry), (_stats)
+  _cli                 <- _common, _messages, _reader, (_ascii), (_clistats), (_examples), (_expressions), (_exprhelp), (_extract), (_fileops), (_histogram), (_histstring), (_particles)
+  _clistats            <- _common, _reader, (_histogram), (_histstring), (_plotbackend), (_plotregistry), (_stats), (plotting)
   _common              <- -
   _examples            <- _common, _messages, _numpy, (_writer)
   _exprcore            <- _common, _exprsyntax, _exprunits, _numpy, _particles, _physics, (_userdata)
   _expressions         <- _common, _exprcore, _exprrotation, _exprsyntax, _exprunits, _numpy, _particles, _physics
   _exprhelp            <- _particles, (_helptext)
+  _exprplot            <- _common, _exprcore, _expressions, _exprunits, _numpy
   _exprrotation        <- _numpy
   _exprsyntax          <- _common
   _exprunits           <- -
@@ -17,7 +18,8 @@ Modules of the mcpl package and their imports from the package (in parentheses: 
   _figures             <- -
   _fileops             <- _common, _messages, _reader, _statsum, _writer
   _helptext            <- -
-  _histogram           <- _common, _expressions, _numpy, _physics, _reader, (_exprcore), (plotting)
+  _histogram           <- _common, _exprcore, _expressions, _exprplot, _exprunits, _histstring, _numpy, _particles, _reader, (plotting)
+  _histstring          <- _common, _exprcore, _exprplot, _exprunits, _numpy, (_expressions), (_particles)
   _logo                <- -
   _messages            <- -
   _numpy               <- -
@@ -44,14 +46,14 @@ numpy is imported by: _numpy
 matplotlib is imported by: _plotbackend_mpl
 scipp is imported by: _scipp
 matplotlib, scipp are only imported inside functions
-mcpl.__all__ has 34 names, provided by:
+mcpl.__all__ has 32 names, provided by:
   _ascii               : convert2ascii
   _blocks              : MCPLParticle, MCPLParticleBlock
   _cli                 : app_mcpltool, app_pymcpltool
   _common              : MCPLError
   _expressions         : ParticleEdit, ParticleFilter, ParticleValue
   _fileops             : can_merge, create_outfile_mpi, forcemerge_files, merge_files, merge_inplace, merge_outfiles_mpi, name_helper, repair
-  _histogram           : Histogram, Histogram2D, histogram, histogram2d, plot_histograms
+  _histogram           : histogram, histogram2d, plot_histograms
   _messages            : use_logging
   _reader              : MCPLFile, dump_file
   _stats               : collect_stats, dump_stats, plot_stats

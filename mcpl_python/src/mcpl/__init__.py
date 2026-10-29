@@ -47,8 +47,6 @@ programme under grant agreement No 676548 (the BrightnESS project)
 """
 
 __all__ = [
-            'Histogram',
-            'Histogram2D',
             'MCPLError',
             'MCPLFile',
             'MCPLOutFile',
@@ -108,11 +106,9 @@ _on_demand = {
     'merge_outfiles_mpi' : '_fileops',
     'name_helper' : '_fileops',
     'repair' : '_fileops',
-    'Histogram' : '_histogram',
     'ParticleEdit' : '_expressions',
     'ParticleFilter' : '_expressions',
     'ParticleValue' : '_expressions',
-    'Histogram2D' : '_histogram',
     'app_mcpltool' : '_cli',
     'app_pymcpltool' : '_cli',
     'collect_stats' : '_stats',
