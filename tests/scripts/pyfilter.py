@@ -57,6 +57,8 @@ def test_expressions():
               ('max(0,x) > 1cm', b.x>1), ('clamp(0,x,y) < 0cm', np.clip(0,b.x,b.y)<0),
               ('x^2 + y^2 < 4cm^2', b.x**2+b.y**2 < 4),
               ('x^2 + y^2 < 400 mm^2', b.x**2+b.y**2 < 4),
+              #(a negative power of a unit after a number only applies to the unit):
+              ('2cm^-1*x > 1', 2*b.x > 1),
               ('(pdgcode == neutron or pdgcode == gamma) and wavelength > 0.005Aa', wl > 0.005),
               ('(pdgcode == neutron or pdgcode == gamma) and wavelength > 0.0005nm', wl > 0.005),
               ('(pdgcode == neutron or pdgcode == gamma) and wavelength > 5e-13m', wl > 0.005),
@@ -179,6 +181,7 @@ def test_expressions():
                 'pos = (0,0,1)', 'swap(pos,dir)', 'rotate_z(dir)', 'v = dir; swap(v,dir)',
                 'x == 1cm', 'pi = 3', 'wl = 1Aa', 'x = 1cm, y = 1cm',
                 'fileidx = 2', 'fileidx += 1', 'swap(fileidx,pdgcode)', 'swap(x,wavelength)',
+                'x = floor(x)', 'x = ceil(2cm)',
                 'x = y = 1cm', 'x, y = y, x', '', 'pdgcode = 1.5',
                 'x = sqrt(x/cm)*1cm', 'weight = 1/(x/cm - x/cm)'):
         try:
