@@ -20,261 +20,112 @@
 ################################################################################
 
 def short_description():
-    return 'Visualise C++ components'
+    return 'Visualise the dependencies of the Python modules'
 
-def graph_to_dot( graph, fix_size = False ):
-    s = ''
-    s += 'digraph GG {\n'
-    s += '    node [ fontsize = "12" ];\n'
+#Edge styles: imports outside of functions, only inside functions, and only by
+#name (see MCPLTestUtils.pymoddeps):
+edge_styles = ( 'solid', 'dashed', 'dotted' )
 
-    lbl2id = {}
-    for n in graph.nodes:
-        if graph.node_is_hidden( n ):
-            print(f"IGNORING HIDDEN NODE {n['name']}")
-            continue
-        n_id = len(lbl2id)
-        lbl = n['name']
-        lbl2id[ lbl ] = n_id
-        display_lbl = n.get('lbl',lbl)
-        shape = n.get('shape','octagon')
-        color = n.get('color','black')
-        fontcolor = n.get('fontcolor',color)
-        shapecolor = n.get('shapecolor',color)
-        ns = (f'    "node_{n_id}" [ fontcolor="{fontcolor}" '
-              f'color="{shapecolor}" label="{display_lbl}" '
-              f'shape={shape} ')
-        fix_size = False
-        if n.get('width') is not None:
-            fix_size = True
-            ns += 'width={} '.format(n.get('width'))
-        if n.get('height') is not None:
-            fix_size = True
-            ns += 'height={} '.format(n.get('height'))
-        if fix_size:
-            ns += 'fixedsize=true '
-        ns += '];\n'
-        s += ns
+def load_graph():
+    """The modules of the mcpl package, as {name: {imported module: kind}},
+    with kind being an index in edge_styles"""
+    import sys
 
-    for a,b,info in graph.connections:
-        if graph.node_is_hidden( b ):
-            continue
+    from .dirs import reporoot, testroot
+    sys.path.insert(0, str(testroot / 'pypath'))
+    from MCPLTestUtils.pymoddeps import package_imports
+    graph = {}
+    for name, imps in package_imports(reporoot / 'mcpl_python' / 'src' / 'mcpl').items():
+        graph[name] = { d : kind for kind, mods in enumerate(imps[:3]) for d in mods }
+    return graph
 
-        id_a, id_b = lbl2id[a], lbl2id[b]
-        color = (info or {}).get( 'color', 'black' )
-        s += f'    "node_{id_a}" -> "node_{id_b}" [ color="{color}" ]\n'
+def remove_implied( graph ):
+    """Without the imports which are implied by others of the same or a
+    stronger kind (i.e. if a imports b which imports c, an import of c by a is
+    not shown, unless the imports via b are only inside functions while a
+    imports c outside of them, and so on)"""
+    def implied( n, skip, kind ):
+        seen, todo = set(), [ d for d, k in graph[n].items() if d != skip and k <= kind ]
+        while todo:
+            d = todo.pop()
+            if d not in seen:
+                seen.add(d)
+                todo += [ dd for dd, k in graph[d].items() if k <= kind ]
+        return skip in seen
+    return { n : { d : k for d, k in deps.items() if not implied(n, d, k) }
+             for n, deps in graph.items() }
 
-    s += '}\n'
-    return s
+def code_lines( name ):
+    """Lines of the module which are not blank or comments"""
+    from .dirs import reporoot
+    f = reporoot / 'mcpl_python' / 'src' / 'mcpl' / f'{name}.py'
+    return sum( 1 for line in f.read_text().splitlines()
+                if line.strip() and not line.lstrip().startswith('#') )
 
-def render_dot_file( dot_str, fmt='png' ):
+def graph_to_dot( graph, sizes ):
+    s = 'digraph G {\n    node [ fontsize = "12" ];\n'
+    for n in sorted(graph):
+        public = not n.startswith('_') or n in ( '__init__', '__main__' )
+        color = 'red' if public else 'black'
+        lbl = n if sizes is None else f'{n}\\n{sizes[n]}'
+        s += f'    "{n}" [ label="{lbl}" color="{color}" fontcolor="{color}" shape=box ];\n'
+    for n in sorted(graph):
+        for d, kind in sorted(graph[n].items()):
+            s += f'    "{d}" -> "{n}" [ color="grey" style={edge_styles[kind]} ];\n'
+    return s + '}\n'
 
+def render_dot( dot_str, fmt ):
     import pathlib
     import shutil
     import subprocess
-
-    from .util import work_in_tmpdir
-
-    cmd_dot = shutil.which('dot')
-    cmd_unflatten = shutil.which('unflatten')
-    if not cmd_dot:
-        raise SystemExit('command "dot" not found (needs graphviz package')
-
-    if not cmd_unflatten:
-        raise SystemExit('command "unflatten" not found (needs graphviz package')
-
-    with work_in_tmpdir():
-        f1, f2, f3 = './graph1.dot', './graph2.dot','./result'
-        pathlib.Path(f1).write_text(dot_str)
-        subprocess.run([cmd_unflatten,'-l3','-c7',f1,'-o',f2],check = True )
-        f3 = pathlib.Path(f'./graph.{fmt}')
-        subprocess.run([cmd_dot,f2,f'-T{fmt}',f'-o{f3}' ],check=True,
-                       capture_output = True )
-        return pathlib.Path(f3).read_bytes()
+    import tempfile
+    if not shutil.which('dot'):
+        raise SystemExit('command "dot" not found (needs the graphviz package)')
+    with tempfile.TemporaryDirectory() as tmpdir:
+        f1, f2, f3 = ( pathlib.Path(tmpdir) / n for n in ( 'g1.dot', 'g2.dot', f'g.{fmt}' ) )
+        f1.write_text(dot_str)
+        if shutil.which('unflatten'):
+            #(a less wide layout, but not all installations of graphviz have it):
+            subprocess.run(['unflatten','-l3','-c7',f1,'-o',f2], check = True)
+        else:
+            f2 = f1
+        subprocess.run(['dot',f2,f'-T{fmt}',f'-o{f3}'], check = True, capture_output = True)
+        return f3.read_bytes()
 
 def display_image_data( data, fmt ):
     from io import BytesIO
 
     import matplotlib.image as mpimg
     import matplotlib.pyplot as plt
-    fh = BytesIO(data)
-    img = mpimg.imread(fh,fmt)
-    plt.imshow(img)
+    plt.imshow(mpimg.imread(BytesIO(data),fmt))
     plt.axis('off')
     plt.tight_layout()
     plt.show()
 
-class Graph:
-
-    def __init__(self):
-        self.__nodes = {}
-        self.__connections = {}
-        self.__hidden_nodes = set()
-
-    def node_is_hidden( self, node ):
-        name = node.get('name',node) if hasattr( node, 'get') else node
-        return name in self.__hidden_nodes
-
-    def add_node( self, nodename, **options ):
-        #assert fmt in ['default','disabled']
-        assert nodename not in self.__nodes
-        self.__nodes[nodename] = options
-
-    def add_connection( self, nodename_mother, nodename_daughter, **options ):
-        c = ( nodename_mother, nodename_daughter )
-        assert c not in self.__connections
-        self.__connections[ c ] = options
-
-    @property
-    def nodes( self ):
-        for n,o in sorted( self.__nodes.items() ):
-            d = { 'name' : n }
-            d.update(o)
-            yield d
-
-    @property
-    def connections( self ):
-        return sorted( (a,b,info)
-                       for (a,b),info
-                       in sorted(self.__connections.items()) )
-
-    def get_as_dot_content( self ):
-        return graph_to_dot( self )
-
-    def hide_noclient_manydep_components( self, threshold ):
-        assert not self.__hidden_nodes, "already hid some nodes"
-        for n in self.__nodes:
-            if any( mother == n for mother,daughter in self.__connections ):
-                continue
-            if sum( 1 for mother,daughter in self.__connections
-                    if daughter == n) > threshold:
-                self.__hidden_nodes.add( n )
-
-
 def main( parser ):
-    parser.init( 'Visualise src component dependencies.' )
-    allowed_stats = ('none','sloc','files','headers','sloc_headers')
-    allowed_stats_str = '", "'.join(allowed_stats)
-    parser.add_argument(
-        '-s','--stat', metavar='STAT',
-        default = 'none',
-        choices=allowed_stats,
-        help=('Show stat-count in the visualisation (options:'
-              f' "{allowed_stats_str}").'),
-    )
-    parser.add_argument(
-        '-a','--area', action='store_true',
-        help="""Use with --stat to make the area of component graphics scale
-        with the chosen statistics count."""
-    )
-    parser.add_argument(
-        '--prune', action='store_true',
-        help="""Prune to not display components with no clients and >=4
-        dependencies."""
-    )
-
+    parser.init( """Visualise the dependencies of the modules of the mcpl Python
+    package. An arrow from a to b means that b imports a: solid if imported
+    outside of functions, dashed if only inside functions, and dotted if only
+    by name (when used). Public modules are red. Imports implied by others are
+    not shown, unless --all is given.""" )
+    parser.add_argument( '-a', '--all', action = 'store_true',
+                         help = 'Show all imports, also those implied by others.' )
+    parser.add_argument( '-s', '--sloc', action = 'store_true',
+                         help = 'Show the number of lines of code of each module (without blank and comment lines).' )
+    parser.add_argument( '-o', '--output', metavar = 'FILE',
+                         help = 'Write the graph to this file (e.g. graph.png, graph.svg or graph.pdf) instead of showing it.' )
     args = parser.parse_args()
 
-    import math
-
-    from .core_components import load_components
-    graph = Graph()
-    n2c = load_components()
-    if args.stat == 'sloc':
-        def countfct( c ):
-            return c.sloc_count()
-    elif args.stat == 'sloc_headers':
-        def countfct( c ):
-            return c.sloc_count(headers_only = True)
-    elif args.stat == 'files':
-        def countfct( c ):
-            return sum( 1 for f in c.all_file_iter() )
-    elif args.stat == 'headers':
-        def countfct( c ):
-            return len(c.hdrfiles or [])
+    import pathlib
+    graph = load_graph()
+    if not args.all:
+        graph = remove_implied( graph )
+    sizes = { n : code_lines(n) for n in graph } if args.sloc else None
+    dot_str = graph_to_dot( graph, sizes )
+    if args.output:
+        out = pathlib.Path(args.output)
+        fmt = out.suffix[1:] or 'png'
+        out.write_bytes(render_dot( dot_str, fmt ))
+        print(f'Wrote {out}')
     else:
-        assert args.stat == 'none'
-        def countfct( c ):
-            return 1
-
-    counts = {}
-    for n,c in n2c.items():
-        counts[n] = countfct( c )
-    if args.area:
-        max_count = max( counts.values() )
-        min_count = min( counts.values() )
-        if max_count and not min_count:
-            min_count = min( c for c in counts.values() if c > 0.0 )
-        def node_size_fct( c ):
-            if max_count == min_count:
-                return 0.5
-            v = max(min_count,counts[c.name])
-            eps = 0.01
-            return math.sqrt(eps + (1.0-eps)*( (v-min_count)/(max_count-min_count) ))
-
-    for n,c in n2c.items():
-        count = counts[n]
-        if args.area:
-            node_size = node_size_fct( c )
-        else:
-            node_size = None
-        graph.add_node( n,
-                        lbl = f'{n} {count}' if args.stat!='none' else n,
-                        color = 'grey' if c.is_internal else 'red',
-                        shape = 'circle' if args.area else 'octagon',
-                        width = None if node_size is None else 2.0*node_size,
-                        height = node_size,
-                       )
-        for d in c.calc_minimal_deps():
-            graph.add_connection(d.name,n, color = 'grey')
-
-    if args.prune:
-        graph.hide_noclient_manydep_components( threshold = 4 )
-
-    #print( graph.get_as_dot_content())
-    fmt = 'png'
-    data = render_dot_file( graph.get_as_dot_content(), fmt )
-    display_image_data( data, fmt )
-#
-#    try:
-#        import networkx as nx
-#    except ImportError:
-#        raise SystemExit('ERROR: Missing dependency "networkx"')
-#
-#    graph = nx.DiGraph()
-#    n2c = load_components()
-#    for n,c in n2c.items():
-#        graph.add_node(n)
-#        for d in c.direct_deps:
-#            graph.add_edge(d.name,n)
-#
-#    nx.write_network_text(graph)
-#    #return
-#
-#
-#    import matplotlib.pyplot as plt
-#    nx.draw(graph,with_labels=True)
-#    plt.show()
-#    return
-#    #nx.draw_random(graph,with_labels=True)
-#    #plt.show()
-#            #nx.write_network_text(graph)
-#    options = {
-#        "font_size": 12,
-#        "node_size": 3000,
-#        "node_color": ((0,0,1,0.2),),
-#        "edgecolors": (0,0,0,0.5),
-#        "linewidths": 1,
-#        "width": 3,
-#    }
-#    nx.draw_networkx(graph, **options)
-#
-#    # Set margins for the axes so that nodes aren't clipped
-#    ax = plt.gca()
-#    ax.margins(0.20)
-#    plt.axis("off")
-#    plt.show()
-#
-
-
-
-#    write_network_text(graph, path=None, with_labels=True, sources=None, max_depth=None, ascii_only=False, end='\n', vertical_chains=False)[source]#
+        display_image_data( render_dot( dot_str, 'png' ), 'png' )
