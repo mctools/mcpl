@@ -84,7 +84,7 @@ def test_expressions():
               ('pdgcode == -2111-1', b.pdgcode == -2112),
               ('atan2(uy,ux) > 90deg', np.arctan2(b.uy,b.ux) > np.pi/2),
               ('angle(dir,(0,0,1)) < 30deg', np.degrees(np.arccos(np.clip(b.uz,-1,1))) < 30),
-              ('not (userflags & 1) and pdgcode != 0b0', ((b.userflags & 1) == 0)&(b.pdgcode!=0)),
+              ('not (userflags & 1) and pdgcode != 0x0', ((b.userflags & 1) == 0)&(b.pdgcode!=0)),
               ('pdgcode == electron or pdgcode == positron', np.isin(b.pdgcode,(11,-11))),
               ('pdgcode == antielectron or pdgcode == photon', np.isin(b.pdgcode,(-11,22))),
               ('pdgcode == muon or pdgcode == antimuon or pdgcode == antiproton or pdgcode == antineutron',

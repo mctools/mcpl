@@ -100,6 +100,17 @@ _op_binary = { '|' : ( ast.BitOr, 5 ), '&' : ( ast.BitAnd, 6 ), '+' : ( ast.Add,
                '//' : ( ast.FloorDiv, 9 ) }
 #(right-associative, written as ^):
 _op_power = ( '^', '**' )
+#The numbers: decimal and hexadecimal integers, and floating point numbers:
+_number_forms = ( r'0|[1-9][0-9]*|0[xX][0-9a-fA-F]+'
+                  r'|([0-9]+\.[0-9]*|\.[0-9]+)([eE][-+]?[0-9]+)?|[0-9]+[eE][-+]?[0-9]+' )
+#The tokens: numbers (as anything starting like a number which continues
+#with "_", or 0x, 0o and 0b, so _ExprParser._number can say what is wrong),
+#names, and the operators (the longest first):
+_token_regex = re.compile( r'(?P<space>\s+)'
+                           r'|(?P<number>0[xXoObB][0-9A-Za-z_]*'
+                           r'|(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?(?:_[0-9A-Za-z_.]*|\.[0-9][0-9A-Za-z_.]*)?)'
+                           r'|(?P<name>[A-Za-z_][A-Za-z_0-9]*)'
+                           r'|(?P<op>//=|\*\*=|//|\*\*|==|!=|<=|>=|[-+*/^&|]=|[-+*/^&|<>=(),.;:])' )
 #The names of the values of vectors (as in pos.x, see _ExprParser._parts):
 _vector_parts = ( 'x', 'y', 'z' )
 _op_cmp = { '==' : ast.Eq, '!=' : ast.NotEq, '<' : ast.Lt, '<=' : ast.LtE, '>' : ast.Gt,
@@ -117,7 +128,7 @@ _op_of_node.update( { cls : ( s, None ) for s, cls in ( *_op_cmp.items(), *_op_u
 
 class _ExprParser:
     """Parser of expressions and edit statements, reading the tokens of Python
-    (with tokenize) and giving trees of ast nodes. The precedences are, from
+    (see _token_regex) and giving trees of ast nodes. The precedences are, from
     the lowest: or, and, not, comparisons (which can be chained, as in
     0 < x < 2cm, and "in" or "not in" a list of values, as in
     pdgcode in (neutron,gamma), which can not), |, &, + and -, *, / and //, unary
@@ -127,45 +138,19 @@ class _ExprParser:
     directly after a unit applies to the unit only (as in 4cm^2 or cm^(1/2)),
     and must be a constant."""
     def __init__( self, expr, units ):
-        import io
-        import tokenize
         self._expr, self._units = expr, frozenset(units)
-        self._toks = []
-        skip = ( tokenize.NEWLINE, tokenize.NL, tokenize.ENDMARKER, tokenize.INDENT,
-                 tokenize.DEDENT )
-        kinds = { tokenize.OP : 'op', tokenize.NAME : 'name', tokenize.NUMBER : 'number' }
-        #(the tokens, with their positions in the expression, which has no
-        #newlines):
-        self._pos = []
-        try:
-            for t in tokenize.generate_tokens(io.StringIO(expr).readline):
-                if t.type in skip:
-                    continue
-                if t.type == tokenize.ERRORTOKEN and t.string.isspace():
-                    continue#(Python before 3.12 gives spaces before unknown characters)
-                if ( t.type == tokenize.ERRORTOKEN and len(t.string) == 1
-                     and t.string not in '"\'' ):
-                    t = t._replace(type = tokenize.OP)#(as from Python 3.12)
-                if t.type not in kinds or not t.string.isascii():
-                    raise _ExprSyntaxError(t.start[1],f'"{t.string}" can not be used here')
-                if ( t.type == tokenize.NUMBER and self._toks and self._toks[-1][0] == 'number'
-                     and self._pos[-1] + len(self._toks[-1][1]) == t.start[1] ):
-                    #(Python before 3.12 splits numbers like 090 in two):
-                    self._toks[-1] = ( 'number', self._toks[-1][1] + t.string )
-                    continue
-                self._toks.append( ( kinds[t.type], t.string ) )
-                self._pos.append(t.start[1])
-        except tokenize.TokenError:
-            #(with parentheses which do not match: an unmatched ")", or else a
-            #missing one at the end):
-            depth = 0
-            for ( kind, t ), pos in zip(self._toks,self._pos):
-                depth += { '(' : 1, ')' : -1 }.get(t,0) if kind == 'op' else 0
-                if depth < 0:
-                    raise _ExprSyntaxError(pos,'unexpected ")"') from None
-            raise _ExprSyntaxError(len(expr),'")" is missing') from None
-        except SyntaxError as e:
-            raise _ExprSyntaxError(max( 0, ( e.offset or 1 ) - 1 ),'invalid text') from None
+        #(the tokens, as (kind, text), with their positions in the expression):
+        self._toks, self._pos = [], []
+        pos = 0
+        while pos < len(expr):
+            m = _token_regex.match(expr,pos)
+            if m is None:
+                raise _ExprSyntaxError(pos,f'"{expr[pos]}" can not be used here')
+            kind = m.lastgroup
+            if kind != 'space':
+                self._toks.append( ( kind, m.group() ) )
+                self._pos.append(pos)
+            pos = m.end()
         self._i = 0
 
     def parse( self, mode ):
@@ -390,15 +375,19 @@ class _ExprParser:
         return int(index)
 
     def _number( self, s ):
-        try:
-            v = ast.literal_eval(s)
-        except ( SyntaxError, ValueError ):
-            #(e.g. 090, which is not an integer in C or Python):
-            hint = ' (integers can not start with 0)' if s[:1] == '0' and s.isdigit() else ''
-            raise MCPLError(f'Invalid number {s}{hint} in expression "{self._expr}"')
-        if not isinstance(v,(int,float)):
-            raise MCPLError(f'Unsupported value in expression "{self._expr}"')
-        return v
+        """Value of a number: a decimal integer, a hexadecimal one (like 0x1f), or a
+        floating point number (like 0.5, .5, 5. or 1e-3), all as in C"""
+        if re.fullmatch(_number_forms,s):
+            return int(s,16) if s[1:2] in 'xX' and s[:1] == '0' else ast.literal_eval(s)
+        if s[:1] == '0' and s.isdigit():
+            hint = ' (integers can not start with 0)'
+        elif '_' in s:
+            hint = ' (numbers can not contain "_")'
+        elif re.fullmatch(r'0[oObB][0-9a-fA-F]*',s):
+            hint = ' (only decimal and hexadecimal numbers, like 0x1f, can be used)'
+        else:
+            hint = ''
+        raise MCPLError(f'Invalid number {s}{hint} in expression "{self._expr}"')
 
     #Units:
 

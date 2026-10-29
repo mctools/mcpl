@@ -78,7 +78,7 @@ In and not in:
   'a in (b)'                         -> (cmp a in [b])   written: 'a in (b)'
   'not a in (1,2)'                   -> (not (cmp a in [1, 2]))   written: 'not a in (1,2)'
   'a + 1 in (2,3) and b'             -> (and (cmp (+ a 1) in [2, 3]) b)   written: 'a+1 in (2,3) and b'
-Numbers:
+Numbers (decimal and hexadecimal, as in C):
   '0'                                -> 0   written: '0'
   '7'                                -> 7   written: '7'
   '0.5'                              -> 0.5   written: '0.5'
@@ -86,9 +86,12 @@ Numbers:
   '5.'                               -> 5.0   written: '5.0'
   '1e-3'                             -> 0.001   written: '0.001'
   '1E3'                              -> 1000.0   written: '1000.0'
+  '1.e3'                             -> 1000.0   written: '1000.0'
   '0x10'                             -> 16   written: '16'
-  '1_000'                            -> 1000   written: '1000'
+  '0X1F'                             -> 31   written: '31'
   '0.0'                              -> 0.0   written: '0.0'
+  '007.5'                            -> 7.5   written: '7.5'
+  '1eV'                              -> (* 1 <eV>)   written: '1eV'
 Statements of edits:
   'x = 1cm'                          -> {(= x (* 1 <cm>))}   written: 'x=1cm'
   'x += 2'                           -> {(+= x 2)}   written: 'x+=2'
@@ -131,18 +134,29 @@ Errors:
   'userdata.d.at()'        -> Syntax error in expression "userdata.d.at()", after "userdata.d.at(": the index of a value in an array must be a whole number (counting from 0)
   '090'                    -> Invalid number 090 (integers can not start with 0) in expression "090"
   '007'                    -> Invalid number 007 (integers can not start with 0) in expression "007"
+  '00'                     -> Invalid number 00 (integers can not start with 0) in expression "00"
+  '1_000'                  -> Invalid number 1_000 (numbers can not contain "_") in expression "1_000"
+  '1_0.5'                  -> Invalid number 1_0.5 (numbers can not contain "_") in expression "1_0.5"
+  '0x_10'                  -> Invalid number 0x_10 (numbers can not contain "_") in expression "0x_10"
+  '0o17'                   -> Invalid number 0o17 (only decimal and hexadecimal numbers, like 0x1f, can be used) in expression "0o17"
+  '0b101'                  -> Invalid number 0b101 (only decimal and hexadecimal numbers, like 0x1f, can be used) in expression "0b101"
+  '0x'                     -> Invalid number 0x in expression "0x"
+  '0xg'                    -> Invalid number 0xg in expression "0xg"
+  '1.2.3'                  -> Invalid number 1.2.3 in expression "1.2.3"
+  '1e'                     -> Syntax error in expression "1e", after "1": an operator is missing
+  '1e+'                    -> Syntax error in expression "1e+", after "1": an operator is missing
   'x && y'                 -> Use "and" instead of "&&" in expressions (e.g. "x > 0 and y > 0"), in expression "x && y"
   'x || y'                 -> Use "or" instead of "||" in expressions (e.g. "x > 0 or y > 0"), in expression "x || y"
   '!x'                     -> Use "not" instead of "!" in expressions (e.g. "not (x > 0)"), in expression "!x"
   'x % 2'                  -> Use "mod(a,b)" instead of "%" in expressions (e.g. "mod(userflags,4) == 1"), in expression "x % 2"
   '~x'                     -> The operator ~ is not supported in expressions (e.g. "(userflags & 0x10) == 0" tests that a bit is not set), in expression "~x"
-  '"a"'                    -> Syntax error in expression ""a"", at the start: ""a"" can not be used here
-  "'a'"                    -> Syntax error in expression "'a'", at the start: "'a'" can not be used here
-  'x[0]'                   -> Syntax error in expression "x[0]", after "x": unexpected "["
+  '"a"'                    -> Syntax error in expression ""a"", at the start: """ can not be used here
+  "'a'"                    -> Syntax error in expression "'a'", at the start: "'" can not be used here
+  'x[0]'                   -> Syntax error in expression "x[0]", after "x": "[" can not be used here
   'lambda: 1'              -> Syntax error in expression "lambda: 1", after "lambda": unexpected ":"
   'x if y else z'          -> Syntax error in expression "x if y else z", after "x": an operator is missing
-  '[1]'                    -> Syntax error in expression "[1]", at the start: a value is expected, not "["
-  '{1}'                    -> Syntax error in expression "{1}", at the start: a value is expected, not "{"
+  '[1]'                    -> Syntax error in expression "[1]", at the start: "[" can not be used here
+  '{1}'                    -> Syntax error in expression "{1}", at the start: "{" can not be used here
   'f(x=1)'                 -> Syntax error in expression "f(x=1)", after "f(x": ")" is expected, not "=" (use == for comparisons)
   'cm^x'                   -> Syntax error in expression "cm^x", after "cm^": the power of a unit must be a number, like cm^2 or cm^(1/2)
   'cm^(1/0)'               -> Powers of units must be numbers (like cm^2 or cm^(1/2)), in expression "cm^(1/0)"
@@ -151,12 +165,12 @@ Errors:
   'and'                    -> Syntax error in expression "and", at the start: a value is expected, not "and"
   'x and'                  -> Syntax error in expression "x and", at the end: a value is missing
   'not'                    -> Syntax error in expression "not", at the end: a value is missing
-  '@'                      -> Syntax error in expression "@", at the start: a value is expected, not "@"
-  '$'                      -> Syntax error in expression "$", at the start: a value is expected, not "$"
-  'x # comment'            -> Syntax error in expression "x # comment", after "x": "# comment" can not be used here
+  '@'                      -> Syntax error in expression "@", at the start: "@" can not be used here
+  '$'                      -> Syntax error in expression "$", at the start: "$" can not be used here
+  'x # comment'            -> Syntax error in expression "x # comment", after "x": "#" can not be used here
   'α'                      -> Syntax error in expression "α", at the start: "α" can not be used here
   'a,b'                    -> Syntax error in expression "a,b", after "a": unexpected ","
-  '1j'                     -> Unsupported value in expression "1j"
+  '1j'                     -> Syntax error in expression "1j", after "1": an operator is missing
   'x == = 1'               -> Syntax error in expression "x == = 1", after "x ==": a value is expected, not "=" (use == for comparisons)
   'x =< 1'                 -> Syntax error in expression "x =< 1", after "x": unexpected "=" (use == for comparisons)
 Errors of statements:
