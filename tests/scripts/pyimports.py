@@ -19,142 +19,98 @@
 ##                                                                            ##
 ################################################################################
 
-
 # NEEDS: numpy
 
 # Test exactly which modules of the mcpl package are imported by "import mcpl"
-# and by each use of the Python API or of mcpltool, so that parts like the
-# expressions, statistics, histograms, plotting and the mcpltool command are
-# only imported when they are used, and packages like matplotlib not at all
-# (unless plots are shown). Each case runs in a new Python process, which
-# reports all modules it imported.
+# and by each use of the Python API or of mcpltool (the scenarios of
+# MCPLTestUtils.pyscenarios), so that parts like the expressions, statistics,
+# histograms, plotting and the mcpltool command are only imported when they are
+# used, and packages like matplotlib not at all (unless plots are shown). Each
+# scenario runs in a new Python process, which reports all modules it imported.
+#
+# The imports must also agree with the imports found in the code
+# (MCPLTestUtils.pymoddeps): each module of the package is imported by a module
+# whose code has that import, and all imports outside of functions of the
+# imported modules are imported too.
 
-import gzip
-import json
-import os
+import importlib.util
 import pathlib
-import shutil
-import subprocess
 import sys
 
 from MCPLTestUtils.dirs import test_data_dir
-
-example_file = test_data_dir.joinpath('example.mcpl')
-shutil.copy(example_file, 'example.mcpl')
-shutil.copy(example_file, 'example2.mcpl')
-#File which looks like it was not properly closed (number of particles in the
-#header is 0), for --repair:
-data = bytearray(example_file.read_bytes())
-data[8:16] = bytes(8)
-pathlib.Path('torepair.mcpl').write_bytes(data)
-pathlib.Path('torepair2.mcpl').write_bytes(data)
-
-pathlib.Path('example.mcpl.gz').write_bytes(gzip.compress(example_file.read_bytes()))
-shutil.copy(test_data_dir.joinpath('ref','ref_statsum.mcpl.gz'),'statsum.mcpl.gz')
+from MCPLTestUtils.pymoddeps import import_graph
+from MCPLTestUtils.pyscenarios import prepare_files, run_scenario, scenarios
 
 #Packages which must not be imported unless plots are shown:
-plot_modules = ( 'matplotlib', 'PIL', 'tkinter', 'curses', 'scipp', 'IPython',
-                 'ipywidgets' )
-
-code_template = """
-import contextlib, json, os, sys
-import mcpldev as mcpl
-with open(os.devnull,'w') as devnull, contextlib.redirect_stdout(devnull):
-    try:
-%s
-    except SystemExit:
-        pass
-mods = sorted( m for m in sys.modules
-               if m.split('.')[0] in %r or m.startswith('mcpldev.') )
-print(json.dumps(mods))
-"""
+plot_modules = { 'matplotlib', 'PIL', 'tkinter', 'curses', 'scipp', 'IPython',
+                 'ipywidgets' }
 
 #All modules of the mcpl package imported by "import mcpl" (the expected
-#modules of the cases below are those imported in addition to these):
+#modules of the scenarios are those imported in addition to these):
 core_modules = '_blocks _common _messages _numpy _reader'
 
-def tool(*args):
-    return f"mcpl.app_mcpltool(['mcpltool',{','.join(repr(a) for a in args)}])"
+_expr = '_exprcore _expressions _exprrotation _exprsyntax _exprunits _particles _physics constants'
+_plot = '_figures _histogram _plotbackend _plotbackend_test _plotregistry plotting'
 
-cases = [
+expected = {
     #Core functionality, which must not import any other modules:
-    ( 'import mcpl', '', 'pass' ),
-    #(example.mcpl has no stat:sum entries):
-    ( 'open file and read the header', '',
-      "f = mcpl.MCPLFile('example.mcpl'); f.nparticles; f.comments" ),
-    ( 'read blocks and single particles', '',
-      ( "f = mcpl.MCPLFile('example.mcpl'); [ b.ekin.sum() for b in f.particle_blocks ]\n"
-        "        [ p.ux for p in mcpl.MCPLFile('example.mcpl').particles ]" ) ),
-    ( 'read gzipped file', '',
-      "[ b.x for b in mcpl.MCPLFile('example.mcpl.gz').particle_blocks ]" ),
-    #(the stat:sum entries of files are checked when they are opened):
-    ( 'read file with stat:sum entries', '_statsum',
-      "[ b.x for b in mcpl.MCPLFile('statsum.mcpl.gz').particle_blocks ]" ),
-    ( 'wavelengths', '_particles _physics constants',
-      "[ b[b.pdgcode == 2112].wavelength for b in mcpl.MCPLFile('example.mcpl').particle_blocks ]" ),
-    ( 'write blocks and single particles', '_writer',
-      ( "f = mcpl.MCPLOutFile('w1.mcpl'); f.add_particles(direction=(0,0,1.))\n"
-        "        f.add_particle(direction=(0,1.,0), ekin=2.0, pdgcode=22); f.close()" ) ),
-    ( 'copy blocks with numpy mask', '_writer',
-      ( "fin = mcpl.MCPLFile('example.mcpl'); fout = mcpl.MCPLOutFile('w2.mcpl')\n"
-        "        fout.transfer_metadata(fin)\n"
-        "        [ fout.add_particles(b[b.pdgcode == 2112]) for b in fin.particle_blocks ]\n"
-        "        fout.close()" ) ),
-    ( 'merge files', '_fileops _statsum _writer',
-      ( "mcpl.merge_files('w3.mcpl', ['example.mcpl','example2.mcpl']).close()\n"
-        "        mcpl.forcemerge_files('w4.mcpl', ['w3.mcpl','example.mcpl']).close()\n"
-        "        mcpl.merge_inplace('w3.mcpl', 'example.mcpl')" ) ),
-    ( 'convert to text', '_ascii', "mcpl.convert2ascii('example.mcpl','t2.txt')" ),
-    ( 'repair', '_fileops _statsum _writer', "mcpl.repair('torepair.mcpl')" ),
+    'import' : '',
+    'header' : '',
+    'read' : '',
+    'read_gz' : '',
+    'read_statsum' : '_statsum',
+    'wavelength' : '_particles _physics constants',
+    'write' : '_writer',
+    'copy' : '_writer',
+    'merge' : '_fileops _statsum _writer',
+    'text' : '_ascii',
+    'repair' : '_fileops _statsum _writer',
     #Optional functionality, which must only import what it needs:
-    ( 'read with pick and edit', '_exprcore _expressions _exprrotation _exprsyntax _exprunits _particles _physics constants',
-      ( "for b in mcpl.MCPLFile('example.mcpl', pick='pdgcode == neutron',"
-        " edit='rotate_z(90deg)').particle_blocks: pass" ) ),
-    ( 'statistics', '_particles _physics _stats _statsum constants', "mcpl.dump_stats(mcpl.collect_stats('example.mcpl'))" ),
-    ( 'statistics with pick', '_exprcore _expressions _exprrotation _exprsyntax _exprunits _particles _physics _stats _statsum constants',
-      "mcpl.dump_stats(mcpl.collect_stats('example.mcpl', pick='x > 0cm'))" ),
-    ( 'histogram as text', '_exprcore _expressions _exprrotation _exprsyntax _exprunits _histogram _particles _physics constants',
-      "print(mcpl.histogram('example.mcpl','ekin/MeV',bins=4).to_text())" ),
-    ( 'mcpltool FILE', '_cli', tool('example.mcpl') ),
-    ( 'mcpltool --pick', '_cli _exprcore _expressions _exprrotation _exprsyntax _exprunits _particles _physics constants',
-      tool('-l3','--pick','pdgcode == gamma','example.mcpl') ),
-    ( 'mcpltool --stats', '_cli _clistats _particles _physics _stats _statsum constants', tool('--stats','example.mcpl') ),
-    ( 'mcpltool --hist with print', '_cli _clistats _exprcore _expressions _exprrotation _exprsyntax _exprunits _histogram _particles _physics constants',
-      tool('--hist','ekin/MeV;print','example.mcpl') ),
-    ( 'mcpltool --extract', '_cli _statsum _writer', tool('--extract','example.mcpl','e1.mcpl') ),
-    ( 'mcpltool --extract --edit', '_cli _exprcore _expressions _exprrotation _exprsyntax _exprunits _particles _physics _statsum _writer constants',
-      tool('--extract','example.mcpl','e2.mcpl','--edit','z += 1m') ),
-    ( 'mcpltool --merge', '_cli _fileops _statsum _writer', tool('--merge','m.mcpl','example.mcpl','example2.mcpl') ),
-    ( 'mcpltool --repair', '_cli _fileops _statsum _writer', tool('--repair','torepair2.mcpl') ),
-    ( 'mcpltool --text', '_ascii _cli', tool('--text','example.mcpl','t.txt') ),
+    'pick' : _expr,
+    'stats' : '_particles _physics _stats _statsum constants',
+    'stats_pick' : f'{_expr} _stats _statsum',
+    'hist' : f'{_expr} _histogram',
+    'tool' : '_cli',
+    'tool_pick' : f'_cli {_expr}',
+    'tool_stats' : '_cli _clistats _particles _physics _stats _statsum constants',
+    'tool_hist' : f'_cli _clistats {_expr} _histogram',
+    'tool_extract' : '_cli _statsum _writer',
+    'tool_extract_edit' : f'_cli {_expr} _statsum _writer',
+    'tool_merge' : '_cli _fileops _statsum _writer',
+    'tool_repair' : '_cli _fileops _statsum _writer',
+    'tool_text' : '_ascii _cli',
     #Plotting with the test backend loads only that backend:
-    ( 'plot with the test backend',
-      '_exprcore _expressions _exprrotation _exprsyntax _exprunits _figures _histogram _particles _physics _plotbackend _plotbackend_test _plotregistry constants plotting',
-      "mcpl.histogram('example.mcpl','ekin/MeV',bins=4).plot(backend='test')" ),
-    ( 'mcpltool --hist with the test backend',
-      '_cli _clistats _exprcore _expressions _exprrotation _exprsyntax _exprunits _figures _histogram _particles _physics _plotbackend _plotbackend_test _plotregistry constants plotting',
-      tool('--hist','ekin/MeV','--backend','test','example.mcpl') ),
-]
+    'plot' : f'{_expr} {_plot}',
+    'tool_plot' : f'_cli _clistats {_expr} {_plot}',
+}
+
+def check_static( graph, got, imports ):
+    """Checks that the imports agree with the static import graph"""
+    for a, b in imports:
+        assert b in graph.get(a,{}), f'{a} imported {b}, which is not an import in its code'
+    assert { b for _, b in imports } == got - { '__init__' }
+    for m in sorted(got):
+        eager = { d for d, kind in graph[m].items() if kind == 0 }
+        assert eager <= got, f'{m} imports {sorted(eager-got)}, which were not imported'
 
 def main():
-    env = dict(os.environ)
-    env['PYTHONPATH'] = os.pathsep.join(p for p in sys.path if p)
+    assert sorted(expected) == sorted(key for key, _, _ in scenarios)
+    pythonpath = [ p for p in sys.path if p ]
+    graph = import_graph(pathlib.Path(importlib.util.find_spec('mcpldev').origin).parent)
+    prepare_files(test_data_dir)
     core = set(core_modules.split())
-    for title, expected, code in cases:
-        rv = subprocess.run([sys.executable,'-c',
-                             code_template%('        '+code,plot_modules)],
-                            capture_output=True, text=True, env=env, check=False)
-        assert rv.returncode == 0, f'{title} failed:\n{rv.stderr}'
-        mods = json.loads(rv.stdout.strip().splitlines()[-1])
+    for key, title, code in scenarios:
+        got, others, imports = run_scenario(code, 'mcpldev', pythonpath)
         #Plotting packages must not be imported at all, and exactly the
         #expected modules of the mcpl package:
-        assert not any( m.split('.')[0] in plot_modules for m in mods ), mods
-        got = { m.split('.',1)[1] for m in mods if m.startswith('mcpldev.') }
+        assert not ( others & plot_modules ), sorted(others & plot_modules)
+        check_static( graph, got, imports )
         missing = sorted( core - got )
-        extra = sorted( got - core )
+        extra = sorted( got - core - { '__init__' } )
         print(f'{title:<40}: {" ".join(extra) or "no other modules"}'
               + ( f' (but not {" ".join(missing)})' if missing else '' ))
-        assert not missing and extra == sorted(expected.split()), (title, missing, extra)
+        assert not missing and extra == sorted(expected[key].split()), (title, missing, extra)
+    print('The imports agree with the imports in the code.')
 
 if __name__ == '__main__':
     main()
