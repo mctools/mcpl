@@ -19,6 +19,9 @@
 ##                                                                            ##
 ################################################################################
 
+import pathlib
+
+
 def short_description():
     return 'Visualise the dependencies of the Python modules'
 
@@ -44,26 +47,29 @@ def load_graph():
     from MCPLTestUtils.pymoddeps import import_graph
     return import_graph( _src() / 'mcpl' )
 
-def run_scenario( key ):
-    """Runs the scenario (see MCPLTestUtils.pyscenarios) with the mcpl package
-    of the repository, and returns (the modules it imports, the imports as
-    (importing module, imported module))"""
+def get_scenarios():
+    """The scenarios of MCPLTestUtils.pyscenarios, as (key, title, code)"""
+    _test_utils()
+    from MCPLTestUtils.pyscenarios import scenarios
+    return scenarios
+
+def run_scenario( code ):
+    """Runs the code of a scenario with the mcpl package of the repository, and
+    returns (the modules it imports, the imports as (importing module, imported
+    module))"""
     import os
     import tempfile
 
     from .dirs import testroot
     _test_utils()
-    from MCPLTestUtils.pyscenarios import prepare_files, scenarios
+    from MCPLTestUtils.pyscenarios import prepare_files
     from MCPLTestUtils.pyscenarios import run_scenario as run
-    code = { k : c for k, _, c in scenarios }
-    if key not in code:
-        raise SystemExit('Scenarios:\n' + ''.join( f'  {k:<18} {t}\n' for k, t, _ in scenarios ))
     cwd = os.getcwd()
     with tempfile.TemporaryDirectory() as tmpdir:
         os.chdir(tmpdir)
         try:
             prepare_files(testroot / 'data')
-            mods, _, imports = run(code[key], 'mcpl', [ _src() ])
+            mods, _, imports = run(code, 'mcpl', [ _src() ])
         finally:
             os.chdir(cwd)
     return mods, imports
@@ -113,8 +119,13 @@ def used_modules( graph, names ):
     on_demand = { d for n in names for d, k in graph[n].items() if k != 0 }
     return loaded, imported( graph, on_demand, ( 0, 1, 2 ) ) - loaded
 
-def graph_to_dot( graph, sizes, area, loaded, on_demand, used_imports = () ):
+def graph_to_dot( graph, sizes, area, loaded, on_demand, used_imports = (), title = None ):
     s = 'digraph G {\n    node [ fontsize = "12" shape=box ];\n'
+    if title:
+        #(the lines left aligned, at the top):
+        lbl = ''.join( line.replace('\\','\\\\').replace('"','\\"') + '\\l'
+                       for line in title.splitlines() )
+        s += f'    labelloc=t; labeljust=l; fontsize=20; label="{lbl}";\n'
     largest = max(sizes.values()) if sizes else 1
     for n in sorted(graph):
         public = not n.startswith('_') or n in ( '__init__', '__main__' )
@@ -157,15 +168,26 @@ def render_dot( dot_str, fmt ):
         subprocess.run(['dot',f2,f'-T{fmt}',f'-o{f3}'], check = True, capture_output = True)
         return f3.read_bytes()
 
-def display_image_data( data, fmt ):
+def display_image_data( data, fmt, stepping = False ):
+    """Shows the image, and returns False if Escape was pressed (when stepping
+    through several images)"""
     from io import BytesIO
 
     import matplotlib.image as mpimg
     import matplotlib.pyplot as plt
+    fig = plt.figure()
     plt.imshow(mpimg.imread(BytesIO(data),fmt))
     plt.axis('off')
     plt.tight_layout()
+    result = [ True ]
+    if stepping:
+        def on_key( event ):
+            if event.key in ( ' ', 'right', 'n', 'escape' ):
+                result[0] = event.key != 'escape'
+                plt.close(fig)
+        fig.canvas.mpl_connect('key_press_event', on_key)
     plt.show()
+    return result[0]
 
 def main( parser ):
     parser.init( """Visualise the dependencies of the modules of the mcpl Python
@@ -185,31 +207,58 @@ def main( parser ):
                                  ' when that code runs, in light blue.') )
     parser.add_argument( '-S', '--scenario', metavar = 'NAME',
                          help = ('Run a scenario of using the package (as in the pyimports test, e.g.'
-                                 ' read, write or tool_hist, or "list" to list them), and highlight the'
-                                 ' modules it imports in blue and the imports which load them in black.') )
+                                 ' read, write or tool_hist, "list" to list them, or "all" to step through'
+                                 ' all of them), and highlight the modules it imports in blue and the imports'
+                                 ' which load them in black. The graph shows the scenario and its code.') )
     parser.add_argument( '-o', '--output', metavar = 'FILE',
                          help = 'Write the graph to this file (e.g. graph.png, graph.svg or graph.pdf) instead of showing it.' )
     args = parser.parse_args()
 
-    import pathlib
     full_graph = load_graph()
-    loaded, on_demand, used_imports = None, set(), []
     if args.uses and args.scenario:
         parser.error('--uses and --scenario can not be combined')
-    if args.uses:
-        loaded, on_demand = used_modules( full_graph, [ n for n in args.uses.split(',') if n ] )
-    if args.scenario:
-        loaded, used_imports = run_scenario( args.scenario )
+    if not args.scenario:
+        loaded, on_demand = None, set()
+        if args.uses:
+            loaded, on_demand = used_modules( full_graph, [ n for n in args.uses.split(',') if n ] )
+        show( args, full_graph, loaded, on_demand )
+        return
+    scenarios = get_scenarios()
+    keys = [ k for k, _, _ in scenarios ]
+    if args.scenario not in keys + [ 'all' ]:
+        raise SystemExit('Scenarios:\n' + ''.join( f'  {k:<18} {t}\n' for k, t, _ in scenarios ))
+    todo = [ sc for sc in scenarios if args.scenario in ( 'all', sc[0] ) ]
+    if len(todo) > 1 and not args.output:
+        print('Press space, n or the right arrow (or close the window) for the next'
+              ' scenario, and Escape to stop.')
+    for i, ( key, title, code ) in enumerate(todo):
+        loaded, used_imports = run_scenario( code )
+        desc = f'Scenario {key}: {title}' + ( f' ({i+1}/{len(todo)})' if len(todo) > 1 else '' )
+        desc += ''.join( f'\n    {line}' for line in code.splitlines() )
+        output = args.output
+        if output and len(todo) > 1:
+            #(one file per scenario):
+            out = pathlib.Path(output)
+            output = out.with_name(f'{out.stem}_{key}{out.suffix}')
+        if not show( args, full_graph, loaded, set(), used_imports, desc, output, len(todo) > 1 ):
+            break
+
+def show( args, full_graph, loaded, on_demand, used_imports = (), title = None,
+          output = None, stepping = False ):
+    """Draws the graph, to the output file or else in a window (then returning
+    False if the user wants to stop stepping through graphs)"""
     graph = full_graph if args.all else remove_implied( full_graph )
+    graph = { n : dict(deps) for n, deps in graph.items() }
     for n, d in used_imports:
         #(always showing the imports which loaded the modules):
         graph[n][d] = full_graph[n][d]
     sizes = { n : code_lines(n) for n in graph } if args.sloc or args.area else None
-    dot_str = graph_to_dot( graph, sizes, args.area, loaded, on_demand, used_imports )
-    if args.output:
-        out = pathlib.Path(args.output)
+    dot_str = graph_to_dot( graph, sizes, args.area, loaded, on_demand, used_imports, title )
+    output = output or args.output
+    if output:
+        out = pathlib.Path(output)
         fmt = out.suffix[1:] or 'png'
         out.write_bytes(render_dot( dot_str, fmt ))
         print(f'Wrote {out}')
-    else:
-        display_image_data( render_dot( dot_str, 'png' ), 'png' )
+        return True
+    return display_image_data( render_dot( dot_str, 'png' ), 'png', stepping )
