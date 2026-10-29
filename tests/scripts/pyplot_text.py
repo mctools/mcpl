@@ -36,6 +36,7 @@ import mcpldev as mcpl
 import numpy as np
 from mcpldev.plotting import Figure, Panel, StepHist, Text, resolution
 from MCPLTestUtils.dirs import test_data_dir
+from MCPLTestUtils.plots import example_figures
 
 example_file = test_data_dir.joinpath('example.mcpl')
 
@@ -61,15 +62,15 @@ def test_histograms():
     for backend in ('unicode','ascii'):
         show(h.figure(), backend, height=12)
 
-def test_stats():
-    figs = mcpl.stats_figures(example_file)
+def test_overview():
+    figs = example_figures(mcpl,example_file)
     show(figs[0], 'ascii')
     show(figs[1:3], 'unicode', height=6)
     show(Figure( title='Empty', panels=[ Panel( title='No data here',
                                                items=[ Text('No data') ] ) ] ), 'unicode')
 
 def test_files_and_options():
-    figs = mcpl.stats_figures(example_file)[:2]
+    figs = example_figures(mcpl,example_file)[:2]
     for backend in ('unicode','ascii'):
         files = mcpl.plotting.save(figs, f'stats_{backend}.txt', backend=backend,
                                    **{ f'{backend}_width' : 60 })
@@ -164,7 +165,7 @@ def test_tool():
                 os.environ[k] = v
 
 test_histograms()
-test_stats()
+test_overview()
 test_files_and_options()
 test_tool()
 test_resolution()

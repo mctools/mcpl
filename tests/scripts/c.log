@@ -1254,6 +1254,7 @@ userflags    :           0 (0x00000000)            5 (100.00%)
 ------------------------------------------------------------------------------
 ======================> Test stats(reffile_empty.mcpl,bin_data=True,stats=['x', 'y'])
 MCPL WARNING: Can not calculate stats on an empty file
+plot_stats: plot_stats is no longer available: use mcpl.histogram(FILE,EXPR).plot() for plots of the particles
 ======================> Test stats(reffile_uw.mcpl.gz)
 ------------------------------------------------------------------------------
 nparticles   : 15

@@ -92,12 +92,6 @@ Showing particles:
   -n, --nohead     Show just the particles.
   -bKEY            Write the blob stored under KEY to standard output.
 
-Summary (-S, --stats):
-  -o, --output FILE
-                   Save the overview plot in FILE instead (see below).
-  -B, --backend NAME
-                   Plotting backend for -o (see below).
-
 Histogram (-H, --hist HIST):
   HIST is an expression with options, e.g. "ekin/MeV;logx;split=pdgcode" (see
   -H help). With more files, there is a curve for each file.
@@ -182,7 +176,7 @@ _flag_opts = { '--stats' : '-S', '--extract' : '-e', '--merge' : '-m',
                '--traceback' : None }
 #Options of earlier versions, which are removed:
 _removed_opts = {
-    '--pdf' : 'a similar option now is: -S -o FILE.pdf',
+    '--pdf' : 'a similar option now is: -H HIST -o FILE.pdf',
     '--gui' : 'use -w instead',
 }
 
@@ -337,8 +331,9 @@ def _app_mcpltool(argv):
     allowed('-t',('--hist',),'--term' in flags,
             msg = "-t can not be used without -H" + ( " (did you mean --text?)."
                                                        if mode == 'dump' else "." ))
-    allowed('-o',('--stats','--hist'),'--output' in values)
-    allowed('-B',('--stats','--hist'),'--backend' in values)
+    stats_hint = ' (-S only prints text, for plots use -H)' if mode == '--stats' else ''
+    allowed('-o',('--hist',),'--output' in values,hint=stats_hint)
+    allowed('-B',('--hist',),'--backend' in values,hint=stats_hint)
     allowed('--color',('--hist',),'--color' in values)
     if values.get('--color',"auto") not in ('auto','always','never'):
         bad("--color must be auto, always or never.")
@@ -348,8 +343,6 @@ def _app_mcpltool(argv):
     allowed('--keep-statsum',('--extract',),'--keep-statsum' in flags)
     allowed('--inplace',('--merge',),'--inplace' in flags)
     allowed('--keepuserflags',('--forcemerge',),'--keepuserflags' in flags)
-    if mode == '--stats' and '--backend' in values and '--output' not in values:
-        bad("-B can only be used with -S together with -o.")
     if '--term' in flags and '--output' in values:
         bad("-t and -o can not be used together.")
     opt_dryrun = '--dry-run' in flags
@@ -443,8 +436,7 @@ def _app_mcpltool(argv):
 
     if mode == '--stats':
         from ._clistats import mcpltool_stats
-        mcpltool_stats(filelist[0],opt_skip,opt_limit,pick,edit,
-                       values.get('--output'),values.get('--backend'),bad)
+        mcpltool_stats(filelist[0],opt_skip,opt_limit,pick,edit,bad)
         sys.exit(0)
 
     #Dump

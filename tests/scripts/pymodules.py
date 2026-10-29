@@ -47,7 +47,7 @@ dependencies = {
     '_ascii'            : ( '_reader', ),
     '_blocks'           : ( '_common', '_numpy', '_physics' ),
     '_cli'              : ( '_ascii', '_clistats', '_common', '_examples', '_expressions', '_exprhelp', '_extract', '_fileops', '_messages', '_particles', '_reader' ),
-    '_clistats'         : ( '_common', '_histogram', '_plotbackend', '_plotregistry', '_reader', '_stats', '_statsplot' ),
+    '_clistats'         : ( '_common', '_histogram', '_plotbackend', '_plotregistry', '_reader', '_stats' ),
     '_common'           : (  ),
     'constants'         : (  ),
     '_examples'         : ( '_common', '_messages', '_numpy', '_writer' ),
@@ -76,14 +76,13 @@ dependencies = {
     '_records'          : ( '_blocks', '_common', '_numpy', '_particles', '_physics' ),
     '_scipp'            : ( '_common', '_messages', '_numpy', '_userdata' ),
     '_stats'            : ( '_common', '_expressions', '_messages', '_numpy', '_physics', '_reader' ),
-    '_statsplot'        : ( '_common', '_numpy', '_physics', '_plotbackend', '_plotregistry', '_stats', 'plotting' ),
     '_statsum'          : ( '_common', ),
     '_termcolor'        : ( '_common', ),
     '_userdata'         : ( '_common', '_numpy' ),
     '_writer'           : ( '_blocks', '_common', '_expressions', '_messages', '_numpy', '_reader', '_records', '_statsum', '_userdata' ),
-    '__init__'          : ( '_ascii', '_blocks', '_cli', '_common', '_expressions', '_fileops', '_histogram', '_messages', '_reader', '_stats', '_statsplot', '_statsum', '_writer', 'constants', 'plotting' ),
+    '__init__'          : ( '_ascii', '_blocks', '_cli', '_common', '_expressions', '_fileops', '_histogram', '_messages', '_reader', '_stats', '_statsum', '_writer', 'constants', 'plotting' ),
     '__main__'          : ( '_cli', ),
-    'mcpl'              : ( '_ascii', '_blocks', '_cli', '_common', '_reader', '_stats', '_statsplot', '_statsum' ),
+    'mcpl'              : ( '_ascii', '_blocks', '_cli', '_common', '_reader', '_stats', '_statsum' ),
 }
 
 entry_points = ( '__init__', '__main__', 'mcpl' )

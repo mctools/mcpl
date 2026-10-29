@@ -23,8 +23,8 @@
 # NEEDS: numpy
 
 # Test histograms (mcpl.histogram, mcpl.histogram2d, mcpl.plot_histograms),
-# the figures of plot_stats, and mcpltool --hist, using the plotting backend
-# for tests (which prints descriptions of the figures).
+# and mcpltool --hist, using the plotting backend for tests (which prints
+# descriptions of the figures), and that plot_stats is no longer available.
 
 import contextlib
 import io
@@ -107,9 +107,11 @@ def test_histograms():
     h = mcpl.histogram(example_file, 'x/cm', bins=np.int64(4), range=[-1,1])
     print('bins as a numpy integer, and range as a list:', len(h.edges)-1, h.edges[[0,-1]].tolist())
 
-def test_stats_figures():
-    show(mcpl.stats_figures(mcpl.collect_stats(example_file)))
-    show(mcpl.stats_figures(mcpl.collect_stats(example_file,pick='pdgcode == electron')))
+def test_plot_stats():
+    try:
+        mcpl.plot_stats(mcpl.collect_stats(example_file))
+    except mcpl.MCPLError as e:
+        print(f'plot_stats: {e}')
 
 def test_overlay():
     hn = mcpl.histogram(example_file, 'ekin/MeV', pick='pdgcode == neutron',
@@ -261,7 +263,7 @@ def test_help_topics():
             print(f'   | {line}')
 
 test_histograms()
-test_stats_figures()
+test_plot_stats()
 test_overlay()
 test_cmdline()
 test_cmdline_more()
