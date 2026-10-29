@@ -76,6 +76,8 @@ empty histogram with split='x > 0cm': # histogram of: ekin/MeV
 # lower edge | upper edge | value
 0 5 0
 5 10 0
+labels of split=fileidx // 2: ['fileidx // 2 = 0', 'fileidx // 2 = 1', 'fileidx // 2 = 2']
+labels of split=fileidx > 1: ['fileidx > 1', 'not (fileidx > 1)']
 histogram('ekin',) {}: Expression "ekin" has units (energy), so divide it by a unit, e.g. ekin/MeV
 histogram('ekin/MeV',) {'pick': 'x > 1km'}: No values to histogram (no particles picked?)
 histogram('x/cm',) {'logx': True, 'range': (-1, 1)}: Logarithmic binning requires a positive range
