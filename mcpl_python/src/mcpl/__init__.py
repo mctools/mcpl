@@ -80,7 +80,6 @@ __all__ = [
             'plot_stats',
             'plotting',
             'repair',
-            'stats_figures',
             'use_logging',
            ]
 
@@ -121,9 +120,8 @@ _on_demand = {
     'histogram' : '_histogram',
     'histogram2d' : '_histogram',
     'plot_histograms' : '_histogram',
-    'plot_stats' : '_statsplot',
+    'plot_stats' : '_stats',
     'plotting' : 'plotting',
-    'stats_figures' : '_statsplot',
 }
 
 def __getattr__(name):

@@ -65,24 +65,14 @@ def _option_names( cls ):
     import inspect
     return set(inspect.signature(cls).parameters)
 
-def mcpltool_stats(filename,skip,limit,pick,edit,outfn,backend,bad):
+def mcpltool_stats(filename,skip,limit,pick,edit,bad):
     from ._stats import _PickedFile, dump_stats
     f = _view(filename,skip,limit,pick,edit)
     if MCPLFile(filename).nparticles == 0:
         bad("Can not calculate statistics for an empty file")
     if f.nparticles == 0:
         bad("Can not calculate statistics when no particles are picked")
-    f = _PickedFile(f,None)
-    if not outfn:
-        dump_stats(f)
-        return
-    from ._statsplot import plot_stats
-    try:
-        files = plot_stats(f,filename=outfn,backend=_plot_backend(outfn,backend,False))
-    except MCPLError as e:
-        bad(str(e))
-    if files:
-        print('Created ' + ', '.join(files))
+    dump_stats(_PickedFile(f,None))
 
 def mcpltool_hist(filelist,histstr,skip,limit,pick,edit,outfn,backend,terminal,bad,
                   color=None):
