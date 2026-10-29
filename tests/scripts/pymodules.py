@@ -46,7 +46,7 @@ from MCPLTestUtils.pymoddeps import package_imports
 dependencies = {
     '_ascii'            : ( '_reader', ),
     '_blocks'           : ( '_common', '_numpy', '_physics' ),
-    '_cli'              : ( '_ascii', '_clistats', '_common', '_examples', '_expressions', '_exprhelp', '_fileops', '_messages', '_particles', '_reader', '_writer' ),
+    '_cli'              : ( '_ascii', '_clistats', '_common', '_examples', '_expressions', '_exprhelp', '_extract', '_fileops', '_messages', '_particles', '_reader' ),
     '_clistats'         : ( '_common', '_histogram', '_plotbackend', '_plotregistry', '_reader', '_stats', '_statsplot' ),
     '_common'           : (  ),
     'constants'         : (  ),
@@ -57,6 +57,7 @@ dependencies = {
     '_exprrotation'     : ( '_numpy', ),
     '_exprsyntax'       : ( '_common', ),
     '_exprunits'        : (  ),
+    '_extract'          : ( '_messages', '_reader', '_writer' ),
     '_figures'          : (  ),
     '_fileops'          : ( '_common', '_messages', '_reader', '_statsum', '_writer' ),
     '_helptext'         : (  ),
