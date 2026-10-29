@@ -40,14 +40,7 @@ from ._blocks import (
 from ._common import MCPLError, _native_endianness
 from ._messages import _error, _info, _warning
 from ._numpy import np
-from ._physics import ekin_from_wavelength
 from ._reader import MCPLFile
-from ._statsum import (
-    _parse_statsum,
-    _parse_statsum_comment,
-    _statsum_syntax_error,
-    encode_stat_sum,
-)
 
 
 def _outfile_name(filename):
@@ -244,6 +237,7 @@ class MCPLOutFile:
     def stat_sum(self):
         """Dictionary of stat:sum entries, like MCPLFile.stat_sum"""
         if self._hdr_notwritten:
+            from ._statsum import _parse_statsum
             return _parse_statsum(self._comments)
         return { k : (None if v[1]==-1.0 else v[1])
                  for k,v in self._statsuminfo.items() }
@@ -375,6 +369,11 @@ class MCPLOutFile:
         self._check_hdr_notwritten('hdr_add_comment')
         comment = self._to_bytes(comment,'Comments')
         if comment.startswith(b'stat:sum:'):
+            from ._statsum import (
+                _parse_statsum,
+                _parse_statsum_comment,
+                _statsum_syntax_error,
+            )
             ok, (key, _) = _parse_statsum_comment(comment)
             if not ok:
                 raise MCPLError(_statsum_syntax_error(comment))
@@ -488,6 +487,7 @@ class MCPLOutFile:
         value which will be updated later (at the latest before closing the
         file)."""
         self._check_open()
+        from ._statsum import _parse_statsum_comment, encode_stat_sum
         comment = encode_stat_sum(key,value).encode('ascii')
         if hasattr(key,'decode'):
             key = key.decode('ascii')
@@ -521,6 +521,7 @@ class MCPLOutFile:
             raise MCPLError('hdr_scale_stat_sums called with zero scale')
         self._check_open()
         if self._hdr_notwritten:
+            from ._statsum import _parse_statsum
             items = [ (k,(-1.0 if v is None else v))
                       for k,v in _parse_statsum(self._comments).items() ]
         else:
@@ -636,6 +637,7 @@ class MCPLOutFile:
         for c in self._comments:
             pos = add_buffer(c)
             if c.startswith(b'stat:sum:'):
+                from ._statsum import _parse_statsum_comment
                 key, value = _parse_statsum_comment(c)[1]
                 statsuminfo[key] = [pos,-1.0 if value is None else value]
         for k in self._blobkeys:
@@ -1014,6 +1016,7 @@ class MCPLOutFile:
         if not np.all( np.isin( pdgcode, (2112,22) ) ):
             raise MCPLError('wavelength can only be specified for neutrons'
                             ' (pdgcode 2112) and gammas (pdgcode 22)')
+        from ._physics import ekin_from_wavelength
         cols['ekin'] = ekin_from_wavelength( cols.pop('wavelength'), pdgcode )
 
     def _transfer(self, block, sel, overrides = None):
