@@ -102,8 +102,8 @@ def shown( backend, figures ):
     return out.getvalue()
 
 def test_stripped():
-    h1 = mcpl.histogram(example_file,'ekin/MeV;logx;bins=20')
-    hs = mcpl.histogram(example_file,'ekin/MeV;logx;split=pdgcode;bins=20')
+    h1 = mcpl.histogram(example_file,'ekin/MeV;logx=1;bins=20;display_by=single')
+    hs = mcpl.histogram(example_file,'ekin/MeV;logx=1;display_by=pdgcode;bins=20')
     h2 = mcpl.histogram(example_file,'x/cm : y/cm;bins=10')
     overview = example_figures(mcpl,example_file)[0]
     cases = ( ('1D',h1.figure()), ('split',hs.figure()), ('2D',h2.figure()),
@@ -157,7 +157,7 @@ def tool( *args, **env ):
             print(f'   | {line}')
 
 def test_tool():
-    h = 'ekin/MeV;bins=5'
+    h = 'ekin/MeV;bins=5;display_by=single'
     tool('-H',h,'-t')
     tool('-H',h,'-t','--color=always')
     tool('-H',h,'-t','--color','always')
@@ -168,7 +168,7 @@ def test_tool():
     tool('-H',h,'-B','ascii','--color=always')
     tool('-H',h,'--color=sometimes')
     tool('-H',h,'--color=always','-o','x.txt')
-    tool('-H',h+';print','--color=always')
+    tool('-H',h+';print=1','--color=always')
     tool('-S','--color=always')
     tool('-H',h,'-t','--color=always','--color=never')
 

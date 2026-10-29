@@ -1417,12 +1417,12 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
   mcpltool -H userdata.temp/K;print;bins=3 udexpr.mcpl:
 # histogram of: userdata.temp/K
 # values: weights per bin
-# lower edge | upper edge | value
+# lower edge | upper edge | n (2112)
 290 296.66667 1
 296.66667 303.33333 1
 303.33333 310 1
   exit: 0
-=== Units of userdata fields in expressions
+=== Units of userdata fields in expressions and plots
 userdata.temp/K: [290.0, 292.0, 294.0, 296.0]
 userdata.theta/deg: [0.0, 30.0, 60.0, 90.0]
 userdata.d/mm: [0.0, 100.0, 200.0, 300.0]
@@ -1434,3 +1434,10 @@ userdata.temp + x: MCPLError: Incompatible units in arithmetic: temperature and 
 userdata.temp > 293: MCPLError: Incompatible units in comparison: temperature and value without units (add units, e.g. 2K) in expression "userdata.temp > 293"
 userdata.q + userdata.d: MCPLError: Incompatible units in arithmetic: length^-1 and length in expression "userdata.q + userdata.d"
 userdata.temp: MCPLError: Expression "userdata.temp" has units (temperature), so divide it by a unit, e.g. userdata.temp/K
+plot userdata.temp: userdata.temp [K] | weights per bin
+plot userdata.d : userdata.temp: userdata.d [cm] | userdata.temp [K]
+plot userdata.d;range=0cm:20cm: userdata.d [cm] | weights per bin
+plot userdata.d;range=0:20: MCPLError: The range of "userdata.d" must be given with units, as it has units (length), e.g. range=0cm:10cm
+plot userdata.temp;range=0cm:2cm: MCPLError: The range of "userdata.temp" (temperature) has other units (length)
+plot userdata.n;bar: weights | userdata.n
+plot userdata.d;bar: MCPLError: Bar charts are of whole numbers without units, like pdgcode or round(x/cm), not of "userdata.d"

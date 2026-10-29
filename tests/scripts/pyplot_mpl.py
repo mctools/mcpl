@@ -60,13 +60,14 @@ def test_png():
     #backend for saving files):
     rc = 0
     try:
-        mcpl.app_mcpltool(['mcpltool','-H','ekin/MeV;logy','-o','tool.png',str(example_file)])
+        mcpl.app_mcpltool(['mcpltool','-H','ekin;logy','-H','x : y','-o','tool.png',
+                           str(example_file)])
     except SystemExit as e:
         rc = e.code
     created = sorted(f.name for f in pathlib.Path('.').glob('tool*.png'))
-    assert rc == 0 and created == ['tool.png'] and all(
+    assert rc == 0 and created == ['tool_1.png','tool_2.png'] and all(
         pathlib.Path(f).read_bytes()[:4] == b'\x89PNG' for f in created )
-    print('mcpltool -H with -o tool.png created tool.png')
+    print(f'mcpltool with two -H and -o tool.png created {created}')
 
 def test_items():
     #All kinds of items (a 3D plot, an empty cell, same scales, coloured

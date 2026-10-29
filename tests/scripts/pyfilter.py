@@ -593,6 +593,8 @@ def test_in_and_userdata():
         mcpl.ParticleFilter('userdata.nscat > 1')(b)
     except mcpl.MCPLError as e:
         print(f'without userdata: {e}')
+    h = mcpl.histogram(fn,'userdata.nscat;bar')
+    print('bar chart of userdata.nscat:', type(h).__name__)
     pathlib.Path(fn).unlink()
 
 def test_pick_statements():
@@ -614,11 +616,12 @@ def test_pick_statements():
         print(f'pick {flt.expression!r}: same as {inline!r}: {same} ({int(flt(b).sum())} picked),'
               f' fileidx: {flt._uses_fileidx}, canonical: {_expr_canonical(pick)!r}')
         assert same
-    #(the same in files):
+    #(the same in files and histograms):
     pick = 'r = hypot(x,y); r > 2cm'
     with mcpl.MCPLFile(example_file,pick = pick) as f:
         n = sum( len(blk) for blk in f.particle_blocks )
-    print(f'file with {pick!r}: {n}')
+    h = mcpl.histogram(str(example_file),'x;bins=5;display_by=single',pick = pick)
+    print(f'file and histogram with {pick!r}: {n} {int(sum(h.contents[None]))}')
     for bad in ( 'x = 1cm; x > 0cm', 'r = hypot(x,y); x > 0cm', 'swap(x,y); x > 0cm',
                  'rotate_z(90deg); x > 0cm', 'x > 0cm; y > 0cm', 'r = hypot(x,y);',
                  'r = hypot(x,y); r', 'r += 1cm; r > 0cm', 'r = 1meV; r > 1cm', 'pi = 3; x > 0cm',

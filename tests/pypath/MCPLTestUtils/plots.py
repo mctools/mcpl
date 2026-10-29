@@ -22,28 +22,18 @@
 """Figures for tests of the plotting backends, with the kinds of plots of
 mcpl: curves (also several in one plot), a 2D map, and bars."""
 
-#(the histograms, and whether the y axis is logarithmic):
-_plots = ( ('ekin/MeV;split=pdgcode',True), ('angle(dir,(0,0,1))/deg;split=pdgcode',True),
-           ('x/cm : y/cm',None), ('time/ms',True), ('x/cm',False) )
+_plots = ( 'ekin;logx=auto;logy;display_by=pdgcode', 'angle(dir,(0,0,1))/deg;logy;display_by=pdgcode',
+           'x : y', 'time;logx=auto;logy;display_by=single', 'pdgcode;bar;logy=auto',
+           'x;display_by=single' )
 
 def example_figures( mcpl, filename ):
     """An overview of 6 plots of the file (2 rows of 3, with the title of the
-    file: histograms, and bars of the particle types), followed by each of
-    them on its own (mcpl is the mcpl module)"""
+    file), followed by each of them on its own (mcpl is the mcpl module)"""
     import pathlib
-    hists = [ mcpl.histogram(filename,p) for p, _ in _plots ]
-    def opts( logy ):
-        return {} if logy is None else { 'logy' : logy }
-    s = mcpl.collect_stats(filename,stats=['pdgcode'])['pdgcode']
-    u, c = s['unique_values'][:10], s['unique_values_counts'][:10]
-    bars = mcpl.plotting.Panel( title = 'Particle types (weighted)', logx = True,
-                                items = [ mcpl.plotting.Bars([ str(int(e)) for e in u ],
-                                                             list(c), horizontal = True) ] )
+    hists = [ mcpl.histogram(filename,p) for p in _plots ]
     overview = mcpl.plotting.Figure( title = f'Overview of {pathlib.Path(filename).name}', nrows = 2,
-                                     ncols = 3, panels = [ h.panel(**opts(logy)) for h, ( _, logy )
-                                                           in zip(hists,_plots) ] + [ bars ] )
-    return ( [ overview ] + [ h.figure(**opts(logy)) for h, ( _, logy ) in zip(hists,_plots) ]
-             + [ mcpl.plotting.Figure(panels = [ bars ]) ] )
+                                     ncols = 3, panels = [ h.panel() for h in hists ] )
+    return [ overview ] + [ h.figure() for h in hists ]
 
 def items_figure( mcpl ):
     """A figure with all kinds of items and panels (mcpl is the mcpl module): a

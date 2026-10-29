@@ -12,16 +12,16 @@ repair                                  : _fileops _records _statsum _writer
 read with pick and edit                 : _exprcore _expressions _exprrotation _exprsyntax _exprunits _particles _physics constants
 statistics                              : _particles _physics _stats _statsum constants
 statistics with pick                    : _exprcore _expressions _exprrotation _exprsyntax _exprunits _particles _physics _stats _statsum constants
-histogram as text                       : _exprcore _expressions _exprrotation _exprsyntax _exprunits _histogram _particles _physics constants
+histogram as text                       : _exprcore _expressions _exprplot _exprrotation _exprsyntax _exprunits _histogram _histstring _particles _physics constants
 mcpltool FILE                           : _cli
 mcpltool --pick                         : _cli _exprcore _expressions _exprrotation _exprsyntax _exprunits _particles _physics constants
 mcpltool --stats                        : _cli _clistats _particles _physics _stats _statsum constants
-mcpltool --hist with print              : _cli _clistats _exprcore _expressions _exprrotation _exprsyntax _exprunits _histogram _particles _physics constants
+mcpltool --hist with print              : _cli _clistats _exprcore _expressions _exprplot _exprrotation _exprsyntax _exprunits _histogram _histstring _particles _physics constants
 mcpltool --extract                      : _cli _extract _records _statsum _writer
 mcpltool --extract --edit               : _cli _exprcore _expressions _exprrotation _exprsyntax _exprunits _extract _particles _physics _records _statsum _writer constants
 mcpltool --merge                        : _cli _extract _fileops _records _statsum _writer
 mcpltool --repair                       : _cli _fileops _records _statsum _writer
 mcpltool --text                         : _ascii _cli
-plot with the test backend              : _exprcore _expressions _exprrotation _exprsyntax _exprunits _figures _histogram _particles _physics _plotbackend _plotbackend_test _plotregistry constants plotting
-mcpltool --hist with the test backend   : _cli _clistats _exprcore _expressions _exprrotation _exprsyntax _exprunits _figures _histogram _particles _physics _plotbackend _plotbackend_test _plotregistry constants plotting
+plot with the test backend              : _exprcore _expressions _exprplot _exprrotation _exprsyntax _exprunits _figures _histogram _histstring _particles _physics _plotbackend _plotbackend_test _plotregistry constants plotting
+mcpltool --hist with the test backend   : _cli _clistats _exprcore _expressions _exprplot _exprrotation _exprsyntax _exprunits _figures _histogram _histstring _particles _physics _plotbackend _plotbackend_test _plotregistry constants plotting
 The imports agree with the imports in the code.

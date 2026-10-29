@@ -251,32 +251,47 @@ _hints = (
       'rotate position, direction and polarisation so that the direction of the vector v becomes that of vout, and u that of uout (e.g. rotate_frame((0,0,1),(1,0,0),(0,1,0),(0,1,0)) turns z into x and keeps y; the angles between v and u and between vout and uout must be the same)' ),
     ( 'histoptions', 'bins=N',
       'number of bins',
-      'number of bins (default: chosen from the number of particles, e.g. bins=50)' ),
+      'number of bins, or bins=NX,NY for 2D histograms (default: chosen from the number of particles, e.g. bins=50)' ),
     ( 'histoptions', 'range=LOW:HIGH',
       'range of the histogram',
-      'range of the histogram, without units like the expression (default: all values, e.g. range=0:10)' ),
+      'range of the histogram, with units if the expression has units (default: all values, e.g. range=0:10, or range=1meV:10MeV)' ),
     ( 'histoptions', 'xrange=LOW:HIGH',
       'range of x in 2D histograms',
-      'range of the first expression of a 2D histogram (default: all values, e.g. xrange=-10:10)' ),
+      'range of the first expression of a 2D histogram (default: all values, e.g. xrange=-10cm:10cm)' ),
     ( 'histoptions', 'yrange=LOW:HIGH',
       'range of y in 2D histograms',
-      'range of the second expression of a 2D histogram (default: all values, e.g. yrange=-10:10)' ),
-    ( 'histoptions', 'logx',
+      'range of the second expression of a 2D histogram (default: all values, e.g. yrange=-10cm:10cm)' ),
+    ( 'histoptions', 'logx=1|0|auto',
       'logarithmic x axis',
-      'logarithmic binning and x axis (e.g. "ekin/MeV;logx")' ),
-    ( 'histoptions', 'logy',
+      'logarithmic binning and x axis (e.g. "ekin/MeV;logx", or logx=auto if suitable for the values)' ),
+    ( 'histoptions', 'logy=1|0|auto',
       'logarithmic y axis',
-      'logarithmic y axis' ),
-    ( 'histoptions', 'lethargy',
-      'per unit lethargy (implies logx)',
-      'divide by the bin widths in lethargy, so 1/E spectra are flat (implies logx)' ),
-    ( 'histoptions', 'split=EXPR',
+      'logarithmic y axis (and bins, of 2D histograms), or scale of bar charts (logy=auto if suitable)' ),
+    ( 'histoptions', 'logz=1|0',
+      'logarithmic colour scale',
+      'logarithmic colour scale of 2D histograms (the default, logz=0 gives a linear scale)' ),
+    ( 'histoptions', 'equal=1|0',
+      'equal scales of the axes',
+      'the same scale on both axes of 2D histograms of expressions with the same units, so lengths on the axes compare (e.g. "x : y;equal")' ),
+    ( 'histoptions', 'lethargy=1|0',
+      'per unit lethargy (implies logx=1)',
+      'divide by the bin widths in lethargy, so 1/E spectra are flat (implies logx=1)' ),
+    ( 'histoptions', 'display_by=EXPR|single',
       'one curve per value of EXPR',
-      'one curve for each value of the expression EXPR (e.g. split=pdgcode, or split=x > 0cm)' ),
-    ( 'histoptions', 'unweighted',
+      'one curve for each value of the expression EXPR (at most 8, the others are combined into one; default: pdgcode, a curve for each particle type, or with several files a curve for each file), or one curve with single (e.g. display_by=x > 0cm, or display_by=single; not for 2D histograms and bar charts, which have one)' ),
+    ( 'histoptions', 'display_only=COND',
+      'only the particles of a condition',
+      'only show the particles for which the condition is true, of those picked (a condition as in picks, but only one, without variables, or a particle type: e.g. display_only=ekin > 1MeV, or display_only=neutron)' ),
+    ( 'histoptions', 'bar=N|auto|0',
+      'bars of distinct values',
+      'a bar chart, with a bar for each value (which must be whole numbers), for the N largest ones, the others are combined into one (auto: 10, e.g. "pdgcode;bar" or "round(x/cm);bar")' ),
+    ( 'histoptions', 'unweighted=1|0',
       'count particles',
       'count particles instead of summing their weights' ),
-    ( 'histoptions', 'print',
+    ( 'histoptions', 'points=N|auto',
+      'points of 3D plots',
+      'the number of points of a 3D plot, a sample of the particles chosen with their weights (auto: 5000)' ),
+    ( 'histoptions', 'print=1|0',
       'print contents instead of plotting',
       'print the contents of the histogram instead of plotting it' ),)
 
@@ -349,9 +364,25 @@ examples = {
     ),
     'hist' : (
         ( 'Histograms', None, (
-            ( 'ekin/MeV;logx;split=pdgcode',
+            ( 'ekin', 'The kinetic energies, in a suitable unit.' ),
+            ( 'ekin/MeV;logx',
               'The energies in MeV, on a logarithmic axis, with a curve for each particle type.' ),
-            ( 'x/cm : y/cm;xrange=-10:10;yrange=-10:10', 'The positions in the x-y plane.' ) ) ),
+            ( 'ux;display_only=ekin > 1MeV',
+              'The x components of the directions of particles above 1 MeV, by particle type.' ),
+            ( 'ekin;logx;lethargy', 'The energies per unit of lethargy.' ),
+            ( 'wavelength/Aa;range=0:10',
+              'The wavelengths from 0 to 10 Aa (only of neutrons and gammas, the others are left out).' ),
+            ( 'angle(dir,(0,0,1))/deg;logy;display_by=pdgcode in (neutron,gamma)',
+              'The angles to the z axis, for neutrons and gammas, and for the others.' ),
+            ( 'time;logx;display_by=single', 'The times of all particles, as one curve.' ) ) ),
+        ( '2D histograms and 3D plots', None, (
+            ( 'x : y;xrange=-10cm:10cm;yrange=-10cm:10cm', 'The positions in the x-y plane.' ),
+            ( 'atan2(uy,ux)/deg : uz', 'The directions: the azimuth around the z axis, and uz.' ),
+            ( 'x : y : z',
+              'The positions in 3D, as points for a sample of the particles, by particle type (in windows).' ) ) ),
+        ( 'Bar charts', None, (
+            ( 'pdgcode;bar', 'A bar chart of the particle types.' ),
+            ( 'userdata.nscat;bar;unweighted', 'The numbers of particles for each value of nscat.' ) ) ),
     ),
 }
 
@@ -377,14 +408,22 @@ in the units of the field, and wavelength = ... changing ekin), assignments
 to variables (other lowercase names, which can be used in later statements),
 and the statements listed below. The expressions are written as for -p (see
 -p help).''' ),
-    'hist' : ( '''HIST: an expression without units (divide values with units by a unit,
-e.g. ekin/MeV), or two separated by ":" for a 2D histogram, followed by
-options separated by ";", for example:''',
-               'The expressions are written as for -p (see -p help).' ),
+    'hist' : ( '''HIST: what to plot, an expression of the particles (written as for -p),
+or two separated by ":" for a 2D histogram (or three for a 3D plot of a
+sample of the particles, in windows), followed by options separated by ";".
+For example:''',
+               '''The plots are shown in a window, or in the terminal (with -t), or saved in a
+file (with -o FILE). -H can be given several times, for several plots.''' ),
 }
 
 #(the end of the help texts, if any):
-_outro = {}
+_outro = {
+    'hist' : '''Options which are on or off are given as 1 or 0, and alone (as in "ekin;logy")
+they mean 1 (bar alone means bar=auto).
+
+The expressions, with the fields of the particles, units and functions, are
+described by -p help.''',
+}
 
 #(texts at the start of groups in the help texts):
 _group_notes = {
@@ -401,8 +440,7 @@ _topic_groups = {
     'pick' : ( 'fields', 'vectors', 'constants', 'particles', 'units', 'functions' ),
     'edit' : ( 'statements', 'fields', 'vectors', 'constants', 'particles', 'units',
                'functions' ),
-    'hist' : ( 'histoptions', 'fields', 'vectors', 'constants', 'particles', 'units',
-               'functions' ),
+    'hist' : ( 'histoptions', ),
 }
 
 def _help_blocks( topic ):
