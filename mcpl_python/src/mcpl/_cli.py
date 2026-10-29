@@ -29,18 +29,8 @@ import re
 import sys
 
 from ._common import MCPLError, _determine_version, _output_bytearray_raw
-from ._fileops import (
-    convert2ascii,
-    dump_file,
-    forcemerge_files,
-    merge_files,
-    merge_inplace,
-    repair,
-)
 from ._messages import _ForcePrinting, _info, _warning
-from ._physics import _particle_names
-from ._reader import MCPLFile
-from ._writer import MCPLOutFile
+from ._reader import MCPLFile, dump_file
 
 _short_help = """
 Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.
@@ -371,6 +361,7 @@ def _app_mcpltool(argv):
     pick = edit = None
     if '--pick' in values:
         v = values['--pick'].strip()
+        from ._physics import _particle_names
         if v in _particle_names or re.fullmatch(r'[-+]?[0-9]+',v):
             bad(f'-p takes an expression (PICK): to pick particles of a type,'
                 f' use -p "pdgcode == {v}"')
@@ -419,6 +410,7 @@ def _app_mcpltool(argv):
             bad("Must specify both input and output files with --text.")
         if (os.path.exists(filelist[1])):
             bad("Requested output file already exists.")
+        from ._ascii import convert2ascii
         if opt_dryrun:
             #(still read and convert everything, for the same errors):
             import io
@@ -444,6 +436,7 @@ def _app_mcpltool(argv):
         bad("No input file specified")
 
     if mode == '--repair':
+        from ._fileops import repair
         repair(filelist[0], dry_run = opt_dryrun)
         _mcpltool_dryrun_note(opt_dryrun)
         sys.exit(0)
@@ -535,6 +528,7 @@ def _mcpltool_merge(filelist, opt_forcemerge, opt_inplace, opt_keepuserflags,
         bad("Too few arguments for --forcemerge." if opt_forcemerge
             else "Too few arguments for --merge.")
     ifirst = 0 if opt_inplace else 1
+    from ._fileops import forcemerge_files, merge_files, merge_inplace
     if not opt_forcemerge:
         from ._fileops import _merge_incompat_reason, _open_raw
         for f in filelist[ifirst+1:]:
@@ -578,6 +572,7 @@ def _mcpltool_extract(filelist, limit, skip, pick, edit, preventcomment,
         #Like mcpltool-c, only warn about NaN or infinite values in the
         #particles in the range given by -s and -l:
         fi._check_nonfinite = False
+        from ._writer import MCPLOutFile
         fo = MCPLOutFile(outfn, _dry_run = dry_run)
         #(a failed extraction must not leave an output file behind)
         try:

@@ -12,9 +12,10 @@ Modules of the mcpl package and their imports from the package:
   layer   2 : _expressions         <- _common, _numpy, _physics, _userdata
   layer   2 : _scipp               <- _common, _messages, _numpy, _userdata
   layer   3 : _reader              <- _blocks, _common, _expressions, _messages, _numpy, _scipp, _statsum, _userdata
+  layer   4 : _ascii               <- _reader
   layer   4 : _writer              <- _blocks, _common, _expressions, _messages, _numpy, _physics, _reader, _statsum, _userdata
   layer   5 : _examples            <- _common, _messages, _numpy, _writer
-  layer   5 : _fileops             <- _common, _expressions, _messages, _reader, _statsum, _writer
+  layer   5 : _fileops             <- _common, _messages, _reader, _statsum, _writer
   layer   6 : _plotbackend         <- _common, _messages
   layer   6 : _stats               <- _common, _expressions, _messages, _numpy, _physics, _reader
   layer   7 : plotting             <- _plotbackend
@@ -24,10 +25,10 @@ Modules of the mcpl package and their imports from the package:
   layer   8 : _plotbackend_text    <- _numpy, _plotbackend, _termcolor, plotting
   layer   9 : _statsplot           <- _common, _numpy, _physics, _plotbackend, _stats, plotting
   layer  10 : _clistats            <- _common, _histogram, _plotbackend, _reader, _stats, _statsplot
-  layer  11 : _cli                 <- _clistats, _common, _examples, _expressions, _exprhelp, _fileops, _messages, _physics, _reader, _writer
+  layer  11 : _cli                 <- _ascii, _clistats, _common, _examples, _expressions, _exprhelp, _fileops, _messages, _physics, _reader, _writer
   layer top : __init__             <- _blocks, _common, _messages, _reader
   layer top : __main__             <- _cli
-  layer top : mcpl                 <- _blocks, _cli, _common, _fileops, _reader, _stats, _statsplot, _statsum
+  layer top : mcpl                 <- _ascii, _blocks, _cli, _common, _reader, _stats, _statsplot, _statsum
 numpy is imported by: _numpy
 matplotlib is imported by: _plotbackend_mpl
 scipp is imported by: _scipp
@@ -38,9 +39,10 @@ mcpl.__all__ has 35 names, provided by:
   _statsum             : encode_stat_sum, is_valid_stat_sum_key
   _blocks              : MCPLParticle, MCPLParticleBlock
   _expressions         : ParticleEdit, ParticleFilter, ParticleValue
-  _reader              : MCPLFile
+  _reader              : MCPLFile, dump_file
+  _ascii               : convert2ascii
   _writer              : MCPLOutFile, gzip_file
-  _fileops             : can_merge, convert2ascii, create_outfile_mpi, dump_file, forcemerge_files, merge_files, merge_inplace, merge_outfiles_mpi, name_helper, repair
+  _fileops             : can_merge, create_outfile_mpi, forcemerge_files, merge_files, merge_inplace, merge_outfiles_mpi, name_helper, repair
   _stats               : collect_stats, dump_stats
   _histogram           : Histogram, Histogram2D, histogram, histogram2d, plot_histograms
   _statsplot           : plot_stats, stats_figures

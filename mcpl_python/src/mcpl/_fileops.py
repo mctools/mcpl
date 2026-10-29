@@ -23,9 +23,7 @@
 
 __all__ = [
     'can_merge',
-    'convert2ascii',
     'create_outfile_mpi',
-    'dump_file',
     'forcemerge_files',
     'merge_files',
     'merge_inplace',
@@ -42,49 +40,6 @@ from ._reader import MCPLFile
 from ._statsum import _parse_statsum_comment, _statsum_syntax_error, encode_stat_sum
 from ._writer import MCPLOutFile, _outfile_name
 
-
-def dump_file(filename,header=True,particles=True,limit=10,skip=0,pick=None,**kwargs):
-    """Python equivalent of mcpl_dump(..) function from mcpl.h, which can be used to
-    dump both header and particle contents of a file to stdout. If pick is
-    given (an expression or a ParticleFilter), only the picked particles are
-    shown."""
-    f = MCPLFile(filename,**kwargs)
-    print(f"Opened MCPL file {os.path.basename(filename)}:")
-    if header:
-        f.dump_hdr()
-    if particles:
-        if pick is not None:
-            from ._expressions import _as_filter
-            print(f"Showing particles picked with: {_as_filter(pick).expression}")
-            print()
-        f.dump_particles(limit=limit,skip=skip,pick=pick)
-
-def convert2ascii(mcplfile,outfile):
-    """Read particle contents of mcplfile and write into outfile using a simple ASCII-based format"""
-    if not hasattr(outfile,'write'):
-        with open(outfile,'w') as fh:
-            convert2ascii(mcplfile,fh)
-        return
-    if not isinstance(mcplfile,MCPLFile):
-        with MCPLFile(mcplfile) as mfh:
-            convert2ascii(mfh,outfile)
-        return
-
-    fout = outfile
-    fin = mcplfile
-    fout.write(f"#MCPL-ASCII\n#ASCII-FORMAT: v1\n#NPARTICLES: {fin.nparticles}\n")
-    #Userdata is not included in the output, which is noted in the header:
-    if fin.userdata_size:
-        fout.write("#WARNING: The userdata of the particles in the MCPL file is"
-                   " not included\n")
-    fout.write("#END-HEADER\n")
-    fout.write("index     pdgcode               ekin[MeV]                   x[cm]          "
-               +"         y[cm]                   z[cm]                      ux                  "
-               +"    uy                      uz                time[ms]                  weight  "
-               +"                 pol-x                   pol-y                   pol-z  userflags\n")
-    fmtstr="%5i %11i %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g %23.18g 0x%08x\n"
-    for idx,p in enumerate(fin.particles):
-        fout.write(fmtstr%(idx,p.pdgcode,p.ekin,p.x,p.y,p.z,p.ux,p.uy,p.uz,p.time,p.weight,p.polx,p.poly,p.polz,p.userflags))
 
 def _open_raw(filename, **kw):
     return MCPLFile(filename, raw_strings = True, **kw)

@@ -54,6 +54,7 @@ layers = {
     '_blocks' : 2,
     '_expressions' : 2,
     '_reader' : 3,
+    '_ascii' : 4,
     '_writer' : 4,
     '_fileops' : 5,
     '_examples' : 5,

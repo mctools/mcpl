@@ -79,6 +79,9 @@ def tool(*args):
 cases = [
     #Core functionality, which must not import any other modules:
     ( 'import mcpl', '', 'pass' ),
+    #(example.mcpl has no stat:sum entries):
+    ( 'open file and read the header', '',
+      "f = mcpl.MCPLFile('example.mcpl'); f.nparticles; f.comments" ),
     ( 'read blocks and single particles', '',
       ( "f = mcpl.MCPLFile('example.mcpl'); [ b.ekin.sum() for b in f.particle_blocks ]\n"
         "        [ p.ux for p in mcpl.MCPLFile('example.mcpl').particles ]" ) ),
@@ -101,6 +104,7 @@ cases = [
       ( "mcpl.merge_files('w3.mcpl', ['example.mcpl','example2.mcpl']).close()\n"
         "        mcpl.forcemerge_files('w4.mcpl', ['w3.mcpl','example.mcpl']).close()\n"
         "        mcpl.merge_inplace('w3.mcpl', 'example.mcpl')" ) ),
+    ( 'convert to text', '_ascii', "mcpl.convert2ascii('example.mcpl','t2.txt')" ),
     ( 'repair', '_fileops _statsum _writer', "mcpl.repair('torepair.mcpl')" ),
     #Optional functionality, which must only import what it needs:
     ( 'read with pick and edit', '_expressions _physics constants',
@@ -111,24 +115,24 @@ cases = [
       "mcpl.dump_stats(mcpl.collect_stats('example.mcpl', pick='x > 0cm'))" ),
     ( 'histogram as text', '_expressions _histogram _physics constants',
       "print(mcpl.histogram('example.mcpl','ekin/MeV',bins=4).to_text())" ),
-    ( 'mcpltool FILE', '_cli _fileops _physics _statsum _writer constants', tool('example.mcpl') ),
-    ( 'mcpltool --pick', '_cli _expressions _fileops _physics _statsum _writer constants',
+    ( 'mcpltool FILE', '_cli', tool('example.mcpl') ),
+    ( 'mcpltool --pick', '_cli _expressions _physics constants',
       tool('-l3','--pick','pdgcode == gamma','example.mcpl') ),
-    ( 'mcpltool --stats', '_cli _clistats _fileops _physics _stats _statsum _writer constants', tool('--stats','example.mcpl') ),
-    ( 'mcpltool --hist with print', '_cli _clistats _expressions _fileops _histogram _physics _statsum _writer constants',
+    ( 'mcpltool --stats', '_cli _clistats _physics _stats _statsum constants', tool('--stats','example.mcpl') ),
+    ( 'mcpltool --hist with print', '_cli _clistats _expressions _histogram _physics constants',
       tool('--hist','ekin/MeV;print','example.mcpl') ),
-    ( 'mcpltool --extract', '_cli _fileops _physics _statsum _writer constants', tool('--extract','example.mcpl','e1.mcpl') ),
-    ( 'mcpltool --extract --edit', '_cli _expressions _fileops _physics _statsum _writer constants',
+    ( 'mcpltool --extract', '_cli _statsum _writer', tool('--extract','example.mcpl','e1.mcpl') ),
+    ( 'mcpltool --extract --edit', '_cli _expressions _physics _statsum _writer constants',
       tool('--extract','example.mcpl','e2.mcpl','--edit','z += 1m') ),
-    ( 'mcpltool --merge', '_cli _fileops _physics _statsum _writer constants', tool('--merge','m.mcpl','example.mcpl','example2.mcpl') ),
-    ( 'mcpltool --repair', '_cli _fileops _physics _statsum _writer constants', tool('--repair','torepair2.mcpl') ),
-    ( 'mcpltool --text', '_cli _fileops _physics _statsum _writer constants', tool('--text','example.mcpl','t.txt') ),
+    ( 'mcpltool --merge', '_cli _fileops _statsum _writer', tool('--merge','m.mcpl','example.mcpl','example2.mcpl') ),
+    ( 'mcpltool --repair', '_cli _fileops _statsum _writer', tool('--repair','torepair2.mcpl') ),
+    ( 'mcpltool --text', '_ascii _cli', tool('--text','example.mcpl','t.txt') ),
     #Plotting with the test backend loads only that backend:
     ( 'plot with the test backend',
       '_expressions _histogram _physics _plotbackend _plotbackend_test constants plotting',
       "mcpl.histogram('example.mcpl','ekin/MeV',bins=4).plot(backend='test')" ),
     ( 'mcpltool --hist with the test backend',
-      '_cli _clistats _expressions _fileops _histogram _physics _plotbackend _plotbackend_test _statsum _writer constants plotting',
+      '_cli _clistats _expressions _histogram _physics _plotbackend _plotbackend_test constants plotting',
       tool('--hist','ekin/MeV','--backend','test','example.mcpl') ),
 ]
 

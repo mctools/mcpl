@@ -89,7 +89,7 @@ __version__ = '2.2.9'
 from ._blocks import MCPLParticle, MCPLParticleBlock
 from ._common import MCPLError
 from ._messages import use_logging
-from ._reader import MCPLFile
+from ._reader import MCPLFile, dump_file
 
 #All other parts (writing, file operations, stat:sum, expressions, statistics,
 #histograms, plotting and the mcpltool command) are only imported when used, so
@@ -98,9 +98,8 @@ _on_demand = {
     'MCPLOutFile' : '_writer',
     'can_merge' : '_fileops',
     'constants' : 'constants',
-    'convert2ascii' : '_fileops',
+    'convert2ascii' : '_ascii',
     'create_outfile_mpi' : '_fileops',
-    'dump_file' : '_fileops',
     'encode_stat_sum' : '_statsum',
     'forcemerge_files' : '_fileops',
     'gzip_file' : '_writer',

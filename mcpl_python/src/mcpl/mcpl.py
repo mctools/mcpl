@@ -43,7 +43,7 @@ __all__ = [
     'plot_stats',  # noqa: F822
 ]
 
-from . import _blocks, _cli, _common, _fileops, _reader, _stats, _statsplot, _statsum
+from . import _ascii, _blocks, _cli, _common, _reader, _stats, _statsplot, _statsum
 from ._cli import main
 
 _moved = {
@@ -54,8 +54,8 @@ _moved = {
     'MCPLParticleBlock': _blocks,
     'app_pymcpltool': _cli,
     'collect_stats': _stats,
-    'convert2ascii': _fileops,
-    'dump_file': _fileops,
+    'convert2ascii': _ascii,
+    'dump_file': _reader,
     'dump_stats': _stats,
     'encode_stat_sum': _statsum,
     'is_valid_stat_sum_key': _statsum,
