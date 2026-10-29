@@ -79,3 +79,10 @@ def package_imports( pkgdir ):
         byname = imported_by_name(f, imports_by_name.get(f.stem, ())) - internal - infunc
         res[f.stem] = ( internal, infunc, byname, external )
     return res
+
+def import_graph( pkgdir ):
+    """The imports of package_imports as {module: {imported module: kind}},
+    with kind 0 for imports outside of functions, 1 for those only inside
+    functions, and 2 for those only by name"""
+    return { name : { d : kind for kind, mods in enumerate(imps[:3]) for d in mods }
+             for name, imps in package_imports(pkgdir).items() }

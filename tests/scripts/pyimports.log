@@ -24,3 +24,4 @@ mcpltool --repair                       : _cli _fileops _statsum _writer
 mcpltool --text                         : _ascii _cli
 plot with the test backend              : _exprcore _expressions _exprrotation _exprsyntax _exprunits _figures _histogram _particles _physics _plotbackend _plotbackend_test _plotregistry constants plotting
 mcpltool --hist with the test backend   : _cli _clistats _exprcore _expressions _exprrotation _exprsyntax _exprunits _figures _histogram _particles _physics _plotbackend _plotbackend_test _plotregistry constants plotting
+The imports agree with the imports in the code.

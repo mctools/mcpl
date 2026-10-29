@@ -26,18 +26,47 @@ def short_description():
 #name (see MCPLTestUtils.pymoddeps):
 edge_styles = ( 'solid', 'dashed', 'dotted' )
 
+def _test_utils():
+    import sys
+
+    from .dirs import testroot
+    if str(testroot / 'pypath') not in sys.path:
+        sys.path.insert(0, str(testroot / 'pypath'))
+
+def _src():
+    from .dirs import reporoot
+    return reporoot / 'mcpl_python' / 'src'
+
 def load_graph():
     """The modules of the mcpl package, as {name: {imported module: kind}},
     with kind being an index in edge_styles"""
-    import sys
+    _test_utils()
+    from MCPLTestUtils.pymoddeps import import_graph
+    return import_graph( _src() / 'mcpl' )
 
-    from .dirs import reporoot, testroot
-    sys.path.insert(0, str(testroot / 'pypath'))
-    from MCPLTestUtils.pymoddeps import package_imports
-    graph = {}
-    for name, imps in package_imports(reporoot / 'mcpl_python' / 'src' / 'mcpl').items():
-        graph[name] = { d : kind for kind, mods in enumerate(imps[:3]) for d in mods }
-    return graph
+def run_scenario( key ):
+    """Runs the scenario (see MCPLTestUtils.pyscenarios) with the mcpl package
+    of the repository, and returns (the modules it imports, the imports as
+    (importing module, imported module))"""
+    import os
+    import tempfile
+
+    from .dirs import testroot
+    _test_utils()
+    from MCPLTestUtils.pyscenarios import prepare_files, scenarios
+    from MCPLTestUtils.pyscenarios import run_scenario as run
+    code = { k : c for k, _, c in scenarios }
+    if key not in code:
+        raise SystemExit('Scenarios:\n' + ''.join( f'  {k:<18} {t}\n' for k, t, _ in scenarios ))
+    cwd = os.getcwd()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        os.chdir(tmpdir)
+        try:
+            prepare_files(testroot / 'data')
+            mods, _, imports = run(code[key], 'mcpl', [ _src() ])
+        finally:
+            os.chdir(cwd)
+    return mods, imports
 
 def remove_implied( graph ):
     """Without the imports which are implied by others of the same or a
@@ -84,7 +113,7 @@ def used_modules( graph, names ):
     on_demand = { d for n in names for d, k in graph[n].items() if k != 0 }
     return loaded, imported( graph, on_demand, ( 0, 1, 2 ) ) - loaded
 
-def graph_to_dot( graph, sizes, area, loaded, on_demand ):
+def graph_to_dot( graph, sizes, area, loaded, on_demand, used_imports = () ):
     s = 'digraph G {\n    node [ fontsize = "12" shape=box ];\n'
     largest = max(sizes.values()) if sizes else 1
     for n in sorted(graph):
@@ -106,7 +135,8 @@ def graph_to_dot( graph, sizes, area, loaded, on_demand ):
         s += f'    "{n}" [ {opts} ];\n'
     for n in sorted(graph):
         for d, kind in sorted(graph[n].items()):
-            s += f'    "{d}" -> "{n}" [ color="grey" style={edge_styles[kind]} ];\n'
+            color = 'black' if ( n, d ) in used_imports else 'grey'
+            s += f'    "{d}" -> "{n}" [ color="{color}" style={edge_styles[kind]} ];\n'
     return s + '}\n'
 
 def render_dot( dot_str, fmt ):
@@ -153,18 +183,29 @@ def main( parser ):
                          help = ('Highlight the modules loaded when importing these modules (separated by commas,'
                                  ' e.g. _reader, _writer or _scipp), in blue, and those they import on demand,'
                                  ' when that code runs, in light blue.') )
+    parser.add_argument( '-S', '--scenario', metavar = 'NAME',
+                         help = ('Run a scenario of using the package (as in the pyimports test, e.g.'
+                                 ' read, write or tool_hist, or "list" to list them), and highlight the'
+                                 ' modules it imports in blue and the imports which load them in black.') )
     parser.add_argument( '-o', '--output', metavar = 'FILE',
                          help = 'Write the graph to this file (e.g. graph.png, graph.svg or graph.pdf) instead of showing it.' )
     args = parser.parse_args()
 
     import pathlib
     full_graph = load_graph()
-    loaded, on_demand = None, set()
+    loaded, on_demand, used_imports = None, set(), []
+    if args.uses and args.scenario:
+        parser.error('--uses and --scenario can not be combined')
     if args.uses:
         loaded, on_demand = used_modules( full_graph, [ n for n in args.uses.split(',') if n ] )
+    if args.scenario:
+        loaded, used_imports = run_scenario( args.scenario )
     graph = full_graph if args.all else remove_implied( full_graph )
+    for n, d in used_imports:
+        #(always showing the imports which loaded the modules):
+        graph[n][d] = full_graph[n][d]
     sizes = { n : code_lines(n) for n in graph } if args.sloc or args.area else None
-    dot_str = graph_to_dot( graph, sizes, args.area, loaded, on_demand )
+    dot_str = graph_to_dot( graph, sizes, args.area, loaded, on_demand, used_imports )
     if args.output:
         out = pathlib.Path(args.output)
         fmt = out.suffix[1:] or 'png'
