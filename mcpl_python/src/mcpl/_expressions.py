@@ -364,6 +364,10 @@ class _Statements:
                 if n.startswith('userdata.'):
                     raise MCPLError(f'Fields of the userdata ({n}) can not be'
                                     f' changed, in "{self.text}"')
+                if n == 'wavelength':
+                    raise MCPLError('swap(..) can not be used with wavelength (which'
+                                    ' is computed from ekin; set it with'
+                                    f' "wavelength = ..." instead), in "{self.text}"')
                 if n not in self._assignable and n not in variables:
                     raise MCPLError(f'Can not swap "{n}" in "{self.text}"'
                                     ' (it is not a field or variable)')

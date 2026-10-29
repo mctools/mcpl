@@ -178,7 +178,7 @@ def test_expressions():
                 'pos = (1cm,2cm)', 'pos = 1cm', 'dir = (0,0,1cm)', 'x = pos', 'pos += 1cm',
                 'pos = (0,0,1)', 'swap(pos,dir)', 'rotate_z(dir)', 'v = dir; swap(v,dir)',
                 'x == 1cm', 'pi = 3', 'wl = 1Aa', 'x = 1cm, y = 1cm',
-                'fileidx = 2', 'fileidx += 1', 'swap(fileidx,pdgcode)',
+                'fileidx = 2', 'fileidx += 1', 'swap(fileidx,pdgcode)', 'swap(x,wavelength)',
                 'x = y = 1cm', 'x, y = y, x', '', 'pdgcode = 1.5',
                 'x = sqrt(x/cm)*1cm', 'weight = 1/(x/cm - x/cm)'):
         try:
