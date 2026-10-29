@@ -286,6 +286,7 @@ ParticleFilter('max(0,x) > 1cm'): selects 358
 ParticleFilter('clamp(0,x,y) < 0cm'): selects 478
 ParticleFilter('x^2 + y^2 < 4cm^2'): selects 186
 ParticleFilter('x^2 + y^2 < 400 mm^2'): selects 186
+ParticleFilter('2cm^-1*x > 1'): selects 410
 ParticleFilter('(pdgcode == neutron or pdgcode == gamma) and wavelength > 0.005Aa'): selects 158
 ParticleFilter('(pdgcode == neutron or pdgcode == gamma) and wavelength > 0.0005nm'): selects 158
 ParticleFilter('(pdgcode == neutron or pdgcode == gamma) and wavelength > 5e-13m'): selects 158
@@ -454,6 +455,8 @@ ParticleEdit('fileidx = 2'): fileidx (the position of the particles in the file)
 ParticleEdit('fileidx += 1'): fileidx (the position of the particles in the file) can not be changed, in "fileidx += 1"
 ParticleEdit('swap(fileidx,pdgcode)'): fileidx (the position of the particles in the file) can not be changed, in "swap(fileidx,pdgcode)"
 ParticleEdit('swap(x,wavelength)'): swap(..) can not be used with wavelength (which is computed from ekin; set it with "wavelength = ..." instead), in "swap(x,wavelength)"
+ParticleEdit('x = floor(x)'): floor(..) requires a value without units, not length in expression "x = floor(x)"
+ParticleEdit('x = ceil(2cm)'): ceil(..) requires a value without units, not length in expression "x = ceil(2cm)"
 ParticleEdit('x = y = 1cm'): Syntax error in expression "x = y = 1cm", after "x = y": unexpected "="
 ParticleEdit('x, y = y, x'): Separate statements with ";" (not ",") in "x, y = y, x"
 ParticleEdit(''): Empty expression
