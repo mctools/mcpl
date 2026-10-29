@@ -1,51 +1,52 @@
-Modules of the mcpl package and their imports from the package:
-  layer   0 : _common              <- -
-  layer   0 : _exprhelp            <- -
-  layer   0 : _figures             <- -
-  layer   0 : _messages            <- -
-  layer   0 : _numpy               <- -
-  layer   0 : constants            <- -
-  layer   1 : _physics             <- _common, _numpy, constants
-  layer   1 : _statsum             <- _common
-  layer   1 : _termcolor           <- _common
-  layer   1 : _userdata            <- _common, _numpy
-  layer   2 : _blocks              <- _common, _numpy, _physics
-  layer   2 : _expressions         <- _common, _numpy, _physics, _userdata
-  layer   2 : _scipp               <- _common, _messages, _numpy, _userdata
-  layer   3 : _reader              <- _blocks, _common, _expressions, _messages, _numpy, _scipp, _statsum, _userdata
-  layer   4 : _ascii               <- _reader
-  layer   4 : _writer              <- _blocks, _common, _expressions, _messages, _numpy, _physics, _reader, _statsum, _userdata
-  layer   5 : _examples            <- _common, _messages, _numpy, _writer
-  layer   5 : _fileops             <- _common, _messages, _reader, _statsum, _writer
-  layer   6 : _plotbackend         <- _common
-  layer   6 : _stats               <- _common, _expressions, _messages, _numpy, _physics, _reader
-  layer   7 : _plotregistry        <- _common, _messages, _plotbackend
-  layer   8 : plotting             <- _figures, _plotbackend, _plotregistry
-  layer   9 : _histogram           <- _common, _expressions, _numpy, _physics, _reader, plotting
-  layer   9 : _plotbackend_mpl     <- _common, _figures, _numpy, _plotbackend
-  layer   9 : _plotbackend_test    <- _figures, _numpy, _plotbackend
-  layer   9 : _plotbackend_text    <- _figures, _numpy, _plotbackend, _termcolor
-  layer  10 : _statsplot           <- _common, _numpy, _physics, _plotbackend, _plotregistry, _stats, plotting
-  layer  11 : _clistats            <- _common, _histogram, _plotbackend, _plotregistry, _reader, _stats, _statsplot
-  layer  12 : _cli                 <- _ascii, _clistats, _common, _examples, _expressions, _exprhelp, _fileops, _messages, _physics, _reader, _writer
-  layer top : __init__             <- _blocks, _common, _messages, _reader
-  layer top : __main__             <- _cli
-  layer top : mcpl                 <- _ascii, _blocks, _cli, _common, _reader, _stats, _statsplot, _statsum
+Modules of the mcpl package and their imports from the package (in parentheses: only inside functions, in brackets: by name):
+  __init__             <- _blocks, _common, _messages, _reader, [_ascii], [_cli], [_expressions], [_fileops], [_histogram], [_stats], [_statsplot], [_statsum], [_writer], [constants], [plotting]
+  __main__             <- _cli
+  _ascii               <- _reader
+  _blocks              <- _common, _numpy, (_physics)
+  _cli                 <- _common, _messages, _reader, (_ascii), (_clistats), (_examples), (_expressions), (_exprhelp), (_fileops), (_physics), (_writer)
+  _clistats            <- _common, _reader, (_histogram), (_plotbackend), (_plotregistry), (_stats), (_statsplot)
+  _common              <- -
+  _examples            <- _common, _messages, _numpy, (_writer)
+  _expressions         <- _common, _numpy, _physics, (_userdata)
+  _exprhelp            <- -
+  _figures             <- -
+  _fileops             <- _common, _messages, _reader, _statsum, _writer
+  _histogram           <- _common, _expressions, _numpy, _physics, _reader, (plotting)
+  _messages            <- -
+  _numpy               <- -
+  _physics             <- _common, _numpy, constants
+  _plotbackend         <- _common
+  _plotbackend_mpl     <- _common, _figures, _numpy, _plotbackend
+  _plotbackend_test    <- _figures, _numpy, _plotbackend
+  _plotbackend_text    <- _figures, _numpy, _plotbackend, _termcolor
+  _plotregistry        <- _common, _plotbackend, (_messages), [_plotbackend_mpl], [_plotbackend_test], [_plotbackend_text]
+  _reader              <- _blocks, _common, _messages, _numpy, (_expressions), (_scipp), (_statsum), (_userdata)
+  _scipp               <- _common, _messages, _numpy, (_userdata)
+  _stats               <- _common, _messages, _numpy, _physics, _reader, (_expressions)
+  _statsplot           <- _common, _numpy, _physics, _plotbackend, _stats, plotting, (_plotregistry)
+  _statsum             <- _common
+  _termcolor           <- _common
+  _userdata            <- _common, _numpy
+  _writer              <- _blocks, _common, _messages, _numpy, _reader, (_expressions), (_physics), (_statsum), (_userdata)
+  constants            <- -
+  mcpl                 <- _ascii, _blocks, _cli, _common, _reader, _stats, _statsplot, _statsum
+  plotting             <- _figures, _plotbackend, _plotregistry
+The imports have no cycles.
 numpy is imported by: _numpy
 matplotlib is imported by: _plotbackend_mpl
 scipp is imported by: _scipp
 matplotlib, scipp are only imported inside functions
 mcpl.__all__ has 35 names, provided by:
-  _common              : MCPLError
-  _messages            : use_logging
-  _statsum             : encode_stat_sum, is_valid_stat_sum_key
-  _blocks              : MCPLParticle, MCPLParticleBlock
-  _expressions         : ParticleEdit, ParticleFilter, ParticleValue
-  _reader              : MCPLFile, dump_file
   _ascii               : convert2ascii
-  _writer              : MCPLOutFile, gzip_file
-  _fileops             : can_merge, create_outfile_mpi, forcemerge_files, merge_files, merge_inplace, merge_outfiles_mpi, name_helper, repair
-  _stats               : collect_stats, dump_stats
-  _histogram           : Histogram, Histogram2D, histogram, histogram2d, plot_histograms
-  _statsplot           : plot_stats, stats_figures
+  _blocks              : MCPLParticle, MCPLParticleBlock
   _cli                 : app_mcpltool, app_pymcpltool
+  _common              : MCPLError
+  _expressions         : ParticleEdit, ParticleFilter, ParticleValue
+  _fileops             : can_merge, create_outfile_mpi, forcemerge_files, merge_files, merge_inplace, merge_outfiles_mpi, name_helper, repair
+  _histogram           : Histogram, Histogram2D, histogram, histogram2d, plot_histograms
+  _messages            : use_logging
+  _reader              : MCPLFile, dump_file
+  _stats               : collect_stats, dump_stats
+  _statsplot           : plot_stats, stats_figures
+  _statsum             : encode_stat_sum, is_valid_stat_sum_key
+  _writer              : MCPLOutFile, gzip_file
