@@ -1,10 +1,10 @@
-import mcpl                             : no optional modules
-read blocks and single particles        : no optional modules
-read gzipped file                       : no optional modules
-write blocks and single particles       : no optional modules
-copy blocks with numpy mask             : no optional modules
-merge files                             : no optional modules
-repair                                  : no optional modules
+import mcpl                             : no other modules
+read blocks and single particles        : no other modules
+read gzipped file                       : no other modules
+write blocks and single particles       : no other modules
+copy blocks with numpy mask             : no other modules
+merge files                             : no other modules
+repair                                  : no other modules
 read with pick and edit                 : _expressions
 statistics                              : _stats
 statistics with pick                    : _expressions _stats
