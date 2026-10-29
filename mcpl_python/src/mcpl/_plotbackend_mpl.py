@@ -26,9 +26,9 @@ __all__ = []
 from typing import ClassVar
 
 from ._common import _determine_version
+from ._figures import Bars, Hist2D, StepHist, Text
 from ._numpy import np
 from ._plotbackend import PlotBackend, numbered_filenames
-from .plotting import Bars, Hist2D, StepHist, Text
 
 
 class Backend(PlotBackend):

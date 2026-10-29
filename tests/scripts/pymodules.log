@@ -1,6 +1,7 @@
 Modules of the mcpl package and their imports from the package:
   layer   0 : _common              <- -
   layer   0 : _exprhelp            <- -
+  layer   0 : _figures             <- -
   layer   0 : _messages            <- -
   layer   0 : _numpy               <- -
   layer   0 : constants            <- -
@@ -16,16 +17,17 @@ Modules of the mcpl package and their imports from the package:
   layer   4 : _writer              <- _blocks, _common, _expressions, _messages, _numpy, _physics, _reader, _statsum, _userdata
   layer   5 : _examples            <- _common, _messages, _numpy, _writer
   layer   5 : _fileops             <- _common, _messages, _reader, _statsum, _writer
-  layer   6 : _plotbackend         <- _common, _messages
+  layer   6 : _plotbackend         <- _common
   layer   6 : _stats               <- _common, _expressions, _messages, _numpy, _physics, _reader
-  layer   7 : plotting             <- _plotbackend
-  layer   8 : _histogram           <- _common, _expressions, _numpy, _physics, _reader, plotting
-  layer   8 : _plotbackend_mpl     <- _common, _numpy, _plotbackend, plotting
-  layer   8 : _plotbackend_test    <- _numpy, _plotbackend, plotting
-  layer   8 : _plotbackend_text    <- _numpy, _plotbackend, _termcolor, plotting
-  layer   9 : _statsplot           <- _common, _numpy, _physics, _plotbackend, _stats, plotting
-  layer  10 : _clistats            <- _common, _histogram, _plotbackend, _reader, _stats, _statsplot
-  layer  11 : _cli                 <- _ascii, _clistats, _common, _examples, _expressions, _exprhelp, _fileops, _messages, _physics, _reader, _writer
+  layer   7 : _plotregistry        <- _common, _messages, _plotbackend
+  layer   8 : plotting             <- _figures, _plotbackend, _plotregistry
+  layer   9 : _histogram           <- _common, _expressions, _numpy, _physics, _reader, plotting
+  layer   9 : _plotbackend_mpl     <- _common, _figures, _numpy, _plotbackend
+  layer   9 : _plotbackend_test    <- _figures, _numpy, _plotbackend
+  layer   9 : _plotbackend_text    <- _figures, _numpy, _plotbackend, _termcolor
+  layer  10 : _statsplot           <- _common, _numpy, _physics, _plotbackend, _plotregistry, _stats, plotting
+  layer  11 : _clistats            <- _common, _histogram, _plotbackend, _plotregistry, _reader, _stats, _statsplot
+  layer  12 : _cli                 <- _ascii, _clistats, _common, _examples, _expressions, _exprhelp, _fileops, _messages, _physics, _reader, _writer
   layer top : __init__             <- _blocks, _common, _messages, _reader
   layer top : __main__             <- _cli
   layer top : mcpl                 <- _ascii, _blocks, _cli, _common, _reader, _stats, _statsplot, _statsum

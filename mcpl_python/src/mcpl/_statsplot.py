@@ -194,7 +194,7 @@ def plot_stats(stats,pdf=False,set_backend=None,backend=None,filename=None,
                       stacklevel=2)
         #It was only used for matplotlib (for which the option is called
         #matplotlib_backend):
-        from ._plotbackend import _save_backend, _show_backend
+        from ._plotregistry import _save_backend, _show_backend
         cls = ( _save_backend(filename,backend) if filename
                 else _show_backend(backend,terminal) )
         opt = f'{getattr(cls,"name","")}_backend'

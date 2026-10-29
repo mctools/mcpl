@@ -32,10 +32,10 @@ import shutil
 import sys
 from typing import ClassVar
 
+from ._figures import Bars, Hist2D, StepHist, Text
 from ._numpy import np
 from ._plotbackend import PlotBackend
 from ._termcolor import _check_setting, _curve_rgb, _map_rgb, _ncolors, _paint
-from .plotting import Bars, Hist2D, StepHist, Text
 
 
 class _Chars:

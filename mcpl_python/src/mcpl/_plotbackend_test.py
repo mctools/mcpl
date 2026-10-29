@@ -26,9 +26,9 @@ __all__ = []
 
 from typing import ClassVar
 
+from ._figures import Bars, Hist2D, StepHist, Text
 from ._numpy import np
 from ._plotbackend import PlotBackend
-from .plotting import Bars, Hist2D, StepHist, Text
 
 
 def _fmt( x ):
