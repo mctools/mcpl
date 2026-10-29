@@ -124,7 +124,7 @@ class Recorder:
         return None
 sys.meta_path.insert(0,Recorder())
 import {package} as mcpl
-with open(os.devnull,'w') as devnull, contextlib.redirect_stdout(devnull):
+with open(os.devnull,'w',encoding='utf-8') as devnull, contextlib.redirect_stdout(devnull):
     try:
 {code}
     except SystemExit:
