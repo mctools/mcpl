@@ -57,6 +57,8 @@ void mcpltests_write( const char * filename, int doubleprec, int pol )
 void mcpltests_transfer( int src_doubleprec, int src_pol,
                          int tgt_doubleprec, int tgt_pol )
 {
+  remove("src.mcpl");
+  remove("tgt.mcpl");
   mcpltests_write("src.mcpl",src_doubleprec,src_pol);
   mcpl_file_t fi = mcpl_open_file("src.mcpl");
   mcpl_outfile_t fo = mcpl_create_outfile("tgt.mcpl");

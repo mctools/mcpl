@@ -210,6 +210,24 @@ def test_compare_with_mcpltool():
         ['--merge','--inplace','a2.mcpl','nan.mcpl'],
         ['--forcemerge','out.mcpl','b_dp.mcpl','nan.mcpl'],
         ['--repair','nan.mcpl'],
+        #Existing output files and --allow-overwrite:
+        ['--merge','b_dp.mcpl','a1.mcpl','a2.mcpl'],
+        ['--merge','--allow-overwrite','b_dp.mcpl','a1.mcpl','a2.mcpl'],
+        ['-m','a3.mcpl.gz','a1.mcpl'],
+        ['-m','--allow-overwrite','a3.mcpl.gz','a1.mcpl'],
+        ['-m','b_pol.mcpl.gz','a1.mcpl'],
+        ['-m','--allow-overwrite','b_pol.mcpl.gz','a1.mcpl'],
+        ['-m','--allow-overwrite','a2.mcpl','a1.mcpl','a2.mcpl'],
+        ['--forcemerge','b_dp.mcpl','a1.mcpl','b_pol.mcpl'],
+        ['--forcemerge','--allow-overwrite','b_dp.mcpl','a1.mcpl','b_pol.mcpl'],
+        ['--extract','--allow-overwrite','-l3','a1.mcpl','a2.mcpl'],
+        ['--extract','--allow-overwrite','a1.mcpl','a1.mcpl'],
+        ['--text','a1.mcpl','a2.mcpl'],
+        ['--text','--allow-overwrite','a1.mcpl','a2.mcpl'],
+        ['--text','--allow-overwrite','a1.mcpl','a1.mcpl'],
+        ['--allow','--merge','b_dp.mcpl','a1.mcpl'],
+        ['--allow-overwrite','a1.mcpl'],
+        ['--merge','--inplace','--allow-overwrite','a1.mcpl','a2.mcpl'],
     ]
     for args in cases:
         ok &= compare(*args)

@@ -24,8 +24,6 @@ file names of mcpltool."""
 
 __all__ = []
 
-import pathlib
-
 from ._messages import _info, _warning
 from ._reader import MCPLFile, _blocks_in_range, _particle_range
 from ._writer import MCPLOutFile
@@ -63,40 +61,40 @@ def _statsum_marking( f, skip, limit, pick, edit, keepstatsum = False ):
         return 'weights'
     return None
 
-def _tool_outfn(fn):
-    """Output filename for --merge and --extract like in mcpltool (returns error
-    message, filename to create, and whether to gzip it)."""
-    if pathlib.Path(fn).is_file():
-        return "Requested output file already exists.", None, False
-    if fn.endswith('.mcpl.gz'):
-        if pathlib.Path(fn[:-3]).is_file():
-            return ( "Requested output file already exists (without .gz extension).",
-                     None, False )
-        return None, fn[:-3], True
-    if fn.endswith('.gz'):
-        return ( "Requested output file should not have .gz extension (unless it is .mcpl.gz).",
-                 None, False )
-    if not fn.endswith('.mcpl') and pathlib.Path(fn+'.mcpl').is_file():
-        return "Requested output file already exists (with .mcpl extension).", None, False
-    return None, fn, False
+def _tool_check_outfn( fn, inputs, allow_overwrite = False ):
+    """Usage error message unless the output file of --merge, --forcemerge or
+    --extract can be created (like in mcpltool-c), or None if it can. Checked
+    before creating the file, so the output of a failed command can be
+    removed."""
+    from ._common import MCPLError
+    from ._writer import _check_merge_output
+    try:
+        _check_merge_output( fn, inputs, allow_overwrite )
+    except MCPLError as e:
+        return f'{e}.'
+    return None
 
-def _mcpltool_close(outfile, attempt_gzip):
-    if attempt_gzip:
-        if not outfile.closeandgzip():
-            _warning("Failed to gzip output. Non-gzipped output is"
-                     f" found in {outfile.filename}")
-            return outfile.filename
-        return outfile.filename + '.gz'
-    outfile.close()
-    return outfile.filename
+def _mcpltool_close(outfile):
+    """Close the output of --merge, --forcemerge, or --extract, returning its
+    name. If compressing it (for names ending with .mcpl.gz) fails, the
+    uncompressed output is kept, with a warning (like in mcpltool-c)."""
+    if not outfile._gzip_at_close or outfile._dry_run:
+        outfile.close()
+        return outfile.filename + ( '.gz' if outfile._gzip_at_close else '' )
+    if not outfile._close( gzip_errors = False ):
+        _warning("Failed to gzip output. Non-gzipped output is"
+                 f" found in {outfile.filename}")
+        return outfile.filename
+    return outfile.filename + '.gz'
 
 def _mcpltool_extract(filelist, limit, skip, pick, edit, preventcomment,
-                      keepstatsum, dry_run, bad):
+                      keepstatsum, dry_run, bad, allow_overwrite = False):
     if len(filelist) > 2:
         bad("Too many arguments.")
     if len(filelist) != 2:
         bad("Must specify both input and output files with --extract.")
-    err, outfn, attempt_gzip = _tool_outfn(filelist[1])
+    outfn = filelist[1]
+    err = _tool_check_outfn( outfn, filelist[:1], allow_overwrite )
     if err:
         bad(err)
     limit = limit or 0
@@ -105,7 +103,7 @@ def _mcpltool_extract(filelist, limit, skip, pick, edit, preventcomment,
         #Like mcpltool-c, only warn about NaN or infinite values in the
         #particles in the range given by -s and -l:
         fi._check_nonfinite = False
-        fo = MCPLOutFile(outfn, _dry_run = dry_run)
+        fo = MCPLOutFile(outfn, allow_overwrite = allow_overwrite, _dry_run = dry_run)
         #(a failed extraction must not leave an output file behind)
         try:
             fo.transfer_metadata(fi)
@@ -139,7 +137,7 @@ def _mcpltool_extract(filelist, limit, skip, pick, edit, preventcomment,
                 else:
                     fo.add_particles(b)
             n_added = fo.nparticles
-            outname = _mcpltool_close(fo,attempt_gzip)
+            outname = _mcpltool_close(fo)
         except BaseException:
             fo._abort()
             raise

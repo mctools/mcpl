@@ -44,11 +44,11 @@ namespace {
 
   //Static object with an output file, compressed when destroyed:
   struct GlobalWriter {
-    mcpl::MCPLOutFile out{ "global.mcpl" };
+    mcpl::MCPLOutFile out{ "global.mcpl.gz" };
     ~GlobalWriter()
     {
       std::cout << "GlobalWriter destructor" << std::endl;
-      out.close_and_gzip();
+      out.close();
       std::remove("global.mcpl.gz");
     }
   };

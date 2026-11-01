@@ -181,7 +181,7 @@ static void test_merge_files(void)
     snprintf(what,sizeof(what),"merge_files (%s)",cases[i].what);
     es_reset(&es);
     mcpl_outfile_t f = mcpl_merge_files_es(cases[i].out,cases[i].n,
-                                           cases[i].f,&es);
+                                           cases[i].f,0,&es);
     if ( f.internal )
       test_fail("merge unexpectedly succeeded");
     print_result(what,&es);
@@ -197,7 +197,7 @@ static void test_merge_files(void)
   {
     const char * files[2] = { "m1.mcpl", "m2_trunc.mcpl.gz" };
     es_reset(&es);
-    mcpl_outfile_t f = mcpl_merge_files_es("mout.mcpl",2,files,&es);
+    mcpl_outfile_t f = mcpl_merge_files_es("mout.mcpl",2,files,0,&es);
     if ( f.internal )
       test_fail("merge unexpectedly succeeded");
     print_result("merge_files (truncated input file)",&es);
@@ -214,7 +214,7 @@ static void test_merge_files(void)
   {
     const char * files[2] = { "m1.mcpl", "m2.mcpl" };
     es_reset(&es);
-    mcpl_outfile_t f = mcpl_merge_files_es("mout.mcpl",2,files,&es);
+    mcpl_outfile_t f = mcpl_merge_files_es("mout.mcpl",2,files,0,&es);
     print_result("merge_files (valid)",&es);
     mcpl_close_outfile_es(f,&es);
     print_result("close_outfile",&es);
@@ -224,7 +224,7 @@ static void test_merge_files(void)
     copy_file(fmt2,"m_fmt2.mcpl");
     const char * files2[1] = { "m_fmt2.mcpl" };
     es_reset(&es);
-    f = mcpl_merge_files_es("mout.mcpl",1,files2,&es);
+    f = mcpl_merge_files_es("mout.mcpl",1,files2,0,&es);
     print_result("merge_files (format 2)",&es);
     mcpl_close_outfile(f);
     mcpl_file_t fin = mcpl_open_file("mout.mcpl");
@@ -272,7 +272,7 @@ static void test_forcemerge_files(void)
     snprintf(what,sizeof(what),"forcemerge_files (%s)",cases[i].what);
     es_reset(&es);
     mcpl_outfile_t f = mcpl_forcemerge_files_es(cases[i].out,cases[i].n,
-                                                cases[i].f,0,&es);
+                                                cases[i].f,0,0,&es);
     if ( f.internal )
       test_fail("merge unexpectedly succeeded");
     print_result(what,&es);
@@ -283,7 +283,7 @@ static void test_forcemerge_files(void)
   {
     const char * files[2] = { "m3_dp.mcpl", "m2_trunc.mcpl.gz" };
     es_reset(&es);
-    mcpl_outfile_t f = mcpl_forcemerge_files_es("fout.mcpl",2,files,0,&es);
+    mcpl_outfile_t f = mcpl_forcemerge_files_es("fout.mcpl",2,files,0,0,&es);
     if ( f.internal )
       test_fail("merge unexpectedly succeeded");
     print_result("forcemerge_files (truncated input file)",&es);
@@ -304,7 +304,7 @@ static void test_forcemerge_files(void)
     free(b.data);
     const char * files[2] = { "m3_dp.mcpl", "m_nan.mcpl" };
     es_reset(&es);
-    mcpl_outfile_t f = mcpl_forcemerge_files_es("fout.mcpl",2,files,0,&es);
+    mcpl_outfile_t f = mcpl_forcemerge_files_es("fout.mcpl",2,files,0,0,&es);
     if ( f.internal )
       test_fail("merge unexpectedly succeeded");
     print_result("forcemerge_files (NaN in input file)",&es);
@@ -316,14 +316,14 @@ static void test_forcemerge_files(void)
   {
     const char * files[2] = { "m1.mcpl", "m3_dp.mcpl" };
     es_reset(&es);
-    mcpl_outfile_t f = mcpl_forcemerge_files_es("fout.mcpl",2,files,0,&es);
+    mcpl_outfile_t f = mcpl_forcemerge_files_es("fout.mcpl",2,files,0,0,&es);
     print_result("forcemerge_files (valid)",&es);
     mcpl_close_outfile(f);
     dump_file("fout.mcpl");
     remove("fout.mcpl");
     const char * files2[2] = { "m1.mcpl", "m2.mcpl" };
     es_reset(&es);
-    f = mcpl_forcemerge_files_es("fout.mcpl",2,files2,0,&es);
+    f = mcpl_forcemerge_files_es("fout.mcpl",2,files2,0,0,&es);
     print_result("forcemerge_files (compatible files)",&es);
     mcpl_close_outfile(f);
     dump_file("fout.mcpl");

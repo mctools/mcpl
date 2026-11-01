@@ -157,7 +157,7 @@ Filename given as bytes: bytesname.mcpl
   Got expected error: create_outfile_mpi: nproc too large
   Got expected error: merge_outfiles_mpi: nproc must be larger than 0
   Got expected error: merge_outfiles_mpi: nproc too large
-  Got expected error: merge_outfiles_mpi: expected output file "<cwd>/missing.mcpl.gz" from iproc=0 not found.
+  Got expected error: merge_outfiles_mpi: expected output file "<cwd>/missing.mcpl" from iproc=0 not found.
   Got expected error: Unable to open file!
   Got expected error: Syntax error: could not properly decode comment starting with "stat:sum:" (empty key). Issue with comment "stat:sum::                       1"
   Got expected error: Syntax error: could not properly decode comment starting with "stat:sum:" (key length exceeds 64 characters). Issue with comment "stat:sum:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:                       1"

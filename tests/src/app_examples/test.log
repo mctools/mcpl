@@ -1,4 +1,4 @@
-do_writemcpl( "dummy.mcpl" )
+do_writemcpl( "dummy.mcpl.gz" )
 MCPL: Compressing file dummy.mcpl
 MCPL: Compressed file into dummy.mcpl.gz
 Opened MCPL file dummy.mcpl.gz:
@@ -142,9 +142,7 @@ File contains 100 particles
   found particle with pdgcode 2112 and time-stamp 66.7 ms with weight 9.6004
   found particle with pdgcode 22 and time-stamp 71.6 ms with weight 0.08992
 do_filtermcpl( "dummy.mcpl.gz", "dummyfiltered" )
-MCPL: Compressing file dummyfiltered.mcpl
-MCPL: Compressed file into dummyfiltered.mcpl.gz
-Opened MCPL file dummyfiltered.mcpl.gz:
+Opened MCPL file dummyfiltered.mcpl:
 
   Basic info
     Format             : MCPL-3
@@ -171,7 +169,7 @@ Opened MCPL file dummyfiltered.mcpl.gz:
 
 index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
     0        2112    0.030997         -75       -16.4        42.2           0           0           1        29.6      5.8941
-do_readmcpl( "dummyfiltered.mcpl.gz" )
+do_readmcpl( "dummyfiltered.mcpl" )
 Opened MCPL file produced with my_cool_program_name
 file had comment: 'Some comment.'
 file had comment: 'Another comment.'

@@ -311,13 +311,13 @@ static void test_fileops(void)
   printf("\n==> Merging files exceeding the file size limit:\n");
   set_filesize_limit(20000);
   es_reset(&es);
-  mcpl_outfile_t f = mcpl_merge_files_es("df_merged.mcpl",2,files,&es);
+  mcpl_outfile_t f = mcpl_merge_files_es("df_merged.mcpl",2,files,0,&es);
   check_merge_output("merge_files",f,&es,"df_merged.mcpl",4000);
 
   printf("\n==> Force-merging files exceeding the file size limit:\n");
   set_filesize_limit(20000);
   es_reset(&es);
-  f = mcpl_forcemerge_files_es("df_fmerged.mcpl",2,files_dp,0,&es);
+  f = mcpl_forcemerge_files_es("df_fmerged.mcpl",2,files_dp,0,0,&es);
   check_merge_output("forcemerge_files",f,&es,"df_fmerged.mcpl",4000);
 
   printf("\n==> Merging in place exceeding the file size limit:\n");

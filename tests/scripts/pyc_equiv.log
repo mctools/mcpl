@@ -76,6 +76,8 @@ Script "gzipped empty": ok
    | MCPL: Compressed file into out.mcpl.gz
 Script "filename with .mcpl": ok
 Script "filename with .mcpl.gz": ok
+   | MCPL: Compressing file out.mcpl
+   | MCPL: Compressed file into out.mcpl.gz
 Script "filename .mcpl": error: create_outfile called with string with no basename part (".mcpl").
 Script "empty filename": error: create_outfile called with empty string.
 Script "special directions": ok
@@ -178,9 +180,9 @@ merge_files "ref_statsum_crash.mcpl|ref_statsum.mcpl.gz": ok
 merge_files "a1.mcpl|n_w_nan.mcpl": ok
 merge_files "n_ekin_inf.mcpl|a2.mcpl": ok
 merge_files "b_dp.mcpl|n_x_nan.mcpl": ok
-merge_files to existing file: error: requested output file of merge_files already exists
-merge_files to input file without .mcpl: error: requested output file of merge_files already exists
-forcemerge_files to input file without .mcpl: error: requested output file of forcemerge_files already exists
+merge_files to existing file: error: The output file "a3.mcpl" already exists
+merge_files to input file without .mcpl: error: The output file "a1.mcpl" is also one of the input files
+forcemerge_files to input file without .mcpl: error: The output file "a1.mcpl" is also one of the input files
 forcemerge_files "a1.mcpl|b_dp.mcpl" keep_userflags=0: ok
    | MCPL force-merge: Files have different FP precision (single and double), using double
    | MCPL force-merge: Discarding comments and blobs of the input files
@@ -880,44 +882,18 @@ name_helper("x.mcpl.gz.mcpl","m") identical: True
 name_helper("x.mcpl.gz.mcpl","g") identical: True
 name_helper("x.mcpl.gz.mcpl","b") identical: True
 MPI file creation and merge with nproc=1: ok
-   | MCPL: Compressing file mpiout.mcpl
-   | MCPL: Compressed file into mpiout.mcpl.gz
 MPI file creation and merge with nproc=2: ok
-   | MCPL: Compressing file mpiout.mpiworker0.mcpl
-   | MCPL: Compressed file into mpiout.mpiworker0.mcpl.gz
-   | MCPL: Compressing file mpiout.mpiworker1.mcpl
-   | MCPL: Compressed file into mpiout.mpiworker1.mcpl.gz
-   | MCPL: Removing file mpiout.mpiworker0.mcpl.gz
-   | MCPL: Removing file mpiout.mpiworker1.mcpl.gz
-   | MCPL: Compressing file mpiout.mcpl
-   | MCPL: Compressed file into mpiout.mcpl.gz
+   | MCPL: Removing file mpiout.mpiworker0.mcpl
+   | MCPL: Removing file mpiout.mpiworker1.mcpl
 MPI file creation and merge with nproc=4: ok
-   | MCPL: Compressing file mpiout.mpiworker0.mcpl
-   | MCPL: Compressed file into mpiout.mpiworker0.mcpl.gz
-   | MCPL: Compressing file mpiout.mpiworker1.mcpl
-   | MCPL: Compressed file into mpiout.mpiworker1.mcpl.gz
-   | MCPL: Compressing file mpiout.mpiworker2.mcpl
-   | MCPL: Compressed file into mpiout.mpiworker2.mcpl.gz
-   | MCPL: Compressing file mpiout.mpiworker3.mcpl
-   | MCPL: Compressed file into mpiout.mpiworker3.mcpl.gz
-   | MCPL: Removing file mpiout.mpiworker0.mcpl.gz
-   | MCPL: Removing file mpiout.mpiworker1.mcpl.gz
-   | MCPL: Removing file mpiout.mpiworker2.mcpl.gz
-   | MCPL: Removing file mpiout.mpiworker3.mcpl.gz
-   | MCPL: Compressing file mpiout.mcpl
-   | MCPL: Compressed file into mpiout.mcpl.gz
+   | MCPL: Removing file mpiout.mpiworker0.mcpl
+   | MCPL: Removing file mpiout.mpiworker1.mcpl
+   | MCPL: Removing file mpiout.mpiworker2.mcpl
+   | MCPL: Removing file mpiout.mpiworker3.mcpl
 MPI file creation and merge with nproc=3: ok
-   | MCPL: Compressing file mpiout.mpiworker0.mcpl
-   | MCPL: Compressed file into mpiout.mpiworker0.mcpl.gz
-   | MCPL: Compressing file mpiout.mpiworker1.mcpl
-   | MCPL: Compressed file into mpiout.mpiworker1.mcpl.gz
-   | MCPL: Compressing file mpiout.mpiworker2.mcpl
-   | MCPL: Compressed file into mpiout.mpiworker2.mcpl.gz
-   | MCPL: Removing file mpiout.mpiworker0.mcpl.gz
-   | MCPL: Removing file mpiout.mpiworker1.mcpl.gz
-   | MCPL: Removing file mpiout.mpiworker2.mcpl.gz
-   | MCPL: Compressing file mpiout.mcpl
-   | MCPL: Compressed file into mpiout.mcpl.gz
+   | MCPL: Removing file mpiout.mpiworker0.mcpl
+   | MCPL: Removing file mpiout.mpiworker1.mcpl
+   | MCPL: Removing file mpiout.mpiworker2.mcpl
 Script "random script 0": ok
    | MCPL: Compressing file out.mcpl
    | MCPL: Compressed file into out.mcpl.gz

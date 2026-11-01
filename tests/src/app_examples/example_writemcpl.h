@@ -46,7 +46,9 @@ int main(int argc,char**argv) {
   // Initialisation, create output file handle, embed name of source application
   // in the header and declare that this is a neutron-only file. Note that an
   // ".mcpl" extension will be added to the filename if it doesn't have it
-  // already:
+  // already, and that files with names ending with ".mcpl.gz" are gzipped when
+  // closed, resulting in smaller files (which can also be read directly by
+  // MCPL):
 
   mcpl_outfile_t f = mcpl_create_outfile(filename);
   mcpl_hdr_set_srcname(f,"my_cool_program_name");
@@ -110,12 +112,7 @@ int main(int argc,char**argv) {
   }
 
   //At the end, remember to properly close the output file (and cleanup memory):
-  mcpl_closeandgzip_outfile(f);
-
-  //Note: By calling mcpl_closeandgzip_outfile rather than mcpl_close_outfile,
-  //the output file will end up being gzipped, resulting in a smaller file. Such
-  //files can also be read directly by MCPL. It will also gain the extension
-  //".mcpl.gz" rather than ".mcpl".
+  mcpl_close_outfile(f);
 
   return 0;
 }

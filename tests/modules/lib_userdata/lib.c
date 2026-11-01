@@ -277,6 +277,7 @@ MCPLTEST_CTYPES void mcpltest_ud_text( const char * filename,
 //Wrong usage which must give errors:
 MCPLTEST_CTYPES void mcpltest_ud_misuse( unsigned icase )
 {
+  remove("misuse.mcpl");//(each misuse case starts with a new file)
   mcpl_outfile_t f = mcpl_create_outfile("misuse.mcpl");
   mcpl_particle_t * p = mcpl_get_empty_particle(f);
   p->direction[2] = 1.0;

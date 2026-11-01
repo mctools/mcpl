@@ -38,7 +38,13 @@ from ._common import MCPLError, _determine_version
 from ._messages import _info, _warning
 from ._reader import MCPLFile
 from ._statsum import _parse_statsum_comment, _statsum_syntax_error, encode_stat_sum
-from ._writer import MCPLOutFile, _outfile_name
+from ._writer import (
+    MCPLOutFile,
+    _check_merge_output,
+    _check_new_output,
+    _is_same_file,
+    _outfile_name,
+)
 
 
 def _open_raw(filename, **kw):
@@ -154,18 +160,6 @@ def can_merge(file1, file2):
     with _open_raw(file1) as f1, _open_raw(file2) as f2:
         return _actual_can_merge(f1, f2)
 
-def _outfile_exists(filename):
-    """Whether the file which MCPLOutFile would create already exists (so it is
-    never one of the input files of the merge functions), like in the C API"""
-    import pathlib
-    return pathlib.Path(_outfile_name(filename)).exists()
-
-def _is_same_file(f1, f2):
-    import pathlib
-    try:
-        return pathlib.Path(f1).samefile(f2)
-    except OSError:
-        return False
 
 def _error_on_dups(files):
     for i in range(len(files)):
@@ -186,13 +180,14 @@ def _stablesum_add(s, x):
     s[1] += (s[0] - t) + x if abs(s[0]) >= abs(x) else (x - t) + s[0]
     s[0] = t
 
-def merge_files(file_output, files, *, dry_run = False):
+def merge_files(file_output, files, *, allow_overwrite = False, dry_run = False):
     """Merge the particle contents of a list of compatible files into a new file
     (like mcpl_merge_files in the C API). Values of stat:sum entries are
     added up. Returns the new file as an open MCPLOutFile object, which must
-    be closed with close() or closeandgzip(). With dry_run=True, everything
-    is done except writing (nothing is created or modified), and None is
-    returned."""
+    be closed with close(). The output file is named like by MCPLOutFile, and
+    must not exist (unless allow_overwrite is True) or be one of the input
+    files. With dry_run=True, everything is done except writing (nothing is
+    created or modified), and None is returned."""
     import math
     files = [ os.fspath(f) for f in files ]
     file_output = os.fspath(file_output)
@@ -204,9 +199,9 @@ def merge_files(file_output, files, *, dry_run = False):
             reason = _merge_incompat_reason(f1, f2)
         if reason is not None:
             raise MCPLError(f'Attempting to merge incompatible files ({reason}).')
-    if _outfile_exists(file_output):
-        raise MCPLError('requested output file of merge_files already exists')
-    out = MCPLOutFile(file_output, _dry_run = dry_run)
+    _check_merge_output( file_output, files, allow_overwrite )
+    out = MCPLOutFile(file_output, allow_overwrite = allow_overwrite,
+                      _dry_run = dry_run)
     try:
         warned_oldversion = False
         scinfo = None
@@ -274,26 +269,28 @@ def merge_files(file_output, files, *, dry_run = False):
         return None
     return out
 
-def forcemerge_files(file_output, files, *, keep_userflags = False, dry_run = False):
+def forcemerge_files(file_output, files, *, keep_userflags = False,
+                     allow_overwrite = False, dry_run = False):
     """Merge particle contents of a list of files, even if they are not
     compatible, at the price of discarding most meta-data like comments and
     blobs (like mcpl_forcemerge_files in the C API). Userflags are discarded
     unless keep_userflags is set. Returns the new file as an open MCPLOutFile
-    object, which must be closed with close() or closeandgzip(). With
-    dry_run=True, everything is done except writing (nothing is created or
-    modified), and None is returned."""
+    object, which must be closed with close(). The output file is named like
+    by MCPLOutFile, and must not exist (unless allow_overwrite is True) or be
+    one of the input files. With dry_run=True, everything is done except
+    writing (nothing is created or modified), and None is returned."""
     files = [ os.fspath(f) for f in files ]
     file_output = os.fspath(file_output)
     if not files:
         raise MCPLError('forcemerge_files must be called with at least one input file')
     _error_on_dups(files)
-    if _outfile_exists(file_output):
-        raise MCPLError('requested output file of forcemerge_files already exists')
+    _check_merge_output( file_output, files, allow_overwrite )
     if all( can_merge(files[0], f) for f in files[1:] ):
         _info(f'forcemerge_files called with {len(files)} files that are'
               ' compatible for a standard merge => falling back to'
               ' standard merge_files function', prefix = 'MCPL ')
-        return merge_files(file_output, files, dry_run = dry_run)
+        return merge_files(file_output, files, allow_overwrite = allow_overwrite,
+                           dry_run = dry_run)
     opt_dp = opt_pol = opt_uf = False
     lastseen_pdg, disallow_pdg = 0, False
     lastseen_w, disallow_w = 0.0, False
@@ -353,7 +350,8 @@ def forcemerge_files(file_output, files, *, keep_userflags = False, dry_run = Fa
     if len(udlayouts) > 1:
         _warning('Discarding userdata in forced merge, since not all files have'
                  ' the same userdata layout.')
-    out = MCPLOutFile( file_output, _dry_run = dry_run,
+    out = MCPLOutFile( file_output, allow_overwrite = allow_overwrite,
+                       _dry_run = dry_run,
                        sourcename = ( 'mcpl_forcemerge_files (from MCPL v'
                                       f'{_determine_version()})' ),
                        opt_userflags = opt_uf and keep_userflags,
@@ -527,41 +525,66 @@ def name_helper(filename, mode):
     #res ends with a separator):
     return res if mode.isupper() else res.replace('\\','/').rsplit('/',1)[-1]
 
-def create_outfile_mpi(filename, iproc, nproc, **kwargs):
+def _mpi_final_name(filename):
+    """The final output file of the MPI helpers (gzipped for names ending with
+    .mcpl.gz)"""
+    return _namehelper(filename, 0, 'G' if filename.endswith('.mcpl.gz') else 'M')
+
+def create_outfile_mpi(filename, iproc, nproc, *, allow_overwrite = False, **kwargs):
     """Create output file for worker process iproc out of nproc (like
-    mcpl_create_outfile_mpi in the C API). The worker files must be closed
-    with closeandgzip(), after which merge_outfiles_mpi can be used to merge
-    them into the final file. Keyword arguments are passed on to
-    MCPLOutFile."""
+    mcpl_create_outfile_mpi in the C API). The worker files (named like
+    filename, with the extension .mpiworker<iproc>.mcpl) must be closed with
+    close(), after which merge_outfiles_mpi can be used to merge them into
+    the final file (gzipped if filename ends with .mcpl.gz). It is an error if
+    a worker file or the final file already exists, unless allow_overwrite
+    is True (with which the worker process with iproc=0 removes an existing
+    final file). Keyword arguments are passed on to MCPLOutFile."""
     if nproc > 100000000:
         raise MCPLError('create_outfile_mpi: nproc too large')
     if nproc == 0:
         raise MCPLError('create_outfile_mpi: nproc must be larger than 0')
     if iproc >= nproc:
         raise MCPLError('create_outfile_mpi: iproc must be less than nproc')
-    return MCPLOutFile(_namehelper(filename, iproc, 'm' if nproc > 1 else 'M'), **kwargs)
+    filename = os.fspath(filename)
+    finalfn = _mpi_final_name(filename)
+    if nproc == 1:
+        #(written directly to the final file):
+        return MCPLOutFile(finalfn, allow_overwrite = allow_overwrite, **kwargs)
+    #Refuse an existing final file already now (so a run does not fail only at
+    #the end), or with allow_overwrite remove it (since merge_outfiles_mpi
+    #can not overwrite it):
+    written, gzip = _outfile_name(finalfn)
+    if not allow_overwrite:
+        _check_new_output( written, gzip, False )
+    elif iproc == 0:
+        import pathlib
+        pathlib.Path(written).unlink(missing_ok = True)
+        if gzip:
+            pathlib.Path(finalfn).unlink(missing_ok = True)
+    return MCPLOutFile(_namehelper(filename, iproc, 'm'),
+                       allow_overwrite = allow_overwrite, **kwargs)
 
 def merge_outfiles_mpi(filename, nproc):
-    """Merge the gzipped worker files created with create_outfile_mpi into the
-    final gzipped output file and remove them (like mcpl_merge_outfiles_mpi in
-    the C API)."""
+    """Merge the worker files created with create_outfile_mpi into the final
+    output file and remove them (like mcpl_merge_outfiles_mpi in the C
+    API)."""
     if nproc > 100000000:
         raise MCPLError('merge_outfiles_mpi: nproc too large')
     if nproc == 0:
         raise MCPLError('merge_outfiles_mpi: nproc must be larger than 0')
     import pathlib
+    filename = os.fspath(filename)
+    finalfn = _mpi_final_name(filename)
     if nproc == 1:
-        fngz = _namehelper(filename, 0, 'G')
-        if not pathlib.Path(fngz).is_file():
-            raise MCPLError(f'merge_outfiles_mpi: expected output file "{fngz}"'
+        if not pathlib.Path(finalfn).is_file():
+            raise MCPLError(f'merge_outfiles_mpi: expected output file "{finalfn}"'
                             ' from iproc=0 not found.')
         return
-    targetfn = _namehelper(filename, 0, 'M')
-    fns = [ _namehelper(filename, iproc, 'g') for iproc in range(nproc) ]
-    out = merge_files(targetfn, fns)
+    fns = [ _namehelper(filename, iproc, 'm') for iproc in range(nproc) ]
+    out = merge_files(finalfn, fns)
     for fn in fns:
         f = pathlib.Path(fn)
         f.unlink()
         _info(f'Removing file {f.name}')
-    if not out.closeandgzip():
+    if not out._close( gzip_errors = False ):
         raise MCPLError('merge_outfiles_mpi: problems gzipping final output')

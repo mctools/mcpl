@@ -41,6 +41,7 @@ For instance:
 __all__ = [ 'Bars', 'Figure', 'Hist2D', 'Panel', 'Scatter3D', 'StepHist', 'Text',
             'save', 'show' ]
 
+from ._common import MCPLError
 from ._figures import Bars, Figure, Hist2D, Panel, Scatter3D, StepHist, Text
 from ._plotregistry import _save_backend, _show_backend
 
@@ -61,12 +62,20 @@ def show( figures, terminal = False, terminal_width = None, terminal_height = No
     _show_backend(terminal,terminal_width,terminal_height,
                   terminal_color).show(_as_list(figures))
 
-def save( figures, filename, terminal_width = None, terminal_height = None ):
+def save( figures, filename, terminal_width = None, terminal_height = None,
+          allow_overwrite = False ):
     """Save a Figure (or a list of figures) in a file, in the format given by
     the extension of the filename: .pdf, .png or .svg (with matplotlib), or
     .txt (as text with Unicode characters, terminal_width and terminal_height
     characters wide and high, see show()). If the format can only hold one
     figure, and there are more figures, the files get numbered names (e.g.
-    plot_1.png, plot_2.png). Returns the list of created files."""
-    return _save_backend(filename,terminal_width,
-                         terminal_height).save(_as_list(figures),filename)
+    plot_1.png, plot_2.png). Existing files are only overwritten if
+    allow_overwrite is True. Returns the list of created files."""
+    import os
+    figures = _as_list(figures)
+    backend = _save_backend(filename,terminal_width,terminal_height)
+    if not allow_overwrite:
+        for fn in backend.output_filenames(filename,len(figures)):
+            if os.path.lexists(fn):
+                raise MCPLError(f'The output file "{fn}" already exists')
+    return backend.save(figures,filename)

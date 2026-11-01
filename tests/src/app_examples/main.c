@@ -121,12 +121,12 @@ int main( int argc, char ** argv )
   (void)argc;
   (void)argv;
 
-  do_writemcpl("dummy.mcpl");
+  do_writemcpl("dummy.mcpl.gz");
   mcpl_dump("dummy.mcpl.gz", 0, 0, 10);
   do_readmcpl("dummy.mcpl.gz");
   do_filtermcpl("dummy.mcpl.gz","dummyfiltered");
-  mcpl_dump("dummyfiltered.mcpl.gz", 0, 0, 10);
-  do_readmcpl("dummyfiltered.mcpl.gz");
+  mcpl_dump("dummyfiltered.mcpl", 0, 0, 10);
+  do_readmcpl("dummyfiltered.mcpl");
   do_userdatamcpl("dummyuserdata.mcpl");
   mcpl_dump("dummyuserdata.mcpl", 0, 0, 3);
 

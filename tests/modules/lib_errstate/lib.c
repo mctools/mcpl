@@ -109,23 +109,26 @@ MCPLTEST_CTYPES void mcpltest_es_case( const char * name, int use_es )
   } else if ( strcmp(name,"create_empty_name") == 0 ) {
     mcpl_close_outfile( mcpl_create_outfile_es("",es) );
   } else if ( strcmp(name,"add_nan_particle") == 0 ) {
+    remove("es_out1.mcpl");//(each case runs twice, with and without _es)
     mcpl_outfile_t f = mcpl_create_outfile("es_out1.mcpl");
     p.ekin = strtod("nan",NULL);
     mcpl_add_particle_es(f,&p,es);
     mcpl_close_outfile(f);
   } else if ( strcmp(name,"srcname_too_late") == 0 ) {
+    remove("es_out2.mcpl");//(each case runs twice, with and without _es)
     mcpl_outfile_t f = mcpl_create_outfile("es_out2.mcpl");
     mcpl_add_particle(f,&p);
     mcpl_hdr_set_srcname_es(f,"x",es);
     mcpl_close_outfile(f);
   } else if ( strcmp(name,"transfer_before_read") == 0 ) {
     mcpl_file_t fin = mcpl_open_file("es_a.mcpl");
+    remove("es_out3.mcpl");//(each case runs twice, with and without _es)
     mcpl_outfile_t f = mcpl_create_outfile("es_out3.mcpl");
     mcpl_transfer_last_read_particle_es(fin,f,es);
     mcpl_close_outfile(f);
     mcpl_close_file(fin);
   } else if ( strcmp(name,"merge_incompatible") == 0 ) {
-    mcpl_close_outfile( mcpl_merge_files_es("es_out4.mcpl",2,files,es) );
+    mcpl_close_outfile( mcpl_merge_files_es("es_out4.mcpl",2,files,0,es) );
   } else if ( strcmp(name,"merge_inplace_same_file") == 0 ) {
     mcpl_merge_inplace_es("es_a.mcpl","es_a.mcpl",es);
   } else if ( strcmp(name,"repair_not_broken") == 0 ) {

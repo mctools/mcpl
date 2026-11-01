@@ -143,36 +143,37 @@ def _polarised_beam( rng, n ):
              'userdata' : userdata }
 
 _examples = (
-    ( 'mcplexample_source.mcpl.gz', _neutron_source,
+    ( 'mcplexample_source.mcpl', _neutron_source,
       {}, 'Neutrons leaving a moderator surface' ),
-    ( 'mcplexample_target.mcpl.gz', _target,
+    ( 'mcplexample_target.mcpl', _target,
       {}, 'Mixed particles leaving the surroundings of a target' ),
-    ( 'mcplexample_beam.mcpl.gz', _polarised_beam,
+    ( 'mcplexample_beam.mcpl', _polarised_beam,
       { 'opt_polarisation' : True, 'userdata_layout' : _userdata_layout },
       'Polarised neutron beam, with userdata' ),
 )
 
-def create_examples( nparticles = None, directory = '.', dry_run = False ):
+def create_examples( nparticles = None, directory = '.', dry_run = False,
+                     allow_overwrite = False ):
     """Create the example files (each with nparticles particles, default 1
-    million) in directory. Existing files are not overwritten. Returns the
-    list of files created."""
-    from ._writer import MCPLOutFile
+    million) in directory. Existing files are not overwritten, unless
+    allow_overwrite is True. Returns the list of files created."""
+    from ._writer import MCPLOutFile, _check_new_output
     n = _default_nparticles if nparticles is None else nparticles
     if not ( isinstance(n,int) and n > 0 ):
         raise MCPLError(f'Invalid number of particles: {nparticles}')
     d = pathlib.Path(directory)
     names = [ d / fn for fn,*_ in _examples ]
+    #(before creating any of them):
     for fn in names:
-        for f in ( fn, fn.with_suffix('') ):
-            if f.exists():
-                raise MCPLError(f'File {f.as_posix()} already exists')
+        _check_new_output( fn.as_posix(), False, allow_overwrite )
     created = []
     for (fn,fct,options,descr), path in zip(_examples,names):
         _info(f'{"Would create" if dry_run else "Creating"} {path.as_posix()}'
               f' with {n} particles ({descr.lower()})')
         rng = np.random.default_rng(_seed)
-        out = MCPLOutFile( path.with_suffix(''), sourcename = 'mcpltool',
+        out = MCPLOutFile( path, sourcename = 'mcpltool',
                            comments = [ _comment, descr ],
+                           allow_overwrite = allow_overwrite,
                            _dry_run = dry_run, **options )
         try:
             todo = n
@@ -183,10 +184,7 @@ def create_examples( nparticles = None, directory = '.', dry_run = False ):
         except BaseException:
             out._abort()
             raise
-        if dry_run:
-            out.close()
-            continue
-        if not out.closeandgzip():
-            raise MCPLError(f'Failed to gzip {path.with_suffix("").as_posix()}')
-        created.append(path.as_posix())
+        out.close()
+        if not dry_run:
+            created.append(path.as_posix())
     return created

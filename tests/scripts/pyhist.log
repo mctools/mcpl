@@ -674,7 +674,7 @@ mcpltool --text example.mcpl: exit code 1
    | 
    | Run with -h or --help for usage information
 mcpltool --text example.mcpl hist.txt: exit code 1
-   | ERROR: Requested output file already exists.
+   | ERROR: The output file "hist.txt" already exists.
    | 
    | Run with -h or --help for usage information
 mcpltool -t example.mcpl: exit code 1

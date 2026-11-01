@@ -138,10 +138,16 @@ extern "C" {
   /* Creating new .mcpl files */
   /****************************/
 
-  /* Instantiate new file object (will also open and override specified file) */
+  /* Instantiate new file object (will also open the file). Files with names */
+  /* ending with .mcpl.gz are written without .gz and compressed when closed */
+  /* (other names ending with .gz are not allowed), and .mcpl is appended to */
+  /* names not ending with .mcpl. It is an error if the file (or one of      */
+  /* these two files) already exists, unless it is created with              */
+  /* mcpl_create_outfile_allow_overwrite:                                    */
   MCPL_API mcpl_outfile_t mcpl_create_outfile(const char * filename);
+  MCPL_API mcpl_outfile_t mcpl_create_outfile_allow_overwrite(const char * filename);
 
-  MCPL_API const char * mcpl_outfile_filename(mcpl_outfile_t);/* filename being written to (might have had .mcpl appended) */
+  MCPL_API const char * mcpl_outfile_filename(mcpl_outfile_t);/* filename being written to (might have had .mcpl appended, or .gz removed) */
   MCPL_API const char * mcpl_outfile_userdata_layout(mcpl_outfile_t);/* userdata layout (NULL if no userdata) */
 
   /* Optionally set global options or add info to the header: */
@@ -181,8 +187,11 @@ extern "C" {
   /* Finally, always remember to close the file: */
   MCPL_API void mcpl_close_outfile(mcpl_outfile_t);
 
-  /* Alternatively close with (will call mcpl_gzip_file after close). */
-  /* Returns non-zero if gzipping was succesful:                      */
+  /* Alternatively close with (will call mcpl_gzip_file after close, which  */
+  /* mcpl_close_outfile also does for names ending with .mcpl.gz). Returns  */
+  /* non-zero if gzipping was succesful. The compressed file must not exist */
+  /* already, unless the file was created by                                */
+  /* mcpl_create_outfile_allow_overwrite:                                   */
   MCPL_API int mcpl_closeandgzip_outfile(mcpl_outfile_t);
 
   /* Convenience function which returns a pointer to a nulled-out particle  */
@@ -255,8 +264,10 @@ extern "C" {
 
   /* Merge contents of a list of files by concatenating all particle contents into a   */
   /* new file, file_output. This results in an error unless all meta-data and settings */
-  /* in the files are identical. Also fails if file_output already exists. Note that   */
-  /* the return value is a handle to the output file which has not yet been closed:    */
+  /* in the files are identical. Also fails if file_output already exists, or is one   */
+  /* of the input files. The output file is named like by mcpl_create_outfile. Note    */
+  /* that the return value is a handle to the output file which has not yet been       */
+  /* closed:                                                                           */
   MCPL_API mcpl_outfile_t mcpl_merge_files( const char * file_output,
                                             unsigned nfiles, const char ** files);
 
@@ -292,6 +303,7 @@ extern "C" {
 
   /* Compress a file (like running gzip on the file, transforming it from  */
   /* "filename" to "filename.gz". Non-zero return value indicates success. */
+  /* It fails if "filename.gz" already exists.                             */
   MCPL_API int mcpl_gzip_file(const char * filename);
 
   /* Convenience function which transfers all settings, blobs and comments to */
@@ -467,6 +479,8 @@ extern "C" {
 
   MCPL_API mcpl_outfile_t mcpl_create_outfile_es(const char * filename,
                                                  mcpl_errstate_t*);
+  MCPL_API mcpl_outfile_t mcpl_create_outfile_allow_overwrite_es(const char * filename,
+                                                                 mcpl_errstate_t*);
   MCPL_API void mcpl_hdr_set_srcname_es(mcpl_outfile_t, const char *,
                                         mcpl_errstate_t*);
   MCPL_API void mcpl_hdr_add_comment_es(mcpl_outfile_t, const char *,
@@ -515,9 +529,12 @@ extern "C" {
   /* is left unfinished (nparticles=0 in the header, so it can be repaired).  */
   /* The same is the case for file1 in mcpl_merge_inplace_es, if the errors   */
   /* happen after it was modified. Partially written files from failures to   */
-  /* compress files are removed, keeping the uncompressed file:               */
+  /* compress files are removed, keeping the uncompressed file. Unlike the    */
+  /* functions without _es, the merges can overwrite an existing output file  */
+  /* with allow_overwrite=1 (but never one of the input files):               */
   MCPL_API mcpl_outfile_t mcpl_merge_files_es(const char * file_output,
                                               unsigned nfiles, const char ** files,
+                                              int allow_overwrite,
                                               mcpl_errstate_t*);
   MCPL_API int mcpl_can_merge_es(const char * file1, const char * file2,
                                  mcpl_errstate_t*);
@@ -527,6 +544,7 @@ extern "C" {
                                                    unsigned nfiles,
                                                    const char ** files,
                                                    int keep_userflags,
+                                                   int allow_overwrite,
                                                    mcpl_errstate_t*);
   MCPL_API void mcpl_repair_es(const char * file1, mcpl_errstate_t*);
   MCPL_API int mcpl_gzip_file_es(const char * filename, mcpl_errstate_t*);
@@ -648,19 +666,24 @@ extern "C" {
 
   /* Utilities for MPI output where each worker creates its own file, followed */
   /* by a final merging into one file. The filename should be the final        */
-  /* desired output name (optionally ending in .mcpl or .mcpl.gz), nproc the   */
-  /* total number of files, and iproc the index from 0 to nproc-1 of the       */
-  /* worker process opening the file.                                          */
+  /* desired output name (gzipped if it ends with .mcpl.gz), nproc the total   */
+  /* number of files, and iproc the index from 0 to nproc-1 of the worker      */
+  /* process opening the file.                                                 */
   /*                                                                           */
   /* The intermediate files will be named like filename, except with the       */
-  /* extension ".mpiworker%i.mcpl[.gz]", and it is the responsibility of the   */
-  /* calling code to ensure that no such files might already be                */
-  /* existing, and to close them with mcpl_closeandgzip_outfile. During normal */
-  /* operations, the intermediate files will be removed again by the call to   */
-  /* mcpl_merge_outfiles_mpi. Using nproc=1 is allowed as a special case.      */
+  /* extension ".mpiworker%i.mcpl", and are closed with mcpl_close_outfile.    */
+  /* During normal operations, the intermediate files will be removed again by */
+  /* the call to mcpl_merge_outfiles_mpi. Using nproc=1 is allowed as a        */
+  /* special case. It is an error if an intermediate file or the final file    */
+  /* already exists, unless mcpl_create_outfile_mpi_allow_overwrite is used    */
+  /* (with which the worker process with iproc=0 removes an existing final     */
+  /* file).                                                                    */
   MCPL_API mcpl_outfile_t mcpl_create_outfile_mpi( const char * filename,
                                                    unsigned long iproc,
                                                    unsigned long nproc );
+  MCPL_API mcpl_outfile_t mcpl_create_outfile_mpi_allow_overwrite( const char * filename,
+                                                                   unsigned long iproc,
+                                                                   unsigned long nproc );
 
   MCPL_API void mcpl_merge_outfiles_mpi( const char * filename,
                                          unsigned long nproc );

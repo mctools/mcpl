@@ -71,7 +71,7 @@ int main(int argc,char**argv) {
   //unavailable (which is better than being silently misleading).
 
   //Close up files:
-  mcpl_closeandgzip_outfile(fo);
+  mcpl_close_outfile(fo);
   mcpl_close_file(fi);
   return 0;
 }

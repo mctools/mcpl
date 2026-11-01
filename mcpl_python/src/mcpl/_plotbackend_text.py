@@ -203,6 +203,9 @@ class _TextBackend(PlotBackend):
         finally:
             self._nc = 0
 
+    def output_filenames( self, filename, n ):
+        return [ filename ]#(all figures in one file)
+
     def save( self, figures, filename ):
         self.check_format(filename)
         pathlib.Path(filename).write_text( '\n\n'.join( self.draw(f,self.encoding) for f in figures )

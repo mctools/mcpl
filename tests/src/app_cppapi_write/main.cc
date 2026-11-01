@@ -155,7 +155,7 @@ namespace {
 
     std::cout << "\n==> Universal pdgcode and weight, gzipped:" << std::endl;
     {
-      mcpl::MCPLOutFile f(std::string("universal.mcpl"));
+      mcpl::MCPLOutFile f(std::string("universal.mcpl.gz"));
       f.enable_universal_pdgcode(22);
       f.enable_universal_weight(0.5);
       auto p = f.new_particle();
@@ -171,7 +171,7 @@ namespace {
       p.set_weight(1.0);
       p.set_ekin(3.0);
       f.add(p);
-      f.close_and_gzip();
+      f.close();
     }
     require( mcpltest::file_exists("universal.mcpl.gz")
              && !mcpltest::file_exists("universal.mcpl"), "gzipped file" );
@@ -688,12 +688,11 @@ namespace {
 
     std::cout << "\n==> Scaling stat sums, closing twice:" << std::endl;
     {
-      mcpl::MCPLOutFile f("scaled.mcpl");
+      mcpl::MCPLOutFile f("scaled.mcpl.gz");
       f.add_stat_sum("a",10.0);
       f.add_stat_sum("b",3.0);
       f.scale_stat_sums(2.5);
-      f.close_and_gzip();
-      f.close_and_gzip();//(does nothing)
+      f.close();
       f.close();//(does nothing)
       mcpl::MCPLFile r("scaled.mcpl.gz");
       std::cout << "scaled by 2.5: a=" << *r.stat_sum("a") << " b="

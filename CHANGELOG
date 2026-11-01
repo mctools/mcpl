@@ -1,4 +1,19 @@
 v2.2.9  (work in progress)
+      * The name of an output file decides whether it is compressed, in C,
+        C++, Python, mcpltool, and mcpltool-c: files with names ending with
+        .mcpl.gz are gzipped when closed, and files with names ending with
+        .mcpl are not. Other names still get .mcpl appended, and other names
+        ending with .gz are refused. This also holds for the final file of the
+        MPI helpers (which was always gzipped).
+      * Existing files are never overwritten by output files (also when
+        compressing them), unless this is explicitly allowed: with
+        mcpl_create_outfile_allow_overwrite (and _mpi_allow_overwrite), the
+        allow_overwrite argument of mcpl_merge_files_es and
+        mcpl_forcemerge_files_es, AllowOverwrite::Yes in C++,
+        allow_overwrite=True in Python, or the new option --allow-overwrite
+        of mcpltool and mcpltool-c. Before, mcpl_create_outfile and
+        mcpl_gzip_file overwrote existing files. Output files which are (or
+        are written via) one of the input files are always refused.
       * Python fixes: MCPLFile closes the file of gzipped files, dump_file
         closes the file it opened, a plain 0 in hypot, min, max and clamp has
         the units of the other values, histogram() checks its bins and range,
@@ -49,9 +64,6 @@ v2.2.9  (work in progress)
         mcpl_generic_fread was wrong after reading more than 32 kB at once,
         which could give wrong output from mcpl2ssw with gzipped reference
         files.
-      * mcpl_merge_files and mcpl_forcemerge_files no longer overwrite an
-        input file when ".mcpl" is appended to the name of the output file
-        (e.g. output "a" with input "a.mcpl").
       * stat:sum values, and numbers in the files of mcpltool --text, are
         always written and read with "." as the decimal point, also in
         applications using a locale with another one.

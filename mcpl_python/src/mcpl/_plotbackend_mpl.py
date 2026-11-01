@@ -86,6 +86,12 @@ class Backend(PlotBackend):
             self._draw(f)
         self._plt.show()
 
+    def output_filenames( self, filename, n ):
+        #(PDF files hold all figures):
+        if self.check_format(filename) == 'pdf':
+            return [ filename ]
+        return numbered_filenames(filename,n)
+
     def save( self, figures, filename ):
         ext = self.check_format(filename)
         if ext == 'pdf':

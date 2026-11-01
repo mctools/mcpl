@@ -64,6 +64,8 @@ Other options:
   -t, --text MCPLFILE OUTFILE
                     Read particle contents of MCPLFILE and write into OUTFILE
                     using a simple ASCII-based format.
+  --allow-overwrite : Allow the output files of --merge, --forcemerge,
+                    --extract, and --text to overwrite existing files.
   -v, --version   : Display version of MCPL installation.
   -h, --help      : Display this usage information (ignores all other options).
 
@@ -133,6 +135,8 @@ Other options:
   -t, --text MCPLFILE OUTFILE
                     Read particle contents of MCPLFILE and write into OUTFILE
                     using a simple ASCII-based format.
+  --allow-overwrite : Allow the output files of --merge, --forcemerge,
+                    --extract, and --text to overwrite existing files.
   -v, --version   : Display version of MCPL installation.
   -h, --help      : Display this usage information (ignores all other options).
 
@@ -202,6 +206,8 @@ Other options:
   -t, --text MCPLFILE OUTFILE
                     Read particle contents of MCPLFILE and write into OUTFILE
                     using a simple ASCII-based format.
+  --allow-overwrite : Allow the output files of --merge, --forcemerge,
+                    --extract, and --text to overwrite existing files.
   -v, --version   : Display version of MCPL installation.
   -h, --help      : Display this usage information (ignores all other options).
 
@@ -413,6 +419,8 @@ Other options:
   -t, --text MCPLFILE OUTFILE
                     Read particle contents of MCPLFILE and write into OUTFILE
                     using a simple ASCII-based format.
+  --allow-overwrite : Allow the output files of --merge, --forcemerge,
+                    --extract, and --text to overwrite existing files.
   -v, --version   : Display version of MCPL installation.
   -h, --help      : Display this usage information (ignores all other options).
 
@@ -1575,7 +1583,7 @@ MCPL: Successfully extracted 195 / 195 particles from miscphys.mcpl.gz into extr
 ----------------------------------------------
 Running mcpltool-c -e miscphys.mcpl.gz extracted_0
 ----------------------------------------------
-ERROR: Requested output file already exists (with .mcpl extension).
+ERROR: The output file "extracted_0.mcpl" already exists.
 
 Run with -h or --help for usage information
 
@@ -1649,7 +1657,7 @@ MCPL: Successfully extracted 15 / 195 particles from miscphys.mcpl.gz into extra
 ----------------------------------------------
 Running mcpltool-c -e miscphys.mcpl.gz dirout.mcpl.gz
 ----------------------------------------------
-ERROR: Requested output file already exists.
+ERROR: The output file "dirout.mcpl.gz" already exists.
 
 Run with -h or --help for usage information
 
@@ -1968,7 +1976,7 @@ Running mcpltool-c --merge merged_1to5_new_filec.mcpl extracted_1_new.mcpl extra
 ----------------------------------------------
 Running mcpltool-c --merge merged_1to5_new_filec.mcpl.gz extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
 ----------------------------------------------
-ERROR: Requested output file already exists (without .gz extension).
+ERROR: The output file "merged_1to5_new_filec.mcpl.gz" can not be written, since "merged_1to5_new_filec.mcpl" (which it is compressed from) already exists.
 
 Run with -h or --help for usage information
 
@@ -1976,7 +1984,7 @@ Run with -h or --help for usage information
 ----------------------------------------------
 Running mcpltool-c --merge merged_1to5_new_filec.gz extracted_1_new.mcpl extracted_2_new.mcpl extracted_3.mcpl extracted_4_new.mcpl extracted_5.mcpl
 ----------------------------------------------
-ERROR: Requested output file should not have .gz extension (unless it is .mcpl.gz).
+ERROR: Output file names ending with .gz must end with .mcpl.gz (not "merged_1to5_new_filec.gz").
 
 Run with -h or --help for usage information
 
@@ -1997,7 +2005,7 @@ Running mcpltool-c --merge --inplace extracted_1_new.mcpl extracted_2_new.mcpl e
 ----------------------------------------------
 Running mcpltool-c --merge extracted_1.mcpl extracted_2.mcpl
 ----------------------------------------------
-ERROR: Requested output file already exists.
+ERROR: The output file "extracted_1.mcpl" already exists.
 
 Run with -h or --help for usage information
 

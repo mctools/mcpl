@@ -29,7 +29,7 @@ int main(int argc,char**argv) {
 
   //Test mpi interface with nproc=1
 
-  mcpl_outfile_t f = mcpl_create_outfile_mpi( "foobar", 0, 1 );
+  mcpl_outfile_t f = mcpl_create_outfile_mpi( "foobar.mcpl.gz", 0, 1 );
   mcpl_hdr_set_srcname(f,"CustomMPITest");
   mcpl_enable_universal_pdgcode(f,2112);
   mcpl_hdr_add_comment(f,"Some comment.");
@@ -53,10 +53,10 @@ int main(int argc,char**argv) {
 
   //mpi: close files
   mcpl_hdr_add_stat_sum(f,"foostat", 10.0 );
-  mcpl_closeandgzip_outfile(f);
+  mcpl_close_outfile(f);//(gzipped, from the name)
 
   //Merge:
-  mcpl_merge_outfiles_mpi( "foobar", 1 );
+  mcpl_merge_outfiles_mpi( "foobar.mcpl.gz", 1 );
 
   //Dump:
   mcpl_dump("foobar.mcpl.gz", 0, 0, 0);
