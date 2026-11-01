@@ -197,23 +197,6 @@ namespace mcpl {
 #endif
     }
 
-    //Filenames given as std::filesystem::path, std::string, std::string_view
-    //or C strings (only meant to be used for function arguments):
-    class FilenameArg {
-    public:
-      FilenameArg( const char * s ) : m_cstr(s) {}
-      FilenameArg( const std::string& s ) : m_cstr(s.c_str()) {}
-      FilenameArg( std::string_view s ) : m_buf(s), m_cstr(m_buf.c_str()) {}
-      FilenameArg( const std::filesystem::path& p )
-        : m_buf(path_to_utf8(p)), m_cstr(m_buf.c_str()) {}
-      FilenameArg( const FilenameArg& ) = delete;
-      FilenameArg& operator=( const FilenameArg& ) = delete;
-      const char * c_str() const noexcept { return m_cstr; }
-    private:
-      std::string m_buf;
-      const char * m_cstr;
-    };
-
     inline std::string to_utf8( const char * s ) { return s ? s : ""; }
     inline std::string to_utf8( const std::string& s ) { return s; }
     inline std::string to_utf8( std::string_view s ) { return std::string(s); }
@@ -369,6 +352,38 @@ namespace mcpl {
     }
 
   }//end of implementation details
+
+  //////////////////////////////////////////////////////////////////////////////
+  // File names
+
+  /**
+   * @brief A file name given to a function.
+   *
+   * Functions taking file names accept `std::filesystem::path` objects, which
+   * work with all names on all platforms, or strings (`std::string`,
+   * `std::string_view` or C strings), which are interpreted as UTF-8. A
+   * FilenameArg can refer to the string it was made from, so it is only
+   * meant for function arguments (and it can not be copied).
+   */
+  class FilenameArg {
+  public:
+    /** @brief A name given as a C string (UTF-8). */
+    FilenameArg( const char * s ) : m_cstr(s) {}
+    /** @brief A name given as a std::string (UTF-8). */
+    FilenameArg( const std::string& s ) : m_cstr(s.c_str()) {}
+    /** @brief A name given as a std::string_view (UTF-8). */
+    FilenameArg( std::string_view s ) : m_buf(s), m_cstr(m_buf.c_str()) {}
+    /** @brief A name given as a path. */
+    FilenameArg( const std::filesystem::path& p )
+      : m_buf(detail::path_to_utf8(p)), m_cstr(m_buf.c_str()) {}
+    FilenameArg( const FilenameArg& ) = delete;
+    FilenameArg& operator=( const FilenameArg& ) = delete;
+    /** @brief The name as a null-terminated UTF-8 string. */
+    const char * c_str() const noexcept { return m_cstr; }
+  private:
+    std::string m_buf;
+    const char * m_cstr;
+  };
 
   //////////////////////////////////////////////////////////////////////////////
   // Messages
@@ -1103,7 +1118,7 @@ namespace mcpl {
      * @param filename Name of the file.
      * @throws mcpl::IOError if the file can not be read, and mcpl::Error if it is not a valid MCPL file.
      */
-    explicit MCPLFile( detail::FilenameArg filename )
+    explicit MCPLFile( FilenameArg filename )
     {
       detail::ErrState es;
       m_f = mcpl_open_file_es( filename.c_str(), es );
@@ -1469,7 +1484,7 @@ namespace mcpl {
      * @param filename Name of the file (`.mcpl` is appended if it does not end with `.mcpl`).
      * @throws mcpl::IOError if the file can not be created.
      */
-    explicit MCPLOutFile( detail::FilenameArg filename )
+    explicit MCPLOutFile( FilenameArg filename )
     {
       detail::ErrState es;
       m_f = mcpl_create_outfile_es( filename.c_str(), es );
@@ -1871,9 +1886,9 @@ namespace mcpl {
     mcpl_outfile_t c_handle() const noexcept { return m_f; }
 
   private:
-    friend MCPLOutFile merge_files( detail::FilenameArg,
+    friend MCPLOutFile merge_files( FilenameArg,
                                     detail::FilenameList&& );
-    friend MCPLOutFile forcemerge_files( detail::FilenameArg,
+    friend MCPLOutFile forcemerge_files( FilenameArg,
                                          detail::FilenameList&&,
                                          KeepUserflags );
     explicit MCPLOutFile( mcpl_outfile_t f ) : m_f(f), m_layout_locked(true)
@@ -1980,7 +1995,7 @@ namespace mcpl {
   // std::filesystem::path, or as initializer lists like {"a.mcpl","b.mcpl"}.
 
   /// @cond INTERNAL
-  inline MCPLOutFile merge_files( detail::FilenameArg file_output,
+  inline MCPLOutFile merge_files( FilenameArg file_output,
                                   detail::FilenameList&& files )
   {
     detail::ErrState es;
@@ -2001,7 +2016,7 @@ namespace mcpl {
    * @return The output file (still open).
    */
   template<class Range>
-  inline MCPLOutFile merge_files( detail::FilenameArg file_output,
+  inline MCPLOutFile merge_files( FilenameArg file_output,
                                   const Range& files )
   {
     return merge_files( file_output.c_str(), detail::FilenameList(files) );
@@ -2013,8 +2028,8 @@ namespace mcpl {
    * @param files The files to merge.
    * @return The output file (still open).
    */
-  inline MCPLOutFile merge_files( detail::FilenameArg file_output,
-                                  std::initializer_list<detail::FilenameArg> files )
+  inline MCPLOutFile merge_files( FilenameArg file_output,
+                                  std::initializer_list<FilenameArg> files )
   {
     std::vector<std::string> names;
     for ( const auto& f : files )
@@ -2023,7 +2038,7 @@ namespace mcpl {
   }
 
   /// @cond INTERNAL
-  inline MCPLOutFile forcemerge_files( detail::FilenameArg file_output,
+  inline MCPLOutFile forcemerge_files( FilenameArg file_output,
                                        detail::FilenameList&& files,
                                        KeepUserflags keep_userflags )
   {
@@ -2046,7 +2061,7 @@ namespace mcpl {
    * @return The output file (still open).
    */
   template<class Range>
-  inline MCPLOutFile forcemerge_files( detail::FilenameArg file_output,
+  inline MCPLOutFile forcemerge_files( FilenameArg file_output,
                                        const Range& files,
                                        KeepUserflags keep_userflags = KeepUserflags::No )
   {
@@ -2061,8 +2076,8 @@ namespace mcpl {
    * @param keep_userflags Whether the userflags are kept.
    * @return The output file (still open).
    */
-  inline MCPLOutFile forcemerge_files( detail::FilenameArg file_output,
-                                       std::initializer_list<detail::FilenameArg> files,
+  inline MCPLOutFile forcemerge_files( FilenameArg file_output,
+                                       std::initializer_list<FilenameArg> files,
                                        KeepUserflags keep_userflags = KeepUserflags::No )
   {
     std::vector<std::string> names;
@@ -2078,7 +2093,7 @@ namespace mcpl {
    * @param file1 First file.
    * @param file2 Second file.
    */
-  inline bool can_merge( detail::FilenameArg file1, detail::FilenameArg file2 )
+  inline bool can_merge( FilenameArg file1, FilenameArg file2 )
   {
     detail::ErrState es;
     int r = mcpl_can_merge_es( file1.c_str(), file2.c_str(), es );
@@ -2092,8 +2107,8 @@ namespace mcpl {
    * @param file1 File to which the particles are added.
    * @param file2 File with the particles to add.
    */
-  inline void merge_inplace( detail::FilenameArg file1,
-                             detail::FilenameArg file2 )
+  inline void merge_inplace( FilenameArg file1,
+                             FilenameArg file2 )
   {
     detail::ErrState es;
     mcpl_merge_inplace_es( file1.c_str(), file2.c_str(), es );
@@ -2105,7 +2120,7 @@ namespace mcpl {
    *
    * @param filename Name of the file.
    */
-  inline void repair( detail::FilenameArg filename )
+  inline void repair( FilenameArg filename )
   {
     detail::ErrState es;
     mcpl_repair_es( filename.c_str(), es );
@@ -2117,7 +2132,7 @@ namespace mcpl {
    *
    * @param filename Name of the file.
    */
-  inline void gzip_file( detail::FilenameArg filename )
+  inline void gzip_file( FilenameArg filename )
   {
     detail::ErrState es;
     mcpl_gzip_file_es( filename.c_str(), es );

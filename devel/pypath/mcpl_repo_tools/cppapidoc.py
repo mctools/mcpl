@@ -37,7 +37,8 @@ _sections = [
                         'mcpl::BlobView','mcpl::DumpParts') ),
     ( 'Userdata', ('mcpl::UserdataField',) ),
     ( 'Writing files', ('mcpl::MCPLOutFile','mcpl::OutParticle') ),
-    ( 'Operations on files', ('mcpl::merge_files','mcpl::forcemerge_files',
+    ( 'Operations on files', ('mcpl::FilenameArg',
+                              'mcpl::merge_files','mcpl::forcemerge_files',
                               'mcpl::KeepUserflags','mcpl::can_merge',
                               'mcpl::merge_inplace','mcpl::repair',
                               'mcpl::gzip_file') ),
@@ -237,7 +238,6 @@ def _desc_markdown( desc ):
 
 def _clean_type( text ):
     text = re.sub(r'\s+',' ',text).strip()
-    text = text.replace('detail::FilenameArg','Filename')
     text = re.sub(r'<\s+','<',text)
     text = re.sub(r'\s+>','>',text)
     text = re.sub(r'\s+&','&',text)
@@ -431,7 +431,7 @@ def generate( front_matter = None, strict = False, note = None, xmldir = None ):
                ' file `mcplcpp.h` (which requires C++17 or later), as given by'
                ' the'
                ' documentation comments in that file. Everything is in the'
-               ' namespace `mcpl`. Arguments of type `Filename` can be'
+               ' namespace `mcpl`. Arguments of type `FilenameArg` can be'
                ' `std::filesystem::path` objects, which work with all names on'
                ' all platforms, or strings (`std::string`, `std::string_view`'
                ' or C strings), which are interpreted as UTF-8.' ), '' ]
