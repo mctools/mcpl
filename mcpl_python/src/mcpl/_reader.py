@@ -127,7 +127,7 @@ class MCPLFile:
                                        or value < 0 ):
                 raise MCPLError(f'{name} must be a number of particles (not {value!r})')
         self._skip, self._limit = int(skip or 0), None if limit is None else int(limit)
-        self._fblocks, self._fparts = None, None
+        self._fblocks, self._fpending = None, None
         #NaN or infinite values are not allowed, but files might have them, so
         #we warn when reading the first such particle (unless the check is
         #disabled for raw copying of particle data, like in merges):
@@ -345,15 +345,33 @@ class MCPLFile:
         but returned \"particle\" object actually represents a whole block of
         particles, and the fields on it are thus (numpy) arrays of numbers
         rather than single numbers.  See also the particle_blocks property for
-        an iterator-based access to blocks."""
-        if not self._filtered:
-            b = self._read_raw_block()
+        an iterator-based access to blocks. Calls of read() and read_block()
+        can be mixed: each continues after the particles returned by the
+        other (after read(), read_block() returns the rest of the block of the
+        particle returned by read())."""
+        if self._filtered:
+            if self._fpending is not None:
+                #(the rest of the block of particles returned by read):
+                b, i = self._fpending
+                self._fpending = None
+                return b if i == 0 else b[i:]
+            if self._fblocks is None:
+                self._fblocks = self._picked_blocks()
+            return next(self._fblocks,None)
+        cb = self._currentblock
+        if cb.contains_ipos(self._ipos):
+            #(the rest of the block of particles returned by read):
+            i = self._ipos - cb.file_offset
+            self._ipos = cb.file_offset + len(cb)
+            if self._nonfinite_mask is not None:
+                self._warn_nonfinite(first=i)
+            return cb if i == 0 else cb[i:]
+        b = self._read_raw_block()
+        if b is not None:
+            self._ipos = b.file_offset + len(b)
             if self._nonfinite_mask is not None:
                 self._warn_nonfinite()
-            return b
-        if self._fblocks is None:
-            self._fblocks = self._picked_blocks()
-        return next(self._fblocks,None)
+        return b
 
     @property
     def _filtered(self):
@@ -424,12 +442,17 @@ class MCPLFile:
                      f' one found at index {block.fileidx[i]}).'
                      ' They can not be added to other MCPL files.')
 
-    def _warn_nonfinite(self, local_idx = None):
+    def _warn_nonfinite(self, local_idx = None, first = 0):
         """Warn (once per file) if the current block (or the particle in it at
-        local_idx) has NaN or infinite values."""
+        local_idx, or its particles from the index first) has NaN or infinite
+        values."""
         m = self._nonfinite_mask
         if m is None or ( local_idx is not None and not m[local_idx] ):
             return
+        if local_idx is None and first:
+            if not m[first:].any():
+                return
+            local_idx = first + int(np.argmax(m[first:]))
         i = int(np.argmax(m)) if local_idx is None else local_idx
         self._nonfinite_mask = None
         self._warned_nonfinite = True
@@ -454,9 +477,14 @@ class MCPLFile:
         the particle_blocks property provides block-based access, which can
         improve performance dramatically."""
         if self._filtered:
-            if self._fparts is None:
-                self._fparts = self._picked_particles()
-            return next(self._fparts,None)
+            if self._fpending is None:
+                b = self.read_block()
+                if b is None:
+                    return None
+                self._fpending = ( b, 0 )
+            b, i = self._fpending
+            self._fpending = ( b, i + 1 ) if i + 1 < len(b) else None
+            return b[i]
         if self._ipos >= self._np:
             return None#end of file
         p = self._currentblock.get_by_global(self._ipos)
@@ -467,14 +495,6 @@ class MCPLFile:
         if self._nonfinite_mask is not None:#(the check is cheaper than the call)
             self._warn_nonfinite(p._i)
         return p
-
-    def _picked_particles(self):
-        while True:
-            b = self.read_block()
-            if b is None:
-                return
-            for i in range(len(b)):
-                yield b[i]
 
     def skip_forward(self,n):
 
@@ -544,7 +564,7 @@ class MCPLFile:
         self._ipos = 0
         self._iblock = 0
         self._currentblock._set_data(None,None)
-        self._fblocks, self._fparts = None, None
+        self._fblocks, self._fpending = None, None
 
     @property
     def version(self):

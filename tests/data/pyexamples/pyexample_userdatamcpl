@@ -103,7 +103,8 @@ with mcpl.MCPLFile( outputfile ) as fin:
             print( f'{len(hot)} of the first {len(block)} particles scattered'
                    ' at least twice' )
     #The userdata of single particles is a NumPy record (array fields are
-    #arrays, here of length 3):
+    #arrays, here of length 3), here of the first one, after a rewind:
+    fin.rewind()
     p = fin.read()
     print( f'First particle: ekin={p.ekin:g} MeV,'
            f' temp={p.userdata["temp"]:g} K, nscat={p.userdata["nscat"]},'

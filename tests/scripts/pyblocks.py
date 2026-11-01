@@ -146,8 +146,49 @@ def test_double_precision():
             print(f'{fn.name}: singleprec={f.opt_singleprec}, all fields double: {not bad}')
             assert not bad, (fn.name,bad)
 
+def test_mixed_reading():
+    #read() and read_block() continue where the other stopped, without
+    #skipping or repeating particles: read_block() after read() gives the rest
+    #of the block of the particle which read() returned (also when particles
+    #are picked or edited, or skipped with skip_forward):
+    with mcpl.MCPLOutFile('mixed.mcpl') as o:
+        o.add_particles( x = np.arange(25.0), uz = 1.0, ekin = 1.0,
+                         pdgcode = 2112, weight = 1.0 )
+    def pos(v):
+        if v is None:
+            return None
+        return round(float(v.x)) if isinstance(v,mcpl.MCPLParticle) else [ round(float(x)) for x in v.x ]
+    calls = 'BPBPPBBP'
+    for kw in ( {}, { 'pick' : 'x != 3cm' }, { 'skip' : 2, 'limit' : 21 },
+                { 'edit' : 'x += 100cm' } ):
+        with mcpl.MCPLFile('mixed.mcpl', blocklength = 10, **kw) as f:
+            res = [ pos( f.read_block() if c == 'B' else f.read() ) for c in calls ]
+        print(f'{calls} with {kw}:')
+        for c, r in zip(calls,res):
+            print(f'  {"read_block" if c == "B" else "read"}: {r}')
+        seen = [ x for r in res if r is not None for x in ( r if isinstance(r,list) else [r] ) ]
+        assert seen == sorted(set(seen))
+        #read() after the loop over the blocks, and the reverse:
+        with mcpl.MCPLFile('mixed.mcpl', blocklength = 10, **kw) as f:
+            for b in f.particle_blocks:
+                pass
+            after = f.read()
+            n = sum( 1 for p in f.particles )
+            f.rewind()
+            f.read()
+            rest = f.read_block()
+        print(f'  read after the blocks: {after}, particles: {n},'
+              f' first block after read: {pos(rest)}')
+        assert after is None
+    with mcpl.MCPLFile('mixed.mcpl', blocklength = 10) as f:
+        f.skip_forward(5)
+        b = f.read_block()
+        print(f'skip_forward(5): read_block: {pos(b)} (file offset {b.file_offset}),'
+              f' read: {pos(f.read())}')
+
 if __name__ == '__main__':
     test_double_precision()
     test_block_indexing()
     test_fileidx()
     test_transfer_and_edit()
+    test_mixed_reading()
