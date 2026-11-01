@@ -31,7 +31,7 @@ def main( parser ):
                          help='Write the documentation to FILE.' )
     parser.add_argument( '--jekyll', action='store_true',
                          help="""Add front matter for the page of the Jekyll
-                         website (title, navigation title and weight).""" )
+                         website (title, navigation title, and weight).""" )
     parser.add_argument( '--check', metavar='FILE',
                          help="""Instead of writing, check that FILE has the
                          current documentation (with --jekyll if FILE has front

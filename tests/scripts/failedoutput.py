@@ -19,7 +19,7 @@
 ##                                                                            ##
 ################################################################################
 
-# Failed --merge, --forcemerge and --extract operations of mcpltool-c and
+# Failed --merge, --forcemerge, and --extract operations of mcpltool-c and
 # mcpltool must not leave output files behind. They fail here because the
 # input file has a comment starting with "stat:" which is not "stat:sum:"
 # (which is refused when writing files).

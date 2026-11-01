@@ -20,7 +20,7 @@
 ################################################################################
 
 """Colours in terminals: whether to use them (from the --color setting, the
-NO_COLOR, FORCE_COLOR, TERM and COLORTERM environment variables, and whether
+NO_COLOR, FORCE_COLOR, TERM, and COLORTERM environment variables, and whether
 the output is a terminal), and the escape sequences for 8, 256 or 2^24
 colours."""
 
@@ -35,7 +35,7 @@ _color_settings = ( 'auto', 'always', 'never' )
 
 def _check_setting( when ):
     if when not in _color_settings:
-        raise MCPLError(f'The colour setting must be auto, always or never'
+        raise MCPLError(f'The colour setting must be auto, always, or never'
                         f' (not "{when}")')
     return when
 

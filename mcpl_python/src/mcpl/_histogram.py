@@ -111,7 +111,7 @@ def _display_by_label( display_by, key, unicode = False ):
     return f'{display_by.expression} = {key:g}'
 
 class _Plot:
-    """Common basis of Histogram, BarHistogram, Histogram2D and Points3D: the
+    """Common basis of Histogram, BarHistogram, Histogram2D, and Points3D: the
     title (the pick, for instance), whether the values are sums of weights,
     and the plots and text tables"""
     _panel_options = ()#(keyword arguments of panel(), also for figure() and plot())
@@ -409,7 +409,7 @@ def _with_unit( expression, unit, note = None ):
 
 #Fixed colours of the values of some fields, so particle types have the same
 #colours in all plots (see _particles), and those of them which other values
-#never get with solid lines, so these are never confused (n, gamma, e- and p):
+#never get with solid lines, so these are never confused (n, gamma, e-, and p):
 _fixed_colors = { 'pdgcode' : _pdg_colors }
 _reserved_colors = { 'pdgcode' : { _pdg_colors[c] for c in ( 2112, 22, 11, 2212 ) } }
 

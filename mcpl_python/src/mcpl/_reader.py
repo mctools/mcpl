@@ -60,7 +60,7 @@ def blobkey_problem( key ):
     if any( c < 32 or c == 127 for c in key ):
         return 'non-printable characters are not allowed'
     if any( c in key for c in ( b'"', b"'", b'\\', b'`' ) ):
-        return 'quotation marks, backslash and backtick are not allowed'
+        return 'quotation marks, backslash, and backtick are not allowed'
     return None
 
 class MCPLFile:
@@ -143,7 +143,7 @@ class MCPLFile:
         else:
             if not isinstance(filename,bytes) and not isinstance(filename,str):
                 raise MCPLError('Unsupported type of filename object'
-                                ' (should be path-like, a string or similar)')
+                                ' (should be path-like, a string, or similar)')
         if isinstance(filename,bytes):
             filename = os.fsdecode(filename)
 
@@ -375,7 +375,7 @@ class MCPLFile:
 
     @property
     def _filtered(self):
-        """Whether the particles are picked, edited or in a range"""
+        """Whether the particles are picked, edited, or in a range"""
         return not ( self._flt is None and self._edt is None
                      and not self._skip and self._limit is None )
 
@@ -502,7 +502,7 @@ class MCPLFile:
            particle at the new position, otherwise True)"""
         if self._filtered:
             raise MCPLError('skip_forward can not be used with files opened'
-                            ' with pick, edit, skip or limit')
+                            ' with pick, edit, skip, or limit')
         inew = self._ipos + int(n)
         if inew <= self._ipos:
             if inew == self._ipos:
@@ -890,7 +890,7 @@ class MCPLFile:
         """Dump a list of particles to stdout (like the mcpltool command). The
         limit and skip parameters can be used to respectively limit the
         number of particles printed and to skip past the first particles
-        (after any skip, limit and pick given when opening the file). Use limit=0 to disable the limit. If pick is given (an
+        (after any skip, limit, and pick given when opening the file). Use limit=0 to disable the limit. If pick is given (an
         expression or a ParticleFilter), only the picked particles are shown,
         and limit and skip apply to those."""
 
@@ -943,7 +943,7 @@ class MCPLFile:
     def to_scipp(self, *, skip = 0, limit = None, pick = None, coords = None,
                  vectors = False, variances = True, dim = 'particle'):
         """Particles of the file as a scipp DataArray. The particles are read
-        from the start of the file (after any skip, limit, pick and edit given
+        from the start of the file (after any skip, limit, pick, and edit given
         when opening the file), skipping the first skip of them, and picking
         only those matching pick if given (an expression or a
         ParticleFilter, in which case skip applies to the picked
@@ -960,13 +960,13 @@ class MCPLFile:
         of the userdata (if any, with array fields split into one coordinate
         per element, e.g. tags_0, tags_1, ..., and a warning and the prefix
         "userdata_" for fields named like one of the other coordinates). With
-        vectors=True, the positions, directions and polarisations are instead
-        3-vectors named position, direction and polarisation.
+        vectors=True, the positions, directions, and polarisations are instead
+        3-vectors named position, direction, and polarisation.
 
         Extra coordinates can be calculated with expressions (see
         ParticleFilter), given as a dictionary of names and expressions. The
         units of the values follow from the expressions (in combinations of
-        cm, MeV and ms, which scipp can convert), for instance:
+        cm, MeV, and ms, which scipp can convert), for instance:
 
            da = f.to_scipp( coords = { 'wavelength' : 'wavelength',
                                        'r' : 'hypot(x,y)' } )

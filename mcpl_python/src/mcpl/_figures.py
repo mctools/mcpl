@@ -26,12 +26,12 @@ __all__ = []
 
 def _line_style( color ):
     """The colour (0 to 9, in the colour cycle of matplotlib) and line style
-    ('solid', 'dashed' or 'dotted') of a curve with the colour index color (see
+    ('solid', 'dashed', or 'dotted') of a curve with the colour index color (see
     StepHist): 10 colours with solid lines, then dashed, then dotted"""
     return color % 10, ( 'solid', 'dashed', 'dotted' )[ ( color // 10 ) % 3 ]
 
 def _item_color( item, k ):
-    """The colour index of the item (a curve, points or bars) which is the k-th
+    """The colour index of the item (a curve, points, or bars) which is the k-th
     of its panel: its color, by default k"""
     return item.color if item.color is not None else k
 
@@ -64,7 +64,7 @@ class Scatter3D:
     """Points in three dimensions, drawn as a 3D scatter plot in windows (in
     the terminal, a message is shown instead), with a label for the legend
     and a colour (an index into the colour cycle, as for StepHist) if
-    given. The coordinates x, y and z are arrays of the same
+    given. The coordinates x, y, and z are arrays of the same
     length, and the panel gives the label of the z axis (zlabel)."""
     def __init__( self, x, y, z, label = None, color = None ):
         self.x, self.y, self.z, self.label, self.color = x, y, z, label, color

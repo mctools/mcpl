@@ -1,7 +1,7 @@
 pick=ParticleFilter('pdgcode == neutron') edit=None nparticles=1006
 block lengths with blocklength=100: [185, 188, 179, 168, 6]
 first particle after rewind: 3
-skip_forward: skip_forward can not be used with files opened with pick, edit, skip or limit
+skip_forward: skip_forward can not be used with files opened with pick, edit, skip, or limit
 edited block (_EditedParticleBlock) as expected: True
 selection from edited block: 81 particles, as expected: True
 particle 14: z=120 x=-22.5224 y=-6.54176
@@ -48,7 +48,7 @@ skip=10 limit=0 pick=None: 0 particles, as expected: True
 {'skip': -1}: skip must be a number of particles (not -1)
 {'limit': 2.5}: limit must be a number of particles (not 2.5)
 {'skip': True}: skip must be a number of particles (not True)
-skip_forward: skip_forward can not be used with files opened with pick, edit, skip or limit
+skip_forward: skip_forward can not be used with files opened with pick, edit, skip, or limit
 MCPLFile(ex, 1000): TypeError
 edited blocks written like explicit field values: True
 MCPLOutFile with pick and edit gives the same: True True

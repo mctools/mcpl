@@ -505,7 +505,7 @@ mcpltool -w x/cm;logy=yes example.mcpl: exit code 1
    | 
    | Run with "--hist-help" for how to write histograms
 mcpltool -w x/cm;logx=2 example.mcpl: exit code 1
-   | ERROR: Histogram option "logx" must be 1, 0 or auto (not "2"), in "x/cm;logx=2"
+   | ERROR: Histogram option "logx" must be 1, 0, or auto (not "2"), in "x/cm;logx=2"
    | 
    | Run with "--hist-help" for how to write histograms
 mcpltool -w x/cm;logy=auto example.mcpl: exit code 0
@@ -573,11 +573,11 @@ mcpltool -w ekin/MeV;logx=auto;range=1:10;bins=3;print=1 example.mcpl: exit code
    | 4 7 19 23 2 3 0 0 0 0
    | 7 10 14 13 1 1 0 0 0 0
 mcpltool -w x/cm -o a.txt example.mcpl: exit code 1
-   | ERROR: -w saves histograms as .png, .pdf or .svg files (use -t HIST -o FILE.txt for text).
+   | ERROR: -w saves histograms as .png, .pdf, or .svg files (use -t HIST -o FILE.txt for text).
    | 
    | Run with -h or --help for usage information
 mcpltool -t x/cm -o a.png example.mcpl: exit code 1
-   | ERROR: -t saves histograms as .txt files (use -w HIST -o FILE for .png, .pdf or .svg).
+   | ERROR: -t saves histograms as .txt files (use -w HIST -o FILE for .png, .pdf, or .svg).
    | 
    | Run with -h or --help for usage information
 mcpltool -S -o stats.txt -p pdgcode == gamma example.mcpl: exit code 1
@@ -745,11 +745,11 @@ mcpltool -E z = 1cm, x = 0 example.mcpl: exit code 1
    | ERROR: Separate statements with ";" (not ",") in "z = 1cm, x = 0"
    | 
    | Run with "-E help" for how to edit particles with expressions
-mcpltool -p help: exit code 0, 206 lines, starting with:
+mcpltool -p help: exit code 0, 207 lines, starting with:
    | PICK: an expression which is true for the particles to use, for example:
    | 
    | Particle types:
-mcpltool --edit=help: exit code 0, 202 lines, starting with:
+mcpltool --edit=help: exit code 0, 203 lines, starting with:
    | EDIT: statements separated by ";", executed in order, for example:
    | 
    | Changing values:

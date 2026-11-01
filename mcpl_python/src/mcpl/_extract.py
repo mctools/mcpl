@@ -31,12 +31,12 @@ from ._writer import MCPLOutFile
 
 def _shell_arg( expression ):
     """Expression in double quotes, as a command-line argument"""
-    #(enough for sh, bash, zsh, fish, tcsh, cmd and PowerShell, since the
+    #(enough for sh, bash, zsh, fish, tcsh, cmd, and PowerShell, since the
     #characters which are special inside double quotes are not allowed)
     return f'"{expression}"'
 
 def _range_options( skip, limit, pick, edit ):
-    """The options -l, -s, -p and -E of mcpltool for the range of particles
+    """The options -l, -s, -p, and -E of mcpltool for the range of particles
     and the pick and edit (expressions as texts, or None)"""
     opts = ( [ f'-l{limit}' ] if limit else [] ) + ( [ f'-s{skip}' ] if skip else [] )
     for opt, e in ( ('-p',pick), ('-E',edit) ):

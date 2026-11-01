@@ -76,7 +76,7 @@ def _expr_canonical( expr, edit = False ):
 
 def _check_conditions( node, expr ):
     """Raise MCPLError where a PDG code is used as a condition (in the
-    expression of a pick, or a part of it combined with and, or and not), as
+    expression of a pick, or a part of it combined with and, or, and not), as
     in "neutron" or "pdgcode and x > 0cm", which would be true for all
     particles (other integers can be conditions, as in userflags & 0x10)"""
     if isinstance(node,ast.BoolOp):
@@ -125,9 +125,9 @@ class ParticleFilter:
     particles (userdata.NAME, and userdata.NAME.at(INDEX) for the values of
     arrays, with the units of the fields in the userdata layout, e.g.
     "userdata.temp > 300K"),
-    vectors (pos, dir and pol for the position,
-    direction and polarisation, of which x is an alias of pos.x or pos.at(0),
-    or written as (0,0,1m), with +, -, * and / by numbers, abs(v) for their
+    vectors (pos, dir, and pol for the position,
+    direction, and polarisation, of which x is an alias of pos.x or pos.at(0),
+    or written as (0,0,1m), with +, -, *, and / by numbers, abs(v) for their
     lengths, v^2, dot(v,w), cross(v,w), and angle(v,w) for the angle between
     them, which is precise also for small angles), through_sphere(center,
     radius) for whether the line of flight of the particles (through their
@@ -295,7 +295,7 @@ class _Statements:
                        + ', '.join(self._assignable) + ', and other ' )
             raise MCPLError(f'Can not assign to "{name}" in "{self.text}" ({fields}'
                             'lowercase names which are not names of fields, units,'
-                            ' constants or functions can be used for variables)')
+                            ' constants, or functions can be used for variables)')
 
     def _parse( self, part, pos, pick ):
         """Parse a statement (in a pick, only assignments of variables)"""
@@ -519,7 +519,7 @@ class _Statements:
         return v.astype(info.dtype)
 
     def _rotate_by_matrix( self, ev, fname, args, modified ):
-        """Rotate the positions, directions and polarisations with the matrix
+        """Rotate the positions, directions, and polarisations with the matrix
         of rotate_around or rotate_frame (see _rotation_matrix)"""
         qs = [ ev(a.tree) for a in args ]
         #(3D vectors, and the angle of rotate_around):
@@ -605,16 +605,16 @@ class ParticleEdit:
         the syntax of ParticleFilter.
         The values must have the units of the field (e.g. a length for x).
         Assigning wavelength changes the kinetic energy of neutrons and gammas.
-        The vectors pos, dir and pol can be assigned too, as in
+        The vectors pos, dir, and pol can be assigned too, as in
         "pos += (0,0,1m)".
       * Assignments to variables (lowercase names which are not names of
-        fields, units, constants or functions), which can be used in later
+        fields, units, constants, or functions), which can be used in later
         statements, for instance to keep original values: "tmp = x; x = y;
         y = tmp". Variables keep the units of their values.
       * swap(a,b), which exchanges the values of two fields (or variables)
         with the same units, e.g. "swap(x,y)".
       * rotate_x(angle), rotate_y(angle), rotate_z(angle), which rotate the
-        position, direction and polarisation of the particles around the
+        position, direction, and polarisation of the particles around the
         given axis (through the origin), e.g. "rotate_y(90deg)" (angles
         written as numbers need a unit, deg or rad). The rotation is
         counter-clockwise when looking from the positive axis towards the

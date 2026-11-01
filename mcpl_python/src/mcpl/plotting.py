@@ -20,11 +20,11 @@
 ################################################################################
 
 """Description of plots, and functions to show or save them. Plots are
-described with the Figure, Panel and item classes below (which hold numbers,
+described with the Figure, Panel, and item classes below (which hold numbers,
 not graphics objects), and are shown in a window with matplotlib, or in the
 terminal with terminal=True (drawn as text with Unicode characters, or else
 ASCII, or always ASCII with terminal='ascii'). They are saved in files of the
-format given by the extension: .pdf, .png or .svg (with matplotlib), or .txt
+format given by the extension: .pdf, .png, or .svg (with matplotlib), or .txt
 (as text with Unicode characters).
 
 For instance:
@@ -58,14 +58,14 @@ def show( figures, terminal = False, terminal_width = None, terminal_height = No
     width of the terminal, up to 250, and a height of 15), and terminal_color
     sets whether they are in colour: 'auto' (the default: in terminals,
     unless the NO_COLOR environment variable is set, or always if FORCE_COLOR
-    is set), 'always' or 'never'."""
+    is set), 'always', or 'never'."""
     _show_backend(terminal,terminal_width,terminal_height,
                   terminal_color).show(_as_list(figures))
 
 def save( figures, filename, terminal_width = None, terminal_height = None,
           allow_overwrite = False ):
     """Save a Figure (or a list of figures) in a file, in the format given by
-    the extension of the filename: .pdf, .png or .svg (with matplotlib), or
+    the extension of the filename: .pdf, .png, or .svg (with matplotlib), or
     .txt (as text with Unicode characters, terminal_width and terminal_height
     characters wide and high, see show()). If the format can only hold one
     figure, and there are more figures, the files get numbered names (e.g.

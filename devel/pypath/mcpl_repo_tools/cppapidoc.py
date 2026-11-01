@@ -160,7 +160,7 @@ def _programlisting( elem ):
 
 class _Desc:
     """Contents of a description: text blocks (Markdown), parameters,
-    template parameters, return value and exceptions."""
+    template parameters, return value, and exceptions."""
     def __init__( self ):
         self.blocks = []
         self.params = []

@@ -19,8 +19,8 @@
 ##                                                                            ##
 ################################################################################
 
-"""The --stats, --window and --terminal modes of mcpltool, separate from _cli
-so that the other modes do not load the code for statistics, histograms and
+"""The --stats, --window, and --terminal modes of mcpltool, separate from _cli
+so that the other modes do not load the code for statistics, histograms, and
 plots."""
 
 __all__ = []
@@ -33,7 +33,7 @@ from ._reader import MCPLFile
 
 
 def _view( filename, skip, limit, pick, edit ):
-    """The particles of a file to use, after -s, -l, -p and -E"""
+    """The particles of a file to use, after -s, -l, -p, and -E"""
     from ._reader import _FileView
     f = MCPLFile(filename)
     if not ( skip or limit or pick is not None or edit is not None ):

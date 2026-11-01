@@ -148,7 +148,7 @@ Filename given as bytes: bytesname.mcpl
   Got expected error: direction must have shape (3,) or (N,3)
   Got expected error: Unsupported type of particles object (should be MCPLParticleBlock or MCPLParticle)
   Got expected error: Output file has already been closed.
-  Got expected error: Unsupported type of filename object (should be path-like, a string or similar)
+  Got expected error: Unsupported type of filename object (should be path-like, a string, or similar)
   Got expected error: MCPLOutFile called with too long string.
   Got expected error: blocklength must be at least 1
   Got expected error: enable_universal_pdgcode must be called with a 32 bit integer.
@@ -173,7 +173,7 @@ add_particle and add_particles gave the same results for 370 cases
   Got expected error: pdgcode must be integers
 Invalid arguments of MCPLOutFile leave no file behind:
   Got expected error: enable_universal_weight must be called with positive but finite weight.
-  Got expected error: Invalid userdata layout "x:float32": reserved field name (the names of particle fields, like x, ekin, position or wavelength, can not be used)
+  Got expected error: Invalid userdata layout "x:float32": reserved field name (the names of particle fields, like x, ekin, position, or wavelength, can not be used)
   Got expected error: hdr_add_data got invalid key (whitespace is not allowed).
   Got expected error: Invalid stat:sum: key "1bad" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
   Got expected error: blocklength must be at least 1

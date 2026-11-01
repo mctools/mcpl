@@ -512,13 +512,13 @@ MCPL_LOCAL const char * mcpl_internal_udunit_problem( const char * u, size_t n )
     while ( q < end && *q != '.' && *q != '^' )
       ++q;
     if ( q == u )
-      return "empty unit (the units are cm, MeV, ms, K and deg, like cm^2.MeV)";
+      return "empty unit (the units are cm, MeV, ms, K, and deg, like cm^2.MeV)";
     int idx = -1;
     for ( int i = 0; i < 5; ++i )
       if ( strlen(names[i]) == (size_t)(q-u) && strncmp( names[i], u, (size_t)(q-u) ) == 0 )
         idx = i;
     if ( idx < 0 )
-      return "unknown unit (the units are cm, MeV, ms, K and deg, like cm^2.MeV)";
+      return "unknown unit (the units are cm, MeV, ms, K, and deg, like cm^2.MeV)";
     if ( idx == last )
       return "each unit can appear only once";
     if ( idx < last )
@@ -680,7 +680,7 @@ MCPL_LOCAL const char * mcpl_internal_blobkey_problem( const char * key )
     if ( uc < 32 || uc == 127 )
       return "non-printable characters are not allowed";
     if ( uc == '"' || uc == '\'' || uc == '\\' || uc == '`' )
-      return "quotation marks, backslash and backtick are not allowed";
+      return "quotation marks, backslash, and backtick are not allowed";
   }
   return NULL;
 }
@@ -3025,7 +3025,7 @@ MCPL_LOCAL int mcpl_internal_open_file( mcpl_fileinternal_t * f,
       MCPLIMP_OPENFAIL(MCPL_ERROR_IO,"Unable to open file!");
   }
 
-  //First read and check magic word, format version and endianness.
+  //First read and check magic word, format version, and endianness.
   unsigned char start[8];// = {'M','C','P','L','0','0','0','L'};
   size_t nb;
   if (f->filegz)
@@ -3090,7 +3090,7 @@ MCPL_LOCAL int mcpl_internal_open_file( mcpl_fileinternal_t * f,
   if ( (uint64_t)ncomments_hdr + nblobs_hdr > MCPLIMP_MAX_HEADER_ENTRIES )
     MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,MCPLIMP_HEADER_TOO_MANY_MSG);
   //The flags in the header must have exactly the values of the format: 0x1 or
-  //0x0 (for userflags, polarisation, single precision and universal weight).
+  //0x0 (for userflags, polarisation, single precision, and universal weight).
   //In format version 4, the userflags field also holds 0x2 if the particles
   //have userdata (and the header has a userdata layout), so files in version
   //4 without userdata are identical to files in version 3 except for the
@@ -3516,11 +3516,11 @@ MCPL_LOCAL void mcpl_internal_updatestatsum( FILE * f,
 }
 
 #ifdef _WIN32
-// for _setmode, O_BINARY, _chsize_s and _fileno
+// for _setmode, O_BINARY, _chsize_s, and _fileno
 #  include <fcntl.h>
 #  include <io.h>
 #else
-// for write(..), unlink(), ftruncate and fileno
+// for write(..), unlink(), ftruncate, and fileno
 #  include "unistd.h"
 #endif
 
@@ -5871,7 +5871,7 @@ MCPL_LOCAL const char * mcpl_internal_tool_check_outfn( const char * fn,
 
 MCPL_LOCAL void mcpl_internal_tool_remove_output( const char * outfn )
 {
-  //Removes the output file of a failed --merge, --forcemerge or --extract
+  //Removes the output file of a failed --merge, --forcemerge, or --extract
   //(which did not exist before, see mcpl_internal_tool_check_outfn), with the
   //name given to it by mcpl_create_outfile:
   int gzip;

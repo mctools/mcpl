@@ -337,7 +337,7 @@ int ssw2mcpl_app(int argc,char** argv)
 
 static void ssw_encode_hdrint( char * dest, int intsize, int64_t value )
 {
-  //Encode an integer field of the SSW header (np1, nrss or niss), which
+  //Encode an integer field of the SSW header (np1, nrss, or niss), which
   //depending on the file layout is either a 32 or a 64 bit integer:
   if ( intsize == 4 ) {
     if ( value > INT32_MAX || value < -INT32_MAX )
@@ -369,7 +369,7 @@ void ssw_update_nparticles( mcpl_generic_wfilehandle_t* fh, int intsize,
                             int64_t nrsspos, int64_t nrss,
                             int64_t nisspos, int64_t niss )
 {
-  //Seek and update np1, nrss and niss fields at correct location in header:
+  //Seek and update np1, nrss, and niss fields at correct location in header:
   char buf[8];
   uint64_t savedpos = fh->current_pos;
   ssw_encode_hdrint( buf, intsize, np1 );
@@ -422,7 +422,7 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
   ssw_file_t fsswref = ssw_open_file(refsswfile);
 
   //Open reference file and figure out variables like header length, position of
-  //"nparticles"-like variables, fortran record length and mcnp version.
+  //"nparticles"-like variables, fortran record length, and mcnp version.
   int ssw_reclen;
   int ssw_ssblen;
   int64_t ssw_hdrlen;
@@ -473,7 +473,7 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
   const int orig_np1_negative = ssw_decode_hdrint( hdrbuf + ssw_np1pos,
                                                    ssw_hdrintsize ) < 0;
 
-  //Clear np1, nrss and niss in header to to indicate incomplete info (we will
+  //Clear np1, nrss, and niss in header to to indicate incomplete info (we will
   //update just before closing the file):
   ssw_encode_hdrint( hdrbuf + ssw_np1pos, ssw_hdrintsize, 0 );
   ssw_encode_hdrint( hdrbuf + ssw_nrsspos, ssw_hdrintsize, 0 );

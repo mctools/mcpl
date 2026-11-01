@@ -20,7 +20,7 @@
 ################################################################################
 
 """The plotting backends which show or save figures: matplotlib (in windows,
-and .pdf, .png and .svg files) and unicode, or else ascii (in the terminal, and
+and .pdf, .png, and .svg files) and unicode, or else ascii (in the terminal, and
 .txt files)."""
 
 __all__ = []
@@ -74,7 +74,7 @@ def _show_backend( terminal = False, width = None, height = None, color = None,
     characters) and the colour setting of plots in the terminal. When plots
     can not be shown in a window, the error message ends with hint."""
     if not ( terminal is True or terminal is False or terminal == 'ascii' ):
-        raise MCPLError(f'terminal must be True, False or "ascii" (not {terminal!r})')
+        raise MCPLError(f'terminal must be True, False, or "ascii" (not {terminal!r})')
     if not terminal:
         for name, v in ( ('width',width), ('height',height), ('color',color) ):
             if v is not None:

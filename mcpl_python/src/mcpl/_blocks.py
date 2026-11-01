@@ -453,7 +453,7 @@ class MCPLParticleBlock:
         abs_in0 = np.abs(in0)
         abs_in1 = np.abs(in1)
         self._uz = (1.0 - abs_in0) - abs_in1
-        #(np.fmax, np.where and copies of the input as in
+        #(np.fmax, np.where, and copies of the input as in
         #mcpl_unitvect_unpack_oct in C, also for NaN and -0.0):
         zneg = ( self._uz < 0.0 )
         self._ux = np.where(zneg,( 1.0 - abs_in1 ) * np.where(in0 >= 0.0,1.0,-1.0),in0)

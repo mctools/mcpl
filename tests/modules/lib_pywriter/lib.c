@@ -66,7 +66,7 @@ MCPLTEST_CTYPES void mcpltest_writefromraw( const char * rawfile,
                                             const char * opts )
 {
   //Raw file contains records of 12 doubles (position, direction,
-  //polarisation, ekin, time, weight), an int32 (pdgcode) and an uint32
+  //polarisation, ekin, time, weight), an int32 (pdgcode), and an uint32
   //(userflags).
   FILE * fi = fopen( rawfile, "rb" );
   mcpl_outfile_t o = mcpl_create_outfile_allow_overwrite( outfile );

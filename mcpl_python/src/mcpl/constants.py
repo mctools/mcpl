@@ -23,7 +23,7 @@
 
 The values are the CODATA 2022 recommended values of the fundamental physical
 constants (released by NIST in May 2024, https://physics.nist.gov/cuu/Constants/
-), where the Planck constant, the speed of light and the elementary charge are
+), where the Planck constant, the speed of light, and the elementary charge are
 exact by the definition of the SI units (since 2019). The neutron mass is the
 only measured value used.
 

@@ -203,15 +203,15 @@ def main( parser ):
                          help = 'Make the area of each module proportional to its lines of code (implies --sloc).' )
     parser.add_argument( '-u', '--uses', metavar = 'MODULES',
                          help = ('Highlight the modules loaded when importing these modules (separated by commas,'
-                                 ' e.g. _reader, _writer or _scipp), in blue, and those they import on demand,'
+                                 ' e.g. _reader, _writer, or _scipp), in blue, and those they import on demand,'
                                  ' when that code runs, in light blue.') )
     parser.add_argument( '-S', '--scenario', metavar = 'NAME',
                          help = ('Run a scenario of using the package (as in the pyimports test, e.g.'
-                                 ' read, write or tool_hist, "list" to list them, or "all" to step through'
+                                 ' read, write, or tool_hist, "list" to list them, or "all" to step through'
                                  ' all of them), and highlight the modules it imports in blue and the imports'
                                  ' which load them in black. The graph shows the scenario and its code.') )
     parser.add_argument( '-o', '--output', metavar = 'FILE',
-                         help = 'Write the graph to this file (e.g. graph.png, graph.svg or graph.pdf) instead of showing it.' )
+                         help = 'Write the graph to this file (e.g. graph.png, graph.svg, or graph.pdf) instead of showing it.' )
     args = parser.parse_args()
 
     full_graph = load_graph()
@@ -229,7 +229,7 @@ def main( parser ):
         raise SystemExit('Scenarios:\n' + ''.join( f'  {k:<18} {t}\n' for k, t, _ in scenarios ))
     todo = [ sc for sc in scenarios if args.scenario in ( 'all', sc[0] ) ]
     if len(todo) > 1 and not args.output:
-        print('Press space, n or the right arrow (or close the window) for the next'
+        print('Press space, n, or the right arrow (or close the window) for the next'
               ' scenario, and Escape to stop.')
     for i, ( key, title, code ) in enumerate(todo):
         loaded, used_imports = run_scenario( code )

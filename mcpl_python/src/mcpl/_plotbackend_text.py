@@ -20,7 +20,7 @@
 ################################################################################
 
 """Plotting backends drawing figures as text, with ASCII characters or with
-Unicode characters (block elements, box drawing and braille dots, which give
+Unicode characters (block elements, box drawing, and braille dots, which give
 smoother plots), for showing plots in a terminal (in colour, if the terminal supports
 it) or saving them in text files."""
 
@@ -71,9 +71,9 @@ _unicode = _Chars(
     fill = ' \u2581\u2582\u2583\u2584\u2585\u2586\u2587\u2588',
     #left one eighth block ... full block:
     hfill = ' \u258f\u258e\u258d\u258c\u258b\u258a\u2589\u2588',
-    #middle dot, light, medium and dark shade, full block:
+    #middle dot, light, medium, and dark shade, full block:
     shades = ' \u00b7\u2591\u2592\u2593\u2588',
-    #black and white circles, diamonds, squares and triangles:
+    #black and white circles, diamonds, squares, and triangles:
     markers = '\u25cf\u25cb\u25c6\u25c7\u25a0\u25a1\u25b2\u25b3',
     #box drawing: light vertical, horizontal, up and right, vertical and
     #left, down and horizontal:
@@ -150,7 +150,7 @@ class _TextBackend(PlotBackend):
     """Draws figures as text (with the characters in self._chars), of the
     given width and height in characters (default is the width of the
     terminal, up to 250, and a height of 15), and with the colour setting
-    ('auto', 'always' or 'never') of plots shown in the terminal (default
+    ('auto', 'always', or 'never') of plots shown in the terminal (default
     'auto': in terminals, unless the NO_COLOR environment variable is set, or
     always if FORCE_COLOR is set). Files are written without colours."""
     formats: ClassVar[tuple] = ( 'txt', )

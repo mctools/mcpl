@@ -306,8 +306,8 @@ extern "C" {
   /* It fails if "filename.gz" already exists.                             */
   MCPL_API int mcpl_gzip_file(const char * filename);
 
-  /* Convenience function which transfers all settings, blobs and comments to */
-  /* target. Intended to make it easy to filter files via custom C code.      */
+  /* Convenience function which transfers all settings, blobs, and comments   */
+  /* to target. Intended to make it easy to filter files via custom C code.   */
   /* Note that if splitting files instead of filtering them, then one should  */
   /* make a call to mcpl_hdr_scale_stat_sums before closing the target file,  */
   /* in order to avoid creating files with misleading statistics. The scale   */
@@ -376,7 +376,7 @@ extern "C" {
                                                           const uint8_t ** userdata);
   /* Userdata of the particle returned by the last call to mcpl_read (or    */
   /* mcpl_read_with_userdata). Returns NULL if the file has no userdata, or */
-  /* if there is no such particle (also after seeking, skipping or EOF):    */
+  /* if there is no such particle (also after seeking, skipping, or EOF):   */
   MCPL_API const uint8_t * mcpl_last_read_userdata(mcpl_file_t);
 
   /* Helpers for encoding and decoding fields. Number of bytes described by */
@@ -550,7 +550,7 @@ extern "C" {
   MCPL_API int mcpl_gzip_file_es(const char * filename, mcpl_errstate_t*);
 
   /* Dump information about a file which is already open, like mcpl_dump    */
-  /* (with the same meaning of parts, nskip and nlimit, except that the     */
+  /* (with the same meaning of parts, nskip, and nlimit, except that the    */
   /* line with the filename is not included). The output is passed to the   */
   /* output function (with the ctx pointer as its second argument), or to   */
   /* the print handler if output is NULL. Listing particles does not change */
