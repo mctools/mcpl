@@ -423,6 +423,13 @@ mcpltool -Hekin/MeV;print=1;bins=2 -ppdgcode==22 example.mcpl: exit code 0
    | # lower edge | upper edge | gamma (22)
    | 0 95 238
    | 95 190 1
+mcpltool --hi=ekin/MeV;print=1;bins=2 --pi pdgcode==22 example.mcpl: exit code 0
+   | # histogram of: ekin/MeV
+   | # pick: pdgcode==22
+   | # values: weights per bin
+   | # lower edge | upper edge | gamma (22)
+   | 0 95 238
+   | 95 190 1
 mcpltool -H ekin example.mcpl: exit code 0
    | (weights per bin)
    |      721 +**
@@ -705,6 +712,10 @@ mcpltool -S -H x/cm example.mcpl: exit code 1
    | Run with -h or --help for usage information
 mcpltool example.mcpl example.mcpl example.mcpl: exit code 1
    | ERROR: Too many arguments.
+   | 
+   | Run with -h or --help for usage information
+mcpltool --te x example.mcpl: exit code 1
+   | ERROR: Ambiguous option --te (could be --term, --text)
    | 
    | Run with -h or --help for usage information
 mcpltool --text example.mcpl: exit code 1

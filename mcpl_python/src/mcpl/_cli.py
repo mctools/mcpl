@@ -135,6 +135,9 @@ Other options:
   -p help, -E help, -H help
                    How to write PICK, EDIT and HIST.
 
+Long options can be abbreviated, as long as they are unique (e.g. --ext for
+--extract).
+
 Output files are gzipped if their names end with .mcpl.gz.
 """
 
@@ -189,6 +192,20 @@ _removed_opts = {
     '--gui' : 'use -w instead',
 }
 
+def _long_option( arg, bad ):
+    """The long option given by arg (as --name or --name=value), also when
+    abbreviated (unique), as (name, '=' or '', value)"""
+    name, eq, value = arg.partition('=')
+    names = ( *_value_opts.values(), *_long_value_opts, *_flag_opts, *_removed_opts,
+              '--create-examples' )
+    if name not in names:
+        matches = sorted( n for n in names if n.startswith(name) and n not in _removed_opts )
+        if len(matches) == 1:
+            name = matches[0]
+        elif matches:
+            bad(f"Ambiguous option {name} (could be {', '.join(matches)})")
+    return name, eq, value
+
 def _app_mcpltool(argv):
     if argv is None:
         argv = sys.argv
@@ -208,14 +225,15 @@ def _app_mcpltool(argv):
     args = list(args)
     #(--create-examples can only be combined with --dry-run):
     opt_examples = None
-    for a in args:
-        if a == '--create-examples' or a.startswith('--create-examples='):
+    longnames = [ _long_option(a,bad)[0] if a.startswith('--') else a for a in args ]
+    for a, name in zip(args,longnames):
+        if name == '--create-examples':
             if opt_examples is not None:
                 bad("--create-examples specified more than once")
             opt_examples = a.partition('=')[2]
     if opt_examples is not None:
-        if any( not ( a.startswith('--create-examples') or a in
-                      ('-d','--dry-run','--traceback') ) for a in args ):
+        if any( name not in ('--create-examples','-d','--dry-run','--traceback')
+                for name in longnames ):
             bad("--create-examples can only be combined with --dry-run.")
         n = None
         if opt_examples:
@@ -223,7 +241,7 @@ def _app_mcpltool(argv):
                 bad("--create-examples=N requires a positive integer N")
             n = int(opt_examples)
         from ._examples import create_examples
-        dry_run = '-d' in args or '--dry-run' in args
+        dry_run = '-d' in longnames or '--dry-run' in longnames
         try:
             create_examples( n, dry_run = dry_run )
         except MCPLError as e:
@@ -250,7 +268,7 @@ def _app_mcpltool(argv):
     while args:
         a = args.pop(0)
         if a.startswith('--'):
-            name, eq, value = a.partition('=')
+            name, eq, value = _long_option(a,bad)
             if name in _removed_opts:
                 bad(f"{name} is no longer supported as an option"
                     f" ({_removed_opts[name]})")
