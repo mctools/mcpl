@@ -59,7 +59,7 @@ def _outfile_name(filename):
 class MCPLOutFile:
     """Python-only class for writing MCPL files, using numpy to process blocks of
     particles efficiently. The produced files are identical to those written by
-    the C library (MCPL format version 3).
+    the C library (in MCPL format version 3, or 4 for files with userdata).
 
     The header is configured with methods named like the corresponding
     functions in the C API (hdr_set_srcname, hdr_add_comment, hdr_add_data,
