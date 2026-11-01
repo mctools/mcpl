@@ -50,7 +50,7 @@ _cache = {}
 #The units of fields (in this order, each at most once, separated by dots,
 #with powers like cm^2 or MeV^-1):
 _units = ( 'cm', 'MeV', 'ms', 'K', 'deg' )
-_unit_list = 'the units are cm, MeV, ms, K and deg, like cm^2.MeV'
+_unit_list = 'the units are cm, MeV, ms, K, and deg, like cm^2.MeV'
 _power_error = ( 'invalid power (powers are single digits from 2 to 9 or -1 to'
                  ' -9, like cm^2 or MeV^-1)' )
 
@@ -109,7 +109,7 @@ def _parse_error( layout ):
                      ' digits and underscores' )
         if name in _reserved_names:
             return ( 'reserved field name (the names of particle fields, like x,'
-                     ' ekin, position or wavelength, can not be used)' )
+                     ' ekin, position, or wavelength, can not be used)' )
         if name in _reserved_other:
             return 'reserved field name'
         typespec, colon2, unit = typespec.partition(':')

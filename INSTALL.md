@@ -3,7 +3,7 @@ Standard installation
 
 The recommended manner in which to install MCPL is via prebuilt Conda or Python
 packages which are available for most modern platforms (including Linux, macOS,
-and Windows for both Intel, AMD and ARM platforms):
+and Windows for both Intel, AMD, and ARM platforms):
 
 If using conda, the `mcpl` package can be installed from the conda-forge
 channel, by running the command (the `mcpl-extra` package can be installed in a
@@ -29,7 +29,7 @@ pip install mcpl
 ```
 
 The `mcpl` Python package only needs `numpy`. To also install matplotlib,
-which is needed for plots in windows and in .pdf, .png or .svg files, use the
+which is needed for plots in windows and in .pdf, .png, or .svg files, use the
 extra `[plot]` (or `[all]`), for instance:
 
 ```

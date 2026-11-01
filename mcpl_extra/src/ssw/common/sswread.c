@@ -139,7 +139,7 @@ typedef struct {
   size_t np1pos;
   size_t nrsspos;
   size_t nisspos;
-  int hdrintsize;//size of the np1, nrss and niss fields (4 or 8 bytes)
+  int hdrintsize;//size of the np1, nrss, and niss fields (4 or 8 bytes)
   size_t headlen;
 } ssw_fileinternal_t;
 
@@ -470,7 +470,7 @@ ssw_file_t ssw_open_file( const char * filename )
   if (!filename)
     ssw_error("ssw_open_file called with null string for filename");
 
-  //Open, classify and process first record with mcnp type and version info:
+  //Open, classify, and process first record with mcnp type and version info:
 
   ssw_file_t out = ssw_open_and_procrec0( filename );
   ssw_fileinternal_t * f = (ssw_fileinternal_t *)out.internal; assert(f);
@@ -489,8 +489,8 @@ ssw_file_t ssw_open_file( const char * filename )
   memcpy( bi, f->buf, ( f->lbuf < sizeof(bi) ? (size_t)f->lbuf : sizeof(bi) ) );
   if ( ( (f->mcnp_type == SSW_MCNP6) && f->lbuf>=32 )
        || ( (f->mcnp_type == SSW_MCNP5) && f->lbuf==32 ) ) {
-    //64 bit integers np1, nrss and niss, with 32 bit integers nrcd and njsw
-    //between the last two. Only the lower 32 bits of np1, nrss and niss were
+    //64 bit integers np1, nrss, and niss, with 32 bit integers nrcd and njsw
+    //between the last two. Only the lower 32 bits of np1, nrss, and niss were
     //read until MCPL 2.2.8, which gave wrong results for files with more than
     //2147483647 histories (with negative np1, the sign was lost as well, so the
     //header was not parsed correctly, see
@@ -820,7 +820,7 @@ int32_t conv_mcnp6_ssw2pdg( int32_t c )
 
   if (ptype<=36) {
     //Note that A (see below) has been observed in SSW files to have non-zero
-    //values for ptype<37 as well, so don't require A, Z or S to be 0 here.
+    //values for ptype<37 as well, so don't require A, Z, or S to be 0 here.
     int32_t p = conv_mcnp6_to_pdg_0to36[ptype];
     return (antibit&&p!=22) ? -p : p;
   }

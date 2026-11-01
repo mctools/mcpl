@@ -80,7 +80,7 @@ def test_window_errors():
 
 def test_tool_backends():
     #-w shows the histogram with matplotlib, and -t in the terminal, and -o
-    #saves it (as .png, .pdf or .svg with -w and .txt with -t):
+    #saves it (as .png, .pdf, or .svg with -w and .txt with -t):
     h = 'ekin/MeV;bins=3;display_by=single'
     for args, env in ( ( ['-t'], {} ), ( ['-t','-o','tool1.txt'], {} ),
                        ( ['-w','-o','tool2.svg'], {} ), ( ['-w','-o','tool3.txt'], {} ),

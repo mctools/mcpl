@@ -20,7 +20,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 //Tests of the functions reporting errors in an error state (the _es variants)
-//for operations on files (merging, repairing, compressing and dumping). All
+//for operations on files (merging, repairing, compressing, and dumping). All
 //errors are checked in-process, and the files left after errors are checked
 //as well (unchanged, or unfinished and repairable). Errors while writing data
 //(e.g. full disks) are tested in app_errstate_diskfull. (The functions without

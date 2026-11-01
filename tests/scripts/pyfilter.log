@@ -67,7 +67,7 @@ ParticleFilter('r = hypot(x,y);'): A pick ends with its condition, as in "r = hy
 ParticleFilter('r = hypot(x,y); r'): Expression "r = hypot(x,y); r" is not a condition (e.g. a comparison)
 ParticleFilter('r += 1cm; r > 0cm'): Variable "r" used before it is assigned in "r += 1cm; r > 0cm"
 ParticleFilter('r = 1meV; r > 1cm'): Incompatible units in comparison: energy and length in expression "r = 1meV; r > 1cm"
-ParticleFilter('pi = 3; x > 0cm'): Can not assign to "pi" in "pi = 3; x > 0cm" (lowercase names which are not names of fields, units, constants or functions can be used for variables)
+ParticleFilter('pi = 3; x > 0cm'): Can not assign to "pi" in "pi = 3; x > 0cm" (lowercase names which are not names of fields, units, constants, or functions can be used for variables)
 ParticleFilter('r = hypot(x,y), r > 1cm'): Separate statements with ";" (not ",") in "r = hypot(x,y), r > 1cm"
 ParticleFilter(';'): Empty expression
 ParticleFilter('ekin = 1MeV'): Syntax error in expression "ekin = 1MeV", after "ekin": unexpected "=" (use == for comparisons)
@@ -422,10 +422,10 @@ ParticleEdit('x'): Expected assignments like "x = 2*y" (or swap(..) or rotations
 ParticleEdit('foo = 1'): Variable "foo" is assigned but never used in "foo = 1" (fields which can be assigned are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, pos, dir, pol)
 ParticleEdit('wl = 1.8Aa'): Variable "wl" is assigned but never used in "wl = 1.8Aa" (fields which can be assigned are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, pos, dir, pol)
 ParticleEdit('tmp = x; x = y'): Variable "tmp" is assigned but never used in "tmp = x; x = y" (fields which can be assigned are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, pos, dir, pol)
-ParticleEdit('Tmp = 1'): Can not assign to "Tmp" in "Tmp = 1" (fields which can be assigned are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, pos, dir, pol, and other lowercase names which are not names of fields, units, constants or functions can be used for variables)
+ParticleEdit('Tmp = 1'): Can not assign to "Tmp" in "Tmp = 1" (fields which can be assigned are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, pos, dir, pol, and other lowercase names which are not names of fields, units, constants, or functions can be used for variables)
 ParticleEdit('tmp += 1cm'): Variable "tmp" used before it is assigned in "tmp += 1cm"
 ParticleEdit('x = tmp'): Unknown name "tmp" in expression "x = tmp" (particle fields are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, fileidx)
-ParticleEdit('clamp = 1'): Can not assign to "clamp" in "clamp = 1" (fields which can be assigned are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, pos, dir, pol, and other lowercase names which are not names of fields, units, constants or functions can be used for variables)
+ParticleEdit('clamp = 1'): Can not assign to "clamp" in "clamp = 1" (fields which can be assigned are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, pos, dir, pol, and other lowercase names which are not names of fields, units, constants, or functions can be used for variables)
 ParticleEdit('swap(x,ekin)'): Incompatible units in swap(..): length and energy in expression "swap(x,ekin)"
 ParticleEdit('swap(x)'): swap(..) takes two fields (or variables) as arguments, as in swap(x,y), in "swap(x)"
 ParticleEdit('swap(x,2)'): swap(..) takes two fields (or variables) as arguments, as in swap(x,y), in "swap(x,2)"
@@ -459,7 +459,7 @@ ParticleEdit('swap(pos,dir)'): A vector can not be swapped (here a 3D vector of 
 ParticleEdit('rotate_z(dir)'): A vector can not be an angle in rotate_z(..) (here a 3D vector; abs(v) is its length, and v.x or v.at(0) its first value) in expression "rotate_z(dir)"
 ParticleEdit('v = dir; swap(v,dir)'): A vector can not be swapped (here a 3D vector; abs(v) is its length, and v.x or v.at(0) its first value) in expression "v = dir; swap(v,dir)"
 ParticleEdit('x == 1cm'): Expected assignments like "x = 2*y" (or swap(..) or rotations like rotate_z(..)) in "x == 1cm"
-ParticleEdit('pi = 3'): Can not assign to "pi" in "pi = 3" (fields which can be assigned are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, pos, dir, pol, and other lowercase names which are not names of fields, units, constants or functions can be used for variables)
+ParticleEdit('pi = 3'): Can not assign to "pi" in "pi = 3" (fields which can be assigned are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, pos, dir, pol, and other lowercase names which are not names of fields, units, constants, or functions can be used for variables)
 ParticleEdit('wl = 1Aa'): Variable "wl" is assigned but never used in "wl = 1Aa" (fields which can be assigned are: x, y, z, ux, uy, uz, polx, poly, polz, ekin, time, weight, pdgcode, userflags, wavelength, pos, dir, pol)
 ParticleEdit('x = 1cm, y = 1cm'): Separate statements with ";" (not ",") in "x = 1cm, y = 1cm"
 ParticleEdit('fileidx = 2'): fileidx (the position of the particles in the file) can not be changed, in "fileidx = 2"

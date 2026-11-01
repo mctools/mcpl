@@ -21,7 +21,7 @@
 
 """Descriptions of the names which can be used in expressions and histogram
 strings (short ones for completion while typing, long ones for the help), and
-the help texts of mcpltool -p help, -E help and --hist-help."""
+the help texts of mcpltool -p help, -E help, and --hist-help."""
 
 __all__ = []
 
@@ -236,19 +236,19 @@ _hints = (
       'exchange the values of two fields or variables with the same unit (e.g. swap(x,y))' ),
     ( 'statements', 'rotate_x(angle)',
       'rotate around the x axis',
-      'rotate position, direction and polarisation around the x axis, counter-clockwise (e.g. rotate_x(90deg))' ),
+      'rotate position, direction, and polarisation around the x axis, counter-clockwise (e.g. rotate_x(90deg))' ),
     ( 'statements', 'rotate_y(angle)',
       'rotate around the y axis',
-      'rotate position, direction and polarisation around the y axis, counter-clockwise (e.g. rotate_y(90deg))' ),
+      'rotate position, direction, and polarisation around the y axis, counter-clockwise (e.g. rotate_y(90deg))' ),
     ( 'statements', 'rotate_z(angle)',
       'rotate around the z axis',
-      'rotate position, direction and polarisation around the z axis, counter-clockwise (e.g. rotate_z(90deg))' ),
+      'rotate position, direction, and polarisation around the z axis, counter-clockwise (e.g. rotate_z(90deg))' ),
     ( 'statements', 'rotate_around(axis,angle)',
       'rotate around the axis (a vector)',
-      'rotate position, direction and polarisation around the axis (a vector) through the origin, counter-clockwise (e.g. rotate_around((1,1,0),30deg))' ),
+      'rotate position, direction, and polarisation around the axis (a vector) through the origin, counter-clockwise (e.g. rotate_around((1,1,0),30deg))' ),
     ( 'statements', 'rotate_frame(v,vout,u,uout)',
       'rotate v to vout and u to uout',
-      'rotate position, direction and polarisation so that the direction of the vector v becomes that of vout, and u that of uout (e.g. rotate_frame((0,0,1),(1,0,0),(0,1,0),(0,1,0)) turns z into x and keeps y; the angles between v and u and between vout and uout must be the same)' ),
+      'rotate position, direction, and polarisation so that the direction of the vector v becomes that of vout, and u that of uout (e.g. rotate_frame((0,0,1),(1,0,0),(0,1,0),(0,1,0)) turns z into x and keeps y; the angles between v and u and between vout and uout must be the same)' ),
     ( 'histoptions', 'bins=N',
       'number of bins',
       'number of bins, or bins=NX,NY for 2D histograms (default: chosen from the number of particles, e.g. bins=50)' ),
@@ -311,7 +311,7 @@ examples = {
         ( 'Particle types', None, (
             ( 'pdgcode == neutron', 'Neutrons.' ),
             ( 'pdgcode in (neutron,gamma)', 'Neutrons and gammas.' ),
-            ( 'abs(pdgcode) in (electron,muon)', 'Electrons, muons and their antiparticles.' ) ) ),
+            ( 'abs(pdgcode) in (electron,muon)', 'Electrons, muons, and their antiparticles.' ) ) ),
         ( 'Values and ranges', None, (
             ( 'ekin < 25meV', 'Kinetic energies below 25 meV.' ),
             ( '0cm < z < 10cm', 'Positions between z = 0 and 10 cm.' ),
@@ -325,9 +325,9 @@ examples = {
               'Between 2 and 5 cm from the z axis, with the distance named r.' ),
             ( 'e = ekin/MeV; e > 1 and e < 10',
               'Energies from 1 to 10 MeV (e is a number, without a unit).' ) ) ),
-        ( 'Vectors', ( 'The position, direction and polarisation are the vectors pos, dir and'
-                       ' pol, vectors are written as (a,b,c), and abs(v), angle(v,w) and'
-                       ' dot(v,w) give lengths, angles and dot products:' ), (
+        ( 'Vectors', ( 'The position, direction, and polarisation are the vectors pos, dir, and'
+                       ' pol, vectors are written as (a,b,c), and abs(v), angle(v,w), and'
+                       ' dot(v,w) give lengths, angles, and dot products:' ), (
             ( 'angle(dir,(0,0,1)) < 1deg', 'Moving within 1 degree of the z axis.' ),
             ( 'd = pos - (0,0,1m); abs(d) < 10cm',
               'Within 10 cm of the point (0,0,1m), with the vector from it named d.' ),
@@ -357,7 +357,7 @@ examples = {
         ( 'Variables', ( 'Values can be given names, as NAME = VALUE, and then used in the'
                          ' statements after it:' ), (
             ( 'r = hypot(x,y);x = r;y = 0cm', 'Move the particles onto the x axis, at the same distance.' ), ) ),
-        ( 'Vectors', ( 'The position, direction and polarisation are the vectors pos, dir and'
+        ( 'Vectors', ( 'The position, direction, and polarisation are the vectors pos, dir, and'
                        ' pol, which can be changed as a whole:' ), (
             ( 'pos += 50cm*dir', 'Move the particles 50 cm along their directions.' ),
             ( 'dir = (0,0,1)', 'Make all particles move along z.' ) ) ),
@@ -403,7 +403,7 @@ protection against problems like overflow. The operator / always divides as
 floating point numbers (e.g. 1/2 is 0.5), and // divides non-negative
 integers (e.g. 7//2 is 3).''' ),
     'edit' : ( 'EDIT: statements separated by ";", executed in order, for example:',
-               '''The statements are assignments to fields (=, +=, -=, *=, /=, //=, ^=, &= and |=, with values
+               '''The statements are assignments to fields (=, +=, -=, *=, /=, //=, ^=, &=, and |=, with values
 in the units of the field, and wavelength = ... changing ekin), assignments
 to variables (other lowercase names, which can be used in later statements),
 and the statements listed below. The expressions are written as for -p (see
@@ -421,7 +421,7 @@ _outro = {
     'hist' : '''Options which are on or off are given as 1 or 0, and alone (as in "ekin;logy")
 they mean 1 (bar alone means bar=auto).
 
-The expressions, with the fields of the particles, units and functions, are
+The expressions, with the fields of the particles, units, and functions, are
 described by -p help.''',
 }
 
@@ -429,11 +429,11 @@ described by -p help.''',
 _group_notes = {
     'vectors' : ( 'Vectors are written as (a,b,c), or (a,b) in 2D, with the same unit'
                   ' for all values (except a plain 0, as in (0,0,1m)). Their values are'
-                  ' v.x, v.y and v.z, or v.at(0), v.at(1) and v.at(2) (counting from 0):'
+                  ' v.x, v.y, and v.z, or v.at(0), v.at(1), and v.at(2) (counting from 0):'
                   ' x is just an alias of pos.x (or pos.at(0)), and uz of dir.z. Vectors'
                   ' can be added and subtracted, and multiplied and divided by numbers,'
                   ' abs(v) is their length, and v^2 their length squared. Edits can'
-                  ' assign pos, dir and pol (e.g. pos += (0,0,1m)).' ),
+                  ' assign pos, dir, and pol (e.g. pos += (0,0,1m)).' ),
 }
 
 _topic_groups = {
@@ -444,7 +444,7 @@ _topic_groups = {
 }
 
 def _help_blocks( topic ):
-    """Help for -p help ('pick'), -E help ('edit') or --hist-help ('hist'), as
+    """Help for -p help ('pick'), -E help ('edit'), or --hist-help ('hist'), as
     blocks (see _helptext)"""
     head, tail = _intro[topic]
     opt = { 'pick' : '-p', 'edit' : '-E', 'hist' : '-w' }[topic]

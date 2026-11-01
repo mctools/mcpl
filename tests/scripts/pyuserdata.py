@@ -375,7 +375,7 @@ def test_layouts():
                     'a:float32:cm^10', 'a:float32:cm^', 'a:float32:cm^-', 'a:float32:cm.',
                     'a:float32:.cm', 'a:float32:cm..MeV', 'a:float32:cm*MeV', 'a:float32:cm/ms',
                     'a:float32:cm:MeV', 'a:float32[3:cm', 'a:float32:cm[3]',
-                    #(division, parentheses and "*", with hints):
+                    #(division, parentheses, and "*", with hints):
                     'a:float32:MeV/cm', 'a:float32:1/cm', 'a:float32:(cm.MeV)^-1',
                     'a:float32:cm^(-1)', 'a:float32:cm^-1/ms' ]:
         try:

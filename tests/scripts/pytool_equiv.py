@@ -23,7 +23,7 @@
 # NEEDS: numpy
 
 # Check that mcpltool gives the same results and printouts as mcpltool-c for
-# the operations they share, and test the --pick, --edit and --keep-statsum
+# the operations they share, and test the --pick, --edit, and --keep-statsum
 # options of mcpltool.
 
 import gzip

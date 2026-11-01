@@ -347,7 +347,7 @@ static void test_open_errors(void)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Reading, seeking and header access
+// Reading, seeking, and header access
 
 static void print_read( const char * what, const mcpl_particle_t * p,
                         mcpl_errstate_t * es )
@@ -501,7 +501,7 @@ static void test_read_failure( const char * filename, int print_count )
     test_fail("expected error not seen");
   mcpl_errstate_t first = es;
 
-  //Further reading, skipping or seeking gives the same error:
+  //Further reading, skipping, or seeking gives the same error:
   es_reset(&es);
   p = mcpl_read_es(f,&es);
   print_read("read again",p,&es);
@@ -684,7 +684,7 @@ static void test_layouts(void)
     "a:float32:cm^10", "a:float32:cm^", "a:float32:cm^-", "a:float32:cm.",
     "a:float32:.cm", "a:float32:cm..MeV", "a:float32:cm*MeV", "a:float32:cm/ms",
     "a:float32:cm:MeV", "a:float32[3:cm", "a:float32:cm[3]",
-    /* (division, parentheses and "*", with hints): */
+    /* (division, parentheses, and "*", with hints): */
     "a:float32:MeV/cm", "a:float32:1/cm", "a:float32:(cm.MeV)^-1",
     "a:float32:cm^(-1)", "a:float32:cm^-1/ms",
   };

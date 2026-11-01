@@ -9,7 +9,7 @@ Number of colours (stream is a terminal or not):
    {'TERM': 'xterm-256color'}: auto: 256/0, always: 256/256, never: 0/0
    {'COLORTERM': 'truecolor'}: auto: 16777216/0, always: 16777216/16777216, never: 0/0
    {'COLORTERM': '24bit', 'TERM': 'xterm'}: auto: 16777216/0, always: 16777216/16777216, never: 0/0
-   _ncolors("sometimes"): MCPLError: The colour setting must be auto, always or never (not "sometimes")
+   _ncolors("sometimes"): MCPLError: The colour setting must be auto, always, or never (not "sometimes")
 8 colours: '\x1b[36mX\x1b[0m' '\x1b[33;40mX\x1b[0m'
 256 colours: '\x1b[38;5;31mX\x1b[0m' '\x1b[38;5;220;48;5;53mX\x1b[0m'
 16777216 colours: '\x1b[38;2;31;119;180mX\x1b[0m' '\x1b[38;2;253;231;37;48;2;68;1;84mX\x1b[0m'
@@ -38,7 +38,7 @@ mcpltool -t ekin/MeV;bins=5;display_by=single {'NO_COLOR': '1', 'FORCE_COLOR': '
 mcpltool -w ekin/MeV;bins=5;display_by=single --color=always : exit code 1, colours: False
    | ERROR: --color can only be used with -t.
 mcpltool -t ekin/MeV;bins=5;display_by=single --color=sometimes : exit code 1, colours: False
-   | ERROR: --color must be auto, always or never.
+   | ERROR: --color must be auto, always, or never.
 mcpltool -t ekin/MeV;bins=5;display_by=single --color=always -o x.txt : exit code 1, colours: False
    | ERROR: --color can not be used with -o (plots are saved without colours).
 mcpltool -t ekin/MeV;bins=5;display_by=single;print=1 --color=always : exit code 1, colours: False

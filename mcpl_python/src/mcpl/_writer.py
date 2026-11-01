@@ -184,7 +184,7 @@ class MCPLOutFile:
             filename = filename.decode()
         if not isinstance(filename,str):
             raise MCPLError('Unsupported type of filename object'
-                            ' (should be path-like, a string or similar)')
+                            ' (should be path-like, a string, or similar)')
         if not filename:
             raise MCPLError('MCPLOutFile called with empty string.')
         if len(filename) > 4096:
@@ -351,12 +351,12 @@ class MCPLOutFile:
         comma-separated list of fields "name:type" or "name:type[n]" (arrays
         of n values), like "temp:float32,origin:int32,tags:uint8[3]". The
         types are int8, uint8, int16, uint16, int32, uint32, int64, uint64,
-        float32 and float64. Names must start with a lowercase letter followed
-        by lowercase letters, digits or underscores (names are required, also
+        float32, and float64. Names must start with a lowercase letter followed
+        by lowercase letters, digits, or underscores (names are required, also
         for plain bytes like "data:uint8[27]", to avoid mixing up different
         data with the same types when merging files). The names of the fields
         of particles (x, ekin, userflags, ...) and position, direction,
-        polarisation and wavelength can not be used. At most 65535 bytes per
+        polarisation, and wavelength can not be used. At most 65535 bytes per
         particle are allowed. The userdata of the particles is given with the
         userdata argument of add_particles and add_particle, which is required
         for files with userdata (userdata = {} gives userdata with all bytes
@@ -589,7 +589,7 @@ class MCPLOutFile:
                      ' to indicate that a precise result is not available.')
 
     def transfer_metadata(self, source):
-        """Transfer all settings, blobs and comments from an MCPLFile object (or
+        """Transfer all settings, blobs, and comments from an MCPLFile object (or
         the file with the given name). Note that if splitting files rather
         than filtering them, hdr_scale_stat_sums should be called afterwards
         (see the C API for details)."""

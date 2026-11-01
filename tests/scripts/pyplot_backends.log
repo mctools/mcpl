@@ -23,11 +23,11 @@ mcpldev._common.MCPLError: Plots can not be shown in a window here (is there no 
 ==> mcpltool -w ekin/MeV;bins=3;display_by=single -o tool2.svg: exit code 0
    | Created tool2.svg
 ==> mcpltool -w ekin/MeV;bins=3;display_by=single -o tool3.txt: exit code 1
-   | ERROR: -w saves histograms as .png, .pdf or .svg files (use -t HIST -o FILE.txt for text).
+   | ERROR: -w saves histograms as .png, .pdf, or .svg files (use -t HIST -o FILE.txt for text).
    | 
    | Run with -h or --help for usage information
 ==> mcpltool -t ekin/MeV;bins=3;display_by=single -o tool4.svg: exit code 1
-   | ERROR: -t saves histograms as .txt files (use -w HIST -o FILE for .png, .pdf or .svg).
+   | ERROR: -t saves histograms as .txt files (use -w HIST -o FILE for .png, .pdf, or .svg).
    | 
    | Run with -h or --help for usage information
 ==> mcpltool -w ekin/MeV;bins=3;display_by=single  with {'MPLBACKEND': 'agg'}: exit code 1

@@ -136,7 +136,7 @@ class _RecordFormat:
 
     def validate_one(self, v, ekin, time, weight):
         """Like validate, for a single particle with values given as Python
-        floats (v being the position, direction and polarisation), which is
+        floats (v being the position, direction, and polarisation), which is
         much faster than numpy for single values."""
         x, y, z, ux, uy, uz, polx, poly, polz = v
         groups = [ ('position',(x,y,z)), ('direction',(ux,uy,uz)) ]

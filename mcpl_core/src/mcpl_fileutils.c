@@ -696,7 +696,7 @@ namespace {
 
     mcwinstr mc_winstr_expand_to_fullpath( const mcwinstr* wpath )
     {
-      //nb: in case of problems might throw, prints to stderr or return empty
+      //nb: in case of problems might throw, prints to stderr, or return empty
       //string.
 
       DWORD len_with_null_term = GetFullPathNameW( wpath->c_str,
@@ -792,7 +792,7 @@ namespace {
 
     mcu8str mc_winstr_expand_to_fullpath_u8str( const mcwinstr* wpath )
     {
-      //nb: in case of problems might throw, prints to stderr or return empty
+      //nb: in case of problems might throw, prints to stderr, or return empty
       //string.
       mcwinstr fp = mc_winstr_expand_to_fullpath( wpath );
       mcu8str res = mc_winstr_to_u8str( &fp );

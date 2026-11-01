@@ -18,7 +18,7 @@ v2.2.9  (work in progress)
         existing files. Output files which are (or are written via) one of
         the input files are always refused.
       * Python fixes: MCPLFile closes the file of gzipped files, dump_file
-        closes the file it opened, a plain 0 in hypot, min, max and clamp has
+        closes the file it opened, a plain 0 in hypot, min, max, and clamp has
         the units of the other values, histogram() checks its bins and range,
         text plots have no round-off values in log scales, and matplotlib
         needs a display to show plots also outside Linux. Statistics with
@@ -57,7 +57,7 @@ v2.2.9  (work in progress)
         another result).
       * mcpl_transfer_last_read_particle gives an error unless a particle
         was just read from the source file (it transferred the previous
-        particle again after the end of the file, a rewind or a dump).
+        particle again after the end of the file, a rewind, or a dump).
       * Uncompressed files whose size does not agree with the number of
         particles in their header (e.g. truncated files) can no longer be
         opened (in C and Python), as the format requires. Files with 0
@@ -84,9 +84,9 @@ v2.2.9  (work in progress)
       * New usage information for mcpltool: -h shows a single page with the
         common options, --full-help shows all options, and -p help, -E help
         and --hist-help describe how to write the expressions, with all particle
-        fields, units, functions and histogram options.
-      * Expressions (with -p, -E, -w and -t, and in the Python API) use the
-        logical operators and, or and not (&&, || and ! give an error saying
+        fields, units, functions, and histogram options.
+      * Expressions (with -p, -E, -w, and -t, and in the Python API) use the
+        logical operators and, or, and not (&&, || and ! give an error saying
         what to write instead), and mod(a,b) for remainders of integers. The
         position of the particles in the file can be used as fileidx (e.g.
         mcpltool -e -p "mod(fileidx,10) == 0" FILE OUT.mcpl.gz extracts every
@@ -117,7 +117,7 @@ v2.2.9  (work in progress)
         find_package(MCPL) in CMake had wrong (or empty) values. The
         MCPL_CMD_MCPLTOOL variable is now the path of mcpltool-c.
       * mcpltool and pymcpltool no longer leave output files behind when
-        --merge, --forcemerge or --extract fail (mcpltool left an empty file,
+        --merge, --forcemerge, or --extract fail (mcpltool left an empty file,
         and pymcpltool --extract a file with an incomplete header).
       * ssw2mcpl and mcpl2ssw read and write the numbers of histories (np1),
         particles (nrss) and histories with particles (niss) in the headers
@@ -147,7 +147,7 @@ v2.2.9  (work in progress)
       * Blob keys must be unique, non-empty, ASCII, with no non-printable
         characters, whitespace, backslash, or quotation marks.
         This is required for files in MCPL format version 4 (which are
-        refused otherwise), and the C, C++ and Python APIs refuse other keys
+        refused otherwise), and the C, C++, and Python APIs refuse other keys
         when they are added to new files. Keys copied from the headers of
         files in older format versions (e.g. when merging files) are still
         accepted, unless the new file has userdata (and is thus in format
@@ -159,13 +159,13 @@ v2.2.9  (work in progress)
         are files with null characters in strings (now also refused by the
         Python reader and writer).
       * Fields of userdata layouts can have units, as in "temp:float32:K" or
-        "q:float64:cm^-1.MeV": cm, MeV, ms, K and deg, in this order, each at
+        "q:float64:cm^-1.MeV": cm, MeV, ms, K, and deg, in this order, each at
         most once, separated by dots, with powers like cm^2 or MeV^-1. Other
         units make the layout invalid. mcpl-python gives the units to scipp
         (MCPLFile.to_scipp), and C++ fields get them with
         add_userdata_field<float>("temp","K").
       * Userdata fields can not be named like the fields of particles (x,
-        ekin, userflags, ...), or position, direction, polarisation or
+        ekin, userflags, ...), or position, direction, polarisation, or
         wavelength.
       * Userdata is optional in MCPL format version 4, signalled by 0x2 in the
         userflags field of the header (which also holds 0x1 if userflags are
@@ -183,8 +183,8 @@ v2.2.9  (work in progress)
         (one DataArray per block), giving the particles as a scipp DataArray
         with the weights as data (with variances) and the particle fields as
         coordinates with units (x, y, z [cm], ekin [MeV], time [ms], ...),
-        plus polarisation, userflags and userdata fields where present.
-        Positions, directions and polarisations can also be given as
+        plus polarisation, userflags, and userdata fields where present.
+        Positions, directions, and polarisations can also be given as
         3-vectors, and extra coordinates can be calculated with expressions
         (with units following from the expressions). For files, skip, limit
         and pick parameters choose the particles, and by default at most
@@ -234,7 +234,7 @@ v2.2.9  (work in progress)
         gives the userdata layout of an output file.
       * Error-state (_es) variants of the C functions for operations on
         files: mcpl_merge_files_es, mcpl_can_merge_es, mcpl_merge_inplace_es,
-        mcpl_forcemerge_files_es, mcpl_repair_es and mcpl_gzip_file_es.
+        mcpl_forcemerge_files_es, mcpl_repair_es, and mcpl_gzip_file_es.
         Errors found before any output is written leave all files unchanged.
         Errors while merging leave the output file (for mcpl_merge_inplace_es
         the first file) unfinished, so it can be recovered with mcpl_repair.
@@ -291,10 +291,10 @@ v2.2.9  (work in progress)
         many comments and blobs, are refused before reading them (e.g. for
         small gzipped files with huge headers).
       * New pymcpltool option --dry-run (-d), which does everything except
-        writing files: the same checks, warnings, errors and messages as the
+        writing files: the same checks, warnings, errors, and messages as the
         real run (with "Would ..." instead of "Successfully ..."), followed
         by a note that nothing was written. It applies to --merge,
-        --forcemerge, --extract, --repair and --text, and is ignored with
+        --forcemerge, --extract, --repair, and --text, and is ignored with
         commands which do not write files (so it can always be added to be
         sure that nothing is written). The Python API gets a corresponding
         dry_run argument for merge_files, forcemerge_files, merge_inplace and
@@ -302,23 +302,23 @@ v2.2.9  (work in progress)
       * Errors about files which can not be merged now say why, i.e. the first
         difference found in the headers (e.g. "FP precision: single vs
         double", "universal pdgcode: 2112 vs none", "comment 1 differs"), in
-        mcpl_merge_files, mcpl_merge_inplace, mcpltool and the Python API.
-      * Forced merges (mcpl_forcemerge_files, mcpltool --forcemerge and the
+        mcpl_merge_files, mcpl_merge_inplace, mcpltool, and the Python API.
+      * Forced merges (mcpl_forcemerge_files, mcpltool --forcemerge, and the
         Python API) now report the settings which change relative to the
         input files (e.g. "Files have different FP precision (single and
         double), using double") and the data which is discarded (userflags
-        unless kept, comments and blobs).
+        unless kept, comments, and blobs).
       * Optional dependencies (extras) for the plotting backends of the Python
         API: pip install "mcpl[plot]" (or "mcpl-python[plot]") also installs
         matplotlib (>=3.6), as does "[all]".
       * The minimum versions of the Python dependencies (numpy 1.22, and the
         matplotlib 3.6 of the extras) are now tested in CI.
-      * The fields x, y, z and time of particles and blocks of particles read
+      * The fields x, y, z, and time of particles and blocks of particles read
         with the Python API are now always double precision numbers (like in
         the C API), also for files which store numbers in single precision
         (before, they were single precision numpy values for such files).
       * Expressions have vectors (pos, dir, pol, and (a,b,c)) with the
-        functions dot, cross and angle (precise also for small angles, e.g.
+        functions dot, cross, and angle (precise also for small angles, e.g.
         "angle(dir,(0,0,1)) < 1deg"), round, through_sphere(center,radius),
         in and not in, and variables before the condition of picks. Edits
         have rotate_around and rotate_frame. Errors say where in the
@@ -364,7 +364,7 @@ v2.2.9  (work in progress)
         block.userdata['temp']). The userdata is a view of the data read from
         the file, so it costs nothing until used. Userdata is kept when
         transferring particles to files with the same layout (e.g. after
-        transfer_metadata), and when merging, extracting or force-merging
+        transfer_metadata), and when merging, extracting, or force-merging
         files with the Python API or pymcpltool, which give the same results
         as the C API and mcpltool.
       * The Python API can also write files with userdata: enable it with
@@ -440,10 +440,10 @@ v2.2.9  (work in progress)
         of particles (file_index still works, but is deprecated).
       * The Python API also gets the other file-level functions of the C API:
         merge_files, forcemerge_files, merge_inplace, can_merge, repair,
-        name_helper, create_outfile_mpi and merge_outfiles_mpi. They give the
-        same results, printouts and errors as the C functions.
+        name_helper, create_outfile_mpi, and merge_outfiles_mpi. They give the
+        same results, printouts, and errors as the C functions.
       * pymcpltool can now also do what mcpltool does: --merge (also with
-        --inplace), --forcemerge, --extract (with -l, -s, -p and --no-comment)
+        --inplace), --forcemerge, --extract (with -l, -s, -p, and --no-comment),
         and --repair, with the same results and printouts as mcpltool.
       * When reading files in the old MCPL-2 format, directions are now unpacked
         with fma() (in C, and with the same calculation in Python), so the
@@ -455,7 +455,7 @@ v2.2.9  (work in progress)
         ParticleFilter("pdgcode == neutron and wavelength > 1.8Aa") or
         ParticleEdit("rotate_z(90deg);z += 1cm"), which are applied to blocks
         of particles. Values with units must always be given with units (like
-        25meV, 0.18nm or 1us, but a plain 0 is fine), and expressions with
+        25meV, 0.18nm, or 1us, but a plain 0 is fine), and expressions with
         missing or inconsistent units are rejected. The wavelength can only be
         used for neutrons and gammas, which must be picked first (as in
         "pdgcode == neutron and wavelength > 1.8Aa"). Edits are executed in
@@ -468,12 +468,12 @@ v2.2.9  (work in progress)
         particles read from (or written to) the files, e.g.
         MCPLFile("in.mcpl",pick="pdgcode == neutron",edit="z += 1m"). Edited
         particles are still transferred exactly by MCPLOutFile.add_particles,
-        except for the edited fields. dump_file, MCPLFile.dump_particles and
-        collect_stats, histogram and histogram2d also accept a pick argument.
+        except for the edited fields. dump_file, MCPLFile.dump_particles,
+        collect_stats, histogram, and histogram2d also accept a pick argument.
       * mcpltool can now pick and edit particles with expressions, with the
         new -p (--pick) and -E (--edit) options, e.g. mcpltool -e -p "pdgcode
         == neutron" -E "wavelength = 1.8Aa" FILE OUT.mcpl.gz. They can be used
-        when showing particles, and with -S, -w, -t and -e, as can -l and -s,
+        when showing particles, and with -S, -w, -t, and -e, as can -l and -s,
         which choose the range of particles in the file before -p and -E are
         applied. Like with -l and -s, stat:sum entries are marked as not
         available (-1) when -E modifies weights, unless the new
@@ -482,7 +482,7 @@ v2.2.9  (work in progress)
         type, use e.g. -p "pdgcode == neutron" (mcpltool-c still has
         -pPDGCODE).
       * New module mcpl.plotting with a backend-independent description of
-        plots (Figure, Panel, and the items StepHist, Hist2D, Bars, Scatter3D
+        plots (Figure, Panel, and the items StepHist, Hist2D, Bars, Scatter3D,
         and Text), which can be shown or saved with matplotlib, with the MCPL
         logo (with the show and save functions).
       * plot_stats is removed: it gives an error saying what to use instead
@@ -508,7 +508,7 @@ v2.2.9  (work in progress)
         when the files given with -c or -s are found to be invalid.
       * ssw2mcpl and phits2mcpl no longer read past the end of the contents of
         the files given with -c or -s when checking them.
-      * The ssw2mcpl, mcpl2ssw, phits2mcpl and mcpl2phits commands from the
+      * The ssw2mcpl, mcpl2ssw, phits2mcpl, and mcpl2phits commands from the
         mcpl-extra Python package no longer fail when mcpl-config is not in the
         PATH (e.g. when running them from a virtual environment which is not
         activated). If the mcpl-core package does not provide the _mcpl_core

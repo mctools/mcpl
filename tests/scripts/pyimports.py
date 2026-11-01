@@ -24,7 +24,7 @@
 # Test exactly which modules of the mcpl package are imported by "import mcpl"
 # and by each use of the Python API or of mcpltool (the scenarios of
 # MCPLTestUtils.pyscenarios), so that parts like the expressions, statistics,
-# histograms, plotting and the mcpltool command are only imported when they are
+# histograms, plotting, and the mcpltool command are only imported when they are
 # used, and packages like matplotlib not at all (unless plots are shown). Each
 # scenario runs in a new Python process, which reports all modules it imported.
 #

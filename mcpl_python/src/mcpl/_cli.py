@@ -48,7 +48,7 @@ Common options:
   -p PICK        Only particles for which PICK is true, e.g.
                  -p "pdgcode == neutron and ekin < 25meV".
   -E EDIT        Change particles, e.g. -E "z += 1cm;weight *= 0.5".
-  -o FILE        Save the histogram in FILE (.png, .pdf or .svg with -w, .txt
+  -o FILE        Save the histogram in FILE (.png, .pdf, or .svg with -w, .txt
                  with -t).
   -d             Dry run: do everything except writing files.
 
@@ -60,7 +60,7 @@ Examples:
 More help:
   --full-help              All options.
   -p help, -E help, --hist-help
-                           How to write PICK, EDIT and HIST.
+                           How to write PICK, EDIT, and HIST.
 """
 
 _full_help = """
@@ -80,7 +80,7 @@ Usage:
   PROGNAME --create-examples[=N]           Create example files
   PROGNAME -v | -h | --full-help
 
-Particles (when showing particles, and with -S, -w, -t and -e):
+Particles (when showing particles, and with -S, -w, -t, and -e):
   -lN, -sN         Use only N particles (all with -l0), or skip the first N
                    particles in the file. Without -l, at most 10 particles are
                    shown when showing particles.
@@ -97,16 +97,16 @@ Showing particles:
 Histogram (-w, --window HIST or -t, --terminal HIST):
   HIST is an expression with options, e.g.
   "ekin/MeV;logx;display_only=neutron" (see --hist-help), given as -w HIST,
-  -w=HIST, --window HIST or --window=HIST (and likewise with -t). -w shows the
+  -w=HIST, --window HIST, or --window=HIST (and likewise with -t). -w shows the
   histogram in a window (with matplotlib), and -t in the terminal (with
   Unicode characters, or else ASCII). With more files, there is a curve for
   each file.
   -o, --output FILE
-                   Save the histogram in FILE instead: .png, .pdf or .svg with
+                   Save the histogram in FILE instead: .png, .pdf, or .svg with
                    -w, or .txt with -t.
   --color=WHEN     Colours in the terminal (with -t): auto (the default: in
                    terminals, unless the NO_COLOR environment variable is set,
-                   or always if FORCE_COLOR is set), always or never.
+                   or always if FORCE_COLOR is set), always, or never.
 
 Extract (-e, --extract FILE OUT.mcpl.gz):
   --no-comment     Do not add comments to the header of OUT about how the
@@ -134,7 +134,7 @@ Other options:
   -h, --help       Show the short usage information.
   --full-help      Show this usage information.
   -p help, -E help, --hist-help
-                   How to write PICK, EDIT and HIST.
+                   How to write PICK, EDIT, and HIST.
 
 Long options can be abbreviated, as long as they are unique (e.g. --ext for
 --extract).
@@ -275,7 +275,7 @@ def _app_mcpltool(argv):
         return
 
     #Parse the arguments into flags (set of long names), values (dict by long
-    #name), -l, -s and -b, and the list of files:
+    #name), -l, -s, -b, and the list of files:
     flags, values, files = set(), {}, []
     opt_limit = opt_skip = opt_blobkey = None
     optional = {}#(-w and -t, by long name, with their values if given with =)
@@ -387,7 +387,9 @@ def _app_mcpltool(argv):
             others = [ modenames[m] for m in okmodes if m != 'dump' ]
             w = ''
             if others:
-                w = 'with ' + ( f"{', '.join(others[:-1])} or {others[-1]}"
+                #(with the Oxford comma for three or more):
+                sep = ',' if len(others) > 2 else ''
+                w = 'with ' + ( f"{', '.join(others[:-1])}{sep} or {others[-1]}"
                                 if len(others) > 1 else others[0] )
             if 'dump' in okmodes:
                 w = modenames['dump'] + ( f', or {w}' if w else '' )
@@ -405,7 +407,7 @@ def _app_mcpltool(argv):
     allowed('-o',histmodes,'--output' in values,hint=stats_hint)
     allowed('--color',('--terminal',),'--color' in values)
     if values.get('--color',"auto") not in ('auto','always','never'):
-        bad("--color must be auto, always or never.")
+        bad("--color must be auto, always, or never.")
     if '--color' in values and '--output' in values:
         bad("--color can not be used with -o (plots are saved without colours).")
     allowed('--no-comment',('--extract',),bool(flags & {'--no-comment','--preventcomment'}))
@@ -430,9 +432,9 @@ def _app_mcpltool(argv):
                 + ( ' (or did you mean --text?).' if opt == '-t' else '.' ))
         ext = os.path.splitext(values.get('--output',''))[1].lower()
         if mode == '--window' and ext == '.txt':
-            bad('-w saves histograms as .png, .pdf or .svg files (use -t HIST -o FILE.txt for text).')
+            bad('-w saves histograms as .png, .pdf, or .svg files (use -t HIST -o FILE.txt for text).')
         if mode == '--terminal' and ext not in ( '', '.txt' ):
-            bad('-t saves histograms as .txt files (use -w HIST -o FILE for .png, .pdf or .svg).')
+            bad('-t saves histograms as .txt files (use -w HIST -o FILE for .png, .pdf, or .svg).')
     opt_dryrun = '--dry-run' in flags
     if opt_dryrun and '--output' in values:
         bad("-d can not be used with -o (which saves plots in files).")
@@ -528,7 +530,7 @@ def _app_mcpltool(argv):
             fout.close()
         sys.exit(0)
 
-    #Dump, stats or repair:
+    #Dump, stats, or repair:
     if len(filelist)>1:
         bad("Too many arguments.")
     if not filelist:

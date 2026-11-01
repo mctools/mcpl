@@ -1331,11 +1331,11 @@ pyexample.mcpl: format version 4, userdata layout "temp:float32,nscat:uint32,vol
 'p :int8': MCPLError: Invalid userdata layout "p :int8": field names must only contain lowercase letters, digits and underscores
 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:int8': MCPLError: Invalid userdata layout "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:int8": too long field name
 'p:float64[8192]': MCPLError: Invalid userdata layout "p:float64[8192]": too large userdata (at most 65535 bytes are allowed)
-'x:float32': MCPLError: Invalid userdata layout "x:float32": reserved field name (the names of particle fields, like x, ekin, position or wavelength, can not be used)
-'a:int8,ekin:float64': MCPLError: Invalid userdata layout "a:int8,ekin:float64": reserved field name (the names of particle fields, like x, ekin, position or wavelength, can not be used)
-'position:float32[3]': MCPLError: Invalid userdata layout "position:float32[3]": reserved field name (the names of particle fields, like x, ekin, position or wavelength, can not be used)
-'wavelength:float32': MCPLError: Invalid userdata layout "wavelength:float32": reserved field name (the names of particle fields, like x, ekin, position or wavelength, can not be used)
-'userflags:uint32': MCPLError: Invalid userdata layout "userflags:uint32": reserved field name (the names of particle fields, like x, ekin, position or wavelength, can not be used)
+'x:float32': MCPLError: Invalid userdata layout "x:float32": reserved field name (the names of particle fields, like x, ekin, position, or wavelength, can not be used)
+'a:int8,ekin:float64': MCPLError: Invalid userdata layout "a:int8,ekin:float64": reserved field name (the names of particle fields, like x, ekin, position, or wavelength, can not be used)
+'position:float32[3]': MCPLError: Invalid userdata layout "position:float32[3]": reserved field name (the names of particle fields, like x, ekin, position, or wavelength, can not be used)
+'wavelength:float32': MCPLError: Invalid userdata layout "wavelength:float32": reserved field name (the names of particle fields, like x, ekin, position, or wavelength, can not be used)
+'userflags:uint32': MCPLError: Invalid userdata layout "userflags:uint32": reserved field name (the names of particle fields, like x, ekin, position, or wavelength, can not be used)
 'class:int8': MCPLError: Invalid userdata layout "class:int8": reserved field name
 'a:int8,from:float64': MCPLError: Invalid userdata layout "a:int8,from:float64": reserved field name
 'xx:float32,ekin2:float32,pos:int8': size 9
@@ -1347,9 +1347,9 @@ pyexample.mcpl: format version 4, userdata layout "temp:float32,nscat:uint32,vol
 'a:float64:cm.ms^-1': size 8
 'a:float64:cm^-9.MeV^9.ms.K^2.deg^-1': size 8
 'a:int32:K': size 4
-'a:float32:': MCPLError: Invalid userdata layout "a:float32:": empty unit (the units are cm, MeV, ms, K and deg, like cm^2.MeV)
-'a:float32:m': MCPLError: Invalid userdata layout "a:float32:m": unknown unit (the units are cm, MeV, ms, K and deg, like cm^2.MeV)
-'a:float32:CM': MCPLError: Invalid userdata layout "a:float32:CM": unknown unit (the units are cm, MeV, ms, K and deg, like cm^2.MeV)
+'a:float32:': MCPLError: Invalid userdata layout "a:float32:": empty unit (the units are cm, MeV, ms, K, and deg, like cm^2.MeV)
+'a:float32:m': MCPLError: Invalid userdata layout "a:float32:m": unknown unit (the units are cm, MeV, ms, K, and deg, like cm^2.MeV)
+'a:float32:CM': MCPLError: Invalid userdata layout "a:float32:CM": unknown unit (the units are cm, MeV, ms, K, and deg, like cm^2.MeV)
 'a:float32:cm.cm': MCPLError: Invalid userdata layout "a:float32:cm.cm": each unit can appear only once
 'a:float32:MeV.cm': MCPLError: Invalid userdata layout "a:float32:MeV.cm": the units must be in the order cm, MeV, ms, K, deg
 'a:float32:cm^1': MCPLError: Invalid userdata layout "a:float32:cm^1": invalid power (powers are single digits from 2 to 9 or -1 to -9, like cm^2 or MeV^-1)
@@ -1358,14 +1358,14 @@ pyexample.mcpl: format version 4, userdata layout "temp:float32,nscat:uint32,vol
 'a:float32:cm^10': MCPLError: Invalid userdata layout "a:float32:cm^10": invalid power (powers are single digits from 2 to 9 or -1 to -9, like cm^2 or MeV^-1)
 'a:float32:cm^': MCPLError: Invalid userdata layout "a:float32:cm^": invalid power (powers are single digits from 2 to 9 or -1 to -9, like cm^2 or MeV^-1)
 'a:float32:cm^-': MCPLError: Invalid userdata layout "a:float32:cm^-": invalid power (powers are single digits from 2 to 9 or -1 to -9, like cm^2 or MeV^-1)
-'a:float32:cm.': MCPLError: Invalid userdata layout "a:float32:cm.": empty unit (the units are cm, MeV, ms, K and deg, like cm^2.MeV)
-'a:float32:.cm': MCPLError: Invalid userdata layout "a:float32:.cm": empty unit (the units are cm, MeV, ms, K and deg, like cm^2.MeV)
-'a:float32:cm..MeV': MCPLError: Invalid userdata layout "a:float32:cm..MeV": empty unit (the units are cm, MeV, ms, K and deg, like cm^2.MeV)
+'a:float32:cm.': MCPLError: Invalid userdata layout "a:float32:cm.": empty unit (the units are cm, MeV, ms, K, and deg, like cm^2.MeV)
+'a:float32:.cm': MCPLError: Invalid userdata layout "a:float32:.cm": empty unit (the units are cm, MeV, ms, K, and deg, like cm^2.MeV)
+'a:float32:cm..MeV': MCPLError: Invalid userdata layout "a:float32:cm..MeV": empty unit (the units are cm, MeV, ms, K, and deg, like cm^2.MeV)
 'a:float32:cm*MeV': MCPLError: Invalid userdata layout "a:float32:cm*MeV": units are separated by dots, like cm.MeV for cm*MeV
 'a:float32:cm/ms': MCPLError: Invalid userdata layout "a:float32:cm/ms": division is not allowed in units (use negative powers, like cm^-1.MeV for MeV/cm)
-'a:float32:cm:MeV': MCPLError: Invalid userdata layout "a:float32:cm:MeV": unknown unit (the units are cm, MeV, ms, K and deg, like cm^2.MeV)
+'a:float32:cm:MeV': MCPLError: Invalid userdata layout "a:float32:cm:MeV": unknown unit (the units are cm, MeV, ms, K, and deg, like cm^2.MeV)
 'a:float32[3:cm': MCPLError: Invalid userdata layout "a:float32[3:cm": invalid array size (must be like [3])
-'a:float32:cm[3]': MCPLError: Invalid userdata layout "a:float32:cm[3]": unknown unit (the units are cm, MeV, ms, K and deg, like cm^2.MeV)
+'a:float32:cm[3]': MCPLError: Invalid userdata layout "a:float32:cm[3]": unknown unit (the units are cm, MeV, ms, K, and deg, like cm^2.MeV)
 'a:float32:MeV/cm': MCPLError: Invalid userdata layout "a:float32:MeV/cm": division is not allowed in units (use negative powers, like cm^-1.MeV for MeV/cm)
 'a:float32:1/cm': MCPLError: Invalid userdata layout "a:float32:1/cm": division is not allowed in units (use negative powers, like cm^-1.MeV for MeV/cm)
 'a:float32:(cm.MeV)^-1': MCPLError: Invalid userdata layout "a:float32:(cm.MeV)^-1": parentheses are not allowed in units (give each unit its own power, like cm^-2.MeV^-1 for 1/(cm^2*MeV))

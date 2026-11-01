@@ -19,7 +19,7 @@
 ##                                                                            ##
 ################################################################################
 
-"""Python package for reading, writing and processing MCPL files.
+"""Python package for reading, writing, and processing MCPL files.
 
 The MCPL (Monte Carlo Particle Lists) format is thoroughly documented on the
 project homepage, from where it is also possible to download the entire MCPL
@@ -89,7 +89,7 @@ from ._messages import use_logging
 from ._reader import MCPLFile, dump_file
 
 #All other parts (writing, file operations, stat:sum, expressions, statistics,
-#histograms, plotting and the mcpltool command) are only imported when used, so
+#histograms, plotting, and the mcpltool command) are only imported when used, so
 #reading files does not depend on them in any way:
 _on_demand = {
     'MCPLOutFile' : '_writer',

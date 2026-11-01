@@ -104,7 +104,7 @@ _op_power = ( '^', '**' )
 _number_forms = ( r'0|[1-9][0-9]*|0[xX][0-9a-fA-F]+'
                   r'|([0-9]+\.[0-9]*|\.[0-9]+)([eE][-+]?[0-9]+)?|[0-9]+[eE][-+]?[0-9]+' )
 #The tokens: numbers (as anything starting like a number which continues
-#with "_", or 0x, 0o and 0b, so _ExprParser._number can say what is wrong),
+#with "_", or 0x, 0o, and 0b, so _ExprParser._number can say what is wrong),
 #names, and the operators (the longest first):
 _token_regex = re.compile( r'(?P<space>\s+)'
                            r'|(?P<number>0[xXoObB][0-9A-Za-z_]*'
@@ -376,7 +376,7 @@ class _ExprParser:
 
     def _number( self, s ):
         """Value of a number: a decimal integer, a hexadecimal one (like 0x1f), or a
-        floating point number (like 0.5, .5, 5. or 1e-3), all as in C"""
+        floating point number (like 0.5, .5, 5., or 1e-3), all as in C"""
         if re.fullmatch(_number_forms,s):
             return int(s,16) if s[1:2] in 'xX' and s[:1] == '0' else ast.literal_eval(s)
         if s[:1] == '0' and s.isdigit():
@@ -443,7 +443,7 @@ def _expr_unparse( tree ):
 
 class _ExprWriter:
     """Writes the text of parsed expressions and edit statements (as read by
-    _ExprParser), without spaces except around and, or and not, and with
+    _ExprParser), without spaces except around and, or, and not, and with
     parentheses only where they are needed. Multiplications by units are
     written as implied multiplications where possible (as in 25meV)."""
 

@@ -23,7 +23,7 @@
 # NEEDS: numpy
 
 # Files with the other byte order (big-endian files on little-endian
-# platforms, and vice versa) can be read, merged in place and repaired with
+# platforms, and vice versa) can be read, merged in place, and repaired with
 # mcpl-python (the C library refuses them). The files are made by converting
 # files to the other byte order.
 

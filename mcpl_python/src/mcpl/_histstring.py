@@ -55,7 +55,7 @@ def _hist_bool( name, value, text, auto = False ):
     if value.lower() in _bool_words:
         raise MCPLError(f'Histogram options which are on or off are given as 1 or 0'
                         f' (not "{value}"), like {name}=1, in "{text}"')
-    allowed = '1, 0 or auto' if auto else '1 or 0'
+    allowed = '1, 0, or auto' if auto else '1 or 0'
     raise MCPLError(f'Histogram option "{name}" must be {allowed} (not "{value}"),'
                     f' in "{text}"')
 
@@ -85,7 +85,7 @@ def _parse_hist( text ):
     histograms, or three for 3D plots of a sample of the particles), followed
     by options NAME=VALUE separated by ";", like
     "ekin/MeV;logx;bins=50" or "x/cm : y/cm;xrange=-10:10". Returns a
-    dict with the expressions (a list of one, two or three), and the options (with
+    dict with the expressions (a list of one, two, or three), and the options (with
     defaults for those not given)."""
     from ._exprcore import _check_chars
     _check_chars(text,'histogram')
@@ -137,7 +137,7 @@ def _parse_hist( text ):
     return res
 
 def _check_range_option( name, nexprs, text ):
-    """Check that the option range, xrange or yrange can be used for a
+    """Check that the option range, xrange, or yrange can be used for a
     histogram of nexprs expressions"""
     if nexprs == 3:
         raise MCPLError(f'Histogram option "{name}" can not be used for 3D plots,'
@@ -290,7 +290,7 @@ def _hist_parts( text ):
     return parts[0], opts
 
 def _hist_exprs( text ):
-    """The expressions of a histogram string (one, two or three, as written)"""
+    """The expressions of a histogram string (one, two, or three, as written)"""
     return [ e.strip() for e in _hist_parts(text)[0].split(':') ]
 
 

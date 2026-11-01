@@ -23,7 +23,7 @@
 # NEEDS: numpy
 
 # Check that the Python API (MCPLOutFile and the file-level functions) gives
-# the same results, printouts and errors as the C API, by running the same
+# the same results, printouts, and errors as the C API, by running the same
 # operations with both in separate directories and comparing everything.
 
 import contextlib

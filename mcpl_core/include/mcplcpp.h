@@ -81,7 +81,7 @@
  *
  * Particles (mcpl::Particle) are lightweight views of the particle data in
  * the file object, which are only valid until the next particle is read.
- * Views of header data (strings, comments and blobs) are valid as long as
+ * Views of header data (strings, comments, and blobs) are valid as long as
  * the file object is open.
  *
  * Writing files:
@@ -470,7 +470,7 @@ namespace mcpl {
    * @brief View of a list of strings in the header (comments or blob keys).
    *
    * Obtained from MCPLFile::comments and MCPLFile::blob_keys, and valid as
-   * long as the file is open. It supports `size()`, `[i]` and range-based for
+   * long as the file is open. It supports `size()`, `[i]`, and range-based for
    * loops, giving `std::string_view` values:
    * @code{.cpp}
    * for ( auto c : f.comments() )
@@ -834,8 +834,8 @@ namespace mcpl {
      *
      * Values of single-value fields are converted to the type of the field,
      * which must be possible without narrowing, as in C++ brace
-     * initialisation (e.g. `std::uint8_t(5)`, `300.0f` or `double(i)` for an
-     * integer `i` must be written instead of `5`, `300.0` or `i`). Values of
+     * initialisation (e.g. `std::uint8_t(5)`, `300.0f`, or `double(i)` for an
+     * integer `i` must be written instead of `5`, `300.0`, or `i`). Values of
      * array fields can be given as `T[N]`.
      *
      * @tparam T Type of the values of the field.
@@ -931,7 +931,7 @@ namespace mcpl {
    * several files with the same layout), but give errors if the userdata of
    * the particle is too short.
    *
-   * @tparam T Type of the values: `std::int8_t`, `std::uint8_t`, ..., `std::uint64_t`, `float` or `double`, for the types `int8`, `uint8`, ..., `uint64`, `float32` and `float64` in layouts.
+   * @tparam T Type of the values: `std::int8_t`, `std::uint8_t`, ..., `std::uint64_t`, `float`, or `double`, for the types `int8`, `uint8`, ..., `uint64`, `float32`, and `float64` in layouts.
    * @tparam N Number of values of array fields (0, the default, for single values).
    */
   template<class T, std::size_t N = 0>
@@ -939,7 +939,7 @@ namespace mcpl {
     static_assert( detail::is_ud_type_v<T>,
                    "Userdata fields must have type std::int8_t, std::uint8_t,"
                    " std::int16_t, std::uint16_t, std::int32_t, std::uint32_t,"
-                   " std::int64_t, std::uint64_t, float or double" );
+                   " std::int64_t, std::uint64_t, float, or double" );
   public:
     /** @brief Number of values (1 for single-value fields). */
     static constexpr std::size_t nvalues = ( N == 0 ? 1 : N );

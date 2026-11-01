@@ -80,7 +80,7 @@ _expr_functions_samedim = { 'abs' : np.abs, 'min' : np.minimum,
 #Functions used as statements in edits:
 _edit_statements = ( 'swap', 'rotate_x', 'rotate_y', 'rotate_z', 'rotate_around',
                      'rotate_frame' )
-#Components of position, direction and polarisation changed by rotations:
+#Components of position, direction, and polarisation changed by rotations:
 _rotation_planes = { 'rotate_x' : ( ('y','z'), ('uy','uz'), ('poly','polz') ),
                      'rotate_y' : ( ('z','x'), ('uz','ux'), ('polz','polx') ),
                      'rotate_z' : ( ('x','y'), ('ux','uy'), ('polx','poly') ) }
@@ -180,7 +180,7 @@ def _expr_check( node, expr, variables = () ):
 
 class _Expr:
     """A parsed (and checked) expression of a value or condition: the common
-    basis of ParticleFilter, ParticleValue and the values in ParticleEdit,
+    basis of ParticleFilter, ParticleValue, and the values in ParticleEdit,
     with the properties derived from its tree, and its evaluation. The tree
     is given for parts of other expressions (like the values assigned in
     edits, with their variables), and the text is then used in messages."""
@@ -196,7 +196,7 @@ class _Expr:
 
     @functools.cached_property
     def names( self ):
-        """All names used (fields, variables, constants and functions)"""
+        """All names used (fields, variables, constants, and functions)"""
         return frozenset( n.id for n in ast.walk(self.tree) if isinstance(n,ast.Name) )
 
     @property
@@ -247,7 +247,7 @@ class _Q:
     Values without units (like plain numbers, or ux) have dimension None. A
     plain 0 (zero is the same in all units) is marked with zero=True, and can
     be used with any units. Integers are numpy arrays with the integer types of
-    C after its integer promotions (int32, uint32, int64 or uint64)."""
+    C after its integer promotions (int32, uint32, int64, or uint64)."""
     __slots__ = ('d','v','zero')
     def __init__( self, v, d = None, zero = False ):
         self.v, self.d = v, ( None if d == _dim_none else d )
@@ -639,7 +639,7 @@ class _ExprEvaluator:
             self.error(f'{what} of integers gives values outside the range of'
                        f' the result ({desc})')
     def int_arith( self, op, a, b, what ):
-        """+, -, * and // of integers, like in C, but with errors instead of
+        """+, -, *, and // of integers, like in C, but with errors instead of
         wrapping around (// only divides non-negative integers, where Python
         and C agree)"""
         if isinstance(op,(ast.Add,ast.Sub)):
@@ -831,7 +831,7 @@ class _ExprEvaluator:
                    ' and v^2 gives their lengths squared (dot(v,w) and cross(v,w) give'
                    ' their dot and cross products)')
     def vcall( self, fname, args ):
-        """The functions of vectors: dot, cross, angle and abs (the length)"""
+        """The functions of vectors: dot, cross, angle, and abs (the length)"""
         if fname == 'abs':
             v = args[0]
             return _Q(np.sqrt(sum( np.square(c.v) for c in v.c )),v.d)
@@ -875,7 +875,7 @@ class _ExprEvaluator:
         d = self.vcall('cross',[to_center,self.name('dir')])
         return _Q(np.less_equal(self.vcall('dot',[d,d]).v,np.square(self.as_float(radius).v)))
     def int_call( self, fname, args, what ):
-        """mod, abs, round, floor, ceil, min, max and clamp of integers"""
+        """mod, abs, round, floor, ceil, min, max, and clamp of integers"""
         if fname == 'mod':
             if len(args) != 2:
                 self.error('mod(a,b) takes two arguments')

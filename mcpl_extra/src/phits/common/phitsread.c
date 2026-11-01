@@ -286,7 +286,7 @@ phits_file_t phits_open_file( const char * filename )
   if (!filename)
     phits_error("phits_open_file called with null string for filename");
 
-  //Open, classify and process first record with mcnp type and version info:
+  //Open, classify, and process first record with mcnp type and version info:
   phits_file_t out = phits_open_internal( filename );
   phits_fileinternal_t * f = (phits_fileinternal_t *)out.internal;
   assert(f);

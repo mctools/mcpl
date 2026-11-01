@@ -357,7 +357,7 @@ def test_whitespace():
 
 def test_vectors():
     #Vectors: pos, dir and pol, (a,b,c), their values (x is pos.x and
-    #pos.at(0)), arithmetic, abs, v^2, dot, cross and angle:
+    #pos.at(0)), arithmetic, abs, v^2, dot, cross, and angle:
     with mcpl.MCPLFile(example_file) as f:
         b = f.read_block()
     pos, d = np.stack((b.x,b.y,b.z),axis=1), b.direction

@@ -1,10 +1,10 @@
 save(fig,'x.foo'): Plots can not be saved as .foo files (the extension gives the format of the plots: .pdf, .png, .svg, .txt)
 save(fig,'x'): The file name x has no extension (the extension gives the format of the plots: .pdf, .png, .svg, .txt)
 save(fig,'x.pdf',terminal_width=60): terminal_width can only be used for plots in the terminal or in .txt files
-show(fig,terminal='yes'): terminal must be True, False or "ascii" (not 'yes')
+show(fig,terminal='yes'): terminal must be True, False, or "ascii" (not 'yes')
 show(fig,terminal_width=60): terminal_width can only be used with terminal=True
 show(fig,terminal_color='always'): terminal_color can only be used with terminal=True
-show(fig,terminal=True,terminal_color='sometimes'): The colour setting must be auto, always or never (not "sometimes")
+show(fig,terminal=True,terminal_color='sometimes'): The colour setting must be auto, always, or never (not "sometimes")
 Figure 1 (2x2): 'Example'
   Panel 'Steps' xlabel='x [cm]' ylabel=None logy xlim=[0,10]
     StepHist label='first' color=None bins=10 edges=[0,10] sum=45 max=9 nonzero_bins=9

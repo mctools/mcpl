@@ -206,7 +206,7 @@ def test_cmdline():
     tool('-t','ekin/MeV : time/ms;logx=1;logy=auto',ex)
     tool('-w','ekin/MeV;display_by=pdgcode;range=0:10;bins=2;print=1',
          '-p','x > 1km',ex)
-    #-l, -s and -E (the particles are picked before they are edited):
+    #-l, -s, and -E (the particles are picked before they are edited):
     tool('-w','z/cm;bins=2;range=0:100;print=1','-s1000',ex)
     tool('-w','z/cm;bins=2;range=0:100;print=1','-l3','-E','z += 50cm',ex)
     tool('-w','z/cm;bins=2;range=0:100;print=1','--pick=z < 25cm',
@@ -344,7 +344,7 @@ def test_ranges_colors():
         assert ( nhi - nlo ) <= 1.075 * ( max(hi,0) - min(lo,0) )
         print(f'range of values from {lo:g} to {hi:g}: {nlo:g} to {nhi:g}')
     #Colours of particle types: fixed ones, and the others get the unused
-    #colours (cyan first, and never those of n, gamma, e- and p), and then
+    #colours (cyan first, and never those of n, gamma, e-, and p), and then
     #those of the next cycles (with dashed lines):
     keys = [ 2112, 22, 12, 14, 'other' ]
     print('colours of', keys, _value_colors('pdgcode',keys))

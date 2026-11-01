@@ -20,7 +20,7 @@
 ################################################################################
 
 """The particle types with names: the one table of their PDG codes with names
-for labels, symbols and colours for plots, and the names which can be used for
+for labels, symbols, and colours for plots, and the names which can be used for
 them in expressions (as in mcpltool -p; mcpltool-c has the same names, see
 mcpl_core/src/mcpl.c), with their descriptions in the help."""
 
@@ -29,8 +29,8 @@ __all__ = []
 #(PDG code, name in labels, symbol in plots (or None), colour in plots (an
 #index in the colour cycles of the backends, which are those of matplotlib, or
 #None), and names in expressions with their descriptions in the help). The
-#colours of neutrons, gammas and electrons are close to those of their tracks in
-#the MCPL logo (blue, yellow and orange). The symbols are only used in plots,
+#colours of neutrons, gammas, and electrons are close to those of their tracks in
+#the MCPL logo (blue, yellow, and orange). The symbols are only used in plots,
 #never in texts which might be copied:
 _particles = (
     ( 2112, 'n', None, 0, ( ( 'neutron', 'neutrons' ), ) ),
@@ -70,7 +70,7 @@ _particles = (
 #The particle types for which wavelengths are defined (neutrons and gammas):
 _wavelength_pdgcodes = ( 2112, 22 )
 
-#The table by PDG code (names, colours), by name (symbols) and by name in
+#The table by PDG code (names, colours), by name (symbols), and by name in
 #expressions (PDG codes, and the descriptions in the help):
 _pdg_names = { p[0] : p[1] for p in _particles }
 _pdg_symbols = { p[1] : p[2] for p in _particles if p[2] is not None }
