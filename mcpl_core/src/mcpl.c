@@ -644,6 +644,8 @@ MCPL_LOCAL const char * mcpl_internal_udlayout_parse( const char * layout,
   return NULL;
 }
 
+//Raises the error for an invalid layout, with the message of
+//mcpl_internal_udlayout_parse:
 MCPL_LOCAL int mcpl_internal_udlayout_error( const char * layout,
                                              const char * errmsg,
                                              mcpl_errstate_t * es )
@@ -661,15 +663,12 @@ MCPL_LOCAL int mcpl_internal_cmp_strptr( const void * a, const void * b )
   return strcmp( *(const char * const *)a, *(const char * const *)b );
 }
 
-//Validates the layout and returns the number of bytes (with an error in case
-//of invalid layouts, in which case 0 is returned, since valid layouts are
-//never empty):
+//The problem with a blob key (or NULL if the key is valid). Blob keys must be
+//non-empty, ASCII, no non-printable characters, whitespace, backslash, or
+//quotation marks (including backtick). This is required in format version 4,
+//and when adding keys to new files:
 MCPL_LOCAL const char * mcpl_internal_blobkey_problem( const char * key )
 {
-  //Blob keys must be non-empty, ASCII, no non-printable characters,
-  //whitespace, backslash, or quotation marks (including backtick). This is
-  //required in format version 4, and when adding keys to new files. Returns
-  //NULL if the key is valid:
   if ( !*key )
     return "empty keys are not allowed";
   for ( const char * c = key; *c; ++c ) {
@@ -686,6 +685,9 @@ MCPL_LOCAL const char * mcpl_internal_blobkey_problem( const char * key )
   return NULL;
 }
 
+//Validates the layout and returns the number of bytes (with an error in case
+//of invalid layouts, in which case 0 is returned, since valid layouts are
+//never empty):
 MCPL_LOCAL uint32_t mcpl_internal_udlayout_validate( const char * layout,
                                                      mcpl_errstate_t * es )
 {
