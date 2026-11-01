@@ -158,14 +158,14 @@ def test_tool():
         ok &= compare(*args)
     #Commands which do not write files ignore --dry-run:
     for args in ( ['a1.mcpl'], ['-j','a1.mcpl'], ['-n','-l3','-s2','a1.mcpl'],
-                  ['--stats','a1.mcpl'], ['--hist','ekin/MeV;print=1;display_by=single','a1.mcpl'],
+                  ['--stats','a1.mcpl'], ['--window','ekin/MeV;print=1;display_by=single','a1.mcpl'],
                   ['--version'], ['--bkey1','a1.mcpl'] ):
         ok &= compare(*args, writes = False)
     #The short form, and misuse:
     for args in ( ['-d','--extract','-l2','a1.mcpl','out.mcpl'],
                   ['-jd','a1.mcpl'],
                   ['-d','--stats','-o','s.pdf','a1.mcpl'],
-                  ['--dry-run','--hist','ekin/MeV','--output','h.txt','a1.mcpl'] ):
+                  ['--dry-run','--terminal','ekin/MeV','--output','h.txt','a1.mcpl'] ):
         fresh('dry')
         rc, out, err = run(args, 'dry')
         print(f'mcpltool {" ".join(args)}: exit code {rc}')

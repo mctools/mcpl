@@ -447,7 +447,7 @@ def test_expressions():
               f.read_block().userdata['temp'].tolist())
     #mcpltool:
     for args in ( [ '-p', 'userdata.temp > 295K', '-n', 'udexpr.mcpl' ],
-                  [ '-H', 'userdata.temp/K;print;bins=3', 'udexpr.mcpl' ] ):
+                  [ '-t', 'userdata.temp/K;print;bins=3', 'udexpr.mcpl' ] ):
         print(f'  mcpltool {" ".join(args)}:',flush=True)
         try:
             mcpl.app_mcpltool(['mcpltool']+args)

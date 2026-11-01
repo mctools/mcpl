@@ -34,16 +34,18 @@ import sys
 
 import mcpldev as mcpl
 import numpy as np
-from mcpldev.plotting import Figure, Panel, StepHist, Text, resolution
+from mcpldev._plotregistry import _forced_backend, _resolution
+from mcpldev.plotting import Figure, Panel, StepHist, Text
 from MCPLTestUtils.dirs import test_data_dir
 from MCPLTestUtils.plots import example_figures
 
 example_file = test_data_dir.joinpath('example.mcpl')
 
 def show(figs, backend, width=72, height=8):
-    opts = { f'{backend}_width' : width, f'{backend}_height' : height }
+    #(terminal=True draws with unicode in these tests, and 'ascii' with ascii):
     print(f'==> {backend} backend, width {width}, height {height}:')
-    mcpl.plotting.show(figs, backend=backend, **opts)
+    mcpl.plotting.show(figs, terminal = True if backend == 'unicode' else 'ascii',
+                       terminal_width=width, terminal_height=height)
 
 def test_histograms():
     h = mcpl.histogram(example_file, 'ekin/MeV', logx=True, bins=50, display_by='single')
@@ -71,34 +73,28 @@ def test_overview():
 
 def test_files_and_options():
     figs = example_figures(mcpl,example_file)[:2]
+    #(.txt files are drawn with unicode, and here also with ascii):
     for backend in ('unicode','ascii'):
-        files = mcpl.plotting.save(figs, f'stats_{backend}.txt', backend=backend,
-                                   **{ f'{backend}_width' : 60 })
+        with _forced_backend(backend):
+            files = mcpl.plotting.save(figs, f'stats_{backend}.txt', terminal_width=60)
         data = pathlib.Path(files[0]).read_bytes()
         widths = { len(line) for line in data.decode('utf-8').splitlines() }
         print(f'{backend}: saved {files}, {len(data.splitlines())} lines, max width'
               f' {max(widths)}, ascii only: {data.isascii()}')
-    for bad in ( { 'backend' : 'ascii', 'unicode_width' : 50 },
-                 { 'backend' : 'unicode', 'filename' : 'x.pdf' } ):
+    h = mcpl.histogram(example_file, 'ekin/MeV', bins=10)
+    for args, kw in ( ( "'x.txt',terminal=True", { 'filename' : 'x.txt', 'terminal' : True } ),
+                      ( "'x.txt',terminal_color='always'",
+                        { 'filename' : 'x.txt', 'terminal_color' : 'always' } ),
+                      ( 'terminal=True,logz=True', { 'terminal' : True, 'logz' : True } ) ):
         try:
-            fn = bad.pop('filename', None)
-            if fn:
-                mcpl.plotting.save(figs, fn, **bad)
-            else:
-                mcpl.plotting.show(figs, **bad)
+            h.plot(**kw)
         except mcpl.MCPLError as e:
-            print(f'{bad}: MCPLError: {e}')
-    #(the other backends depend on the installed packages):
-    avail = mcpl.plotting.available_backends()
-    print(f'unicode and ascii backends always available, as the last ones:'
-          f' {avail[-2:] == ["unicode","ascii"]}')
-    #In terminals which can not show its characters, the unicode backend can
-    #not show plots, so plots for the terminal are shown with the ascii
-    #backend, while explicitly requesting the unicode backend is an error:
+            print(f'plot({args}): MCPLError: {e}')
+    #In terminals which can not show its characters, plots in the terminal
+    #are drawn with ascii characters:
     env = dict(os.environ, PYTHONIOENCODING='ascii',
                PYTHONPATH=os.pathsep.join(p for p in sys.path if p))
-    for args in ( 'terminal=True,ascii_width=40,ascii_height=5',
-                  'backend="unicode",unicode_width=40,unicode_height=5' ):
+    for args in ( 'terminal=True,terminal_width=40,terminal_height=5', ):
         code = ( f'import mcpldev; mcpldev.histogram({str(example_file)!r},"ekin/MeV",'
                  f'bins=10,display_by="single").plot({args})' )
         rv = subprocess.run([sys.executable,'-c',code], capture_output=True,
@@ -115,18 +111,18 @@ def test_resolution():
     #The text backends know their resolution (number of columns and rows)
     #before seeing any data, so histograms can be made to match it:
     from mcpldev._plotbackend_text import UnicodeBackend
-    print('resolution unicode (width 60):',resolution('unicode',unicode_width=60))
-    print('resolution ascii (width 50, height 6):',
-          resolution('ascii',ascii_width=50,ascii_height=6))
-    print('resolution test backend:',resolution('test'))
+    print('resolution unicode (width 60):',_resolution(True,60))
+    print('resolution ascii (width 50, height 6):',_resolution('ascii',50,6))
+    with _forced_backend('test'):
+        print('resolution test backend:',_resolution())
     #A histogram with one bin per column is drawn without any resampling: a
     #single filled bin fills exactly its column, in all rows:
-    ncols, nrows = resolution('unicode',unicode_width=60,unicode_height=5)
+    ncols, nrows = _resolution(True,60,5)
     for ibin in (0, 17, ncols-1):
         values = np.zeros(ncols)
         values[ibin] = 1.0
         fig = Figure(panels=[Panel(items=[StepHist(np.linspace(-3.0,7.0,ncols+1),values)])])
-        lines = UnicodeBackend(unicode_width=60,unicode_height=5).draw(fig)
+        lines = UnicodeBackend(width=60,height=5).draw(fig)
         lines = lines.splitlines() if isinstance(lines,str) else lines
         filled = [ (i,j) for i,line in enumerate(lines[:nrows])
                    for j,ch in enumerate(line) if ch == '\u2588' ]
@@ -135,12 +131,13 @@ def test_resolution():
               f' {len(cols)} column(s)')
 
 def test_tool():
+    #(with the ascii backend, as in terminals which can not show Unicode):
     out = io.StringIO()
-    with contextlib.redirect_stdout(out), contextlib.suppress(SystemExit):
-        mcpl.app_mcpltool(['mcpltool','--hist','time/ms;logx=1;bins=20;display_by=single',
-                             '--backend','ascii',str(example_file)])
+    with _forced_backend('ascii'), contextlib.redirect_stdout(out), contextlib.suppress(SystemExit):
+        mcpl.app_mcpltool(['mcpltool','-t','time/ms;logx=1;bins=20;display_by=single',
+                           str(example_file)])
     lines = out.getvalue().splitlines()
-    print(f'mcpltool --hist --backend ascii: {len(lines)} lines, first and last:')
+    print(f'mcpltool -t with ascii: {len(lines)} lines, first and last:')
     print(lines[0])
     print(lines[-1])
     #Without --bins, the histogram is made at the resolution of the terminal
@@ -150,12 +147,11 @@ def test_tool():
     old = { k : os.environ.get(k) for k in env }
     os.environ.update(env)
     try:
-        for args in ( ['--hist','x/cm;display_by=single'], ['--hist','x/cm : y/cm'] ):
+        for args in ( ['-t','x/cm;display_by=single'], ['-t','x/cm : y/cm'] ):
             out = io.StringIO()
-            with contextlib.redirect_stdout(out), contextlib.suppress(SystemExit):
-                mcpl.app_mcpltool(['mcpltool',*args,'--backend','ascii',
-                                     str(example_file)])
-            print(f'mcpltool {" ".join(args)} --backend ascii with 83 columns:')
+            with _forced_backend('ascii'), contextlib.redirect_stdout(out), contextlib.suppress(SystemExit):
+                mcpl.app_mcpltool(['mcpltool',*args,str(example_file)])
+            print(f'mcpltool {" ".join(args)} with ascii and 83 columns:')
             print(out.getvalue())
     finally:
         for k,v in old.items():

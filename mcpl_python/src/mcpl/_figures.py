@@ -25,7 +25,7 @@ plotting.py, which provides these classes)."""
 __all__ = []
 
 def _line_style( color ):
-    """The colour (0 to 9, in the colour cycle of the backend) and line style
+    """The colour (0 to 9, in the colour cycle of matplotlib) and line style
     ('solid', 'dashed' or 'dotted') of a curve with the colour index color (see
     StepHist): 10 colours with solid lines, then dashed, then dotted"""
     return color % 10, ( 'solid', 'dashed', 'dotted' )[ ( color // 10 ) % 3 ]
@@ -37,10 +37,10 @@ def _item_color( item, k ):
 
 class StepHist:
     """1D histogram drawn as a step line. The bin edges have one more entry
-    than the values. The color is an index into the colour cycle of the
-    backend, which has 10 colours drawn with solid lines, then dashed, then
-    dotted (see _line_style), by default the position of the item in the
-    panel."""
+    than the values. The color is an index into the colour cycle of
+    matplotlib (also used in the terminal), with 10 colours drawn with solid
+    lines, then dashed, then dotted (see _line_style), by default the position
+    of the item in the panel."""
     def __init__( self, edges, values, label = None, color = None ):
         self.edges, self.values, self.label = edges, values, label
         self.color = color
@@ -54,17 +54,17 @@ class Hist2D:
 
 class Bars:
     """Bar chart with a bar for each label (horizontal if horizontal is set).
-    The colors are indices into the colour cycle of the backend, one for each
-    bar (by default all bars have the first colour)."""
+    The colors are indices into the colour cycle (as for StepHist), one for
+    each bar (by default all bars have the first colour)."""
     def __init__( self, labels, values, horizontal = False, colors = None ):
         self.labels, self.values, self.horizontal = labels, values, horizontal
         self.colors = colors
 
 class Scatter3D:
-    """Points in three dimensions, drawn as a 3D scatter plot by the backends
-    which can (others show a message instead), with a label for the legend
-    and a colour (an index into the colour cycle of the backend, as for
-    StepHist) if given. The coordinates x, y and z are arrays of the same
+    """Points in three dimensions, drawn as a 3D scatter plot in windows (in
+    the terminal, a message is shown instead), with a label for the legend
+    and a colour (an index into the colour cycle, as for StepHist) if
+    given. The coordinates x, y and z are arrays of the same
     length, and the panel gives the label of the z axis (zlabel)."""
     def __init__( self, x, y, z, label = None, color = None ):
         self.x, self.y, self.z, self.label, self.color = x, y, z, label, color

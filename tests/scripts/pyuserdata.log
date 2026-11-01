@@ -1414,7 +1414,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     1        2112           2           0           0           0           0           0           1           0           1  0000964301000080400000a0400000c0...
     2        2112           3           0           0           0           0           0           1           0           1  00009b43ff0000e04000000041000010...
   exit: 0
-  mcpltool -H userdata.temp/K;print;bins=3 udexpr.mcpl:
+  mcpltool -t userdata.temp/K;print;bins=3 udexpr.mcpl:
 # histogram of: userdata.temp/K
 # values: weights per bin
 # lower edge | upper edge | n (2112)

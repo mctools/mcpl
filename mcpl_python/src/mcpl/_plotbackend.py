@@ -19,8 +19,8 @@
 ##                                                                            ##
 ################################################################################
 
-"""The interface implemented by the plotting backends (see also plotting.py, and
-_plotregistry.py for their registry)."""
+"""The interface implemented by the plotting backends (see _plotregistry.py
+for the choice of the backend)."""
 
 __all__ = []
 
@@ -31,26 +31,14 @@ from ._common import MCPLError
 
 
 class PlotBackend:
-    """Interface of plotting backends (public as mcpl.plotting.Backend), which
-    show or save lists of Figure objects. Subclasses set name (a unique name
-    used to select the backend), kind (what plots are shown on: 'window' or
-    'terminal', or None for backends which are only used when
-    selected by name), priority (the preference among the backends of the
-    same kind, higher is preferred), formats (a dict with the file extensions
-    which save() can create, and their priorities among the backends which can
-    create them) and requirement (the Python package needed, if any). They
+    """Interface of plotting backends, which show or save lists of Figure
+    objects. Subclasses set name, formats (the file extensions which save()
+    can create) and requirement (the Python package needed, if any). They
     implement show() and save(), and is_available() and can_show() if the
-    backend is not always available or able to show plots. Options can be
-    given as keyword arguments to __init__, named with the backend name as
-    prefix (like matplotlib_backend)."""
+    backend is not always available or able to show plots."""
     name = None
-    kind = None
-    priority = 0
-    formats: ClassVar[dict] = {}
+    formats: ClassVar[tuple] = ()
     requirement = None
-    #Options to use when plots are only saved in files, e.g. by mcpltool (like
-    #a backend of matplotlib which needs no display):
-    batch_options: ClassVar[dict] = {}
 
     @classmethod
     def is_available( cls ):
@@ -63,11 +51,6 @@ class PlotBackend:
         """Whether the backend can show plots here (e.g. if there is a
         display), assuming that it is available."""
         return True
-
-    @classmethod
-    def available_formats( cls ):
-        """File extensions which save() can create in this installation"""
-        return tuple(cls.formats)
 
     def resolution( self ):
         """Number of bins which histograms should have to match the resolution
@@ -84,21 +67,20 @@ class PlotBackend:
 
     def save( self, figures, filename ):
         """Save the figures in a file, with format given by the extension of
-        the filename (one of the available formats). If the format can only
-        hold a single figure, and there are more figures, files with numbered
-        names are created (e.g. plot_1.png, plot_2.png). Returns the list of
-        created files."""
+        the filename (one of the formats). If the format can only hold a
+        single figure, and there are more figures, files with numbered names
+        are created (e.g. plot_1.png, plot_2.png). Returns the list of created
+        files."""
         raise NotImplementedError
 
     def check_format( self, filename ):
-        """Extension of filename, if it is an available format (otherwise
+        """Extension of filename, if it is one of the formats (otherwise
         MCPLError is raised)."""
         ext = _extension(filename)
-        avail = self.available_formats()
-        if ext not in avail:
+        if ext not in self.formats:
             raise MCPLError(f'The {self.name} plotting backend can not create'
                             f' .{ext} files (supported: '
-                            + ', '.join(f'.{e}' for e in avail) + ')')
+                            + ', '.join(f'.{e}' for e in self.formats) + ')')
         return ext
 
 def _extension( filename ):

@@ -41,6 +41,10 @@ def _tool(*args):
 _pick_edit = ( "for b in mcpl.MCPLFile('example.mcpl', pick='pdgcode == neutron',"
                " edit='rotate_z(90deg)').particle_blocks: pass" )
 
+#(the code which follows is run with the test backend, where mcpl.plotting
+#loads the module with _forced_backend):
+_test_backend = "mcpl.plotting\nwith mcpl._plotregistry._forced_backend('test'):\n"
+
 #( key, title, code ), the code using the files made by prepare_files:
 scenarios = [
     ( 'import', 'import mcpl', 'pass' ),
@@ -80,7 +84,7 @@ scenarios = [
     ( 'tool', 'mcpltool FILE', _tool('example.mcpl') ),
     ( 'tool_pick', 'mcpltool --pick', _tool('-l3','--pick','pdgcode == gamma','example.mcpl') ),
     ( 'tool_stats', 'mcpltool --stats', _tool('--stats','example.mcpl') ),
-    ( 'tool_hist', 'mcpltool --hist with print', _tool('--hist','ekin/MeV;print','example.mcpl') ),
+    ( 'tool_hist', 'mcpltool --window with print', _tool('--window','ekin/MeV;print','example.mcpl') ),
     ( 'tool_extract', 'mcpltool --extract', _tool('--extract','example.mcpl','e1.mcpl') ),
     ( 'tool_extract_edit', 'mcpltool --extract --edit',
       _tool('--extract','example.mcpl','e2.mcpl','--edit','z += 1m') ),
@@ -89,9 +93,9 @@ scenarios = [
     ( 'tool_text', 'mcpltool --text', _tool('--text','example.mcpl','t.txt') ),
     #(the test backend makes no plots, so no plotting packages are needed):
     ( 'plot', 'plot with the test backend',
-      "mcpl.histogram('example.mcpl','ekin/MeV',bins=4).plot(backend='test')" ),
-    ( 'tool_plot', 'mcpltool --hist with the test backend',
-      _tool('--hist','ekin/MeV','--backend','test','example.mcpl') ),
+      _test_backend + "    mcpl.histogram('example.mcpl','ekin/MeV',bins=4).plot()" ),
+    ( 'tool_plot', 'mcpltool --window with the test backend',
+      _test_backend + '    ' + _tool('--window','ekin/MeV','example.mcpl') ),
 ]
 
 def prepare_files( data_dir ):

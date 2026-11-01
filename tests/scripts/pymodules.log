@@ -4,7 +4,7 @@ Modules of the mcpl package and their imports from the package (in parentheses: 
   _ascii               <- _reader
   _blocks              <- _common, _numpy, (_physics)
   _cli                 <- _common, _messages, _reader, (_ascii), (_clistats), (_examples), (_expressions), (_exprhelp), (_extract), (_fileops), (_histogram), (_histstring), (_particles)
-  _clistats            <- _common, _reader, (_histogram), (_histstring), (_plotbackend), (_plotregistry), (_stats), (plotting)
+  _clistats            <- _common, _reader, (_histogram), (_histstring), (_plotregistry), (_stats)
   _common              <- -
   _examples            <- _common, _messages, _numpy, (_writer)
   _exprcore            <- _common, _exprsyntax, _exprunits, _numpy, _particles, _physics, (_userdata)
@@ -29,7 +29,7 @@ Modules of the mcpl package and their imports from the package (in parentheses: 
   _plotbackend_mpl     <- _common, _figures, _numpy, _plotbackend, (_logo)
   _plotbackend_test    <- _figures, _numpy, _plotbackend
   _plotbackend_text    <- _figures, _numpy, _particles, _physics, _plotbackend, _termcolor
-  _plotregistry        <- _common, _plotbackend, (_messages), [_plotbackend_mpl], [_plotbackend_test], [_plotbackend_text]
+  _plotregistry        <- _common, _plotbackend, [_plotbackend_mpl], [_plotbackend_test], [_plotbackend_text]
   _reader              <- _blocks, _common, _messages, _numpy, (_expressions), (_scipp), (_statsum), (_userdata)
   _records             <- _blocks, _common, _numpy, (_particles), (_physics)
   _scipp               <- _common, _messages, _numpy, (_userdata)
@@ -40,7 +40,7 @@ Modules of the mcpl package and their imports from the package (in parentheses: 
   _writer              <- _blocks, _common, _messages, _numpy, _reader, _records, (_expressions), (_statsum), (_userdata)
   constants            <- -
   mcpl                 <- _ascii, _blocks, _cli, _common, _reader, _stats, _statsum
-  plotting             <- _figures, _plotbackend, _plotregistry
+  plotting             <- _figures, _plotregistry
 The imports have no cycles.
 numpy is imported by: _numpy
 matplotlib is imported by: _plotbackend_mpl

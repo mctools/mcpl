@@ -23,7 +23,7 @@
 # NEEDS: numpy
 
 # Test histograms (mcpl.histogram, mcpl.histogram2d, mcpl.plot_histograms),
-# and mcpltool --hist, using the plotting backend for tests (which prints
+# and mcpltool -w and -t, using the plotting backend for tests (which prints
 # descriptions of the figures), and that plot_stats is no longer available.
 
 import contextlib
@@ -34,6 +34,7 @@ import shutil
 import matplotlib
 import mcpldev as mcpl
 import numpy as np
+from mcpldev._plotregistry import _forced_backend
 from MCPLTestUtils.dirs import test_data_dir
 
 #(no windows, also where there is a display, so plots which would be shown
@@ -47,7 +48,7 @@ example_file = pathlib.Path('example.mcpl')
 ref1 = pathlib.Path('reffile_1.mcpl')
 def show(obj):
     figs = obj if isinstance(obj,list) else [ obj.figure() ]
-    mcpl.plotting.show(figs, backend='test')
+    mcpl.plotting.show(figs)
 
 def test_histograms():
     with mcpl.MCPLFile(example_file) as f:
@@ -116,17 +117,17 @@ def test_overlay():
                         logx=True, bins=10)
     hg = mcpl.histogram(example_file, 'ekin/MeV', pick='pdgcode == gamma',
                         logx=True, bins=10)
-    mcpl.plot_histograms([hn,hg], overlay=True, backend='test', logy=True)
-    mcpl.plot_histograms([hn,hg], overlay=True, labels=['n','g'], backend='test')
-    files = mcpl.plot_histograms([hn,hg], filename='hists.txt', backend='test')
+    mcpl.plot_histograms([hn,hg], overlay=True, logy=True)
+    mcpl.plot_histograms([hn,hg], overlay=True, labels=['n','g'])
+    files = mcpl.plot_histograms([hn,hg], filename='hists.txt')
     print(f'plot_histograms without overlay created {files}')
     h2 = mcpl.histogram([example_file, ref1], 'x/cm', range=(-20,20), bins=4)
-    mcpl.plot_histograms([h2,hn], overlay=True, backend='test')
+    mcpl.plot_histograms([h2,hn], overlay=True)
     for args, kwargs in ( ( [], {} ),
                           ( [hn, mcpl.histogram2d(example_file,'x/cm','y/cm')], {} ),
                           ( [hn, hg], {'labels':['a']} ) ):
         try:
-            mcpl.plot_histograms(args, overlay=True, backend='test', **kwargs)
+            mcpl.plot_histograms(args, overlay=True, **kwargs)
         except mcpl.MCPLError as e:
             print(f'plot_histograms(overlay=True) with {len(args)} histograms {kwargs}: {e}')
 
@@ -194,69 +195,70 @@ def tool(*args):
 
 def test_cmdline():
     ex = str(example_file)
-    tool('-H','ekin/MeV;logx=1;display_by=pdgcode','-B','test',ex)
-    tool('-H','ekin/eV;lethargy=1;bins=5;print=1','-p','pdgcode == neutron',ex)
-    tool('-H','x/cm : y/cm;bins=4;print=1','-p','pdgcode == gamma',ex)
-    tool('-H','x/cm:y/cm;bins=2;xrange=-10:10;yrange=0:5;print=1',ex)
-    tool('-H','x/cm : y/cm;bins=2;xrange=-10:10;print=1',ex)
-    tool('-H','x/cm : y/cm;bins=3,2;print=1',ex)
-    tool('-H','x/cm;range=-10:10;bins=4','-B','test',ex,str(ref1))
-    tool('-H','time/ms;logx=1;logy=1;unweighted=1','-B','test',ex)
-    tool('-H','ekin/MeV : time/ms;logx=1;logy=auto','-B','test',ex)
-    tool('-H','ekin/MeV;display_by=pdgcode;range=0:10;bins=2;print=1',
+    tool('-w','ekin/MeV;logx=1;display_by=pdgcode',ex)
+    tool('-t=ekin/eV;lethargy=1;bins=5;print=1','-p','pdgcode == neutron',ex)
+    tool('--window','x/cm : y/cm;bins=4;print=1','-p','pdgcode == gamma',ex)
+    tool('--terminal=x/cm:y/cm;bins=2;xrange=-10:10;yrange=0:5;print=1',ex)
+    tool('-w','x/cm : y/cm;bins=2;xrange=-10:10;print=1',ex)
+    tool('-w','x/cm : y/cm;bins=3,2;print=1',ex)
+    tool('-w','x/cm;range=-10:10;bins=4',ex,str(ref1))
+    tool('-w','time/ms;logx=1;logy=1;unweighted=1',ex)
+    tool('-t','ekin/MeV : time/ms;logx=1;logy=auto',ex)
+    tool('-w','ekin/MeV;display_by=pdgcode;range=0:10;bins=2;print=1',
          '-p','x > 1km',ex)
     #-l, -s and -E (the particles are picked before they are edited):
-    tool('-H','z/cm;bins=2;range=0:100;print=1','-s1000',ex)
-    tool('-H','z/cm;bins=2;range=0:100;print=1','-l3','-E','z += 50cm',ex)
-    tool('-H','z/cm;bins=2;range=0:100;print=1','--pick=z < 25cm',
+    tool('-w','z/cm;bins=2;range=0:100;print=1','-s1000',ex)
+    tool('-w','z/cm;bins=2;range=0:100;print=1','-l3','-E','z += 50cm',ex)
+    tool('-w','z/cm;bins=2;range=0:100;print=1','--pick=z < 25cm',
          '--edit=z += 50cm',ex)
-    tool('-Hekin/MeV;print=1;bins=2','-ppdgcode==22',ex)
     #(abbreviated long options):
-    tool('--hi=ekin/MeV;print=1;bins=2','--pi','pdgcode==22',ex)
-    for bad in ( ['-H','ekin',ex], ['-H','ekin/MeV;bins=0',ex],
-                 ['-H','ekin/MeV;range=1',ex], ['-H','ekin/MeV;range=2:1',ex],
-                 ['-H','ekin/MeV;range=1:2,3:4',ex], ['-H','ekin/MeV;xrange=1:2',ex],
-                 ['-H','x/cm : y/cm;range=1:2',ex],
-                 ['-H','x/cm : y/cm;logx=1;equal',ex], ['-H','x/cm : y/cm : z/cm',ex], ['-H','x : y : z : x',ex], ['-H','x : y : z;bins=5',ex],
-                 ['-H','x/cm;bins',ex], ['-H','x/cm;logx',ex], ['-H','x/cm;logx=true',ex],
-                 ['-H','x/cm;logy=yes',ex], ['-H','x/cm;logx=2',ex], ['-H','x/cm;logy=auto',ex],
-                 ['-H','x/cm;logx=1;logx=1',ex], ['-H','x/cm;foo',ex],
-                 ['-H','x/cm','-B','foo',ex], ['--logx',ex], ['--bins','10',ex],
-                 ['-o','a.pdf',ex], ['-H','x/cm','-e',ex,'out.mcpl'],
-                 ['-H','x/cm'], ['-H','x/cm;print=1','-t',ex],
+    tool('--win=ekin/MeV;print=1;bins=2','--pi','pdgcode==22',ex)
+    for bad in ( ['-w','ekin',ex], ['-w','ekin/MeV;bins=0',ex],
+                 ['-w','ekin/MeV;range=1',ex], ['-w','ekin/MeV;range=2:1',ex],
+                 ['-w','ekin/MeV;range=1:2,3:4',ex], ['-w','ekin/MeV;xrange=1:2',ex],
+                 ['-w','x/cm : y/cm;range=1:2',ex],
+                 ['-w','x/cm : y/cm;logx=1;equal',ex], ['-w','x/cm : y/cm : z/cm',ex], ['-w','x : y : z : x',ex], ['-w','x : y : z;bins=5',ex],
+                 ['-w','x/cm;bins',ex], ['-w','x/cm;logx',ex], ['-w','x/cm;logx=true',ex],
+                 ['-w','x/cm;logy=yes',ex], ['-w','x/cm;logx=2',ex], ['-w','x/cm;logy=auto',ex],
+                 ['-w','x/cm;logx=1;logx=1',ex], ['-w','x/cm;foo',ex],
+                 ['--logx',ex], ['--bins','10',ex],
+                 ['-o','a.pdf',ex], ['-w','x/cm','-e',ex,'out.mcpl'],
+                 ['-w','x/cm'], ['-w','x/cm;print=1','-o','a.png',ex],
                  #(logx=auto: logarithmic for positive values over more than
                  #two decades, else linear):
-                 ['-H','ekin/MeV;logx=auto;bins=3;print=1',ex], ['-H','x/cm;logx=auto;bins=3;print=1',ex],
-                 ['-H','ekin/MeV;logx=auto;range=1:10;bins=3;print=1',ex],
-                 ['-H','x/cm','-t','-o','a.txt',ex] ):
+                 ['-w','ekin/MeV;logx=auto;bins=3;print=1',ex], ['-w','x/cm;logx=auto;bins=3;print=1',ex],
+                 ['-w','ekin/MeV;logx=auto;range=1:10;bins=3;print=1',ex],
+                 ['-w','x/cm','-o','a.txt',ex], ['-t','x/cm','-o','a.png',ex] ):
         tool(*bad)
 
 def test_cmdline_more():
-    #Statistics, saving files with the test backend (which describes the
-    #figures), several histograms, and argument errors:
+    #Statistics, saving a file with the test backend (which describes the
+    #figures), and argument errors (also of the forms of -w and -t):
     ex = str(example_file)
-    tool('-S','-o','stats.txt','-B','test','-p','pdgcode == gamma',ex)
+    tool('-S','-o','stats.txt','-p','pdgcode == gamma',ex)
     tool('-S','-s1000','-E','x = 1cm',ex)
-    tool('-H','x/cm;bins=3','-o','hist.txt','-B','test',ex)
-    tool('-H','x/cm;bins=2;print','-H','pdgcode;bar=2;print',ex)
-    tool('-H','x/cm;bins=3','-H','pdgcode;bar','-o','twohists.txt','-B','test',ex)
-    for bad in ( ['-p','neutron',ex], ['-p2112',ex], ['-p',' gamma ',ex],
-                 ['-p'], ['-lX',ex], ['-l',ex],
-                 ['-p','x > 0','-p','x < 1cm',ex], ['--pdf',ex], ['--gui',ex],
-                 ['--select','x > 0',ex], ['-S','-B','test',ex], ['-S','-t',ex],
-                 ['-S','-H','x/cm',ex], [ex,ex,ex], ['--te','x',ex],
-                 ['--text',ex], ['--text',ex,'hist.txt'],
-                 ['-t',ex], ['-j','-H','x/cm',ex], ['--no-comment','-S',ex],
-                 ['-H','x/cm : y/cm;display_by=pdgcode',ex],
-                 ['-H','x/cm','-o','hist.txt','-B','test',ex],
-                 ['-H','x/cm','-o','hist',ex], ['-H','x/cm','-o','hist.jpg',ex],
-                 ['-H','x/cm','-o','hist.png','-d',ex],
-                 ['-p','x = 1cm; x > 0',ex], ['-p','x > "1"',ex], ['-E','z = 1cm, x = 0',ex] ):
-        tool(*bad)
+    tool('-t','x/cm;bins=3','-o','hist.txt',ex)
+    #(the errors as without the test backend):
+    with _forced_backend(None):
+        for bad in ( ['-p','neutron',ex], ['-p2112',ex], ['-p',' gamma ',ex],
+                     ['-p'], ['-lX',ex], ['-l',ex],
+                     ['-p','x > 0','-p','x < 1cm',ex], ['--pdf',ex], ['--gui',ex],
+                     ['--select','x > 0',ex], ['-S','-t','x',ex],
+                     ['-S','-w','x/cm',ex], [ex,ex,ex],
+                     ['-w','x/cm;bins=2;print','-w','pdgcode;bar=2;print',ex],
+                     ['--text',ex], ['--text',ex,'hist.txt'],
+                     ['-t',ex], ['-w',ex], ['-t',ex,ex], ['-w',ex,'x/cm'], ['-wx/cm',ex],
+                     ['-H','x/cm',ex], ['-B','test',ex], ['--te','x',ex],
+                     ['-j','-w','x/cm',ex], ['--no-comment','-S',ex],
+                     ['-w','x/cm : y/cm;display_by=pdgcode',ex],
+                     ['-w','x/cm','-o','hist',ex], ['-w','x/cm','-o','hist.jpg',ex],
+                     ['-w','x/cm','-o','hist.png','-d',ex],
+                     ['-p','x = 1cm; x > 0',ex], ['-p','x > "1"',ex], ['-E','z = 1cm, x = 0',ex] ):
+            tool(*bad)
 
 def test_help_topics():
     #Only the start of each topic (the rest are tables of all names):
-    for args in ( ['-p','help'], ['--edit=help'], ['-H','help',str(example_file)] ):
+    for args in ( ['-p','help'], ['--edit=help'], ['--hist-help'] ):
         out = io.StringIO()
         rc = 0
         with contextlib.redirect_stdout(out):
@@ -421,17 +423,19 @@ def test_only():
         except mcpl.MCPLError as e:
             print(f'{bad!r}: {e}')
 
-test_only()
-test_logz()
-test_equal()
-test_3d()
-test_ranges_colors()
-test_units()
-test_bars_groups_domains()
-test_histograms()
-test_plot_stats()
-test_overlay()
-test_cmdline()
-test_cmdline_more()
-test_help_topics()
-test_autobins()
+#(the plots are described by the test backend):
+with _forced_backend('test'):
+    test_only()
+    test_logz()
+    test_equal()
+    test_3d()
+    test_ranges_colors()
+    test_units()
+    test_bars_groups_domains()
+    test_histograms()
+    test_plot_stats()
+    test_overlay()
+    test_cmdline()
+    test_cmdline_more()
+    test_help_topics()
+    test_autobins()

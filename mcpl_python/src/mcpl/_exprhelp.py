@@ -21,7 +21,7 @@
 
 """Descriptions of the names which can be used in expressions and histogram
 strings (short ones for completion while typing, long ones for the help), and
-the help texts of mcpltool -p help, -E help and -H help."""
+the help texts of mcpltool -p help, -E help and --hist-help."""
 
 __all__ = []
 
@@ -209,7 +209,7 @@ _hints = (
       'natural logarithm (a must have no unit: e.g. log(ekin/MeV) > 0)' ),
     ( 'functions', 'log10(a)',
       'base 10 logarithm (a without unit)',
-      'base 10 logarithm (a must have no unit: e.g. log10(ekin/eV) histogrammed with -H)' ),
+      'base 10 logarithm (a must have no unit: e.g. log10(ekin/eV) histogrammed with -w or -t)' ),
     ( 'functions', 'sin(a)',
       'sine (a: an angle)',
       'sine (a is an angle, or a value without unit taken as radians: e.g. sin(30deg))' ),
@@ -412,8 +412,8 @@ and the statements listed below. The expressions are written as for -p (see
 or two separated by ":" for a 2D histogram (or three for a 3D plot of a
 sample of the particles, in windows), followed by options separated by ";".
 For example:''',
-               '''The plots are shown in a window, or in the terminal (with -t), or saved in a
-file (with -o FILE). -H can be given several times, for several plots.''' ),
+               '''The histogram is shown in a window with -w HIST, or in the terminal with -t
+HIST, or saved in a file (with -o FILE).''' ),
 }
 
 #(the end of the help texts, if any):
@@ -444,10 +444,10 @@ _topic_groups = {
 }
 
 def _help_blocks( topic ):
-    """Help for -p help ('pick'), -E help ('edit') or -H help ('hist'), as
+    """Help for -p help ('pick'), -E help ('edit') or --hist-help ('hist'), as
     blocks (see _helptext)"""
     head, tail = _intro[topic]
-    opt = { 'pick' : '-p', 'edit' : '-E', 'hist' : '-H' }[topic]
+    opt = { 'pick' : '-p', 'edit' : '-E', 'hist' : '-w' }[topic]
     blocks = [ ( 'text', head ) ]
     for title, note, rows in examples[topic]:
         blocks += [ ( 'gap', ), ( 'subsection', title ) ]
@@ -465,7 +465,7 @@ def _help_blocks( topic ):
     return blocks
 
 def _help_text( topic ):
-    """Help text for -p help ('pick'), -E help ('edit') or -H help ('hist')"""
+    """Help text for -p help ('pick'), -E help ('edit') or --hist-help ('hist')"""
     from ._helptext import plain_text
     return plain_text(_help_blocks(topic))
 

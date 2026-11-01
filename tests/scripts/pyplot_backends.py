@@ -22,43 +22,22 @@
 
 # NEEDS: numpy
 
-# Test the selection of plotting backends (by name, with set_default_backend,
-# and automatically, for showing plots or for saving them in files of a
-# format), custom backends registered with register_backend, Backend objects,
-# backend options, and the -B, -t and -o options of mcpltool.
+# Test the choice of the plotting backend: matplotlib for windows, unicode (or
+# else ascii) for the terminal with terminal=True, and ascii with
+# terminal='ascii', and by the extension for files; with the errors when plots
+# can not be shown in a window, and the -t and -o options of mcpltool.
 
 import os
 import subprocess
 import sys
 
 import mcpldev as mcpl
-from mcpldev.plotting import Backend, Figure, Panel, Text
+from mcpldev._plotregistry import _backend_class, _save_backend, _show_backend
+from mcpldev.plotting import Figure, Panel, Text
 from MCPLTestUtils.dirs import test_data_dir
-from MCPLTestUtils.plots import example_figures
 
 example_file = test_data_dir.joinpath('example.mcpl')
 fig = Figure( title = 'A figure', panels = [ Panel( items = [ Text('Hello') ] ) ] )
-
-class PrintingBackend(Backend):
-    """Custom backend printing the titles of the figures"""
-    name = 'printing'
-    formats = ('txt',)
-    def __init__( self, printing_prefix = '' ):
-        self._prefix = printing_prefix
-    def show( self, figures ):
-        for f in figures:
-            print(f'{self._prefix}printing backend shows: {f.title!r}')
-    def save( self, figures, filename ):
-        self.check_format(filename)
-        print(f'{self._prefix}printing backend saves {len(figures)} figure(s) in {filename}')
-        return [ filename ]
-
-class UnavailableBackend(Backend):
-    name = 'unavailable'
-    requirement = 'some_missing_package'
-    @classmethod
-    def is_available( cls ):
-        return False
 
 def expect_error( title, fct ):
     try:
@@ -67,75 +46,56 @@ def expect_error( title, fct ):
     except mcpl.MCPLError as e:
         print(f'{title}: MCPLError: {e}')
 
-def test_registry():
-    mcpl.plotting.register_backend(PrintingBackend)
-    mcpl.plotting.register_backend(UnavailableBackend)
-    avail = mcpl.plotting.available_backends()
-    print(f'printing backend available: {"printing" in avail},'
-          f' unavailable backend available: {"unavailable" in avail},'
-          f' built-in backends first: {avail[-1] == "printing"}')
-    mcpl.plotting.show(fig, backend='printing')
-    mcpl.plotting.show(fig, backend='printing', printing_prefix='[options] ')
-    print(f'formats of the printing backend: {mcpl.plotting.formats("printing")}')
-    print(f'formats of the test backend: {mcpl.plotting.formats("test")}')
-    expect_error('register_backend(PrintingBackend) again',
-                 lambda : mcpl.plotting.register_backend(PrintingBackend))
-    expect_error('register_backend(object)', lambda : mcpl.plotting.register_backend(object))
-    expect_error('unavailable backend', lambda : mcpl.plotting.show(fig, backend='unavailable'))
-    expect_error('unknown option', lambda : mcpl.plotting.show(fig, backend='printing',
-                                                                matplotlib_backend='agg'))
-    expect_error('wrong format', lambda : mcpl.plotting.save(fig, 'x.pdf', backend='printing'))
-    expect_error('backend=42', lambda : mcpl.plotting.show(fig, backend=42))
+def test_choice():
+    #(the tests run with UTF-8 output, so plots in the terminal are drawn
+    #with unicode):
+    for terminal in ( True, 'ascii' ):
+        print(f'terminal={terminal!r}: {_show_backend(terminal).name}')
+    for fn in ( 'auto.txt', 'auto.pdf', 'auto.png', 'auto.svg' ):
+        print(f'saving {fn}: {_save_backend(fn).name}')
+    for fn in ( 'auto.txt', 'auto.pdf' ):
+        print(f'save(fig, {fn!r}) created {mcpl.plotting.save(fig, fn)}')
+    for fn in ( 'auto.html', 'auto', 'auto.jpg' ):
+        expect_error(f'save(fig, {fn!r})', lambda fn = fn : mcpl.plotting.save(fig, fn))
 
-def test_default():
-    for default in ( 'printing', PrintingBackend(printing_prefix='[object] '), None ):
-        mcpl.plotting.set_default_backend(default)
-        label = 'PrintingBackend object' if isinstance(default,Backend) else repr(default)
-        print(f'==> set_default_backend({label}):')
-        if default is None:
-            print(f'   available backends: {mcpl.plotting.available_backends()}')
-            print(f'   formats which can be saved: {mcpl.plotting.formats()}')
-            continue
-        mcpl.plotting.show(fig)
-        mcpl.plotting.show(fig, backend='test')#explicit backend wins
-        mcpl.histogram(example_file, 'ekin/MeV', bins=5, display_by='single').plot()
-        mcpl.plotting.show(example_figures(mcpl,example_file)[:1])
-        print(f'   formats: {mcpl.plotting.formats()}')
-    obj = PrintingBackend()
-    expect_error('Backend object with options',
-                 lambda : mcpl.plotting.show(fig, backend=obj, printing_prefix='x'))
-    mcpl.plotting.set_default_backend(obj)
-    expect_error('default Backend object with options',
-                 lambda : mcpl.plotting.show(fig, printing_prefix='x'))
-    mcpl.plotting.set_default_backend('unavailable')
-    expect_error('unavailable default backend', lambda : mcpl.plotting.show(fig))
-    expect_error('set_default_backend("foo")',
-                 lambda : mcpl.plotting.set_default_backend('foo'))
-    expect_error('set_default_backend(42)',
-                 lambda : mcpl.plotting.set_default_backend(42))
-    mcpl.plotting.set_default_backend(None)
-
-def test_automatic():
-    #Without a backend, the backend for saving is chosen by the format:
-    for fn in ( 'auto.txt', 'auto.pdf', 'auto.html', 'auto' ):
-        expect_error(f'save(fig, {fn!r})',
-                     lambda fn = fn : print(f'   created {mcpl.plotting.save(fig, fn)}'))
+def test_window_errors():
+    #Plots are only shown in a window when matplotlib can do it (with an
+    #error saying how to show them in the terminal):
+    cls = _backend_class('matplotlib')
+    saved = cls.__dict__['is_available']
+    try:
+        cls.is_available = classmethod(lambda c : False)
+        expect_error('show(fig) without matplotlib', lambda : mcpl.plotting.show(fig))
+        expect_error("save(fig, 'x.png') without matplotlib",
+                     lambda : mcpl.plotting.save(fig, 'x.png'))
+    finally:
+        cls.is_available = saved
+    code = f'import mcpldev; mcpldev.histogram({str(example_file)!r},"ekin/MeV",bins=3).plot()'
+    rv = subprocess.run([sys.executable, '-c', code],
+                        capture_output=True, encoding='utf-8', check=False,
+                        env=dict(os.environ, MPLBACKEND='agg'))
+    err = [ e for e in rv.stderr.splitlines() if e.startswith('mcpldev._common.MCPLError') ]
+    print(f'plot() with MPLBACKEND=agg: exit code {rv.returncode}')
+    print('\n'.join(err))
 
 def test_tool_backends():
-    #-B selects the backend, otherwise it is chosen automatically (by the
-    #extension of the file with -o, and for the terminal with -t):
-    for args in ( ['-B','test'], ['-B','foo'], ['-t','-B','test'],
-                  ['-o','tool1.txt'], ['-o','tool2.txt','-B','test'],
-                  ['-o','tool3.txt','-B','ascii'], ['-t'] ):
+    #-w shows the histogram with matplotlib, and -t in the terminal, and -o
+    #saves it (as .png, .pdf or .svg with -w and .txt with -t):
+    h = 'ekin/MeV;bins=3;display_by=single'
+    for args, env in ( ( ['-t'], {} ), ( ['-t','-o','tool1.txt'], {} ),
+                       ( ['-w','-o','tool2.svg'], {} ), ( ['-w','-o','tool3.txt'], {} ),
+                       ( ['-t','-o','tool4.svg'], {} ),
+                       #(matplotlib can not show the plot without a display):
+                       ( ['-w'], { 'MPLBACKEND' : 'agg' } ) ):
         sys.stdout.flush()
         #(with UTF-8 output, also on Windows, so the plots in the terminal are
         #drawn with the unicode backend):
-        rv = subprocess.run([sys.executable, '-m', 'mcpldev', '-H', 'ekin/MeV;bins=3;display_by=single',
-                             *args, str(example_file)],
+        rv = subprocess.run([sys.executable, '-m', 'mcpldev', args[0], h,
+                             *args[1:], str(example_file)],
                             capture_output=True, encoding='utf-8', check=False,
-                            env=dict(os.environ, PYTHONIOENCODING='utf-8'))
-        print(f'==> mcpltool -H ekin/MeV;bins=3;display_by=single {" ".join(args)}:'
-              f' exit code {rv.returncode}')
+                            env=dict(os.environ, PYTHONIOENCODING='utf-8', **env))
+        print(f'==> mcpltool {args[0]} {h} {" ".join(args[1:])}'
+              f'{" with "+str(env) if env else ""}: exit code {rv.returncode}')
         for line in rv.stdout.splitlines()[:4]:
             print(f'   | {line}')
 
@@ -182,8 +142,7 @@ def test_can_show():
                 os.environ[k] = v
 
 if __name__ == '__main__':
-    test_registry()
-    test_default()
-    test_automatic()
+    test_choice()
+    test_window_errors()
     test_tool_backends()
     test_can_show()

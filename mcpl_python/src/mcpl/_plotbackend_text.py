@@ -147,8 +147,13 @@ def _can_encode( c, other = '' ):
     return True
 
 class _TextBackend(PlotBackend):
-    """Draws figures as text (with the characters in self._chars)"""
-    kind = 'terminal'
+    """Draws figures as text (with the characters in self._chars), of the
+    given width and height in characters (default is the width of the
+    terminal, up to 250, and a height of 15), and with the colour setting
+    ('auto', 'always' or 'never') of plots shown in the terminal (default
+    'auto': in terminals, unless the NO_COLOR environment variable is set, or
+    always if FORCE_COLOR is set). Files are written without colours."""
+    formats: ClassVar[tuple] = ( 'txt', )
     _chars = None
     encoding = 'utf-8'
     #Whether several curves in colour are drawn as lines of braille dots:
@@ -576,17 +581,9 @@ class _TextBackend(PlotBackend):
 
 class UnicodeBackend(_TextBackend):
     """Plots drawn as text with Unicode characters (block elements, box
-    drawing and braille dots), for terminals which can show these characters (files are
-    always written as UTF-8). The unicode_width and unicode_height options set
-    the size of the plots in characters (default is the width of the
-    terminal, up to 250, and a height of 15). The unicode_color option
-    ('auto', 'always' or 'never') sets whether plots are shown in colour
-    (default 'auto': in terminals, unless the NO_COLOR environment variable
-    is set, or always if FORCE_COLOR is set). Files are written without
-    colours."""
+    drawing and braille dots), for terminals which can show these characters
+    (files are always written as UTF-8)."""
     name = 'unicode'
-    priority = 100
-    formats: ClassVar[dict] = { 'txt' : 100 }
     _chars = _unicode
     _halfblocks = True
     _braille = True
@@ -596,25 +593,11 @@ class UnicodeBackend(_TextBackend):
         #Only in terminals which can show the characters:
         return _can_encode(cls._chars,_unicode_other)
 
-    def __init__( self, unicode_width = None, unicode_height = None,
-                  unicode_color = 'auto' ):
-        super().__init__(unicode_width,unicode_height,unicode_color)
-
 class AsciiBackend(_TextBackend):
-    """Plots drawn as text with ASCII characters only, for any terminal. The
-    ascii_width and ascii_height options set the size of the plots in
-    characters (default is the width of the terminal, up to 250, and a height
-    of 15), and the ascii_color option whether they are shown in colour (as
-    unicode_color for the unicode backend)."""
+    """Plots drawn as text with ASCII characters only, for any terminal."""
     name = 'ascii'
-    priority = 10
-    formats: ClassVar[dict] = { 'txt' : 10 }
     _chars = _ascii
     encoding = 'ascii'
-
-    def __init__( self, ascii_width = None, ascii_height = None,
-                  ascii_color = 'auto' ):
-        super().__init__(ascii_width,ascii_height,ascii_color)
 
 class _YPanel:
     """The y axis of a panel as its x axis (for _xrange)"""

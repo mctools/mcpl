@@ -145,15 +145,17 @@ class _Plot:
         from .plotting import Figure
         return Figure( panels = [ self.panel(**kwargs) ] )
 
-    def plot( self, filename = None, backend = None, terminal = False, **options ):
-        """Show the plot (or save it in a file if filename is given) with the
-        plotting backend (name or Backend object, default is chosen as described
-        in mcpl.plotting, in the terminal if terminal is True). Keyword
-        arguments of panel() (like logy) are used for the plot, and others are
-        options for the backend (e.g. matplotlib_backend='agg'). Returns the
-        list of created files when saving."""
-        kw = { k : options.pop(k) for k in self._panel_options if k in options }
-        return _show_or_save([self.figure(**kw)],filename,backend,options,terminal)
+    def plot( self, filename = None, *, terminal = False, terminal_width = None,
+              terminal_height = None, terminal_color = None, **kwargs ):
+        """Show the plot in a window, or in the terminal if terminal is True
+        or 'ascii' (or save it in a file if filename is given), as with
+        mcpl.plotting.show (and save). Further keyword arguments are those of
+        panel() (like logy). Returns the list of created files when saving."""
+        unknown = sorted( set(kwargs) - set(self._panel_options) )
+        if unknown:
+            raise MCPLError('Unknown keyword argument(s) of plot: ' + ', '.join(unknown))
+        return _show_or_save([self.figure(**kwargs)],filename,terminal,
+                             terminal_width,terminal_height,terminal_color)
 
     def _text_header( self, what, values, columns ):
         lines = [ f'# {what}' ] + [ f'# {t}' for t in ( self.title or '' ).splitlines() ]
@@ -474,11 +476,14 @@ class _DomainNote:
     def note( self, unicode = False ):
         return self._v.domain_note(self._seen,unicode) if self._left_out else None
 
-def _show_or_save( figures, filename, backend, options, terminal = False ):
+def _show_or_save( figures, filename, terminal, width, height, color ):
     from .plotting import save, show
     if filename:
-        return save(figures,filename,backend=backend,**options)
-    show(figures,backend=backend,terminal=terminal,**options)
+        if terminal or color is not None:
+            raise MCPLError('terminal and terminal_color can not be used when saving'
+                            ' plots in a file (the extension gives the format)')
+        return save(figures,filename,width,height)
+    show(figures,terminal,width,height,color)
     return None
 
 def _bin_index( v, edges, log ):
@@ -604,7 +609,7 @@ def histogram( files, expression, *, pick = None, bins = 'auto', range = None,
     chart of the values (whole numbers, as of pdgcode), see BarHistogram.
 
     The options can also be given in the expression, as in the histogram
-    strings of mcpltool -H (see mcpltool -H help), e.g.
+    strings of mcpltool -w and -t (see mcpltool --hist-help), e.g.
     "ekin/eV;logx;lethargy;bins=50;logy", which can also have two
     expressions for a 2D histogram (see histogram2d()), or three for a 3D plot
     of a sample of the particles.
@@ -1111,11 +1116,13 @@ class _Points3DFiller(_Filler):
             res._add_label(lbl,plbl,color)
         return res
 
-def plot_histograms( histograms, filename = None, backend = None, logy = None,
-                     overlay = False, labels = None, **options ):
-    """Show histograms (or save them in a file if filename is given) with the
-    plotting backend and options (see Histogram.plot, logy is by default that of
-    each histogram, see histogram()). Each histogram is
+def plot_histograms( histograms, filename = None, *, terminal = False, logy = None,
+                     overlay = False, labels = None, terminal_width = None,
+                     terminal_height = None, terminal_color = None ):
+    """Show histograms in a window, or in the terminal if terminal is True or
+    'ascii' (or save them in a file if filename is given), as with
+    Histogram.plot (logy is by default that of each histogram, see
+    histogram()). Each histogram is
     shown in a separate figure (e.g. on separate pages of a PDF file), or
     with overlay=True, all the (1D) histograms are drawn in the same plot
     with a legend, for instance to compare histograms of the same expression
@@ -1123,11 +1130,12 @@ def plot_histograms( histograms, filename = None, backend = None, logy = None,
     expressions of the histograms. Returns the list of created files when
     saving."""
     from .plotting import Figure, Panel, StepHist
+    display = ( terminal, terminal_width, terminal_height, terminal_color )
     histograms = list(histograms)
     if not overlay:
         figs = [ h.figure(**( {} if logy is None or 'logy' not in h._panel_options
                               else { 'logy' : logy } )) for h in histograms ]
-        return _show_or_save(figs,filename,backend,options)
+        return _show_or_save(figs,filename,*display)
     if not histograms:
         raise MCPLError('No histograms to plot')
     if not all( isinstance(h,Histogram) for h in histograms ):
@@ -1152,4 +1160,4 @@ def plot_histograms( histograms, filename = None, backend = None, logy = None,
                       else f'{name}: {h._plot_label(curve)}' )
             p.add(StepHist(h.edges,h.values(curve),label = label,color = color))
             color += 1
-    return _show_or_save([Figure(panels = [p])],filename,backend,options)
+    return _show_or_save([Figure(panels = [p])],filename,*display)

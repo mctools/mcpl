@@ -29,25 +29,32 @@ import pathlib
 
 import mcpldev as mcpl
 import numpy as np
+from mcpldev._plotregistry import _forced_backend
 from mcpldev.plotting import Bars, Figure, Hist2D, Panel, StepHist, Text
 from MCPLTestUtils.dirs import test_data_dir
 from MCPLTestUtils.plots import example_figures, items_figure
 
 example_file = test_data_dir.joinpath('example.mcpl')
 
-def test_backends():
-    avail = mcpl.plotting.available_backends()
-    assert set(avail) <= {'matplotlib','unicode','ascii'} and 'test' not in avail
-    print('available_backends() only lists known backends, and not the test backend')
-    for name, fn in ( ('nosuchbackend', 'x.pdf'), ('test', 'x.foo') ):
+def test_errors():
+    #(the errors come before anything is drawn):
+    for what, f in ( ( "save(fig,'x.foo')", lambda : mcpl.plotting.save(Figure(),'x.foo') ),
+                     ( "save(fig,'x')", lambda : mcpl.plotting.save(Figure(),'x') ),
+                     ( "save(fig,'x.pdf',terminal_width=60)",
+                       lambda : mcpl.plotting.save(Figure(),'x.pdf',terminal_width=60) ),
+                     ( "show(fig,terminal='yes')",
+                       lambda : mcpl.plotting.show(Figure(),terminal='yes') ),
+                     ( "show(fig,terminal_width=60)",
+                       lambda : mcpl.plotting.show(Figure(),terminal_width=60) ),
+                     ( "show(fig,terminal_color='always')",
+                       lambda : mcpl.plotting.show(Figure(),terminal_color='always') ),
+                     ( "show(fig,terminal=True,terminal_color='sometimes')",
+                       lambda : mcpl.plotting.show(Figure(),terminal=True,
+                                                   terminal_color='sometimes') ) ):
         try:
-            mcpl.plotting.save(Figure(), fn, backend=name)
+            f()
         except mcpl.MCPLError as e:
-            print(f'save(...,{fn!r},backend={name!r}): {e}')
-    try:
-        mcpl.plotting.save(Figure(), 'x.txt', backend='test', matplotlib_backend='agg')
-    except mcpl.MCPLError as e:
-        print(f"save(...,backend='test',matplotlib_backend='agg'): {e}")
+            print(f'{what}: {e}')
 
 def test_figures():
     edges = np.linspace(0.0,10.0,11)
@@ -59,31 +66,36 @@ def test_figures():
     fig.add(Panel( title = '2D', items = [ Hist2D(edges,edges[:5],np.ones((10,4))) ] ))
     fig.add(Panel( title = 'Bars', items = [ Bars(['a','b'],[1.0,2.0],horizontal=True) ] ))
     fig.add(Panel( title = 'Text', items = [ Text('No data') ] ))
-    mcpl.plotting.show(fig, backend='test')
-    files = mcpl.plotting.save([fig,Figure(title='Empty')], 'figs.txt', backend='test')
+    with _forced_backend('test'):
+        mcpl.plotting.show(fig)
+        files = mcpl.plotting.save([fig,Figure(title='Empty')], 'figs.txt')
     nlines = len(pathlib.Path(files[0]).read_text(encoding='utf-8').splitlines())
     print(f'save() created {files}, with {nlines} lines')
 
 def test_example_figures():
-    mcpl.plotting.show(example_figures(mcpl,example_file), backend='test')
+    with _forced_backend('test'):
+        mcpl.plotting.show(example_figures(mcpl,example_file))
 
 def test_items():
     #All kinds of items, also as text (where 3D plots give a message, and the
     #symbol of the gamma is written as its name with the ascii backend):
     from mcpldev._figures import _line_style
     fig = items_figure(mcpl)
-    mcpl.plotting.show(fig, backend='test')
+    with _forced_backend('test'):
+        mcpl.plotting.show(fig)
     print('line styles of curves 0, 9, 10, 20 and 30:',
           [ _line_style(k) for k in (0, 9, 10, 20, 30) ])
+    #(.txt files are drawn with unicode, and here also with ascii):
     for backend in ('unicode','ascii'):
-        files = mcpl.plotting.save(fig, f'items_{backend}.txt', backend=backend,
-                                   **{ f'{backend}_width' : 60, f'{backend}_height' : 6 })
+        with _forced_backend(backend):
+            files = mcpl.plotting.save(fig, f'items_{backend}.txt', terminal_width=60,
+                                       terminal_height=6)
         text = pathlib.Path(files[0]).read_text(encoding='utf-8')
         print(f'==> {backend}:')
         print(text)
 
 if __name__ == '__main__':
-    test_backends()
+    test_errors()
     test_figures()
     test_example_figures()
     test_items()
