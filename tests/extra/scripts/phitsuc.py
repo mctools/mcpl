@@ -67,7 +67,7 @@ def main():
     print("Run phits2mcpl",flush=True)
     rv = subprocess.run( [ phits2mcpl_cmd,
                            f'f{oslash}{oslash}/hell{oslash}.dmp',
-                           f'f{oslash}{oslash}/hell{oslash}2.mcpl',
+                           f'f{oslash}{oslash}/hell{oslash}2.mcpl.gz',
                            '-c','fake_cfg_file',
                            '-s','fake_dumpsummary_file',
                           ],

@@ -1,6 +1,6 @@
 Run mcpl2phits
 Opened MCPL file produced with "MyMCApp" (contains 5 particles)
-Creating (or overwriting) output PHITS file.
+Creating output PHITS file.
 Initiating particle conversion loop.
 Ending particle conversion loop.
 Created føø/hellø.dmp with 5 particles.

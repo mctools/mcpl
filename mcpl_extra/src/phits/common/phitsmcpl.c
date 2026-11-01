@@ -49,7 +49,17 @@ void phits_error(const char * msg);//fwd declare internal function from
 
 int phits2mcpl(const char * phitsfile, const char * mcplfile)
 {
-  return phits2mcpl2(phitsfile, mcplfile, 0, 1, 0, 0);
+  return phits2mcpl2(phitsfile, mcplfile, 0, 0, 0, 0);
+}
+
+//Whether the file exists (can be opened):
+static int phitsmcpl_file_exists( const char * filename )
+{
+  mcpl_generic_filehandle_t fh = mcpl_generic_fopen_try( filename );
+  if ( !fh.internal )
+    return 0;
+  mcpl_generic_fclose( &fh );
+  return 1;
 }
 
 static int phitsmcpl_buf_contains( const char * buf, uint64_t n,
@@ -64,7 +74,7 @@ static int phitsmcpl_buf_contains( const char * buf, uint64_t n,
 }
 
 int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
-                 int opt_dp, int opt_gzip,
+                 int opt_dp, int allow_overwrite,
                  const char * inputdeckfile,
                  const char * dumpsummaryfile )
 {
@@ -110,7 +120,9 @@ int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
     }
   }
 
-  mcpl_outfile_t mcplfh = mcpl_create_outfile(mcplfile);
+  mcpl_outfile_t mcplfh = ( allow_overwrite
+                            ? mcpl_create_outfile_allow_overwrite(mcplfile)
+                            : mcpl_create_outfile(mcplfile) );
 
   mcpl_hdr_set_srcname(mcplfh,"PHITS");
   mcpl_hdr_add_comment(mcplfh,"Converted from PHITS with phits2mcpl");
@@ -174,8 +186,10 @@ int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
   }
   memcpy(actual_filename,tmp,laf+1);
 
+  //(names ending with .mcpl.gz are gzipped):
+  size_t lname = strlen(mcplfile);
   int did_gzip = 0;
-  if (opt_gzip)
+  if ( lname > 8 && strcmp( mcplfile + lname - 8, ".mcpl.gz" ) == 0 )
     did_gzip = mcpl_closeandgzip_outfile(mcplfh);
   else
     mcpl_close_outfile(mcplfh);
@@ -189,13 +203,13 @@ int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
 void phits2mcpl_parse_args( int argc,char **argv, const char** infile,
                             const char **outfile,  const char **cfgfile,
                             const char **dumpsummaryfile,
-                            int* double_prec, int* do_gzip ) {
+                            int* double_prec, int* allow_overwrite ) {
   *cfgfile = 0;
   *dumpsummaryfile = 0;
   *infile = 0;
   *outfile = 0;
   *double_prec = 0;
-  *do_gzip = 1;
+  *allow_overwrite = 0;
   int i;
   for (i=1; i < argc; ++i) {
     if (argv[i][0]=='\0')
@@ -206,13 +220,14 @@ void phits2mcpl_parse_args( int argc,char **argv, const char** infile,
       printf("  %s [options] dumpfile [output.mcpl]\n\n",progname);
       printf("Converts the Monte Carlo particles in the input dump file (binary PHITS dump\n"
              "file format in suitable configuration) to MCPL format and stores in the\n"
-             "designated output file (defaults to \"output.mcpl\").\n"
+             "designated output file (defaults to \"output.mcpl\", and gzipped for names\n"
+             "ending with .mcpl.gz).\n"
              "\n"
              "Options:\n"
              "\n"
              "  -h, --help   : Show this usage information.\n"
              "  -d, --double : Enable double-precision storage of floating point values.\n"
-             "  -n, --nogzip : Do not attempt to gzip output file.\n"
+             "  --allow-overwrite : Overwrite the output file if it exists.\n"
              "  -c FILE      : Embed entire configuration FILE (the input deck)\n"
              "                 used to produce dumpfile in the MCPL header.\n"
              "  -s FILE      : Embed into the MCPL header the dump summary text file,\n"
@@ -252,9 +267,15 @@ void phits2mcpl_parse_args( int argc,char **argv, const char** infile,
       *double_prec = 1;
       continue;
     }
-    if (strcmp(argv[i],"-n")==0||strcmp(argv[i],"--nogzip")==0) {
-      *do_gzip = 0;
+    if (strcmp(argv[i],"--allow-overwrite")==0) {
+      *allow_overwrite = 1;
       continue;
+    }
+    if (strcmp(argv[i],"-n")==0||strcmp(argv[i],"--nogzip")==0) {
+      printf("Error: %s is not needed: output files with names ending with"
+             " .mcpl are not compressed (use .mcpl.gz for compressed"
+             " files).\n",argv[i]);
+      exit(1);
     }
     if (argv[i][0]=='-') {
       printf("Error: Unknown argument: %s\n",argv[i]);
@@ -290,9 +311,9 @@ int phits2mcpl_app(int argc,char** argv)
   const char * outfile;
   const char * cfgfile;
   const char * dumphdrfile;
-  int double_prec, do_gzip;
-  phits2mcpl_parse_args(argc,argv,&infile,&outfile,&cfgfile,&dumphdrfile,&double_prec,&do_gzip);
-  int ok = phits2mcpl2(infile, outfile,double_prec, do_gzip,cfgfile,dumphdrfile);
+  int double_prec, allow_overwrite;
+  phits2mcpl_parse_args(argc,argv,&infile,&outfile,&cfgfile,&dumphdrfile,&double_prec,&allow_overwrite);
+  int ok = phits2mcpl2(infile, outfile,double_prec, allow_overwrite,cfgfile,dumphdrfile);
   return ok ? 0 : 1;
 }
 
@@ -316,8 +337,13 @@ void phits_writerecord( mcpl_generic_wfilehandle_t* fh,
 }
 
 int mcpl2phits( const char * inmcplfile, const char * outphitsdumpfile,
-                int use_polarisation, uint64_t nparticles_limit, int reclen )
+                int use_polarisation, uint64_t nparticles_limit, int reclen,
+                int allow_overwrite )
 {
+  if ( !allow_overwrite && phitsmcpl_file_exists( outphitsdumpfile ) ) {
+    printf("Error: The output file \"%s\" already exists.\n",outphitsdumpfile);
+    return 0;
+  }
   if ( reclen != 4 && reclen != 8 )
     phits_error("Reclen parameter should be 4 (32bit Fortran record markers,"
                 " recommended) or 8 (64bit Fortran record markers)");
@@ -328,7 +354,7 @@ int mcpl2phits( const char * inmcplfile, const char * outphitsdumpfile,
           mcpl_hdr_srcname(fmcpl),
           (unsigned long long)mcpl_hdr_nparticles(fmcpl) );
 
-  printf("Creating (or overwriting) output PHITS file.\n");
+  printf("Creating output PHITS file.\n");
 
   //Open new phits file:
   mcpl_generic_wfilehandle_t fout = mcpl_generic_wfopen(outphitsdumpfile);
@@ -441,6 +467,7 @@ int mcpl2phits_app_usage( const char** argv, const char * errmsg ) {
          "                 the default (32 bit) is almost always the correct choice.\n"
          "  -l<LIMIT>    : Limit the number of particles transferred to the PHITS file\n"
          "                 (defaults to 0, meaning no limit).\n"
+         "  --allow-overwrite : Overwrite the output file if it exists.\n"
          );
   free(progname);
   return 0;
@@ -448,13 +475,15 @@ int mcpl2phits_app_usage( const char** argv, const char * errmsg ) {
 
 int mcpl2phits_parse_args( int argc,const char **argv, const char** inmcplfile,
                            const char **outphitsfile, uint64_t* nparticles_limit,
-                           int* use64bitreclen, int* nopolarisation ) {
+                           int* use64bitreclen, int* nopolarisation,
+                           int* allow_overwrite ) {
   //returns: 0 all ok, 1: error, -1: all ok but do nothing (-h/--help mode)
   *inmcplfile = 0;
   *outphitsfile = 0;
   *nparticles_limit = UINT64_MAX;
   *use64bitreclen = 0;
   *nopolarisation = 0;
+  *allow_overwrite = 0;
 
   int64_t opt_num_limit = -1;
   int i;
@@ -493,6 +522,8 @@ int mcpl2phits_parse_args( int argc,const char **argv, const char** inmcplfile,
     } else if (n==6 && strcmp(a,"--help")==0) {
       mcpl2phits_app_usage(argv,0);
       return -1;
+    } else if (strcmp(a,"--allow-overwrite")==0) {
+      *allow_overwrite = 1;
     } else if (n>=1&&a[0]!='-') {
       if (*outphitsfile)
         return mcpl2phits_app_usage(argv,"Too many arguments.");
@@ -523,11 +554,12 @@ int mcpl2phits_app( int argc, char** argv ) {
   const char * inmcplfile;
   const char * outphitsfile;
   uint64_t nparticles_limit;
-  int use64bitreclen, nopolarisation;
+  int use64bitreclen, nopolarisation, allow_overwrite;
 
   int parse = mcpl2phits_parse_args( argc, (const char**)argv, &inmcplfile,
                                      &outphitsfile, &nparticles_limit,
-                                     &use64bitreclen, &nopolarisation);
+                                     &use64bitreclen, &nopolarisation,
+                                     &allow_overwrite );
 
   if (parse==-1)// --help
     return 0;
@@ -538,7 +570,7 @@ int mcpl2phits_app( int argc, char** argv ) {
   int reclen = (use64bitreclen?8:4);
 
   if ( mcpl2phits( inmcplfile, outphitsfile, (nopolarisation?0:1),
-                   nparticles_limit, reclen) )
+                   nparticles_limit, reclen, allow_overwrite ) )
     return 0;
 
   return 1;

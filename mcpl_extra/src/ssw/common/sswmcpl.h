@@ -38,11 +38,11 @@
 
 
 //////////////////////////////////////////////////////////////////////////////////////
-// Create mcplfile based on content in sswfile. Using this function will neither
-// enable double-precision or user-flags in the output file, and will always
-// attempt to gzip the resulting MCPL file. Use ssw2mcpl2 instead to fine-tune
-// these choices or to embed a copy of the MCNP input deck file in the MCPL
-// header. Returns 1 on success, 0 on failure:
+// Create mcplfile based on content in sswfile (gzipped if its name ends with
+// .mcpl.gz, and it must not exist). Using this function will neither enable
+// double-precision or user-flags in the output file. Use ssw2mcpl2 instead to
+// fine-tune these choices or to embed a copy of the MCNP input deck file in the
+// MCPL header. Returns 1 on success, 0 on failure:
 int ssw2mcpl(const char * sswfile, const char * mcplfile);
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -52,13 +52,13 @@ int ssw2mcpl(const char * sswfile, const char * mcplfile);
 //            values. Set to 0 for single-precision.
 //  opt_surf: Set to 1 to store SSW surface id information in the MCPL
 //            userflags. Set to 0 to not store any userflags.
-//  opt_gzip: Set to 1 to gzip the resulting mcpl file. Set to 0 to leave the
-//            resulting file uncompressed.
+//  allow_overwrite: Set to 1 to overwrite an existing mcplfile. Set to 0 to
+//                   refuse it.
 //  inputdeckfile: Set to the filename of the MCNP input deck file, to embed a
 //                 copy of it in the MCPL header. Set to 0 to not do this.
 //
 int ssw2mcpl2(const char * sswfile, const char * mcplfile,
-              int opt_dp, int opt_surf, int opt_gzip,
+              int opt_dp, int opt_surf, int allow_overwrite,
               const char * inputdeckfile);
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -68,9 +68,10 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
 // particles in the resulting sswfile will have that surface ID, otherwise it
 // will be taken from the MCPL userflags (must be in range [1,999999]). Finally,
 // if the limit parameter is non-zero, it will provide an upper limit on the
-// number of particles put into the resulting ssw file (up to 2147483647).
+// number of particles put into the resulting ssw file (up to 2147483647). An
+// existing sswfile is only overwritten if allow_overwrite is 1.
 int mcpl2ssw(const char * mcplfile, const char * sswfile, const char * refsswfile,
-             long surface_id, long limit);
+             long surface_id, long limit, int allow_overwrite);
 
 //////////////////////////////////////////////////////////////////////////////////////
 // For easily creating standard ssw2mcpl and mcpl2ssw cmdline applications:
