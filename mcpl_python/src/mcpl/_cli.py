@@ -162,9 +162,12 @@ def _topic_help(topic):
     sys.exit(0)
 
 def app_mcpltool(argv=None):
-    """Implements the mcpltool command. If no argv list is
-    passed in, sys.argv will be used. In case of errors, MCPLError exceptions
-    are raised. Messages are always printed, even if use_logging() was
+    """Implements the mcpltool command, with the command line argv starting
+    with the program name, like sys.argv (which is used if argv is None). Like
+    the command, it ends with SystemExit: with code 0 when done, and 1 after
+    printing the problem with the command line (e.g. an unknown option).
+    Problems with files (e.g. missing or invalid files) raise MCPLError
+    exceptions. Messages are always printed, even if use_logging() was
     called."""
     with _ForcePrinting():
         _app_mcpltool(argv)
