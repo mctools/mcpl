@@ -57,6 +57,8 @@ v2.2.9  (work in progress)
         --color=auto|always|never (and the unicode_color and ascii_color
         options of the backends) overrides this. Files are always written
         without colours.
+      * Long options of mcpltool can be abbreviated, as long as they are unique
+        (e.g. --ext for --extract).
       * New usage information for mcpltool: -h shows a single page with the
         common options, --full-help shows all options, and -p help, -E help
         and -H help describe how to write the expressions, with all particle

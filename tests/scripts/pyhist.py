@@ -211,6 +211,8 @@ def test_cmdline():
     tool('-H','z/cm;bins=2;range=0:100;print=1','--pick=z < 25cm',
          '--edit=z += 50cm',ex)
     tool('-Hekin/MeV;print=1;bins=2','-ppdgcode==22',ex)
+    #(abbreviated long options):
+    tool('--hi=ekin/MeV;print=1;bins=2','--pi','pdgcode==22',ex)
     for bad in ( ['-H','ekin',ex], ['-H','ekin/MeV;bins=0',ex],
                  ['-H','ekin/MeV;range=1',ex], ['-H','ekin/MeV;range=2:1',ex],
                  ['-H','ekin/MeV;range=1:2,3:4',ex], ['-H','ekin/MeV;xrange=1:2',ex],
@@ -242,7 +244,7 @@ def test_cmdline_more():
                  ['-p'], ['-lX',ex], ['-l',ex],
                  ['-p','x > 0','-p','x < 1cm',ex], ['--pdf',ex], ['--gui',ex],
                  ['--select','x > 0',ex], ['-S','-B','test',ex], ['-S','-t',ex],
-                 ['-S','-H','x/cm',ex], [ex,ex,ex],
+                 ['-S','-H','x/cm',ex], [ex,ex,ex], ['--te','x',ex],
                  ['--text',ex], ['--text',ex,'hist.txt'],
                  ['-t',ex], ['-j','-H','x/cm',ex], ['--no-comment','-S',ex],
                  ['-H','x/cm : y/cm;display_by=pdgcode',ex],
