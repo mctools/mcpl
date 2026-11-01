@@ -81,7 +81,7 @@ class Backend(PlotBackend):
     """Prints a description of figures (show) or writes it to a file
     (save)."""
     name = 'test'
-    formats: ClassVar[dict] = { 'txt' : 0, 'pdf' : 0, 'png' : 0 }
+    formats: ClassVar[tuple] = ( 'txt', 'pdf', 'png', 'svg' )
 
     def show( self, figures ):
         print(describe(figures))

@@ -209,10 +209,10 @@ gamma (22) (23.76%) |###################################### 239
                                 No data
 unicode: saved ['stats_unicode.txt'], 142 lines, max width 59, ascii only: False
 ascii: saved ['stats_ascii.txt'], 139 lines, max width 59, ascii only: True
-{'backend': 'ascii', 'unicode_width': 50}: MCPLError: Unsupported option(s) for the ascii plotting backend: unicode_width
-{'backend': 'unicode'}: MCPLError: The unicode plotting backend can not create .pdf files (supported: .txt)
-unicode and ascii backends always available, as the last ones: True
-plot(terminal=True,ascii_width=40,ascii_height=5) with PYTHONIOENCODING=ascii: exit code 0, output only ASCII: True
+plot('x.txt',terminal=True): MCPLError: terminal and terminal_color can not be used when saving plots in a file (the extension gives the format)
+plot('x.txt',terminal_color='always'): MCPLError: terminal and terminal_color can not be used when saving plots in a file (the extension gives the format)
+plot(terminal=True,logz=True): MCPLError: Unknown keyword argument(s) of plot: logz
+plot(terminal=True,terminal_width=40,terminal_height=5) with PYTHONIOENCODING=ascii: exit code 0, output only ASCII: True
 (weights per bin)
      994 +###
          |###
@@ -222,12 +222,10 @@ plot(terminal=True,ascii_width=40,ascii_height=5) with PYTHONIOENCODING=ascii: e
          ++---------------------------+
          0            5000        1e+04
                      ekin/MeV
-plot(backend="unicode",unicode_width=40,unicode_height=5) with PYTHONIOENCODING=ascii: exit code 1, output only ASCII: True
-mcpldev._common.MCPLError: The unicode plotting backend does not work in this terminal (a solution might be to switch terminal or try the ascii or matplotlib backends)
-mcpltool --hist --backend ascii: 19 lines, first and last:
+mcpltool -t with ascii: 19 lines, first and last:
 (weights per bin)
                                          time/ms
-mcpltool --hist x/cm;display_by=single --backend ascii with 83 columns:
+mcpltool -t x/cm;display_by=single with ascii and 83 columns:
 (weights per bin)
      295 +                                  ##
          |                                  ##
@@ -248,7 +246,7 @@ mcpltool --hist x/cm;display_by=single --backend ascii with 83 columns:
          -65                                2.5                                 70
                                             x/cm
 
-mcpltool --hist x/cm : y/cm --backend ascii with 83 columns:
+mcpltool -t x/cm : y/cm with ascii and 83 columns:
 (y: y/cm)
       60 +        ................
          |                ........        ........

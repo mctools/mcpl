@@ -33,15 +33,11 @@ from ._plotbackend import PlotBackend, numbered_filenames
 
 
 class Backend(PlotBackend):
-    """Plotting with matplotlib. The matplotlib_backend option can be used to
-    select a backend of matplotlib (e.g. 'agg' for saving files without a
-    display)."""
+    """Plotting with matplotlib (in windows with the backend of matplotlib
+    chosen as usual, e.g. with the MPLBACKEND environment variable)."""
     name = 'matplotlib'
-    kind = 'window'
-    priority = 100
-    formats: ClassVar[dict] = { 'pdf' : 100, 'png' : 100, 'svg' : 100 }
+    formats: ClassVar[tuple] = ( 'pdf', 'png', 'svg' )
     requirement = 'matplotlib'
-    batch_options: ClassVar[dict] = { 'matplotlib_backend' : 'agg' }
 
     @classmethod
     def is_available( cls ):
@@ -72,10 +68,7 @@ class Backend(PlotBackend):
             return False
         return True
 
-    def __init__( self, matplotlib_backend = None ):
-        import matplotlib
-        if matplotlib_backend:
-            matplotlib.use(matplotlib_backend)
+    def __init__( self ):
         try:
             import matplotlib.pyplot as plt
         except ImportError:

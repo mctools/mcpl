@@ -116,7 +116,7 @@ def _angle_highres( a, b ):
     return 2.0 * np.arctan2(dmag,smag)
 
 #Characters which can not be used in expressions (nor in the histogram strings
-#of mcpltool -H), although they are printable ASCII characters:
+#of mcpltool -w and -t), although they are printable ASCII characters:
 _forbidden_chars = '"\'{}[]#$`\\'
 
 def _check_chars( text, what = 'expression' ):

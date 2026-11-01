@@ -37,7 +37,8 @@ Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.
 Usage:
   PROGNAME [options] FILE                  Show the header and first particles
   PROGNAME -S [options] FILE               Summary of the particles
-  PROGNAME -H HIST [options] FILE [...]    Histograms
+  PROGNAME -w HIST [options] FILE [...]    Histogram in a window
+  PROGNAME -t HIST [options] FILE [...]    Histogram in the terminal
   PROGNAME -e [options] FILE OUT.mcpl.gz   Extract particles into a new file
   PROGNAME -m OUT.mcpl.gz FILE1 FILE2 ...  Merge compatible files
   PROGNAME -r FILE                         Repair a file not properly closed
@@ -47,18 +48,18 @@ Common options:
   -p PICK        Only particles for which PICK is true, e.g.
                  -p "pdgcode == neutron and ekin < 25meV".
   -E EDIT        Change particles, e.g. -E "z += 1cm;weight *= 0.5".
-  -t             Show plots in the terminal.
-  -o FILE        Save the plot in FILE (.png, .pdf, .svg or .txt).
+  -o FILE        Save the histogram in FILE (.png, .pdf or .svg with -w, .txt
+                 with -t).
   -d             Dry run: do everything except writing files.
 
 Examples:
-  PROGNAME -H "ekin/MeV;logx;display_only=neutron" file.mcpl.gz
+  PROGNAME -w "ekin/MeV;logx;display_only=neutron" file.mcpl.gz
   PROGNAME -e -p "pdgcode == neutron" file.mcpl.gz neutrons.mcpl.gz
   PROGNAME -S file.mcpl.gz
 
 More help:
   --full-help              All options.
-  -p help, -E help, -H help
+  -p help, -E help, --hist-help
                            How to write PICK, EDIT and HIST.
 """
 
@@ -68,7 +69,8 @@ Tool for inspecting or modifying Monte Carlo Particle List (.mcpl) files.
 Usage:
   PROGNAME [options] FILE                  Show the header and first particles
   PROGNAME -S [options] FILE               Summary of the particles
-  PROGNAME -H HIST [options] FILE [...]    Histograms
+  PROGNAME -w HIST [options] FILE [...]    Histogram in a window
+  PROGNAME -t HIST [options] FILE [...]    Histogram in the terminal
   PROGNAME -e [options] FILE OUT.mcpl.gz   Extract particles into a new file
   PROGNAME -m OUT.mcpl.gz FILE1 FILE2 ...  Merge compatible files
   PROGNAME --forcemerge OUT.mcpl.gz FILE1 FILE2 ...
@@ -78,7 +80,7 @@ Usage:
   PROGNAME --create-examples[=N]           Create example files
   PROGNAME -v | -h | --full-help
 
-Particles (when showing particles, and with -S, -H and -e):
+Particles (when showing particles, and with -S, -w, -t and -e):
   -lN, -sN         Use only N particles (all with -l0), or skip the first N
                    particles in the file. Without -l, at most 10 particles are
                    shown when showing particles.
@@ -92,21 +94,17 @@ Showing particles:
   -n, --nohead     Show just the particles.
   -bKEY            Write the blob stored under KEY to standard output.
 
-Histogram (-H, --hist HIST):
+Histogram (-w, --window HIST or -t, --terminal HIST):
   HIST is an expression with options, e.g.
-  "ekin/MeV;logx;display_only=neutron" (see -H help). With more files, there
-  is a curve for each file. -H can be given more than once, for several plots.
-  -t, --term       Show the plots in the terminal.
+  "ekin/MeV;logx;display_only=neutron" (see --hist-help), given as -w HIST,
+  -w=HIST, --window HIST or --window=HIST (and likewise with -t). -w shows the
+  histogram in a window (with matplotlib), and -t in the terminal (with
+  Unicode characters, or else ASCII). With more files, there is a curve for
+  each file.
   -o, --output FILE
-                   Save the plots in FILE, in the format given by the
-                   extension: .png, .pdf, .svg or .txt (one page of a .pdf
-                   file for each plot, or else one file for each, numbered).
-  -B, --backend NAME
-                   Plotting backend: matplotlib, unicode or ascii. By
-                   default, plots are shown in a window with matplotlib, or
-                   else in the terminal, and are saved with the backend for
-                   the format.
-  --color=WHEN     Colours of plots in the terminal: auto (the default: in
+                   Save the histogram in FILE instead: .png, .pdf or .svg with
+                   -w, or .txt with -t.
+  --color=WHEN     Colours in the terminal (with -t): auto (the default: in
                    terminals, unless the NO_COLOR environment variable is set,
                    or always if FORCE_COLOR is set), always or never.
 
@@ -132,7 +130,7 @@ Other options:
   -v, --version    Show the version of MCPL.
   -h, --help       Show the short usage information.
   --full-help      Show this usage information.
-  -p help, -E help, -H help
+  -p help, -E help, --hist-help
                    How to write PICK, EDIT and HIST.
 
 Long options can be abbreviated, as long as they are unique (e.g. --ext for
@@ -144,7 +142,7 @@ Output files are gzipped if their names end with .mcpl.gz.
 #Where errors in the values of options are explained (see _mcpltool_usage):
 _option_help = { '--pick' : 'Run with "-p help" for how to pick particles with expressions',
                  '--edit' : 'Run with "-E help" for how to edit particles with expressions',
-                 '--hist' : 'Run with "-H help" for how to write histograms' }
+                 '--hist' : 'Run with "--hist-help" for how to write histograms' }
 
 def _mcpltool_usage(progname,errmsg=None,full=False,option=None):
     """Print the usage information, or the error (in the value of the option,
@@ -173,22 +171,25 @@ def app_mcpltool(argv=None):
 
 #Options which take a value (given in the next argument, or attached as in
 #-pVALUE or --pick=VALUE), by short and long names:
-_value_opts = { '-p' : '--pick', '-E' : '--edit', '-H' : '--hist',
-                '-o' : '--output', '-B' : '--backend' }
+_value_opts = { '-p' : '--pick', '-E' : '--edit', '-o' : '--output' }
 #(and those without short names):
 _long_value_opts = ( '--color', )
+#Options with an optional value (a histogram): given as -w=VALUE or
+#--window=VALUE, or as the next argument when it is followed by the files (see
+#_optional_value):
+_optional_value_opts = { '-w' : '--window', '-t' : '--terminal' }
 #Flags, by long name (with short name, if any):
 _flag_opts = { '--stats' : '-S', '--extract' : '-e', '--merge' : '-m',
                '--repair' : '-r', '--dry-run' : '-d', '--justhead' : '-j',
-               '--nohead' : '-n', '--version' : '-v', '--term' : '-t',
+               '--nohead' : '-n', '--version' : '-v',
                '--help' : '-h', '--forcemerge' : None, '--inplace' : None,
                '--keepuserflags' : None, '--text' : None,
                '--no-comment' : None, '--preventcomment' : None,
                '--keep-statsum' : None, '--full-help' : None,
-               '--traceback' : None }
+               '--hist-help' : None, '--traceback' : None }
 #Options of earlier versions, which are removed:
 _removed_opts = {
-    '--pdf' : 'a similar option now is: -H HIST -o FILE.pdf',
+    '--pdf' : 'a similar option now is: -w HIST -o FILE.pdf',
     '--gui' : 'use -w instead',
 }
 
@@ -196,8 +197,8 @@ def _long_option( arg, bad ):
     """The long option given by arg (as --name or --name=value), also when
     abbreviated (unique), as (name, '=' or '', value)"""
     name, eq, value = arg.partition('=')
-    names = ( *_value_opts.values(), *_long_value_opts, *_flag_opts, *_removed_opts,
-              '--create-examples' )
+    names = ( *_value_opts.values(), *_long_value_opts, *_optional_value_opts.values(),
+              *_flag_opts, *_removed_opts, '--create-examples' )
     if name not in names:
         matches = sorted( n for n in names if n.startswith(name) and n not in _removed_opts )
         if len(matches) == 1:
@@ -205,6 +206,20 @@ def _long_option( arg, bad ):
         elif matches:
             bad(f"Ambiguous option {name} (could be {', '.join(matches)})")
     return name, eq, value
+
+def _optional_value( name, value, files ):
+    """The value of -w or -t (by long name): as given with '=', or else the
+    argument right after the option, if more arguments which are not options
+    follow (the files, as a histogram is given before them), or None. files
+    is the list of the arguments which are not options, as (the long name of
+    the option right before it, or None, argument), from which the value is
+    removed."""
+    if value is not None:
+        return value
+    i = next( ( i for i, ( after, _ ) in enumerate(files) if after == name ), None )
+    if i is None or len(files) < 2:
+        return None
+    return files.pop(i)[1]
 
 def _app_mcpltool(argv):
     if argv is None:
@@ -251,28 +266,33 @@ def _app_mcpltool(argv):
 
     #Parse the arguments into flags (set of long names), values (dict by long
     #name), -l, -s and -b, and the list of files:
-    flags, values, filelist = set(), {}, []
+    flags, values, files = set(), {}, []
     opt_limit = opt_skip = opt_blobkey = None
-    hists = []#(all -H strings, since there can be several)
-    longtoshort = { v : k for k,v in _value_opts.items() }
+    optional = {}#(-w and -t, by long name, with their values if given with =)
+    after = None#(the option with an optional value right before, see _optional_value)
+    longtoshort = { v : k for k,v in ( *_value_opts.items(), *_optional_value_opts.items() ) }
     def set_value(name, value):
-        if name == '--hist':
-            hists.append(value)
-            values.setdefault(name,value)
-            return
         if name in values:
             bad(f"{longtoshort.get(name,name)} specified more than once")
         values[name] = value
+    def set_optional(name, value):
+        if name in optional:
+            bad(f"{longtoshort[name]} specified more than once")
+        optional[name] = value
+        return None if value is not None else name
     short_flags = { v : k for k,v in _flag_opts.items() if v }
     short_values = _value_opts
     while args:
         a = args.pop(0)
+        option_before, after = after, None
         if a.startswith('--'):
             name, eq, value = _long_option(a,bad)
             if name in _removed_opts:
                 bad(f"{name} is no longer supported as an option"
                     f" ({_removed_opts[name]})")
-            if name in _value_opts.values() or name in _long_value_opts:
+            if name in _optional_value_opts.values():
+                after = set_optional(name,value if eq else None)
+            elif name in _value_opts.values() or name in _long_value_opts:
                 if not eq:
                     if not args:
                         bad(f"Missing argument for {name}")
@@ -286,7 +306,12 @@ def _app_mcpltool(argv):
             a = a[1:]
             while a:
                 f, a = a[0], a[1:]
-                if f'-{f}' in short_values:
+                if f'-{f}' in _optional_value_opts:
+                    if a and not a.startswith('='):
+                        bad(f"-{f} takes the histogram as -{f}=HIST or -{f} HIST (not -{f}{a})")
+                    after = set_optional(_optional_value_opts[f'-{f}'],a[1:] if a else None)
+                    a = ''
+                elif f'-{f}' in short_values:
                     name = short_values[f'-{f}']
                     if not a:
                         if not args:
@@ -319,25 +344,29 @@ def _app_mcpltool(argv):
                 else:
                     bad(f"Unrecognised option : -{f}")
         else:
-            filelist.append(a)
+            files.append( ( option_before, a ) )
+    #(-w and -t, whose values can be given as the next argument):
+    for name, value in list(optional.items()):
+        optional[name] = _optional_value(name,value,files)
+    filelist = [ a for _, a in files ]
 
     if '--help' in flags:
         _mcpltool_usage(progname)
     if '--full-help' in flags:
         _mcpltool_usage(progname,full=True)
-    for name, topic in (('--pick','pick'),('--edit','edit'),('--hist','hist')):
-        #(any of the -H strings can be help):
-        given = hists if name == '--hist' else [ values.get(name,'') ]
-        if any( v.strip().lower() == 'help' for v in given ):
+    if '--hist-help' in flags:
+        _topic_help('hist')
+    for name, topic in (('--pick','pick'),('--edit','edit')):
+        if values.get(name,'').strip().lower() == 'help':
             _topic_help(topic)
 
     #The mode:
-    modes = [ m for m in ('--stats','--hist','--extract','--merge',
+    modes = [ m for m in ('--stats','--window','--terminal','--extract','--merge',
                           '--forcemerge','--repair','--text','--version')
-              if m in flags or m in values ]
+              if m in flags or m in values or m in optional ]
     modenames = { 'dump' : 'when showing particles', '--stats' : '-S',
-                  '--hist' : '-H', '--extract' : '-e', '--merge' : '-m',
-                  '--forcemerge' : '--forcemerge', '--repair' : '-r',
+                  '--window' : '-w', '--terminal' : '-t', '--extract' : '-e',
+                  '--merge' : '-m', '--forcemerge' : '--forcemerge', '--repair' : '-r',
                   '--text' : '--text', '--version' : '-v' }
     if len(modes) > 1:
         bad(f"{modenames[modes[0]]} and {modenames[modes[1]]} can not be used"
@@ -353,7 +382,8 @@ def _app_mcpltool(argv):
             if 'dump' in okmodes:
                 w = modenames['dump'] + ( f', or {w}' if w else '' )
             bad(msg or f"{optname} can only be used {w}{hint}.")
-    datamodes = ('dump','--stats','--hist','--extract')
+    datamodes = ('dump','--stats','--window','--terminal','--extract')
+    histmodes = ('--window','--terminal')
     allowed('-l',datamodes,opt_limit is not None)
     allowed('-s',datamodes,opt_skip is not None)
     allowed('-p',datamodes,'--pick' in values)
@@ -361,14 +391,9 @@ def _app_mcpltool(argv):
     allowed('-j',('dump',),'--justhead' in flags)
     allowed('-n',('dump',),'--nohead' in flags)
     allowed('-b',('dump',),opt_blobkey is not None)
-    #(-t was the short form of --text in earlier versions, as in -t FILE OUT):
-    allowed('-t',('--hist',),'--term' in flags,
-            msg = "-t can not be used without -H" + ( " (did you mean --text?)."
-                                                       if mode == 'dump' else "." ))
-    stats_hint = ' (-S only prints text, for plots use -H)' if mode == '--stats' else ''
-    allowed('-o',('--hist',),'--output' in values,hint=stats_hint)
-    allowed('-B',('--hist',),'--backend' in values,hint=stats_hint)
-    allowed('--color',('--hist',),'--color' in values)
+    stats_hint = ' (-S only prints text, for plots use -w or -t)' if mode == '--stats' else ''
+    allowed('-o',histmodes,'--output' in values,hint=stats_hint)
+    allowed('--color',('--terminal',),'--color' in values)
     if values.get('--color',"auto") not in ('auto','always','never'):
         bad("--color must be auto, always or never.")
     if '--color' in values and '--output' in values:
@@ -377,8 +402,21 @@ def _app_mcpltool(argv):
     allowed('--keep-statsum',('--extract',),'--keep-statsum' in flags)
     allowed('--inplace',('--merge',),'--inplace' in flags)
     allowed('--keepuserflags',('--forcemerge',),'--keepuserflags' in flags)
-    if '--term' in flags and '--output' in values:
-        bad("-t and -o can not be used together.")
+    hist = None
+    if mode in histmodes:
+        opt = modenames[mode]
+        hist = optional[mode]
+        if hist is None:
+            bad(f'{opt} needs a histogram, as in {opt} "ekin/MeV;logx" FILE (see --hist-help).')
+        if hist.endswith(('.mcpl','.mcpl.gz')) and os.path.isfile(hist):
+            #(-t was the short form of --text in earlier versions, as in -t FILE OUT):
+            bad(f'{opt} takes the histogram before the files, as in {opt} "ekin/MeV;logx" FILE'
+                + ( ' (or did you mean --text?).' if opt == '-t' else '.' ))
+        ext = os.path.splitext(values.get('--output',''))[1].lower()
+        if mode == '--window' and ext == '.txt':
+            bad('-w saves histograms as .png, .pdf or .svg files (use -t HIST -o FILE.txt for text).')
+        if mode == '--terminal' and ext not in ( '', '.txt' ):
+            bad('-t saves histograms as .txt files (use -w HIST -o FILE for .png, .pdf or .svg).')
     opt_dryrun = '--dry-run' in flags
     if opt_dryrun and '--output' in values:
         bad("-d can not be used with -o (which saves plots in files).")
@@ -402,15 +440,14 @@ def _app_mcpltool(argv):
             edit = ParticleEdit(values['--edit'])
         except MCPLError as e:
             bad(str(e),'--edit')
-    #(and -H, with the same checks as when the histograms are made):
-    if hists:
+    #(and the histogram, with the same checks as when it is made):
+    if hist is not None:
         from ._histogram import _filler_for
         from ._histstring import _parse_hist
-        for h in hists:
-            try:
-                _filler_for(_parse_hist(h))
-            except MCPLError as e:
-                bad(str(e),'--hist')
+        try:
+            _filler_for(_parse_hist(hist))
+        except MCPLError as e:
+            bad(str(e),'--hist')
 
     if mode == '--version':
         if filelist:
@@ -432,11 +469,11 @@ def _app_mcpltool(argv):
         _mcpltool_dryrun_note(opt_dryrun)
         sys.exit(0)
 
-    if mode == '--hist':
+    if mode in histmodes:
         from ._clistats import mcpltool_hist
-        mcpltool_hist(filelist,hists,opt_skip,opt_limit,pick,edit,
-                      values.get('--output'),values.get('--backend'),
-                      '--term' in flags,bad,color=values.get('--color'))
+        mcpltool_hist(filelist,hist,opt_skip,opt_limit,pick,edit,
+                      values.get('--output'),mode == '--terminal',bad,
+                      color=values.get('--color'))
         sys.exit(0)
 
     if mode == '--text':

@@ -111,9 +111,8 @@ def test_stripped():
     with environ(COLORTERM='truecolor'):
         for cls, opt in ( (UnicodeBackend,'unicode'), (AsciiBackend,'ascii') ):
             for name, fig in cases:
-                kw = { f'{opt}_width' : 70, f'{opt}_height' : 8 }
-                plain = shown( cls(**kw, **{f'{opt}_color':'never'}), [fig] )
-                col = shown( cls(**kw, **{f'{opt}_color':'always'}), [fig] )
+                plain = shown( cls(width=70,height=8,color='never'), [fig] )
+                col = shown( cls(width=70,height=8,color='always'), [fig] )
                 same = ansi.sub('',col) == plain
                 print(f'{opt} {name}: colours used: {col != plain},'
                       f' same text without them: {same}')
@@ -136,7 +135,7 @@ def test_stripped():
                 else:
                     assert same
         #Files are written without colours:
-        UnicodeBackend(unicode_color='always').save([h1.figure()],'colour.txt')
+        UnicodeBackend(color='always').save([h1.figure()],'colour.txt')
         print('file without escape sequences:',
               '\x1b' not in pathlib.Path('colour.txt').read_text(encoding='utf-8'))
 
@@ -158,19 +157,19 @@ def tool( *args, **env ):
 
 def test_tool():
     h = 'ekin/MeV;bins=5;display_by=single'
-    tool('-H',h,'-t')
-    tool('-H',h,'-t','--color=always')
-    tool('-H',h,'-t','--color','always')
-    tool('-H',h,'-t','--color=never',FORCE_COLOR='1')
-    tool('-H',h,'-t',FORCE_COLOR='1')
-    tool('-H',h,'-t','--color=always',NO_COLOR='1')
-    tool('-H',h,'-t',NO_COLOR='1',FORCE_COLOR='1')
-    tool('-H',h,'-B','ascii','--color=always')
-    tool('-H',h,'--color=sometimes')
-    tool('-H',h,'--color=always','-o','x.txt')
-    tool('-H',h+';print=1','--color=always')
+    tool('-t',h)
+    tool('-t',h,'--color=always')
+    tool('-t',h,'--color','always')
+    tool('-t',h,'--color=never',FORCE_COLOR='1')
+    tool('-t',h,FORCE_COLOR='1')
+    tool('-t',h,'--color=always',NO_COLOR='1')
+    tool('-t',h,NO_COLOR='1',FORCE_COLOR='1')
+    tool('-w',h,'--color=always')
+    tool('-t',h,'--color=sometimes')
+    tool('-t',h,'--color=always','-o','x.txt')
+    tool('-t',h+';print=1','--color=always')
     tool('-S','--color=always')
-    tool('-H',h,'-t','--color=always','--color=never')
+    tool('-t',h,'--color=always','--color=never')
 
 test_when()
 test_sequences()

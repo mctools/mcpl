@@ -19,9 +19,9 @@
 ##                                                                            ##
 ################################################################################
 
-"""Histogram strings, as in mcpltool -H: an expression (or two separated by
-":" for 2D histograms, or three for 3D plots), followed by options NAME=VALUE
-separated by ";", like "ekin/MeV;logx;bins=50"."""
+"""Histogram strings, as in mcpltool -w and -t: an expression (or two separated
+by ":" for 2D histograms, or three for 3D plots), followed by options
+NAME=VALUE separated by ";", like "ekin/MeV;logx;bins=50"."""
 
 __all__ = []
 

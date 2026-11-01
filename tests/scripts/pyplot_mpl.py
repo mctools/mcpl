@@ -23,7 +23,7 @@
 # NEEDS: numpy matplotlib
 
 # Test that plots of all reference files can be saved with the matplotlib
-# plotting backend, as PDF and PNG files (also with mcpltool -H).
+# plotting backend, as PDF and PNG files (also with mcpltool -w).
 
 import pathlib
 
@@ -45,35 +45,32 @@ def test_plots():
             if not mf.nparticles:
                 continue
         pdf = f'plots_{i}.pdf'
-        mcpl.plotting.save(example_figures(mcpl,f)[:1], pdf, backend='matplotlib',
-                           matplotlib_backend='agg')
+        mcpl.plotting.save(example_figures(mcpl,f)[:1], pdf)
         assert pathlib.Path(pdf).stat().st_size > 1000
         print(f'plots ok for {f.name}')
 
 def test_png():
     figs = example_figures(mcpl,example_file)[:3]
-    files = mcpl.plotting.save(figs, 'stats.png', backend='matplotlib', matplotlib_backend='agg')
+    files = mcpl.plotting.save(figs, 'stats.png')
     for f in files:
         assert pathlib.Path(f).read_bytes()[:4] == b'\x89PNG'
     print(f'Created {files}')
-    #mcpltool with the default backend (matplotlib, which then uses its agg
-    #backend for saving files):
+    #mcpltool (saving files with matplotlib):
     rc = 0
     try:
-        mcpl.app_mcpltool(['mcpltool','-H','ekin;logy','-H','x : y','-o','tool.png',
+        mcpl.app_mcpltool(['mcpltool','-w','x : y','-o','tool.png',
                            str(example_file)])
     except SystemExit as e:
         rc = e.code
     created = sorted(f.name for f in pathlib.Path('.').glob('tool*.png'))
-    assert rc == 0 and created == ['tool_1.png','tool_2.png'] and all(
+    assert rc == 0 and created == ['tool.png'] and all(
         pathlib.Path(f).read_bytes()[:4] == b'\x89PNG' for f in created )
-    print(f'mcpltool with two -H and -o tool.png created {created}')
+    print(f'mcpltool -w with -o tool.png created {created}')
 
 def test_items():
     #All kinds of items (a 3D plot, an empty cell, same scales, coloured
     #bars and dashed curves), with the logo:
-    files = mcpl.plotting.save(items_figure(mcpl), 'items.png', backend='matplotlib',
-                               matplotlib_backend='agg')
+    files = mcpl.plotting.save(items_figure(mcpl), 'items.png')
     assert pathlib.Path(files[0]).read_bytes()[:4] == b'\x89PNG'
     print(f'Created {files} with all kinds of items')
 

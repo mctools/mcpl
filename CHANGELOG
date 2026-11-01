@@ -47,23 +47,22 @@ v2.2.9  (work in progress)
       * stat:sum values, and numbers in the files of mcpltool --text, are
         always written and read with "." as the decimal point, also in
         applications using a locale with another one.
-      * Plots in the terminal (the unicode and ascii plotting backends) are
-        shown in colour: curves with the colours of matplotlib (several curves
-        drawn as lines of braille dots with the unicode backend), and 2D maps
-        with the viridis colour map (with the unicode backend, drawn with half
-        blocks, so with twice as many rows). Colours are used when the output
-        is a terminal, unless the NO_COLOR environment variable is set, and
-        always if FORCE_COLOR is set. The new mcpltool option
-        --color=auto|always|never (and the unicode_color and ascii_color
-        options of the backends) overrides this. Files are always written
-        without colours.
+      * Plots in the terminal are shown in colour: curves with the colours of
+        matplotlib (several curves drawn as lines of braille dots with Unicode
+        characters), and 2D maps with the viridis colour map (with Unicode
+        characters, drawn with half blocks, so with twice as many rows).
+        Colours are used when the output is a terminal, unless the NO_COLOR
+        environment variable is set, and always if FORCE_COLOR is set. The new
+        mcpltool option --color=auto|always|never (and terminal_color in the
+        Python API) overrides this. Files are always written without
+        colours.
       * Long options of mcpltool can be abbreviated, as long as they are unique
         (e.g. --ext for --extract).
       * New usage information for mcpltool: -h shows a single page with the
         common options, --full-help shows all options, and -p help, -E help
-        and -H help describe how to write the expressions, with all particle
+        and --hist-help describe how to write the expressions, with all particle
         fields, units, functions and histogram options.
-      * Expressions (with -p, -E and -H, and in the Python API) use the
+      * Expressions (with -p, -E, -w and -t, and in the Python API) use the
         logical operators and, or and not (&&, || and ! give an error saying
         what to write instead), and mod(a,b) for remainders of integers. The
         position of the particles in the file can be used as fileidx (e.g.
@@ -302,20 +301,19 @@ v2.2.9  (work in progress)
         have rotate_around and rotate_frame. Errors say where in the
         expression the problem is. Numbers are decimal or hexadecimal (like
         0x1f), as in C.
-      * New plotting backends "unicode" and "ascii" in the Python API and
-        mcpltool, which draw plots as text: in the terminal (e.g. with
-        mcpltool -H ... -t), or in .txt files. They need
-        no extra Python packages, so plots can always be made. Histograms
-        with more bins than the columns (or cells) of such plots are shown
-        with the average of the bin values over each column, and histograms
-        from mcpltool -H without bins=N are made at the resolution of
-        the plot, with a whole number of columns per bin (the number of
-        columns is given by mcpl.plotting.resolution(..)).
-      * Histogram strings (of mcpltool -H and mcpl.histogram) with three
+      * Plots can be drawn as text, with Unicode characters (or else ASCII):
+        in the terminal (with terminal=True in the Python API, or
+        terminal='ascii' for ASCII, and with mcpltool -t HIST), or in .txt
+        files. This needs no extra Python packages, so plots can always be
+        made. Histograms with more bins than the columns (or cells) of such
+        plots are shown with the average of the bin values over each column,
+        and histograms from mcpltool -t without bins=N are made at the
+        resolution of the plot, with a whole number of columns per bin.
+      * Histogram strings (of mcpltool -w/-t and mcpl.histogram) with three
         expressions, like "x : y : z", give 3D plots of a sample of the
         particles (in windows).
       * Unless the number of bins is given, mcpl.histogram, mcpl.histogram2d
-        and mcpltool -H now choose it from the effective number of
+        and mcpltool -w/-t now choose it from the effective number of
         entries N: sqrt(N) bins (the cube root per axis for 2D histograms),
         between 10 and 400, rather than always 100.
       * Particles can now carry custom per-particle data ("userdata"): a fixed
@@ -362,18 +360,12 @@ v2.2.9  (work in progress)
         (Python).
       * Clearer error messages for invalid values of stat:sum entries (which
         must be non-negative or -1, and may only be padded with spaces).
-      * Plotting backends in the Python API: the default backend can be set
-        with mcpl.plotting.set_default_backend(...), and otherwise a backend is
-        chosen automatically: for showing plots matplotlib (if it can show
-        them here), else the unicode text backend (if the terminal can show
-        its characters), else the ascii text backend, and for saving
-        plots the best backend for the format given by the file extension.
-        Custom backends can be added by subclassing mcpl.plotting.Backend
-        (describing what they show plots on, their priority and their file
-        formats) and calling mcpl.plotting.register_backend, and
-        mcpl.plotting.formats lists the file formats which can be saved. Options for backends are named with
-        the backend name as prefix (matplotlib_backend, unicode_width), and
-        can be given to all plotting functions.
+      * Plots in the Python API are shown in a window with matplotlib, or in
+        the terminal with terminal=True (giving an error, rather than
+        switching, when they can not be shown), with terminal_width,
+        terminal_height and terminal_color for plots in the terminal, and
+        are saved in the format given by the file extension (.pdf, .png,
+        .svg or .txt).
       * NaN and infinite values are no longer allowed in the particle data of
         MCPL files. Adding particles with such values (to fields which are
         stored) now gives an error, in the C API (mcpl_add_particle and
@@ -458,7 +450,7 @@ v2.2.9  (work in progress)
       * mcpltool can now pick and edit particles with expressions, with the
         new -p (--pick) and -E (--edit) options, e.g. mcpltool -e -p "pdgcode
         == neutron" -E "wavelength = 1.8Aa" FILE OUT.mcpl.gz. They can be used
-        when showing particles, and with -S, -H and -e, as can -l and -s,
+        when showing particles, and with -S, -w, -t and -e, as can -l and -s,
         which choose the range of particles in the file before -p and -E are
         applied. Like with -l and -s, stat:sum entries are marked as not
         available (-1) when -E modifies weights, unless the new
@@ -469,8 +461,7 @@ v2.2.9  (work in progress)
       * New module mcpl.plotting with a backend-independent description of
         plots (Figure, Panel, and the items StepHist, Hist2D, Bars, Scatter3D
         and Text), which can be shown or saved with matplotlib, with the MCPL
-        logo (with the show and save functions, and available_backends to list
-        the available ones).
+        logo (with the show and save functions).
       * plot_stats is removed: it gives an error saying what to use instead
         (mcpl.histogram), and mcpltool -S only prints the summary of the
         particles. The --pdf and --gui options are removed.
@@ -482,12 +473,12 @@ v2.2.9  (work in progress)
         mcpl.plot_histograms shows or saves several histograms, also on top of
         each other in one plot with overlay=True (e.g. to compare
         simulations).
-      * New mcpltool -H (--hist) option for histograms of expressions, with
-        options NAME=VALUE separated by ";" (see mcpltool -H help), e.g.
-        mcpltool -H "ekin;logx" -p "pdgcode == neutron" FILE, also for 2D
-        histograms and bar charts, and several at once. Plots are shown in a
-        window (matplotlib) or in the terminal (with -t), or saved with -o
-        FILE. mcpl.histogram also accepts these strings.
+      * New mcpltool options -w HIST (--window) and -t HIST (--terminal) for a
+        histogram of expressions, shown in a window (matplotlib) or in the
+        terminal, or saved with -o FILE, with options NAME=VALUE separated by
+        ";" (see mcpltool --hist-help), e.g. mcpltool -w "ekin;logx" -p
+        "pdgcode == neutron" FILE, also for 2D histograms and bar charts.
+        mcpl.histogram also accepts these strings.
       * mcpltool --extract no longer leaves a broken output file behind when
         given an invalid -p argument.
       * ssw2mcpl and phits2mcpl no longer leave an unfinished output file behind
