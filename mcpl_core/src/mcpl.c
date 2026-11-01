@@ -655,6 +655,12 @@ MCPL_LOCAL int mcpl_internal_udlayout_error( const char * layout,
   return mcpl_internal_raise_runtime( es, buf );
 }
 
+//(for sorting arrays of strings with qsort):
+MCPL_LOCAL int mcpl_internal_cmp_strptr( const void * a, const void * b )
+{
+  return strcmp( *(const char * const *)a, *(const char * const *)b );
+}
+
 //Validates the layout and returns the number of bytes (with an error in case
 //of invalid layouts, in which case 0 is returned, since valid layouts are
 //never empty):
@@ -3169,6 +3175,25 @@ MCPL_LOCAL int mcpl_internal_open_file( mcpl_fileinternal_t * f,
         MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,buf);
       }
     }
+  }
+  if ( f->nblobs > 1 ) {
+    //Blob keys must be unique (checked on sorted copies of the keys, as there
+    //can be many):
+    char ** sorted = (char**)mcpl_internal_malloc_es( f->nblobs * sizeof(char*), es );
+    if (!sorted)
+      return 0;
+    memcpy( sorted, f->blobkeys, f->nblobs * sizeof(char*) );
+    qsort( sorted, f->nblobs, sizeof(char*), mcpl_internal_cmp_strptr );
+    for (uint32_t i = 1; i < f->nblobs; ++i) {
+      if ( strcmp( sorted[i-1], sorted[i] ) == 0 ) {
+        char buf[512];
+        snprintf(buf,sizeof(buf),"The file has the blob key \"%.256s\" more"
+                 " than once.",sorted[i]);
+        free(sorted);
+        MCPLIMP_OPENFAIL(MCPL_ERROR_RUNTIME,buf);
+      }
+    }
+    free(sorted);
   }
   for (uint32_t i =0; i < f->nblobs; ++i)
     if (!mcpl_read_buffer(f, &(f->bloblengths[i]), &(f->blobs[i]), &current_pos, errmsg, es))

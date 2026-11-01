@@ -781,6 +781,12 @@ class MCPLFile:
             problem = blobkey_problem(blobkeys[-1]) if version >= 4 else None
             if problem:
                 raise MCPLError(f'File has an invalid blob key ({problem}).')
+        if len(set(blobkeys)) != len(blobkeys):
+            #(the first of the duplicates in sorted order, as in C):
+            sk = sorted(blobkeys)
+            dup = next( a for a,b in zip(sk,sk[1:]) if a == b )
+            raise MCPLError('The file has the blob key'
+                            f' "{dup[:256].decode("utf-8","replace")}" more than once.')
         for i,bk in enumerate(blobkeys):
             blobs[bk] = readarr()
         headersize = ( 48 + 4 + len(sourcename)
