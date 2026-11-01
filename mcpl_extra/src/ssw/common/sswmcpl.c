@@ -50,7 +50,26 @@ void ssw_error(const char * msg);//fwd declare internal function from sswread.c
 
 int ssw2mcpl(const char * sswfile, const char * mcplfile)
 {
-  return ssw2mcpl2(sswfile, mcplfile, 0, 0, 1, 0);
+  return ssw2mcpl2(sswfile, mcplfile, 0, 0, 0, 0);
+}
+
+//Whether the file exists (can be opened):
+static int sswmcpl_file_exists( const char * filename )
+{
+  mcpl_generic_filehandle_t fh = mcpl_generic_fopen_try( filename );
+  if ( !fh.internal )
+    return 0;
+  mcpl_generic_fclose( &fh );
+  return 1;
+}
+
+//Ends with an error if the output file exists (unless allowed):
+static void sswmcpl_check_new_output( const char * filename, int allow_overwrite )
+{
+  if ( allow_overwrite || !sswmcpl_file_exists( filename ) )
+    return;
+  printf("Error: The output file \"%s\" already exists.\n",filename);
+  exit(1);
 }
 
 size_t ssw_strlen( const char * str, size_t maxsize )
@@ -85,7 +104,7 @@ static int sswmcpl_buf_contains( const char * buf, uint64_t n,
 }
 
 int ssw2mcpl2(const char * sswfile, const char * mcplfile,
-              int opt_dp, int opt_surf, int opt_gzip,
+              int opt_dp, int opt_surf, int allow_overwrite,
               const char * inputdeckfile)
 {
   ssw_file_t f = ssw_open_file(sswfile);
@@ -108,7 +127,9 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
     }
   }
 
-  mcpl_outfile_t mcplfh = mcpl_create_outfile(mcplfile);
+  mcpl_outfile_t mcplfh = ( allow_overwrite
+                            ? mcpl_create_outfile_allow_overwrite(mcplfile)
+                            : mcpl_create_outfile(mcplfile) );
   mcpl_hdr_set_srcname(mcplfh,ssw_mcnpflavour(f));
   const int64_t np1 = ssw_abs_np1( f );
 
@@ -195,8 +216,10 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
   if ( np1 > 0 )
     mcpl_hdr_add_stat_sum(mcplfh,"ssw_np1",(double)np1);
 
+  //(names ending with .mcpl.gz are gzipped):
+  size_t lname = strlen(mcplfile);
   int did_gzip = 0;
-  if (opt_gzip)
+  if ( lname > 8 && strcmp( mcplfile + lname - 8, ".mcpl.gz" ) == 0 )
     did_gzip = mcpl_closeandgzip_outfile(mcplfh);
   else
     mcpl_close_outfile(mcplfh);
@@ -209,13 +232,13 @@ int ssw2mcpl2(const char * sswfile, const char * mcplfile,
 
 void ssw2mcpl_parse_args(int argc,char **argv, const char** infile,
                          const char **outfile, const char **cfgfile,
-                         int* double_prec, int* surface_info, int* do_gzip) {
+                         int* double_prec, int* surface_info, int* allow_overwrite) {
   *cfgfile = 0;
   *infile = 0;
   *outfile = 0;
   *surface_info = 0;
   *double_prec = 0;
-  *do_gzip = 1;
+  *allow_overwrite = 0;
   int i;
   for (i=1; i < argc; ++i) {
     if (argv[i][0]=='\0')
@@ -226,14 +249,15 @@ void ssw2mcpl_parse_args(int argc,char **argv, const char** infile,
       printf("  %s [options] input.ssw [output.mcpl]\n\n",progname);
       printf("Converts the Monte Carlo particles in the input.ssw file (MCNP Surface\n"
              "Source Write format) to MCPL format and stores in the designated output\n"
-             "file (defaults to \"output.mcpl\").\n"
+             "file (defaults to \"output.mcpl\", and gzipped for names ending with\n"
+             ".mcpl.gz).\n"
              "\n"
              "Options:\n"
              "\n"
              "  -h, --help   : Show this usage information.\n"
              "  -d, --double : Enable double-precision storage of floating point values.\n"
              "  -s, --surf   : Store SSW surface IDs in the MCPL userflags.\n"
-             "  -n, --nogzip : Do not attempt to gzip output file.\n"
+             "  --allow-overwrite : Overwrite the output file if it exists.\n"
              "  -c FILE      : Embed entire configuration FILE (the input deck)\n"
              "                 used to produce input.ssw in the MCPL header.\n"
              );
@@ -262,9 +286,15 @@ void ssw2mcpl_parse_args(int argc,char **argv, const char** infile,
       *surface_info = 1;
       continue;
     }
-    if (strcmp(argv[i],"-n")==0||strcmp(argv[i],"--nogzip")==0) {
-      *do_gzip = 0;
+    if (strcmp(argv[i],"--allow-overwrite")==0) {
+      *allow_overwrite = 1;
       continue;
+    }
+    if (strcmp(argv[i],"-n")==0||strcmp(argv[i],"--nogzip")==0) {
+      printf("Error: %s is not needed: output files with names ending with"
+             " .mcpl are not compressed (use .mcpl.gz for compressed"
+             " files).\n",argv[i]);
+      exit(1);
     }
     if (argv[i][0]=='-') {
       printf("Error: Unknown argument: %s\n",argv[i]);
@@ -299,9 +329,9 @@ int ssw2mcpl_app(int argc,char** argv)
   const char * infile;
   const char * outfile;
   const char * cfgfile;
-  int double_prec, surface_info, do_gzip;
-  ssw2mcpl_parse_args(argc,argv,&infile,&outfile,&cfgfile,&double_prec,&surface_info,&do_gzip);
-  int ok = ssw2mcpl2(infile, outfile,double_prec, surface_info, do_gzip,cfgfile);
+  int double_prec, surface_info, allow_overwrite;
+  ssw2mcpl_parse_args(argc,argv,&infile,&outfile,&cfgfile,&double_prec,&surface_info,&allow_overwrite);
+  int ok = ssw2mcpl2(infile, outfile,double_prec, surface_info, allow_overwrite,cfgfile);
   return ok ? 0 : 1;
 }
 
@@ -374,8 +404,9 @@ void ssw_writerecord( mcpl_generic_wfilehandle_t* fh,
 }
 
 int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refsswfile,
-             long surface_id, long nparticles_limit)
+             long surface_id, long nparticles_limit, int allow_overwrite)
 {
+  sswmcpl_check_new_output( outsswfile, allow_overwrite );
 
   mcpl_file_t fmcpl = mcpl_open_file(inmcplfile);
 
@@ -448,7 +479,7 @@ int mcpl2ssw(const char * inmcplfile, const char * outsswfile, const char * refs
   ssw_encode_hdrint( hdrbuf + ssw_nrsspos, ssw_hdrintsize, 0 );
   ssw_encode_hdrint( hdrbuf + ssw_nisspos, ssw_hdrintsize, 0 );
 
-  printf("Creating (or overwriting) output SSW file.\n");
+  printf("Creating output SSW file.\n");
 
   //Open new ssw file:
   mcpl_generic_wfilehandle_t fout = mcpl_generic_wfopen( outsswfile );
@@ -639,6 +670,7 @@ int mcpl2ssw_app_usage( const char** argv, const char * errmsg ) {
          "  -s<ID>       : All particles in the SSW file will get this surface ID.\n"
          "  -l<LIMIT>    : Limit the number of particles transferred to the SSW file\n"
          "                 (defaults to 2147483647, the maximal SSW capacity).\n"
+         "  --allow-overwrite : Overwrite the output file if it exists.\n"
          );
   free(progname);
   return 0;
@@ -646,8 +678,10 @@ int mcpl2ssw_app_usage( const char** argv, const char * errmsg ) {
 
 int mcpl2ssw_parse_args(int argc,const char **argv, const char** inmcplfile,
                         const char **refsswfile, const char **outsswfile,
-                        long* nparticles_limit, long* surface_id) {
+                        long* nparticles_limit, long* surface_id,
+                        int* allow_overwrite) {
   //returns: 0 all ok, 1: error, -1: all ok but do nothing (-h/--help mode)
+  *allow_overwrite = 0;
   *inmcplfile = 0;
   *refsswfile = 0;
   *outsswfile = 0;
@@ -691,6 +725,8 @@ int mcpl2ssw_parse_args(int argc,const char **argv, const char** inmcplfile,
     } else if (n==6 && strcmp(a,"--help")==0) {
       mcpl2ssw_app_usage(argv,0);
       return -1;
+    } else if (strcmp(a,"--allow-overwrite")==0) {
+      *allow_overwrite = 1;
     } else if (n>=1&&a[0]!='-') {
       if (*outsswfile)
         return mcpl2ssw_app_usage(argv,"Too many arguments.");
@@ -732,10 +768,12 @@ int mcpl2ssw_app( int argc, char** argv ) {
   const char * outsswfile;
   long nparticles_limit;
   long surface_id;
+  int allow_overwrite;
 
   int parse = mcpl2ssw_parse_args( argc, (const char**)argv,
                                    &inmcplfile, &refsswfile, &outsswfile,
-                                   &nparticles_limit, &surface_id );
+                                   &nparticles_limit, &surface_id,
+                                   &allow_overwrite );
 
   if (parse==-1)// --help
     return 0;
@@ -743,7 +781,8 @@ int mcpl2ssw_app( int argc, char** argv ) {
   if (parse)// parse error
     return parse;
 
-  if (mcpl2ssw(inmcplfile, outsswfile, refsswfile,surface_id, nparticles_limit))
+  if (mcpl2ssw(inmcplfile, outsswfile, refsswfile,surface_id, nparticles_limit,
+               allow_overwrite))
     return 0;
 
   return 1;

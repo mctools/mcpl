@@ -39,11 +39,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////////////
-// Create mcplfile based on content in PHITS dump file. Using this function will
-// use single-precision in the output file, and will always attempt to gzip the
-// resulting MCPL file. Use phits2mcpl2 instead to fine-tune these choices or to
-// embed a copy of the PHITS input deck or dump summary file in the MCPL header
-// for reference. Returns 1 on success, 0 on failure:
+// Create mcplfile based on content in PHITS dump file (gzipped if its name ends
+// with .mcpl.gz, and it must not exist). Using this function will use
+// single-precision in the output file. Use phits2mcpl2 instead to fine-tune
+// these choices or to embed a copy of the PHITS input deck or dump summary file
+// in the MCPL header for reference. Returns 1 on success, 0 on failure:
 int phits2mcpl(const char * phitsfile, const char * mcplfile);
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -51,8 +51,8 @@ int phits2mcpl(const char * phitsfile, const char * mcplfile);
 //
 //  opt_dp  : Set to 1 to enable double-precision storage of floating point
 //            values. Set to 0 for single-precision.
-//  opt_gzip: Set to 1 to gzip the resulting mcpl file. Set to 0 to leave the
-//            resulting file uncompressed.
+//  allow_overwrite: Set to 1 to overwrite an existing mcplfile. Set to 0 to
+//                   refuse it.
 //  inputdeckfile: Set to the filename of the PHITS input deck file, to embed a
 //                 copy of it in the MCPL header. Set to 0 to not do this.
 //  dumpsummaryfile: Set to the filename of the dump summary text file (which
@@ -64,7 +64,7 @@ int phits2mcpl(const char * phitsfile, const char * mcplfile);
 //  only if the input dump file has polarisation info.
 
 int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
-                 int opt_dp, int opt_gzip,
+                 int opt_dp, int allow_overwrite,
                  const char * inputdeckfile,
                  const char * dumpsummaryfile );
 
@@ -86,10 +86,11 @@ int phits2mcpl2( const char * phitsdumpfile, const char * mcplfile,
 // number of particles put into the resulting phits file. Finally, the reclen
 // parameters control whether the hidden Fortran record markers in the produced
 // file use 32bit (reclen=4) or 64bit (reclen=8) integers. The correct choice is
-// almost always to use reclen=4.
+// almost always to use reclen=4. An existing phitsdumpfile is only overwritten
+// if allow_overwrite is 1.
 
 int mcpl2phits( const char * mcplfile, const char * phitsdumpfile,
-                int usepol, uint64_t limit, int reclen );
+                int usepol, uint64_t limit, int reclen, int allow_overwrite );
 
 //////////////////////////////////////////////////////////////////////////////////////
 // For easily creating standard phits2mcpl and mcpl2phits cmdline applications:

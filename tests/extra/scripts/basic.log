@@ -32,6 +32,7 @@ Options:
   -s<ID>       : All particles in the SSW file will get this surface ID.
   -l<LIMIT>    : Limit the number of particles transferred to the SSW file
                  (defaults to 2147483647, the maximal SSW capacity).
+  --allow-overwrite : Overwrite the output file if it exists.
 
 
 LAUNCHING ssw2mcpl --help:
@@ -43,14 +44,15 @@ Usage:
 
 Converts the Monte Carlo particles in the input.ssw file (MCNP Surface
 Source Write format) to MCPL format and stores in the designated output
-file (defaults to "output.mcpl").
+file (defaults to "output.mcpl", and gzipped for names ending with
+.mcpl.gz).
 
 Options:
 
   -h, --help   : Show this usage information.
   -d, --double : Enable double-precision storage of floating point values.
   -s, --surf   : Store SSW surface IDs in the MCPL userflags.
-  -n, --nogzip : Do not attempt to gzip output file.
+  --allow-overwrite : Overwrite the output file if it exists.
   -c FILE      : Embed entire configuration FILE (the input deck)
                  used to produce input.ssw in the MCPL header.
 

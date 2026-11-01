@@ -135,4 +135,4 @@ jobs:
             python3.12 -mpip install --user scikit_build_core ./src/mcpl_extra --no-build-isolation
             mcpl2phits ./src/examples/example.mcpl foo.dmp
             phits2mcpl foo.dmp foo.mcpl
-            mcpltool-c foo.mcpl.gz
+            mcpltool-c foo.mcpl
