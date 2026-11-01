@@ -31,3 +31,44 @@ add_particles(block,['wavelength']): MCPLError: wavelength can only be specified
 add_particles(block,['ekin', 'wavelength']): MCPLError: Do not specify both ekin and wavelength
 add_particles(block,['x']): MCPLError: Inconsistent lengths of particle field arrays
 add_particles(block,['foo']): TypeError: Unknown particle field(s): foo
+BPBPPBBP with {}:
+  read_block: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  read: 10
+  read_block: [11, 12, 13, 14, 15, 16, 17, 18, 19]
+  read: 20
+  read: 21
+  read_block: [22, 23, 24]
+  read_block: None
+  read: None
+  read after the blocks: None, particles: 25, first block after read: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+BPBPPBBP with {'pick': 'x != 3cm'}:
+  read_block: [0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+  read: 20
+  read_block: [21, 22, 23, 24]
+  read: None
+  read: None
+  read_block: None
+  read_block: None
+  read: None
+  read after the blocks: None, particles: 24, first block after read: [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+BPBPPBBP with {'skip': 2, 'limit': 21}:
+  read_block: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+  read: 20
+  read_block: [21, 22]
+  read: None
+  read: None
+  read_block: None
+  read_block: None
+  read: None
+  read after the blocks: None, particles: 21, first block after read: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+BPBPPBBP with {'edit': 'x += 100cm'}:
+  read_block: [100, 101, 102, 103, 104, 105, 106, 107, 108, 109]
+  read: 110
+  read_block: [111, 112, 113, 114, 115, 116, 117, 118, 119]
+  read: 120
+  read: 121
+  read_block: [122, 123, 124]
+  read_block: None
+  read: None
+  read after the blocks: None, particles: 25, first block after read: [101, 102, 103, 104, 105, 106, 107, 108, 109]
+skip_forward(5): read_block: [5, 6, 7, 8, 9] (file offset 5), read: 10

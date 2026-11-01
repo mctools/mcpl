@@ -60,7 +60,7 @@ def test_conversions():
 def test_attributes():
     with mcpl.MCPLFile(example_file) as f:
         b = f.read_block()
-        p = f.read()
+        p = b[0]
         print(f'first particle: pdgcode={p.pdgcode} ekin={p.ekin:.6g}'
               f' wavelength={p.wavelength:.6g}')
         isng = np.isin(b.pdgcode,(2112,22))

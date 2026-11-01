@@ -7,6 +7,11 @@ v2.2.9  (work in progress)
         picks no longer fail for blocks without picked particles, swap(..)
         refuses wavelength, and values of display_by are only labelled as
         conditions if all are 0 or 1.
+      * Python: read() and read_block() of MCPLFile can be mixed, each
+        continuing after the particles returned by the other (read() after
+        reading blocks gave particles again, and read_block() after read()
+        skipped the rest of the block). After read(), read_block() returns
+        the rest of the block of that particle.
       * Files are compressed with gzip level 1 (instead of 6 in C and 9 in
         Python), which for MCPL files is several times faster and makes files
         only slightly larger. Files compressed at any level can be read.
