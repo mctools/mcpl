@@ -73,6 +73,11 @@ class PlotBackend:
         files."""
         raise NotImplementedError
 
+    def output_filenames( self, filename, n ):
+        """The files which save() creates for n figures (numbered for formats
+        which can only hold a single figure, see numbered_filenames)."""
+        return numbered_filenames(filename,n)
+
     def check_format( self, filename ):
         """Extension of filename, if it is one of the formats (otherwise
         MCPLError is raised)."""

@@ -130,7 +130,7 @@ def check_with_userdata():
     fn = pathlib.Path('withud.mcpl')
     for userflags in ( False, True ):
         with mcpl.MCPLOutFile( fn, userdata_layout = 'temp:float32',
-                               opt_userflags = userflags ):
+                               opt_userflags = userflags, allow_overwrite = True ):
             pass
         data = fn.read_bytes()
         assert data[0:7] == b'MCPL004'
@@ -232,7 +232,7 @@ def check_header_rules():
     #of MCPL-3 files, except to files with userdata (MCPL-4). The C writer is
     #tested in the same way in the genisotrop and userdata tests:
     for key in ( '', 'a b', 'a"b', "a'b", 'a\\b', 'a`b', 'a\tb', 'bl\u00f8b' ):
-        with mcpl.MCPLOutFile('pybadkey.mcpl') as o:
+        with mcpl.MCPLOutFile('pybadkey.mcpl', allow_overwrite = True) as o:
             try:
                 o.hdr_add_data(key,b'data')
             except mcpl.MCPLError as e:
@@ -256,7 +256,7 @@ def check_header_rules():
           ' files without userdata')
     #The Python writer refuses null characters in strings:
     for fct, arg in ( ('hdr_set_srcname','a\0b'), ('hdr_add_comment','a\0b') ):
-        with mcpl.MCPLOutFile('pynullchar.mcpl') as o:
+        with mcpl.MCPLOutFile('pynullchar.mcpl', allow_overwrite = True) as o:
             try:
                 getattr(o,fct)(arg)
             except mcpl.MCPLError as e:

@@ -162,7 +162,9 @@ def py_script(outfile, script):
                 o.close()
                 return
             elif cmd == 'closegz':
-                o.closeandgzip()
+                #(like mcpl_closeandgzip_outfile):
+                o.close()
+                mcpl.gzip_file(o.filename)
                 return
             else:
                 raise RuntimeError(f'Unknown script command: {cmd}')
@@ -558,7 +560,7 @@ def py_mpi(filename, nproc, nparticles):
         for i in range(nparticles):
             o.add_particle(direction=(0,0,1), ekin=1.0+i+1000.0*iproc,
                            pdgcode=2112, weight=1.0)
-        o.closeandgzip()
+        o.close()
     mcpl.merge_outfiles_mpi(filename, nproc)
 
 def test_mpi():

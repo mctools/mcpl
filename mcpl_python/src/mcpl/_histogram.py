@@ -146,16 +146,19 @@ class _Plot:
         return Figure( panels = [ self.panel(**kwargs) ] )
 
     def plot( self, filename = None, *, terminal = False, terminal_width = None,
-              terminal_height = None, terminal_color = None, **kwargs ):
+              terminal_height = None, terminal_color = None,
+              allow_overwrite = False, **kwargs ):
         """Show the plot in a window, or in the terminal if terminal is True
-        or 'ascii' (or save it in a file if filename is given), as with
-        mcpl.plotting.show (and save). Further keyword arguments are those of
-        panel() (like logy). Returns the list of created files when saving."""
+        or 'ascii' (or save it in a file if filename is given, which must not
+        exist unless allow_overwrite is True), as with mcpl.plotting.show
+        (and save). Further keyword arguments are those of panel() (like
+        logy). Returns the list of created files when saving."""
         unknown = sorted( set(kwargs) - set(self._panel_options) )
         if unknown:
             raise MCPLError('Unknown keyword argument(s) of plot: ' + ', '.join(unknown))
         return _show_or_save([self.figure(**kwargs)],filename,terminal,
-                             terminal_width,terminal_height,terminal_color)
+                             terminal_width,terminal_height,terminal_color,
+                             allow_overwrite)
 
     def _text_header( self, what, values, columns ):
         lines = [ f'# {what}' ] + [ f'# {t}' for t in ( self.title or '' ).splitlines() ]
@@ -476,13 +479,14 @@ class _DomainNote:
     def note( self, unicode = False ):
         return self._v.domain_note(self._seen,unicode) if self._left_out else None
 
-def _show_or_save( figures, filename, terminal, width, height, color ):
+def _show_or_save( figures, filename, terminal, width, height, color,
+                   allow_overwrite = False ):
     from .plotting import save, show
     if filename:
         if terminal or color is not None:
             raise MCPLError('terminal and terminal_color can not be used when saving'
                             ' plots in a file (the extension gives the format)')
-        return save(figures,filename,width,height)
+        return save(figures,filename,width,height,allow_overwrite)
     show(figures,terminal,width,height,color)
     return None
 
@@ -1118,7 +1122,8 @@ class _Points3DFiller(_Filler):
 
 def plot_histograms( histograms, filename = None, *, terminal = False, logy = None,
                      overlay = False, labels = None, terminal_width = None,
-                     terminal_height = None, terminal_color = None ):
+                     terminal_height = None, terminal_color = None,
+                     allow_overwrite = False ):
     """Show histograms in a window, or in the terminal if terminal is True or
     'ascii' (or save them in a file if filename is given), as with
     Histogram.plot (logy is by default that of each histogram, see
@@ -1128,9 +1133,11 @@ def plot_histograms( histograms, filename = None, *, terminal = False, logy = No
     with a legend, for instance to compare histograms of the same expression
     from different simulations. The legend shows the labels if given, and otherwise the titles (picks) or
     expressions of the histograms. Returns the list of created files when
-    saving."""
+    saving (existing files are only overwritten if allow_overwrite is
+    True)."""
     from .plotting import Figure, Panel, StepHist
-    display = ( terminal, terminal_width, terminal_height, terminal_color )
+    display = ( terminal, terminal_width, terminal_height, terminal_color,
+                allow_overwrite )
     histograms = list(histograms)
     if not overlay:
         figs = [ h.figure(**( {} if logy is None or 'logy' not in h._panel_options

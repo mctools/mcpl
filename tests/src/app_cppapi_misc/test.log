@@ -17,7 +17,7 @@ MCPL WARNING: Marking stat:sum:nevents entry as not available (-1) since file no
 )
 merge_files (incompatible files) -> mcpl::Error: Attempting to merge incompatible files (FP precision: single vs double).
 merge_files (missing file) -> mcpl::IOError: Unable to open file!
-merge_files (output exists) -> mcpl::Error: requested output file of mcpl_merge_files already exists
+merge_files (output exists) -> mcpl::Error: The output file "m1.mcpl" already exists
 merge_files (no files) -> mcpl::Error: mcpl_merge_files must be called with at least one input file
 merge_files (same file twice) -> mcpl::Error: Merging file with itself
 

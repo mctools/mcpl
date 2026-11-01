@@ -51,8 +51,8 @@ int main(int argc,char**argv) {
   mcpl_outfile_t outhandles[MCPLTEST_NPROC];
   for ( unsigned long iproc = 0; iproc < nproc; ++iproc ) {
 
-    //It makes no difference if the filename argument is "foobar", "foobar.mcpl"
-    //or "foobar.mcpl.gz". Unit test this:
+    //The worker files are the same whether the filename argument is "foobar",
+    //"foobar.mcpl" or "foobar.mcpl.gz". Unit test this:
     const char * userfn;
     if ( iproc % 3 == 0 )
       userfn = "foobar";
@@ -92,11 +92,11 @@ int main(int argc,char**argv) {
   for ( unsigned long iproc = 0; iproc < nproc; ++iproc ) {
     mcpl_outfile_t f = outhandles[iproc];
     mcpl_hdr_add_stat_sum(f,"foostat", 10.0 + iproc );
-    mcpl_closeandgzip_outfile(f);
+    mcpl_close_outfile(f);
   }
 
-  //Merge:
-  mcpl_merge_outfiles_mpi( "foobar", nproc );
+  //Merge (into a gzipped file):
+  mcpl_merge_outfiles_mpi( "foobar.mcpl.gz", nproc );
 
   //Dump:
   mcpl_dump("foobar.mcpl.gz", 0, 0, 0);

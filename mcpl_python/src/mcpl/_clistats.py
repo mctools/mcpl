@@ -40,14 +40,14 @@ def _view( filename, skip, limit, pick, edit ):
         return f
     return _FileView(f,skip,limit,pick,edit)
 
-def _plot_backend( outfn, terminal, color = None ):
+def _plot_backend( outfn, terminal, color = None, allow_overwrite = False ):
     """Backend object for showing the histogram of mcpltool -w (in a window)
     or -t (in the terminal, with the --color setting), or saving it in outfn
-    (with -o)"""
+    (with -o, where an existing file is only overwritten if allowed)"""
     from ._plotregistry import _save_backend, _show_backend
     if outfn:
-        if os.path.exists(outfn):
-            raise MCPLError("Requested output file already exists.")
+        if not allow_overwrite and os.path.lexists(outfn):
+            raise MCPLError(f'The output file "{outfn}" already exists.')
         bk = _save_backend(outfn)
         bk.check_format(outfn)
         return bk
@@ -63,7 +63,8 @@ def mcpltool_stats(filename,skip,limit,pick,edit,bad):
         bad("Can not calculate statistics when no particles are picked")
     dump_stats(_PickedFile(f,None))
 
-def mcpltool_hist(filelist,hist,skip,limit,pick,edit,outfn,terminal,bad,color=None):
+def mcpltool_hist(filelist,hist,skip,limit,pick,edit,outfn,terminal,bad,color=None,
+                  allow_overwrite=False):
     """The histogram of mcpltool -w or -t (shown with matplotlib, or in the
     terminal if terminal is set), printed with the print option, or else
     plotted (in the file outfn with -o, or else shown)"""
@@ -85,7 +86,7 @@ def mcpltool_hist(filelist,hist,skip,limit,pick,edit,outfn,terminal,bad,color=No
         bk = maxbins = None
         if not o['print']:
             try:
-                bk = _plot_backend(outfn,terminal,color)
+                bk = _plot_backend(outfn,terminal,color,allow_overwrite)
             except MCPLError as e:
                 bad(str(e))
             res = bk.resolution() if o['bins'] is None else None

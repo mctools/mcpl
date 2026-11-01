@@ -68,7 +68,7 @@ def test_file( filename, **kwargs ):
         b = f.read_block()
         for what, e in empty_variants(b):
             check_empty(e,what)
-            with mcpl.MCPLOutFile('out.mcpl') as o:
+            with mcpl.MCPLOutFile('out.mcpl', allow_overwrite = True) as o:
                 o.transfer_metadata(f)
                 o.add_particles(e)
                 o.add_particles(b[:2])

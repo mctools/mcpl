@@ -52,9 +52,49 @@ from ._records import (
 
 
 def _outfile_name(filename):
-    """The name which MCPLOutFile gives a file: the filename with ".mcpl"
-    appended unless it already ends with ".mcpl" (like in the C API)"""
-    return filename if filename.endswith('.mcpl') else filename + '.mcpl'
+    """The name of the file which MCPLOutFile writes for a filename, and whether
+    it is gzipped when closed (like in the C API): the filename with ".mcpl"
+    appended unless it already ends with ".mcpl", or for names ending with
+    ".mcpl.gz" the name without ".gz". Other names ending with ".gz" are
+    refused."""
+    if filename.endswith('.mcpl.gz'):
+        return filename[:-3], True
+    if filename.endswith('.gz'):
+        raise MCPLError('Output file names ending with .gz must end with'
+                        f' .mcpl.gz (not "{filename}")')
+    return ( filename if filename.endswith('.mcpl') else filename + '.mcpl' ), False
+
+def _check_new_output( fn, gzip, allow_overwrite ):
+    """Error if an output file written as fn (and gzipped into fn.gz when gzip
+    is set) would overwrite an existing file, unless allowed (like in the C
+    API)"""
+    import os
+    if allow_overwrite:
+        return
+    if gzip and os.path.lexists(fn + '.gz'):
+        raise MCPLError(f'The output file "{fn}.gz" already exists')
+    if gzip and os.path.lexists(fn):
+        raise MCPLError(f'The output file "{fn}.gz" can not be written, since'
+                        f' "{fn}" (which it is compressed from) already exists')
+    if os.path.lexists(fn):
+        raise MCPLError(f'The output file "{fn}" already exists')
+
+def _check_merge_output( file_output, files, allow_overwrite ):
+    """Error unless the output file of a merge can be created (like in the C
+    API): an output file which is (or is written via) one of the input files
+    is always refused, and existing files unless allow_overwrite"""
+    fn, gzip = _outfile_name(file_output)
+    for f in files:
+        if _is_same_file(fn, f) or ( gzip and _is_same_file(fn + '.gz', f) ):
+            raise MCPLError(f'The output file "{fn + ".gz" if gzip else fn}"'
+                            ' is also one of the input files')
+    _check_new_output( fn, gzip, allow_overwrite )
+
+def _is_same_file(f1, f2):
+    try:
+        return pathlib.Path(f1).samefile(f2)
+    except OSError:
+        return False
 
 class MCPLOutFile:
     """Python-only class for writing MCPL files, using numpy to process blocks of
@@ -76,9 +116,9 @@ class MCPLOutFile:
     for instance the special value -1).
 
     Particles are added in blocks with add_particles(..), or one at a time
-    with add_particle(..). The file must be closed with close() or
-    closeandgzip(), which happens automatically (with close()) at the end of
-    a with-statement:
+    with add_particle(..). The file must be closed with close(), which happens
+    automatically at the end of a with-statement (files with names ending
+    with .mcpl.gz are gzipped when closed):
 
        with MCPLOutFile('myfile.mcpl',
                         sourcename='MySimulation',
@@ -102,10 +142,14 @@ class MCPLOutFile:
                   opt_polarisation = False, opt_singleprec = True,
                   opt_universalpdgcode = 0, opt_universalweight = 0.0,
                   blocklength = 10000, pick = None, edit = None,
-                  userdata_layout = None, _dry_run = False ):
-        """Create new file (overwriting any existing file). Like in the C API,
-        ".mcpl" is appended to the filename if it does not already end with
-        it. The keyword arguments correspond to calling the methods
+                  userdata_layout = None, allow_overwrite = False,
+                  _dry_run = False ):
+        """Create new file. Like in the C API, ".mcpl" is appended to the
+        filename if it does not already end with it, and files with names
+        ending with ".mcpl.gz" are written without ".gz" and gzipped when
+        closed (other names ending with ".gz" are not allowed). It is an error
+        if the file (or one of these two files) already exists, unless
+        allow_overwrite is True. The other keyword arguments correspond to calling the methods
         hdr_set_srcname, hdr_add_comment (for each comment), hdr_add_data (for
         each key,value in blobs), hdr_add_stat_sum (for each key,value in
         stat_sum), enable_userflags, enable_polarisation, enable_doubleprec
@@ -149,7 +193,10 @@ class MCPLOutFile:
         if lastdot == 0 and len(filename) == 5:
             raise MCPLError('MCPLOutFile called with string with no'
                             ' basename part (".mcpl").')
-        self._filename = _outfile_name(filename)
+        self._filename, self._gzip_at_close = _outfile_name(filename)
+        self._allow_overwrite = bool(allow_overwrite)
+        _check_new_output( self._filename, self._gzip_at_close,
+                           self._allow_overwrite )
         self._blocklength = int(blocklength)
         if self._blocklength < 1:
             raise MCPLError('blocklength must be at least 1')
@@ -209,7 +256,8 @@ class MCPLOutFile:
 
     @property
     def filename(self):
-        """Name of file being written to (might have had .mcpl appended)"""
+        """Name of file being written to (might have had .mcpl appended, or .gz
+        removed)"""
         return self._filename
 
     @property
@@ -957,9 +1005,15 @@ class MCPLOutFile:
 
     def close(self):
         """Close the file (writing all pending particles and updating the
-        header)."""
+        header), and gzip it for names ending with ".mcpl.gz"."""
+        self._close()
+
+    def _close( self, gzip_errors = True ):
+        """Close the file. For names ending with .mcpl.gz, problems compressing
+        the file are errors if gzip_errors is True, and are otherwise printed
+        (returning False)."""
         if self._fh is None:
-            return
+            return True
         try:
             self._flush_pending()
             if self._hdr_notwritten:
@@ -971,12 +1025,16 @@ class MCPLOutFile:
         finally:
             fh, self._fh = self._fh, None
             fh.close()
-
-    def closeandgzip(self):
-        """Close the file and gzip it (which will append .gz to the filename).
-        Returns True if gzipping was successful."""
-        self.close()
-        return True if self._dry_run else gzip_file(self._filename)
+        if not self._gzip_at_close or self._dry_run:
+            return True
+        problem = _gzip( self._filename, self._allow_overwrite )
+        if problem is None:
+            return True
+        if not gzip_errors:
+            _error(problem + '.')
+            return False
+        raise MCPLError(problem + ' (the uncompressed file was closed'
+                        ' properly)')
 
 class _DryRunHandle:
     """Stands in for the file handle of an MCPLOutFile in dry-run mode,
@@ -994,24 +1052,36 @@ class _DryRunHandle:
 
 def gzip_file(filename):
     """Compress file with gzip, replacing it with a file with .gz appended to its
-    name (like mcpl_gzip_file in the C API). Returns True if successful."""
+    name (like mcpl_gzip_file in the C API). Returns True if successful. It
+    fails if the file with .gz appended already exists."""
+    problem = _gzip( filename, False )
+    if problem is not None:
+        _error(problem + '.')
+    return problem is None
+
+def _gzip( filename, allow_overwrite ):
+    """Compress the file like gzip_file, returning a description of the problem
+    (or None if successful). An existing file with .gz appended is only
+    overwritten if allow_overwrite is True."""
     import gzip
     import pathlib
     import shutil
     f = pathlib.Path(filename)
     bn = f.name
+    fout = f.parent / (bn + '.gz')
     _info(f'Compressing file {bn}')
+    if not allow_overwrite and os.path.lexists(fout):
+        return f'Unable to compress file {bn}, since {bn}.gz already exists'
     try:
         #(compression level 1, as in C):
-        fout = f.parent / (bn + '.gz')
         with f.open('rb') as fi, gzip.open(fout,'wb',compresslevel = 1) as fo:
             shutil.copyfileobj(fi, fo)
         f.unlink()
     except OSError:
-        _error(f'Problems encountered while compressing file {bn}.')
-        return False
+        fout.unlink(missing_ok=True)
+        return f'Problems encountered while compressing file {bn}'
     _info(f'Compressed file into {bn}.gz')
-    return True
+    return None
 
 def _broadcast_userdata( udarr, n ):
     if len(udarr) == n:

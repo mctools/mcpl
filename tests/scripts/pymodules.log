@@ -1,7 +1,7 @@
 Modules of the mcpl package and their imports from the package (in parentheses: only inside functions, in brackets: by name):
   __init__             <- _blocks, _common, _messages, _reader, [_ascii], [_cli], [_expressions], [_fileops], [_histogram], [_stats], [_statsum], [_writer], [constants], [plotting]
   __main__             <- _cli
-  _ascii               <- _reader
+  _ascii               <- _reader, (_common)
   _blocks              <- _common, _numpy, (_physics)
   _cli                 <- _common, _messages, _reader, (_ascii), (_clistats), (_examples), (_expressions), (_exprhelp), (_extract), (_fileops), (_histogram), (_histstring), (_particles)
   _clistats            <- _common, _reader, (_histogram), (_histstring), (_plotregistry), (_stats)
@@ -14,7 +14,7 @@ Modules of the mcpl package and their imports from the package (in parentheses: 
   _exprrotation        <- _numpy
   _exprsyntax          <- _common
   _exprunits           <- -
-  _extract             <- _messages, _reader, _writer
+  _extract             <- _messages, _reader, _writer, (_common)
   _figures             <- -
   _fileops             <- _common, _messages, _reader, _statsum, _writer
   _helptext            <- -
@@ -40,7 +40,7 @@ Modules of the mcpl package and their imports from the package (in parentheses: 
   _writer              <- _blocks, _common, _messages, _numpy, _reader, _records, (_expressions), (_statsum), (_userdata)
   constants            <- -
   mcpl                 <- _ascii, _blocks, _cli, _common, _reader, _stats, _statsum
-  plotting             <- _figures, _plotregistry
+  plotting             <- _common, _figures, _plotregistry
 The imports have no cycles.
 numpy is imported by: _numpy
 matplotlib is imported by: _plotbackend_mpl

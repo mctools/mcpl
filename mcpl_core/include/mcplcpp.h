@@ -99,7 +99,7 @@
  * out.close();
  * @endcode
  *
- * Output files are only finished by close() or close_and_gzip(). If an
+ * Output files are only finished by close(). If an
  * mcpl::MCPLOutFile is destroyed without being closed (e.g. because of an
  * exception), the file is left unfinished (it can often be recovered with
  * mcpl::repair). File objects can be moved, but not copied.
@@ -1467,11 +1467,15 @@ namespace mcpl {
   //////////////////////////////////////////////////////////////////////////////
   // Writing files
 
+  /** @brief Whether files may be created where a file already exists. */
+  enum class AllowOverwrite { No, Yes };
+
   /**
    * @brief File being written.
    *
-   * Files are created by the constructor, and only finished by close() (or
-   * close_and_gzip()). Files which are not closed, for instance because an
+   * Files are created by the constructor, and only finished by close(). Files
+   * with names ending with `.mcpl.gz` are compressed when closed. Files which
+   * are not closed, for instance because an
    * exception was thrown while writing them, are left unfinished when the
    * object is destroyed (or when abandon() is called). Such files can often be
    * recovered with mcpl::repair. Objects can be moved, but not copied.
@@ -1481,13 +1485,17 @@ namespace mcpl {
     /**
      * @brief Create the file.
      *
-     * @param filename Name of the file (`.mcpl` is appended if it does not end with `.mcpl`).
-     * @throws mcpl::IOError if the file can not be created.
+     * @param filename Name of the file (`.mcpl` is appended if it does not end with `.mcpl`; names ending with `.mcpl.gz` are written without `.gz` and compressed when closed, and other names ending with `.gz` are not allowed).
+     * @param allow_overwrite Whether an existing file may be overwritten.
+     * @throws mcpl::Error if the file exists (unless allowed), mcpl::IOError if it can not be created.
      */
-    explicit MCPLOutFile( FilenameArg filename )
+    explicit MCPLOutFile( FilenameArg filename,
+                          AllowOverwrite allow_overwrite = AllowOverwrite::No )
     {
       detail::ErrState es;
-      m_f = mcpl_create_outfile_es( filename.c_str(), es );
+      m_f = ( allow_overwrite == AllowOverwrite::Yes
+              ? mcpl_create_outfile_allow_overwrite_es( filename.c_str(), es )
+              : mcpl_create_outfile_es( filename.c_str(), es ) );
       if ( es.get()->code ) {
         detail::ErrState ignored;
         mcpl_close_outfile_unfinished_es( m_f, ignored );
@@ -1538,7 +1546,7 @@ namespace mcpl {
     }
 
     /**
-     * @brief Finish and close the file.
+     * @brief Finish and close the file (and compress it for names ending with `.mcpl.gz`).
      *
      * Errors leave the file unfinished, and the object is closed in any case. Does nothing if the file is not open.
      */
@@ -1550,17 +1558,6 @@ namespace mcpl {
       detail::ErrState es;
       mcpl_outfile_t f = release();
       mcpl_close_outfile_es( f, es );
-      es.check();
-    }
-    /** @brief Finish, close and compress the file (like close()). */
-    void close_and_gzip()
-    {
-      if ( !m_f.internal )
-        return;
-      finalise_layout_for_closing();
-      detail::ErrState es;
-      mcpl_outfile_t f = release();
-      mcpl_closeandgzip_outfile_es( f, es );
       es.check();
     }
     /**
@@ -1887,10 +1884,12 @@ namespace mcpl {
 
   private:
     friend MCPLOutFile merge_files( FilenameArg,
-                                    detail::FilenameList&& );
+                                    detail::FilenameList&&,
+                                    AllowOverwrite );
     friend MCPLOutFile forcemerge_files( FilenameArg,
                                          detail::FilenameList&&,
-                                         KeepUserflags );
+                                         KeepUserflags,
+                                         AllowOverwrite );
     explicit MCPLOutFile( mcpl_outfile_t f ) : m_f(f), m_layout_locked(true)
     {
       try {
@@ -1996,11 +1995,14 @@ namespace mcpl {
 
   /// @cond INTERNAL
   inline MCPLOutFile merge_files( FilenameArg file_output,
-                                  detail::FilenameList&& files )
+                                  detail::FilenameList&& files,
+                                  AllowOverwrite allow_overwrite )
   {
     detail::ErrState es;
     mcpl_outfile_t f = mcpl_merge_files_es( file_output.c_str(), files.size(),
-                                            files.data(), es );
+                                            files.data(),
+                                            allow_overwrite == AllowOverwrite::Yes
+                                            ? 1 : 0, es );
     es.check();
     return MCPLOutFile(f);
   }
@@ -2011,41 +2013,50 @@ namespace mcpl {
    * The returned output file must be closed with close() (but can have more particles added first).
    *
    * @tparam Range Container of filenames (e.g. `std::vector<std::string>`).
-   * @param file_output Name of the new file (which must not exist).
+   * @param file_output Name of the new file (named like by MCPLOutFile, which must not exist unless allowed, or be one of the input files).
    * @param files The files to merge.
+   * @param allow_overwrite Whether an existing output file may be overwritten.
    * @return The output file (still open).
    */
   template<class Range>
   inline MCPLOutFile merge_files( FilenameArg file_output,
-                                  const Range& files )
+                                  const Range& files,
+                                  AllowOverwrite allow_overwrite = AllowOverwrite::No )
   {
-    return merge_files( file_output.c_str(), detail::FilenameList(files) );
+    return merge_files( file_output.c_str(), detail::FilenameList(files),
+                        allow_overwrite );
   }
   /**
    * @brief Merge files into a new file, given as a braced list like `{"a.mcpl","b.mcpl"}`.
    *
-   * @param file_output Name of the new file (which must not exist).
+   * @param file_output Name of the new file (named like by MCPLOutFile, which must not exist unless allowed, or be one of the input files).
    * @param files The files to merge.
+   * @param allow_overwrite Whether an existing output file may be overwritten.
    * @return The output file (still open).
    */
   inline MCPLOutFile merge_files( FilenameArg file_output,
-                                  std::initializer_list<FilenameArg> files )
+                                  std::initializer_list<FilenameArg> files,
+                                  AllowOverwrite allow_overwrite = AllowOverwrite::No )
   {
     std::vector<std::string> names;
     for ( const auto& f : files )
       names.emplace_back( f.c_str() );
-    return merge_files( file_output.c_str(), detail::FilenameList(names) );
+    return merge_files( file_output.c_str(), detail::FilenameList(names),
+                        allow_overwrite );
   }
 
   /// @cond INTERNAL
   inline MCPLOutFile forcemerge_files( FilenameArg file_output,
                                        detail::FilenameList&& files,
-                                       KeepUserflags keep_userflags )
+                                       KeepUserflags keep_userflags,
+                                       AllowOverwrite allow_overwrite )
   {
     detail::ErrState es;
     mcpl_outfile_t f = mcpl_forcemerge_files_es( file_output.c_str(),
                                                  files.size(), files.data(),
                                                  keep_userflags == KeepUserflags::Yes
+                                                 ? 1 : 0,
+                                                 allow_overwrite == AllowOverwrite::Yes
                                                  ? 1 : 0, es );
     es.check();
     return MCPLOutFile(f);
@@ -2055,36 +2066,40 @@ namespace mcpl {
    * @brief Merge files with different settings, discarding data if needed (like `mcpl_forcemerge_files`).
    *
    * @tparam Range Container of filenames.
-   * @param file_output Name of the new file (which must not exist).
+   * @param file_output Name of the new file (named like by MCPLOutFile, which must not exist unless allowed, or be one of the input files).
    * @param files The files to merge.
    * @param keep_userflags Whether the userflags are kept.
+   * @param allow_overwrite Whether an existing output file may be overwritten.
    * @return The output file (still open).
    */
   template<class Range>
   inline MCPLOutFile forcemerge_files( FilenameArg file_output,
                                        const Range& files,
-                                       KeepUserflags keep_userflags = KeepUserflags::No )
+                                       KeepUserflags keep_userflags = KeepUserflags::No,
+                                       AllowOverwrite allow_overwrite = AllowOverwrite::No )
   {
     return forcemerge_files( file_output.c_str(), detail::FilenameList(files),
-                             keep_userflags );
+                             keep_userflags, allow_overwrite );
   }
   /**
    * @brief Merge files with different settings, given as a braced list.
    *
-   * @param file_output Name of the new file (which must not exist).
+   * @param file_output Name of the new file (named like by MCPLOutFile, which must not exist unless allowed, or be one of the input files).
    * @param files The files to merge.
    * @param keep_userflags Whether the userflags are kept.
+   * @param allow_overwrite Whether an existing output file may be overwritten.
    * @return The output file (still open).
    */
   inline MCPLOutFile forcemerge_files( FilenameArg file_output,
                                        std::initializer_list<FilenameArg> files,
-                                       KeepUserflags keep_userflags = KeepUserflags::No )
+                                       KeepUserflags keep_userflags = KeepUserflags::No,
+                                       AllowOverwrite allow_overwrite = AllowOverwrite::No )
   {
     std::vector<std::string> names;
     for ( const auto& f : files )
       names.emplace_back( f.c_str() );
     return forcemerge_files( file_output.c_str(), detail::FilenameList(names),
-                             keep_userflags );
+                             keep_userflags, allow_overwrite );
   }
 
   /**
@@ -2128,7 +2143,7 @@ namespace mcpl {
   }
 
   /**
-   * @brief Compress a file (replacing filename with filename.gz).
+   * @brief Compress a file (replacing filename with filename.gz, which must not exist).
    *
    * @param filename Name of the file.
    */

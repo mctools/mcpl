@@ -559,16 +559,19 @@ static void test_transfers(void)
   CHECK("transfer_last_read_particle (pdgcode differs from universal one)",
         mcpl_transfer_last_read_particle_es(fin,f,&es));
   mcpl_close_outfile(f);
+  remove("tr5.mcpl");
   f = mcpl_create_outfile_es("tr5.mcpl",&es);
   mcpl_enable_universal_weight(f,3.0);
   CHECK("transfer_last_read_particle (weight differs from universal one)",
         mcpl_transfer_last_read_particle_es(fin,f,&es));
   mcpl_close_outfile(f);
+  remove("tr5.mcpl");
   f = mcpl_create_outfile_es("tr5.mcpl",&es);
   mcpl_enable_userdata(f,"temp:float32");
   CHECK("transfer_last_read_particle (source without userdata)",
         mcpl_transfer_last_read_particle_es(fplain,f,&es));
   mcpl_close_outfile(f);
+  remove("tr5.mcpl");
   f = mcpl_create_outfile_es("tr5.mcpl",&es);
   mcpl_enable_userdata(f,"temp:float64");
   CHECK("transfer_last_read_particle (different userdata layout)",
@@ -578,6 +581,7 @@ static void test_transfers(void)
     mcpl_file_t fnan = mcpl_open_file("src_nan.mcpl");
     mcpl_read(fnan);
     mcpl_read(fnan);
+    remove("tr5.mcpl");
     f = mcpl_create_outfile_es("tr5.mcpl",&es);
     CHECK("transfer_last_read_particle (NaN weight)",
           mcpl_transfer_last_read_particle_es(fnan,f,&es));
@@ -597,6 +601,7 @@ static void test_transfers(void)
     mcpl_errstate_t es2;
     es_reset(&es2);
     mcpl_read_es(ftr,&es2);
+    remove("tr5.mcpl");
     f = mcpl_create_outfile_es("tr5.mcpl",&es);
     {
     mcpl_file_t fnull;
@@ -605,6 +610,7 @@ static void test_transfers(void)
     CHECK("transfer_metadata (invalid source)",
           mcpl_transfer_metadata_es(fnull,fo,&es));
     mcpl_close_outfile(fo);
+    remove("tr7.mcpl");
     fo = mcpl_create_outfile("tr7.mcpl");
     CHECK("transfer_last_read_particle (invalid source)",
           mcpl_transfer_last_read_particle_es(fnull,fo,&es));
@@ -618,6 +624,7 @@ static void test_transfers(void)
     remove("src_trunc.mcpl.gz");
   }
   //Valid transfers:
+  remove("tr5.mcpl");
   f = mcpl_create_outfile_es("tr5.mcpl",&es);
   mcpl_transfer_metadata(fin,f);
   CHECK("transfer_last_read_particle (same settings)",

@@ -44,6 +44,8 @@ MCPLTEST_CTYPE_DICTIONARY
     ;
 }
 
+//(the outputs of these test helpers are rewritten for several cases, so
+//existing files are overwritten)
 static void mcpltest_applyopts( mcpl_outfile_t o, const char * opts )
 {
   //d=doubleprec p=polarisation u=userflags P=universal pdgcode W=universal weight
@@ -67,7 +69,7 @@ MCPLTEST_CTYPES void mcpltest_writefromraw( const char * rawfile,
   //polarisation, ekin, time, weight), an int32 (pdgcode) and an uint32
   //(userflags).
   FILE * fi = fopen( rawfile, "rb" );
-  mcpl_outfile_t o = mcpl_create_outfile( outfile );
+  mcpl_outfile_t o = mcpl_create_outfile_allow_overwrite( outfile );
   mcpl_hdr_set_srcname(o,"writefromraw");
   mcpl_hdr_add_comment(o,"a comment");
   mcpl_hdr_add_stat_sum(o,"nsim",-1.0);
@@ -100,7 +102,7 @@ MCPLTEST_CTYPES void mcpltest_writefromraw( const char * rawfile,
 MCPLTEST_CTYPES void mcpltest_repack( const char * infile, const char * outfile )
 {
   mcpl_file_t f = mcpl_open_file(infile);
-  mcpl_outfile_t o = mcpl_create_outfile(outfile);
+  mcpl_outfile_t o = mcpl_create_outfile_allow_overwrite(outfile);
   mcpl_transfer_metadata(f,o);
   const mcpl_particle_t * p;
   while ( ( p = mcpl_read(f) ) )
@@ -114,7 +116,7 @@ MCPLTEST_CTYPES void mcpltest_transfer( const char * infile,
                                         const char * opts )
 {
   mcpl_file_t f = mcpl_open_file(infile);
-  mcpl_outfile_t o = mcpl_create_outfile(outfile);
+  mcpl_outfile_t o = mcpl_create_outfile_allow_overwrite(outfile);
   mcpltest_applyopts(o,opts);
   while ( mcpl_read(f) )
     mcpl_transfer_last_read_particle(f,o);
@@ -126,7 +128,7 @@ MCPLTEST_CTYPES void mcpltest_transfer( const char * infile,
 //Python version of this):
 MCPLTEST_CTYPES void mcpltest_script( const char * outfile, const char * script )
 {
-  mcpl_outfile_t o = mcpl_create_outfile(outfile);
+  mcpl_outfile_t o = mcpl_create_outfile_allow_overwrite(outfile);
   mcpl_particle_t * p = NULL;
   char line[4096];
   const char * s = script;
@@ -299,7 +301,7 @@ MCPLTEST_CTYPES void mcpltest_mpi( const char * filename, unsigned nproc,
       p->weight = 1.0;
       mcpl_add_particle(o,p);
     }
-    mcpl_closeandgzip_outfile(o);
+    mcpl_close_outfile(o);
   }
   mcpl_merge_outfiles_mpi(filename,nproc);
 }

@@ -26,7 +26,7 @@ mcpltool --dry-run --extract --pick ekin < 1 meV + a1.mcpl out.mcpl: exit code 1
    | 
    | Run with "-p help" for how to pick particles with expressions
 mcpltool --dry-run --extract a1.mcpl a2.mcpl: exit code 1, real run did not change files
-   | ERROR: Requested output file already exists.
+   | ERROR: The output file "a2.mcpl" already exists.
    | 
    | Run with -h or --help for usage information
 mcpltool --dry-run --extract nosuch.mcpl out.mcpl: exit code 1, real run did not change files
@@ -40,7 +40,7 @@ mcpltool --dry-run --merge out.mcpl a1.mcpl b_dp.mcpl: exit code 1, real run did
    | 
    | Run with -h or --help for usage information
 mcpltool --dry-run --merge a2.mcpl a1.mcpl a3.mcpl.gz: exit code 1, real run did not change files
-   | ERROR: Requested output file already exists.
+   | ERROR: The output file "a2.mcpl" already exists.
    | 
    | Run with -h or --help for usage information
 mcpltool --dry-run --merge --inplace a1.mcpl a2.mcpl a3.mcpl.gz: exit code 0, real run changed files
@@ -63,7 +63,7 @@ mcpltool --dry-run --forcemerge --keepuserflags out.mcpl.gz b_dp.mcpl b_pol.mcpl
    | MCPL force-merge: Files have different userflags (no and yes), enabling them (zero for particles without)
    | MCPL force-merge: Transferring 12 particles from file b_dp.mcpl
    | MCPL force-merge: Transferring 7 particles from file b_pol.mcpl
-   | MCPL force-merge: Would transfer a total of 19 particles to new file out.mcpl
+   | MCPL force-merge: Would transfer a total of 19 particles to new file out.mcpl.gz
    | MCPL: dry run, nothing was written
 mcpltool --dry-run --forcemerge out.mcpl a1.mcpl a2.mcpl: exit code 0, real run changed files
    | MCPL forcemerge_files called with 2 files that are compatible for a standard merge => falling back to standard merge_files function
@@ -82,7 +82,7 @@ mcpltool --dry-run --repair a3.mcpl.gz: exit code 1, real run did not change fil
 mcpltool --dry-run --text a1.mcpl out.txt: exit code 0, real run changed files
    | MCPL: dry run, nothing was written
 mcpltool --dry-run --text a1.mcpl a2.mcpl: exit code 1, real run did not change files
-   | ERROR: Requested output file already exists.
+   | ERROR: The output file "a2.mcpl" already exists.
    | 
    | Run with -h or --help for usage information
 mcpltool --dry-run a1.mcpl: exit code 0, real run did not change files

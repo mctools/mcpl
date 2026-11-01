@@ -284,7 +284,7 @@ def test_python_writing():
             print(f'{title}: no error!')
     def add(layout = stdlayout, single = False, **kw):
         def fct():
-            o = mcpl.MCPLOutFile(d/'bad.mcpl',userdata_layout=layout)
+            o = mcpl.MCPLOutFile(d/'bad.mcpl',allow_overwrite=True,userdata_layout=layout)
             try:
                 (o.add_particle if single else o.add_particles)(uz=1.0,ekin=1.0,**kw)
             finally:
@@ -304,7 +304,7 @@ def test_python_writing():
     expect_error('add_particle without userdata',add(single=True))
     def transfer_none():
         with mcpl.MCPLFile(input_dir/'none.mcpl') as f:
-            o = mcpl.MCPLOutFile(d/'bad.mcpl',userdata_layout=stdlayout)
+            o = mcpl.MCPLOutFile(d/'bad.mcpl',allow_overwrite=True,userdata_layout=stdlayout)
             try:
                 o.add_particles(f.read_block())
             finally:
@@ -312,11 +312,11 @@ def test_python_writing():
     expect_error('transfer without userdata',transfer_none)
     expect_error('invalid layout',add(layout='uint8[27]'))
     def twice():
-        with mcpl.MCPLOutFile(d/'bad.mcpl',userdata_layout='a:int8') as o:
+        with mcpl.MCPLOutFile(d/'bad.mcpl',allow_overwrite=True,userdata_layout='a:int8') as o:
             o.enable_userdata('a:int16')
     expect_error('different layouts',twice)
     def late():
-        with mcpl.MCPLOutFile(d/'bad.mcpl') as o:
+        with mcpl.MCPLOutFile(d/'bad.mcpl',allow_overwrite=True) as o:
             o.add_particle(uz=1.0,ekin=1.0)
             o.enable_userdata('a:int8')
     expect_error('enable too late',late)
@@ -325,7 +325,7 @@ def test_python_writing():
     for layout, values in ( ('c:uint64', [2**64-1, 2**63+1, 0]),
                             ('c:int64', [-2**63, 2**63-1, -2**53-1]) ):
         for single in ( False, True ):
-            with mcpl.MCPLOutFile(d/'ints.mcpl',userdata_layout=layout) as o:
+            with mcpl.MCPLOutFile(d/'ints.mcpl',allow_overwrite=True,userdata_layout=layout) as o:
                 if single:
                     for v in values:
                         o.add_particle(uz=1.0, ekin=1.0, userdata={'c':v})

@@ -44,7 +44,7 @@ import pathlib
 from MCPLTestUtils.pymoddeps import package_imports
 
 dependencies = {
-    '_ascii'            : ( '_reader', ),
+    '_ascii'            : ( '_common', '_reader' ),
     '_blocks'           : ( '_common', '_numpy', '_physics' ),
     '_cli'              : ( '_ascii', '_clistats', '_common', '_examples', '_expressions', '_exprhelp', '_extract', '_fileops', '_histogram', '_histstring', '_messages', '_particles', '_reader' ),
     '_clistats'         : ( '_common', '_histogram', '_histstring', '_plotregistry', '_reader', '_stats' ),
@@ -58,7 +58,7 @@ dependencies = {
     '_exprrotation'     : ( '_numpy', ),
     '_exprsyntax'       : ( '_common', ),
     '_exprunits'        : (  ),
-    '_extract'          : ( '_messages', '_reader', '_writer' ),
+    '_extract'          : ( '_common', '_messages', '_reader', '_writer' ),
     '_figures'          : (  ),
     '_fileops'          : ( '_common', '_messages', '_reader', '_statsum', '_writer' ),
     '_helptext'         : (  ),
@@ -74,7 +74,7 @@ dependencies = {
     '_plotbackend_test' : ( '_figures', '_numpy', '_plotbackend' ),
     '_plotbackend_text' : ( '_figures', '_numpy', '_particles', '_physics', '_plotbackend', '_termcolor' ),
     '_plotregistry'     : ( '_common', '_plotbackend', '_plotbackend_mpl', '_plotbackend_test', '_plotbackend_text' ),
-    'plotting'          : ( '_figures', '_plotregistry' ),
+    'plotting'          : ( '_common', '_figures', '_plotregistry' ),
     '_reader'           : ( '_blocks', '_common', '_expressions', '_messages', '_numpy', '_scipp', '_statsum', '_userdata' ),
     '_records'          : ( '_blocks', '_common', '_numpy', '_particles', '_physics' ),
     '_scipp'            : ( '_common', '_messages', '_numpy', '_userdata' ),

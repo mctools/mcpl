@@ -126,6 +126,9 @@ Merge (-m, --merge OUT.mcpl.gz FILE1 FILE2 ...):
 Other options:
   -d, --dry-run    Do everything except writing files (ignored by commands
                    which do not write files).
+  --allow-overwrite
+                   Allow the output files of -m, --forcemerge, -e, --text, -o,
+                   and --create-examples to overwrite existing files.
   --traceback      Show the Python traceback of errors (for debugging).
   -v, --version    Show the version of MCPL.
   -h, --help       Show the short usage information.
@@ -189,6 +192,7 @@ _flag_opts = { '--stats' : '-S', '--extract' : '-e', '--merge' : '-m',
                '--keepuserflags' : None, '--text' : None,
                '--no-comment' : None, '--preventcomment' : None,
                '--keep-statsum' : None, '--full-help' : None,
+               '--allow-overwrite' : None,
                '--hist-help' : None, '--traceback' : None }
 #Options of earlier versions, which are removed:
 _removed_opts = {
@@ -250,9 +254,11 @@ def _app_mcpltool(argv):
                 bad("--create-examples specified more than once")
             opt_examples = a.partition('=')[2]
     if opt_examples is not None:
-        if any( name not in ('--create-examples','-d','--dry-run','--traceback')
+        if any( name not in ('--create-examples','-d','--dry-run','--traceback',
+                             '--allow-overwrite')
                 for name in longnames ):
-            bad("--create-examples can only be combined with --dry-run.")
+            bad("--create-examples can only be combined with --dry-run and"
+                " --allow-overwrite.")
         n = None
         if opt_examples:
             if not opt_examples.isdigit() or not int(opt_examples) > 0:
@@ -261,7 +267,8 @@ def _app_mcpltool(argv):
         from ._examples import create_examples
         dry_run = '-d' in longnames or '--dry-run' in longnames
         try:
-            create_examples( n, dry_run = dry_run )
+            create_examples( n, dry_run = dry_run,
+                             allow_overwrite = '--allow-overwrite' in longnames )
         except MCPLError as e:
             bad(str(e))
         _mcpltool_dryrun_note(dry_run)
@@ -405,6 +412,12 @@ def _app_mcpltool(argv):
     allowed('--keep-statsum',('--extract',),'--keep-statsum' in flags)
     allowed('--inplace',('--merge',),'--inplace' in flags)
     allowed('--keepuserflags',('--forcemerge',),'--keepuserflags' in flags)
+    opt_allow_overwrite = '--allow-overwrite' in flags
+    if opt_allow_overwrite and ( '--inplace' in flags or mode not in
+                                 ('--merge','--forcemerge','--extract','--text')
+                                 and not ( mode in histmodes and '--output' in values ) ):
+        bad("--allow-overwrite can only be used with --merge, --forcemerge,"
+            " --extract, --text, or -o.")
     hist = None
     if mode in histmodes:
         opt = modenames[mode]
@@ -460,7 +473,8 @@ def _app_mcpltool(argv):
 
     if mode in ('--merge','--forcemerge'):
         _mcpltool_merge(filelist,mode == '--forcemerge','--inplace' in flags,
-                        '--keepuserflags' in flags,opt_dryrun,bad)
+                        '--keepuserflags' in flags,opt_dryrun,bad,
+                        allow_overwrite = opt_allow_overwrite)
         _mcpltool_dryrun_note(opt_dryrun)
         sys.exit(0)
 
@@ -468,7 +482,8 @@ def _app_mcpltool(argv):
         from ._extract import _mcpltool_extract
         _mcpltool_extract(filelist,opt_limit,opt_skip,pick,edit,
                           bool(flags & {'--no-comment','--preventcomment'}),
-                          '--keep-statsum' in flags,opt_dryrun,bad)
+                          '--keep-statsum' in flags,opt_dryrun,bad,
+                          allow_overwrite = opt_allow_overwrite)
         _mcpltool_dryrun_note(opt_dryrun)
         sys.exit(0)
 
@@ -476,7 +491,8 @@ def _app_mcpltool(argv):
         from ._clistats import mcpltool_hist
         mcpltool_hist(filelist,hist,opt_skip,opt_limit,pick,edit,
                       values.get('--output'),mode == '--terminal',bad,
-                      color=values.get('--color'))
+                      color=values.get('--color'),
+                      allow_overwrite=opt_allow_overwrite)
         sys.exit(0)
 
     if mode == '--text':
@@ -484,8 +500,15 @@ def _app_mcpltool(argv):
             bad("Too many arguments.")
         if len(filelist)!=2:
             bad("Must specify both input and output files with --text.")
-        if (os.path.exists(filelist[1])):
-            bad("Requested output file already exists.")
+        #(the output file must not be the input file, or exist unless allowed):
+        try:
+            same = os.path.samefile(filelist[1],filelist[0])
+        except OSError:
+            same = False
+        if same:
+            bad(f'The output file "{filelist[1]}" is also one of the input files.')
+        if not opt_allow_overwrite and os.path.lexists(filelist[1]):
+            bad(f'The output file "{filelist[1]}" already exists.')
         from ._ascii import convert2ascii
         if opt_dryrun:
             #(still read and convert everything, for the same errors):
@@ -571,7 +594,7 @@ def _mcpltool_dryrun_note(dry_run):
         _info('dry run, nothing was written')
 
 def _mcpltool_merge(filelist, opt_forcemerge, opt_inplace, opt_keepuserflags,
-                      dry_run, bad):
+                      dry_run, bad, allow_overwrite = False):
     if len(filelist) < 2:
         bad("Too few arguments for --forcemerge." if opt_forcemerge
             else "Too few arguments for --merge.")
@@ -589,16 +612,19 @@ def _mcpltool_merge(filelist, opt_forcemerge, opt_inplace, opt_keepuserflags,
         for f in filelist[ifirst+1:]:
             merge_inplace(filelist[ifirst],f,dry_run=dry_run)
         return
-    from ._extract import _mcpltool_close, _tool_outfn
-    err, outfn, attempt_gzip = _tool_outfn(filelist[0])
+    from ._extract import _mcpltool_close, _tool_check_outfn
+    outfn = filelist[0]
+    err = _tool_check_outfn( outfn, filelist[1:], allow_overwrite )
     if err:
         bad(err)
     if opt_forcemerge:
-        out = forcemerge_files(outfn,filelist[1:],keep_userflags=opt_keepuserflags,dry_run=dry_run)
+        out = forcemerge_files(outfn,filelist[1:],keep_userflags=opt_keepuserflags,
+                               allow_overwrite=allow_overwrite,dry_run=dry_run)
     else:
-        out = merge_files(outfn,filelist[1:],dry_run=dry_run)
+        out = merge_files(outfn,filelist[1:],allow_overwrite=allow_overwrite,
+                          dry_run=dry_run)
     if out is not None:
-        _mcpltool_close(out,attempt_gzip)
+        _mcpltool_close(out)
 
 def main():
     """This function simply calls app_mcpltool(), but any raised MCPLError

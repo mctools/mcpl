@@ -222,13 +222,13 @@ closeandgzip_outfile -> ok
   reading back -> ok
 MCPL: Compressing file gz2.mcpl
   closeandgzip_outfile returned 0
-closeandgzip_outfile (directory in the way) -> ERROR IO: Problems encountered while compressing file gz2.mcpl (it was closed properly, so the uncompressed file might be fine)
+closeandgzip_outfile (directory in the way) -> ERROR RUNTIME: Unable to compress file gz2.mcpl, since gz2.mcpl.gz already exists (the uncompressed file was closed properly)
   file gz2.mcpl: nparticles=2 srcname="unknown" userflags=0 polarisation=0 doubleprec=0 universal pdgcode=0 weight=0 userdata layout=none
     particle x=1 pdgcode=2112 weight=1 userflags=0
     particle x=1 pdgcode=2112 weight=1 userflags=0
   reading back -> ok
 MCPL: Compressing file gz2.mcpl
-MCPL ERROR: Problems encountered while compressing file gz2.mcpl.
+MCPL ERROR: Unable to compress file gz2.mcpl, since gz2.mcpl.gz already exists.
   legacy closeandgzip_outfile returned 0
 
 ==> Closing files without finishing them:

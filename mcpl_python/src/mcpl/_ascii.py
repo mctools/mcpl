@@ -27,9 +27,15 @@ __all__ = ['convert2ascii']
 from ._reader import MCPLFile
 
 
-def convert2ascii(mcplfile,outfile):
-    """Read particle contents of mcplfile and write into outfile using a simple ASCII-based format"""
+def convert2ascii(mcplfile,outfile,*,allow_overwrite=False):
+    """Read particle contents of mcplfile and write into outfile using a simple
+    ASCII-based format. An existing outfile is only overwritten if
+    allow_overwrite is True."""
     if not hasattr(outfile,'write'):
+        import os
+        if not allow_overwrite and os.path.lexists(outfile):
+            from ._common import MCPLError
+            raise MCPLError(f'The output file "{os.fspath(outfile)}" already exists')
         with open(outfile,'w') as fh:
             convert2ascii(mcplfile,fh)
         return

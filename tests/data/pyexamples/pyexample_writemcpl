@@ -30,7 +30,9 @@ import mcpl
 import numpy as np
 
 #Get name of output file from command line. Note that an ".mcpl" extension will
-#be added to the filename if it doesn't have it already:
+#be added to the filename if it doesn't have it already, and that files with
+#names ending with ".mcpl.gz" are gzipped when closed, resulting in smaller
+#files (which can also be read directly by MCPL):
 outputfile = sys.argv[1]
 
 #Create output file and embed name of source application in the header. Header
@@ -82,11 +84,8 @@ for i in range(10):
 f.add_particle( pdgcode = 2112, position = (0.0,0.0,0.0), ekin = 0.025,
                 direction = (0.0,1.0,0.0), time = 0.0, weight = 1.0 )
 
-#At the end, remember to properly close the output file. By calling
-#closeandgzip() rather than close(), the output file will end up being gzipped,
-#resulting in a smaller file. Such files can also be read directly by MCPL. It
-#will also gain the extension ".mcpl.gz" rather than ".mcpl":
-f.closeandgzip()
+#At the end, remember to properly close the output file:
+f.close()
 
 #Note that the file can also be created in a with-statement, in which case
 #close() will be called automatically at the end:

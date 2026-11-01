@@ -822,6 +822,10 @@ typedef struct MCPL_LOCAL {
   //leaves it unfinished), and all other functions fail with the same error:
   int failed;
   mcpl_errstate_t failure;
+  //Whether the file is gzipped when closed (names ending with .mcpl.gz), and
+  //whether existing files may be overwritten (also when gzipping it):
+  int gzip_at_close;
+  int allow_overwrite;
 } mcpl_outfileinternal_t;
 
 #define MCPLIMP_OUTFILEDECODE mcpl_outfileinternal_t * f = (mcpl_outfileinternal_t *)of.internal; assert(f)
@@ -975,14 +979,34 @@ MCPL_LOCAL void mcpl_internal_cleanup_outfile(mcpl_outfileinternal_t * f)
   free(f);
 }
 
-//The name which mcpl_create_outfile gives a file: the filename with ".mcpl"
-//appended unless it already ends with ".mcpl" (newly allocated, or NULL in
-//case of errors):
+MCPL_LOCAL int mcpl_internal_has_suffix( const char * s, const char * suffix )
+{
+  size_t n = strlen(s), ns = strlen(suffix);
+  return n >= ns && strcmp( s + ( n - ns ), suffix ) == 0;
+}
+
+//The name of the file which mcpl_create_outfile writes for a filename: the
+//filename with ".mcpl" appended unless it already ends with ".mcpl", or for
+//names ending with ".mcpl.gz" the name without ".gz" (and *gzip is then set
+//to 1, as the file is gzipped when closed). Other names ending with ".gz" are
+//refused. Returns a newly allocated string, or NULL in case of errors:
 MCPL_LOCAL char * mcpl_internal_outfile_name_es( const char * filename,
+                                                 int * gzip,
                                                  mcpl_errstate_t * es )
 {
+  *gzip = 0;
   size_t n = strlen(filename);
-  int has_ext = ( n >= 5 && strcmp( filename + ( n - 5 ), ".mcpl" ) == 0 );
+  if ( mcpl_internal_has_suffix( filename, ".mcpl.gz" ) ) {
+    *gzip = 1;
+    n -= 3;
+  } else if ( mcpl_internal_has_suffix( filename, ".gz" ) ) {
+    char buf[512];
+    snprintf(buf,sizeof(buf),"Output file names ending with .gz must end with"
+             " .mcpl.gz (not \"%.300s\")",filename);
+    mcpl_internal_raise_runtime( es, buf );
+    return NULL;
+  }
+  int has_ext = ( n >= 5 && strncmp( filename + ( n - 5 ), ".mcpl", 5 ) == 0 );
   char * res = mcpl_internal_malloc_es( n + ( has_ext ? 1 : 6 ), es );
   if ( !res )
     return NULL;
@@ -991,10 +1015,61 @@ MCPL_LOCAL char * mcpl_internal_outfile_name_es( const char * filename,
   return res;
 }
 
-mcpl_outfile_t mcpl_create_outfile_es( const char * filename,
-                                       mcpl_errstate_t * es )
+MCPL_LOCAL int mcpl_internal_path_exists(const char * path);
+
+//fn with ".gz" appended (newly allocated, or NULL if out of memory):
+MCPL_LOCAL char * mcpl_internal_append_gz( const char * fn )
 {
-  MCPLIMP_ES_RESET;
+  size_t n = strlen(fn);
+  char * res = (char*)malloc( n + 4 );
+  if ( res ) {
+    memcpy( res, fn, n );
+    memcpy( res + n, ".gz", 4 );
+  }
+  return res;
+}
+
+//Error (returning 0) unless an output file can be written as fn (and gzipped
+//into fn.gz when gzip is set): the output is never one of the ninputs input
+//files, and does not overwrite existing files unless allow_overwrite:
+MCPL_LOCAL int mcpl_internal_check_output_es( const char * fn, int gzip,
+                                              unsigned ninputs,
+                                              const char ** inputs,
+                                              int allow_overwrite,
+                                              mcpl_errstate_t * es )
+{
+  char * fngz = gzip ? mcpl_internal_append_gz( fn ) : NULL;
+  if ( gzip && !fngz )
+    return mcpl_internal_raise_nomem( es );
+  const char * final_fn = gzip ? fngz : fn;
+  char buf[1024];
+  buf[0] = '\0';
+  mcu8str s_fn = mcu8str_view_cstr( fn );
+  mcu8str s_fngz = mcu8str_view_cstr( gzip ? fngz : fn );
+  for ( unsigned i = 0; i < ninputs && !buf[0]; ++i ) {
+    mcu8str s_in = mcu8str_view_cstr( inputs[i] );
+    if ( mctools_is_same_file( &s_fn, &s_in )
+         || ( gzip && mctools_is_same_file( &s_fngz, &s_in ) ) )
+      snprintf(buf,sizeof(buf),"The output file \"%.300s\" is also one of"
+               " the input files",final_fn);
+  }
+  if ( !buf[0] && !allow_overwrite ) {
+    if ( mcpl_internal_path_exists(final_fn) )
+      snprintf(buf,sizeof(buf),"The output file \"%.400s\" already exists",
+               final_fn);
+    else if ( gzip && mcpl_internal_path_exists(fn) )
+      snprintf(buf,sizeof(buf),"The output file \"%.300s\" can not be"
+               " written, since \"%.300s\" (which it is compressed from)"
+               " already exists",fngz,fn);
+  }
+  free(fngz);
+  return buf[0] ? mcpl_internal_raise_runtime( es, buf ) : 1;
+}
+
+MCPL_LOCAL mcpl_outfile_t mcpl_internal_create_outfile_es( const char * filename,
+                                                          int allow_overwrite,
+                                                          mcpl_errstate_t * es )
+{
   mcpl_outfile_t out;
   out.internal = NULL;
 
@@ -1017,7 +1092,7 @@ mcpl_outfile_t mcpl_create_outfile_es( const char * filename,
     return out;
   }
   const char * lastdot = strrchr(filename, '.');
-  if (lastdot==filename && n==5) {
+  if ( (lastdot==filename && n==5) || strcmp(filename,".mcpl.gz") == 0 ) {
     mcpl_internal_raise_runtime( es, "mcpl_create_outfile called with string"
                                  " with no basename part (\".mcpl\")." );
     return out;
@@ -1032,11 +1107,14 @@ mcpl_outfile_t mcpl_create_outfile_es( const char * filename,
   if (!f)
     return out;
 
-  f->filename = mcpl_internal_outfile_name_es(filename,es);
-  if (!f->filename) {
+  f->filename = mcpl_internal_outfile_name_es(filename,&f->gzip_at_close,es);
+  if ( !f->filename
+       || !mcpl_internal_check_output_es( f->filename, f->gzip_at_close, 0,
+                                          NULL, allow_overwrite, es ) ) {
     mcpl_internal_cleanup_outfile(f);
     return out;
   }
+  f->allow_overwrite = allow_overwrite ? 1 : 0;
 
   f->hdr_srcprogname = NULL;
   f->ncomments = 0;
@@ -1075,9 +1153,28 @@ mcpl_outfile_t mcpl_create_outfile_es( const char * filename,
   return out;
 }
 
+mcpl_outfile_t mcpl_create_outfile_es( const char * filename,
+                                       mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  return mcpl_internal_create_outfile_es( filename, 0, es );
+}
+
 mcpl_outfile_t mcpl_create_outfile(const char * filename)
 {
   return mcpl_create_outfile_es( filename, NULL );
+}
+
+mcpl_outfile_t mcpl_create_outfile_allow_overwrite_es( const char * filename,
+                                                       mcpl_errstate_t * es )
+{
+  MCPLIMP_ES_RESET;
+  return mcpl_internal_create_outfile_es( filename, 1, es );
+}
+
+mcpl_outfile_t mcpl_create_outfile_allow_overwrite( const char * filename )
+{
+  return mcpl_create_outfile_allow_overwrite_es( filename, NULL );
 }
 
 const char * mcpl_outfile_filename(mcpl_outfile_t of) {
@@ -2411,13 +2508,21 @@ void mcpl_close_outfile_es( mcpl_outfile_t of, mcpl_errstate_t * es )
   MCPLIMP_ES_RESET;
   //Closing an invalid handle (internal NULL) does nothing:
   mcpl_outfileinternal_t * f = (mcpl_outfileinternal_t *)of.internal;
-  if ( f )
+  if ( f && f->gzip_at_close )
+    (void)mcpl_closeandgzip_outfile_es( of, es );//(names ending with .mcpl.gz)
+  else if ( f )
     mcpl_internal_close_outfile_es( f, es );
 }
 
 void mcpl_close_outfile(mcpl_outfile_t of)
 {
-  mcpl_close_outfile_es( of, NULL );
+  //Files with names ending with .mcpl.gz are compressed like by
+  //mcpl_closeandgzip_outfile (where failures to compress are not errors):
+  mcpl_outfileinternal_t * f = (mcpl_outfileinternal_t *)of.internal;
+  if ( f && f->gzip_at_close )
+    (void)mcpl_closeandgzip_outfile( of );
+  else
+    mcpl_close_outfile_es( of, NULL );
 }
 
 void mcpl_close_outfile_unfinished_es( mcpl_outfile_t of, mcpl_errstate_t * es )
@@ -2532,7 +2637,10 @@ int mcpl_closeandgzip_outfile_rc(mcpl_outfile_t of)
   return mcpl_closeandgzip_outfile(of);
 }
 
-MCPL_LOCAL int mcpl_internal_do_gzip(const char *filename);
+MCPL_LOCAL int mcpl_internal_gzip_reporting( const char * filename,
+                                             int allow_overwrite, int closed,
+                                             int printing,
+                                             mcpl_errstate_t * es );
 
 int mcpl_closeandgzip_outfile_es( mcpl_outfile_t of, mcpl_errstate_t * es )
 {
@@ -2546,32 +2654,13 @@ int mcpl_closeandgzip_outfile_es( mcpl_outfile_t of, mcpl_errstate_t * es )
     return 0;
   }
   char * filename = f->filename;
+  int allow_overwrite = f->allow_overwrite;
   f->filename = NULL;//prevent free when closing
   if ( !mcpl_internal_close_outfile_es( f, es ) ) {
     free(filename);
     return 0;
   }
-  char * bn = mcpl_basename(filename);
-  size_t n = 256 + strlen(bn);
-  char * buf = mcpl_internal_malloc_es(n,es);
-  if (!buf) {
-    free(bn);
-    free(filename);
-    return 0;
-  }
-  snprintf(buf,n,"MCPL: Compressing file %s\n",bn);
-  mcpl_print(buf);
-  int ok = mcpl_internal_do_gzip(filename);
-  if ( ok ) {
-    snprintf(buf,n,"MCPL: Compressed file into %s.gz\n",bn);
-    mcpl_print(buf);
-  } else {
-    snprintf(buf,n,"Problems encountered while compressing file %s (it was"
-             " closed properly, so the uncompressed file might be fine)",bn);
-    mcpl_internal_raise_io( es, buf );
-  }
-  free(buf);
-  free(bn);
+  int ok = mcpl_internal_gzip_reporting( filename, allow_overwrite, 1, 0, es );
   free(filename);
   return ok;
 }
@@ -2584,13 +2673,15 @@ int mcpl_closeandgzip_outfile(mcpl_outfile_t of)
   if ( f->failed ) {
     //An earlier error left the file unfinished: it is closed but not
     //compressed, so it can still be repaired:
-    mcpl_close_outfile(of);
+    mcpl_internal_close_outfile_es(f,NULL);
     return 0;
   }
   char * filename = f->filename;
-  f->filename = NULL;//prevent free in mcpl_close_outfile
-  mcpl_close_outfile(of);
-  int rc = mcpl_gzip_file(filename);
+  int allow_overwrite = f->allow_overwrite;
+  f->filename = NULL;//prevent free when closing
+  mcpl_internal_close_outfile_es(f,NULL);
+  int rc = mcpl_internal_gzip_reporting( filename, allow_overwrite, 0, 1,
+                                         NULL );
   free(filename);
   return rc;
 }
@@ -4638,18 +4729,23 @@ MCPL_LOCAL int mcpl_internal_path_exists(const char * path)
   return mctools_exists( &fn );
 }
 
-//Whether the file which mcpl_create_outfile would create already exists (so
-//it is never one of the input files of the merge functions). Returns -1 in
-//case of errors:
-MCPL_LOCAL int mcpl_internal_outfile_exists_es( const char * filename,
-                                                mcpl_errstate_t * es )
+//Error (returning 0) unless the output file of a merge can be created: an
+//output file which is (or is written via) one of the input files is always
+//refused, and existing files unless allow_overwrite:
+MCPL_LOCAL int mcpl_internal_check_merge_output_es( const char * file_output,
+                                                    unsigned nfiles,
+                                                    const char ** files,
+                                                    int allow_overwrite,
+                                                    mcpl_errstate_t * es )
 {
-  char * fn = mcpl_internal_outfile_name_es( filename, es );
+  int gzip;
+  char * fn = mcpl_internal_outfile_name_es( file_output, &gzip, es );
   if ( !fn )
-    return -1;
-  int res = mcpl_internal_path_exists(fn);
+    return 0;
+  int ok = mcpl_internal_check_output_es( fn, gzip, nfiles, files,
+                                          allow_overwrite, es );
   free(fn);
-  return res;
+  return ok;
 }
 
 MCPL_LOCAL int mcpl_error_on_dups( unsigned n, const char ** filenames,
@@ -4799,6 +4895,7 @@ mcpl_outfile_t mcpl_forcemerge_files_es( const char * file_output,
                                          unsigned nfiles,
                                          const char ** files,
                                          int keep_userflags,
+                                         int allow_overwrite,
                                          mcpl_errstate_t * es )
 {
   MCPLIMP_ES_RESET;
@@ -4824,14 +4921,9 @@ mcpl_outfile_t mcpl_forcemerge_files_es( const char * file_output,
                                  " string as output filename" );
     return out;
   }
-  int exists = mcpl_internal_outfile_exists_es( file_output, es );
-  if ( exists < 0 )
+  if ( !mcpl_internal_check_merge_output_es( file_output, nfiles, files,
+                                             allow_overwrite, es ) )
     return out;
-  if ( exists ) {
-    mcpl_internal_raise_runtime( es, "requested output file of"
-                                 " mcpl_forcemerge_files already exists" );
-    return out;
-  }
 
   ///////////////////////////////////////////
   // Fallback to normal merge if possible: //
@@ -4857,7 +4949,7 @@ mcpl_outfile_t mcpl_forcemerge_files_es( const char * file_output,
              " compatible for a standard merge => falling back to"
              " standard mcpl_merge_files function\n", nfiles );
     mcpl_print(prbuf);
-    return mcpl_merge_files_es(file_output,nfiles,files,es);
+    return mcpl_merge_files_es(file_output,nfiles,files,allow_overwrite,es);
   }
 
   /////////////////////////////
@@ -4975,7 +5067,7 @@ mcpl_outfile_t mcpl_forcemerge_files_es( const char * file_output,
     }
   }
 
-  out = mcpl_create_outfile_es(file_output,es);
+  out = mcpl_internal_create_outfile_es(file_output,allow_overwrite,es);
   if ( !out.internal ) {
     free(udlayout);
     return out;
@@ -5020,7 +5112,7 @@ mcpl_outfile_t mcpl_forcemerge_files( const char * file_output,
                                       int keep_userflags )
 {
   return mcpl_forcemerge_files_es( file_output, nfiles, files,
-                                   keep_userflags, NULL );
+                                   keep_userflags, 0, NULL );
 }
 
 MCPL_LOCAL void mcpl_internal_delete_file( const char * filename );
@@ -5250,6 +5342,7 @@ MCPL_LOCAL int mcpl_internal_merge_files( mcpl_outfile_t out,
 
 mcpl_outfile_t mcpl_merge_files_es( const char* file_output,
                                     unsigned nfiles, const char ** files,
+                                    int allow_overwrite,
                                     mcpl_errstate_t * es )
 {
   MCPLIMP_ES_RESET;
@@ -5289,16 +5382,11 @@ mcpl_outfile_t mcpl_merge_files_es( const char* file_output,
                                  " as output filename" );
     return out;
   }
-  int exists = mcpl_internal_outfile_exists_es( file_output, es );
-  if ( exists < 0 )
+  if ( !mcpl_internal_check_merge_output_es( file_output, nfiles, files,
+                                             allow_overwrite, es ) )
     return out;
-  if ( exists ) {
-    mcpl_internal_raise_runtime( es, "requested output file of mcpl_merge_files"
-                                 " already exists" );
-    return out;
-  }
 
-  out = mcpl_create_outfile_es(file_output,es);
+  out = mcpl_internal_create_outfile_es(file_output,allow_overwrite,es);
   if ( !out.internal )
     return out;
 
@@ -5332,7 +5420,7 @@ mcpl_outfile_t mcpl_merge_files_es( const char* file_output,
 mcpl_outfile_t mcpl_merge_files( const char* file_output,
                                  unsigned nfiles, const char ** files )
 {
-  return mcpl_merge_files_es( file_output, nfiles, files, NULL );
+  return mcpl_merge_files_es( file_output, nfiles, files, 0, NULL );
 }
 
 void mcpl_merge(const char * file1, const char* file2)
@@ -5693,6 +5781,8 @@ MCPL_LOCAL int mcpl_tool_usage( char** argv, const char * errmsg ) {
   mcpl_print("  -t, --text MCPLFILE OUTFILE\n");
   mcpl_print("                    Read particle contents of MCPLFILE and write into OUTFILE\n");
   mcpl_print("                    using a simple ASCII-based format.\n");
+  mcpl_print("  --allow-overwrite : Allow the output files of --merge, --forcemerge,\n");
+  mcpl_print("                    --extract, and --text to overwrite existing files.\n");
   mcpl_print("  -v, --version   : Display version of MCPL installation.\n");
   mcpl_print("  -h, --help      : Display this usage information (ignores all other options).\n");
 
@@ -5759,49 +5849,61 @@ int mcpl_wrap_wmain( int argc, wchar_t** wargv, int(*appfct)(int,char**)  )
 }
 #endif
 
-MCPL_LOCAL const char * mcpl_internal_tool_outfn( char * fn, char ** outfn,
-                                                  int * attempt_gzip )
+//Usage error message (in buf) unless the output file of --merge,
+//--forcemerge, or --extract can be created (see
+//mcpl_internal_check_merge_output_es), or NULL if it can. Checked before
+//creating the file, so the output of a failed command can be removed:
+MCPL_LOCAL const char * mcpl_internal_tool_check_outfn( const char * fn,
+                                                        unsigned ninputs,
+                                                        const char ** inputs,
+                                                        int allow_overwrite,
+                                                        char * buf,
+                                                        size_t nbuf )
 {
-  //Output file name for --merge and --extract. Disallow .gz endings unless it
-  //is .mcpl.gz, in which case we attempt to gzip automatically. Returns an
-  //error message in case of problems. If *outfn != fn, it must be freed.
-  *outfn = fn;
-  *attempt_gzip = 0;
-  if (mcpl_internal_path_exists(fn))
-    return "Requested output file already exists.";
-  size_t lfn = strlen(fn);
-  if( lfn > 8 && !strcmp(fn + (lfn - 8), ".mcpl.gz")) {
-    *attempt_gzip = 1;
-    *outfn = mcpl_internal_malloc(lfn-2);//lfn+1-3
-    memcpy(*outfn,fn,lfn-3);
-    (*outfn)[lfn-3] = '\0';
-    if (mcpl_internal_path_exists(*outfn)) {
-      free(*outfn);
-      *outfn = fn;
-      return "Requested output file already exists (without .gz extension).";
-    }
-  } else if( lfn > 3 && !strcmp(fn + (lfn - 3), ".gz")) {
-    return "Requested output file should not have .gz extension (unless it is .mcpl.gz).";
-  } else if ( mcpl_internal_outfile_exists_es( fn, NULL ) ) {
-    //(mcpl_create_outfile will append .mcpl)
-    return "Requested output file already exists (with .mcpl extension).";
-  }
-  return NULL;
+  mcpl_errstate_t es;
+  es.code = 0;
+  if ( mcpl_internal_check_merge_output_es( fn, ninputs, inputs,
+                                            allow_overwrite, &es ) )
+    return NULL;
+  snprintf(buf,nbuf,"%.1000s.",es.msg);
+  return buf;
 }
 
 MCPL_LOCAL void mcpl_internal_tool_remove_output( const char * outfn )
 {
   //Removes the output file of a failed --merge, --forcemerge or --extract
-  //(which did not exist before, see mcpl_internal_tool_outfn), with the name
-  //given to it by mcpl_create_outfile:
-  char * fn = mcpl_internal_outfile_name_es( outfn, NULL );
+  //(which did not exist before, see mcpl_internal_tool_check_outfn), with the
+  //name given to it by mcpl_create_outfile:
+  int gzip;
+  char * fn = mcpl_internal_outfile_name_es( outfn, &gzip, NULL );
   if ( mcpl_file_certainly_exists(fn) )
     mcpl_internal_delete_file(fn);
   free(fn);
 }
 
+//Closes the output of --merge, --forcemerge, or --extract. If compressing it
+//(for names ending with .mcpl.gz) fails, the uncompressed output is kept,
+//with a warning:
+MCPL_LOCAL void mcpl_internal_tool_close_output( mcpl_outfile_t fo )
+{
+  mcpl_outfileinternal_t * f = (mcpl_outfileinternal_t *)fo.internal;
+  if ( !f->gzip_at_close ) {
+    mcpl_close_outfile(fo);
+    return;
+  }
+  char * fn = NULL;
+  mcpl_store_string_es( &fn, f->filename, NULL );
+  if ( !mcpl_closeandgzip_outfile(fo) ) {
+    mcpl_print("MCPL WARNING: Failed to gzip output. Non-gzipped output is"
+               " found in ");
+    mcpl_print(fn);
+    mcpl_print("\n");
+  }
+  free(fn);
+}
+
 MCPL_LOCAL int mcpl_internal_tool_extract( mcpl_file_t fi, const char * outfn,
-                                           int attempt_gzip,
+                                           int allow_overwrite,
                                            int opt_nocomment,
                                            int64_t opt_num_limit,
                                            int64_t opt_num_skip,
@@ -5813,7 +5915,7 @@ MCPL_LOCAL int mcpl_internal_tool_extract( mcpl_file_t fi, const char * outfn,
   //The extraction of --extract, returning 0 in case of errors (after which
   //the output file is closed, and must be removed by the caller). On success,
   //*fo_filename is the name of the output file (to be freed by the caller).
-  mcpl_outfile_t fo = mcpl_create_outfile_es(outfn,es);
+  mcpl_outfile_t fo = mcpl_internal_create_outfile_es(outfn,allow_overwrite,es);
   if ( !fo.internal )
     return 0;
 #define MCPLIMP_EXTRACT_CHECK if ( es->code ) { \
@@ -5897,23 +5999,18 @@ MCPL_LOCAL int mcpl_internal_tool_extract( mcpl_file_t fi, const char * outfn,
   size_t nn = strlen(outfile_fn);
   *fo_filename = mcpl_internal_malloc(nn+4);
   memcpy(*fo_filename,outfile_fn,nn+1);
+  if ( ((mcpl_outfileinternal_t *)fo.internal)->gzip_at_close ) {
+    mcpl_internal_tool_close_output(fo);
+    //(the name of the compressed file, unless compressing failed):
+    if ( !mcpl_file_certainly_exists(*fo_filename) )
+      memcpy(*fo_filename+nn,".gz",4);
+    return 1;
+  }
   mcpl_close_outfile_es(fo,es);
   if ( es->code ) {
     free(*fo_filename);
     *fo_filename = NULL;
     return 0;
-  }
-  if (attempt_gzip) {
-    //If compressing fails, the uncompressed output is kept (as for --merge):
-    mcpl_errstate_t es_gzip;
-    if ( mcpl_gzip_file_es(*fo_filename,&es_gzip) ) {
-      memcpy(*fo_filename+nn,".gz",4);
-    } else {
-      mcpl_print("MCPL WARNING: Failed to gzip output. Non-gzipped output is"
-                 " found in ");
-      mcpl_print(*fo_filename);
-      mcpl_print("\n");
-    }
   }
   return 1;
 }
@@ -5931,6 +6028,7 @@ int mcpl_tool(int argc,char** argv) {
   int opt_merge = 0;
   int opt_forcemerge = 0;
   int opt_keepuserflags = 0;
+  int opt_allow_overwrite = 0;
   int opt_inplace = 0;
   int opt_extract = 0;
   int opt_nocomment = 0;
@@ -6032,6 +6130,7 @@ int mcpl_tool(int argc,char** argv) {
       const char * lo_text = "text";
       const char * lo_forcemerge = "forcemerge";
       const char * lo_keepuserflags = "keepuserflags";
+      const char * lo_allowoverwrite = "allow-overwrite";
       //Use strstr instead of "strcmp(a,"--help")==0" to support shortened
       //versions (works since all our long-opts start with unique char).
       if (strstr(lo_help,a)==lo_help) return free(filenames), mcpl_tool_usage(argv,0);
@@ -6040,6 +6139,7 @@ int mcpl_tool(int argc,char** argv) {
       else if (strstr(lo_merge,a)==lo_merge) opt_merge = 1;
       else if (strstr(lo_forcemerge,a)==lo_forcemerge) opt_forcemerge = 1;
       else if (strstr(lo_keepuserflags,a)==lo_keepuserflags) opt_keepuserflags = 1;
+      else if (strstr(lo_allowoverwrite,a)==lo_allowoverwrite) opt_allow_overwrite = 1;
       else if (strstr(lo_inplace,a)==lo_inplace) opt_inplace = 1;
       else if (strstr(lo_extract,a)==lo_extract) opt_extract = 1;
       else if (strstr(lo_repair,a)==lo_repair) opt_repair = 1;
@@ -6074,6 +6174,10 @@ int mcpl_tool(int argc,char** argv) {
 
   if ( opt_forcemerge==0 && opt_keepuserflags!=0 )
     return free(filenames),mcpl_tool_usage(argv,"--keepuserflags can only be used with --forcemerge.");
+
+  if ( opt_allow_overwrite && ( opt_inplace || !( opt_merge || opt_forcemerge
+                                                  || opt_extract || opt_text ) ) )
+    return free(filenames),mcpl_tool_usage(argv,"--allow-overwrite can only be used with --merge, --forcemerge, --extract, or --text.");
 
   if ( opt_merge!=0 && opt_forcemerge!=0 )
     return free(filenames),mcpl_tool_usage(argv,"--merge and --forcemerge can not both be specified .");
@@ -6137,10 +6241,13 @@ int mcpl_tool(int argc,char** argv) {
       for (i = ifirstinfile+1; i < nfilenames; ++i)
         mcpl_merge_inplace(filenames[ifirstinfile],filenames[i]);
     } else {
-      char * outfn;
-      int attempt_gzip;
-      const char * outfn_err = mcpl_internal_tool_outfn( filenames[0], &outfn,
-                                                         &attempt_gzip );
+      const char * outfn = filenames[0];
+      char errbuf[1024];
+      const char * outfn_err
+        = mcpl_internal_tool_check_outfn( outfn, nfilenames-1,
+                                          (const char**)filenames + 1,
+                                          opt_allow_overwrite,
+                                          errbuf, sizeof(errbuf) );
       if (outfn_err)
         return free(filenames),mcpl_tool_usage(argv,outfn_err);
 
@@ -6148,27 +6255,15 @@ int mcpl_tool(int argc,char** argv) {
       //only reported after removing it:
       mcpl_errstate_t es;
       mcpl_outfile_t mf = ( opt_forcemerge ?
-                            mcpl_forcemerge_files_es( outfn, nfilenames-1, (const char**)filenames + 1, opt_keepuserflags, &es ) :
-                            mcpl_merge_files_es( outfn, nfilenames-1, (const char**)filenames + 1, &es ) );
+                            mcpl_forcemerge_files_es( outfn, nfilenames-1, (const char**)filenames + 1, opt_keepuserflags, opt_allow_overwrite, &es ) :
+                            mcpl_merge_files_es( outfn, nfilenames-1, (const char**)filenames + 1, opt_allow_overwrite, &es ) );
       if ( es.code ) {
         mcpl_internal_tool_remove_output( outfn );
-        if (outfn != filenames[0])
-          free(outfn);
         free(filenames);
         mcpl_check_error( &es );
         return 1;
       }
-      if (attempt_gzip) {
-        if (!mcpl_closeandgzip_outfile(mf)) {
-          mcpl_print("MCPL WARNING: Failed to gzip output. Non-gzipped output is found in ");
-          mcpl_print(outfn);
-          mcpl_print("\n");
-        }
-      } else {
-        mcpl_close_outfile(mf);
-      }
-      if (outfn != filenames[0])
-        free(outfn);
+      mcpl_internal_tool_close_output(mf);
     }
 
     free(filenames);
@@ -6193,10 +6288,12 @@ int mcpl_tool(int argc,char** argv) {
       }
     }
 
-    char * outfn;
-    int attempt_gzip;
-    const char * outfn_err = mcpl_internal_tool_outfn( filenames[1], &outfn,
-                                                       &attempt_gzip );
+    const char * outfn = filenames[1];
+    char errbuf[1024];
+    const char * outfn_err
+      = mcpl_internal_tool_check_outfn( outfn, 1, (const char**)filenames,
+                                        opt_allow_overwrite,
+                                        errbuf, sizeof(errbuf) );
     if (outfn_err)
       return free(filenames),mcpl_tool_usage(argv,outfn_err);
 
@@ -6207,21 +6304,17 @@ int mcpl_tool(int argc,char** argv) {
     mcpl_errstate_t es;
     uint64_t added = 0;
     char * fo_filename = NULL;
-    int ok = mcpl_internal_tool_extract( fi, outfn, attempt_gzip,
+    int ok = mcpl_internal_tool_extract( fi, outfn, opt_allow_overwrite,
                                          opt_nocomment, opt_num_limit,
                                          opt_num_skip, pdgcode_select,
                                          &added, &fo_filename, &es );
     mcpl_close_file(fi);
     if ( !ok ) {
       mcpl_internal_tool_remove_output( outfn );
-      if (outfn != filenames[1])
-        free(outfn);
       free(filenames);
       mcpl_check_error( &es );
       return 1;
     }
-    if (outfn != filenames[1])
-      free(outfn);
 
     char buf[256];
     snprintf(buf,sizeof(buf),
@@ -6245,8 +6338,16 @@ int mcpl_tool(int argc,char** argv) {
     if (nfilenames!=2)
       return free(filenames),mcpl_tool_usage(argv,"Must specify both input and output files with --text.");
 
-    if (mcpl_file_certainly_exists(filenames[1]))
-      return free(filenames),mcpl_tool_usage(argv,"Requested output file already exists.");
+    {
+      mcpl_errstate_t es;
+      if ( !mcpl_internal_check_output_es( filenames[1], 0, 1,
+                                           (const char**)filenames,
+                                           opt_allow_overwrite, &es ) ) {
+        char errbuf[1024];
+        snprintf(errbuf,sizeof(errbuf),"%.1000s.",es.msg);
+        return free(filenames),mcpl_tool_usage(argv,errbuf);
+      }
+    }
 
     mcpl_file_t fi = mcpl_open_file(filenames[0]);
     FILE * fout = mcpl_internal_fopen(filenames[1],"w");
@@ -6347,26 +6448,27 @@ int mcpl_gzip_file_rc(const char * filename)
   return mcpl_gzip_file(filename);
 }
 
-MCPL_LOCAL int mcpl_internal_do_gzip(const char *filename)
+MCPL_LOCAL int mcpl_internal_do_gzip(const char *filename, int allow_overwrite)
 {
   //Compresses filename into filename.gz, removing filename on success. In
   //case of errors, any partially written filename.gz is removed. Returns 0
-  //in case of errors.
+  //in case of errors, and -1 (doing nothing) if filename.gz exists and may not
+  //be overwritten.
+
+  char * outfn = mcpl_internal_append_gz( filename );
+  if (!outfn)
+    return 0;
+  if ( !allow_overwrite && mcpl_internal_path_exists(outfn) ) {
+    free(outfn);
+    return -1;
+  }
 
   //Open input file:
   FILE *handle_in = mcpl_internal_fopen(filename, "rb");
-  if (!handle_in)
-    return 0;
-
-  //Construct output file name by appending .gz:
-  size_t nn = strlen(filename);
-  char * outfn = (char*)malloc(nn + 4);
-  if (!outfn) {
-    fclose(handle_in);
+  if (!handle_in) {
+    free(outfn);
     return 0;
   }
-  memcpy(outfn,filename,nn);
-  memcpy(outfn+nn,".gz",4);
 
   //Open output file (with compression level 1, which for MCPL files is much
   //faster than higher levels, and makes files only slightly larger):
@@ -6419,51 +6521,56 @@ int mcpl_gzip_file_es( const char * filename, mcpl_errstate_t * es )
     mcpl_internal_raise_runtime( es, "mcpl_gzip_file called with null string" );
     return 0;
   }
+  return mcpl_internal_gzip_reporting( filename, 0, 0, 0, es );
+}
+
+//Compresses filename into filename.gz, reporting it. Problems are errors in
+//es, or with printing set reported as "MCPL ERROR: ..." (returning 0). The
+//error messages say if the uncompressed file was closed properly before:
+MCPL_LOCAL int mcpl_internal_gzip_reporting( const char * filename,
+                                             int allow_overwrite, int closed,
+                                             int printing,
+                                             mcpl_errstate_t * es )
+{
   char * bn = mcpl_basename(filename);
-  size_t n = 256 + strlen(bn);
-  char * buf = mcpl_internal_malloc_es(n,es);
+  size_t n = 256 + 2 * strlen(bn);
+  char * buf = mcpl_internal_malloc_es(n,printing?NULL:es);
   if (!buf) {
     free(bn);
     return 0;
   }
   snprintf(buf,n,"MCPL: Compressing file %s\n",bn);
   mcpl_print(buf);
-  int ok = mcpl_internal_do_gzip(filename);
-  if ( ok ) {
+  int ok = mcpl_internal_do_gzip(filename,allow_overwrite);
+  const char * pre = printing ? "MCPL ERROR: " : "";
+  const char * post = printing ? ".\n" : "";
+  if ( ok == 1 )
     snprintf(buf,n,"MCPL: Compressed file into %s.gz\n",bn);
+  else if ( ok < 0 )
+    snprintf(buf,n,"%sUnable to compress file %s, since %s.gz already"
+             " exists%s%s",pre,bn,bn,
+             closed ? " (the uncompressed file was closed properly)" : "",
+             post);
+  else
+    snprintf(buf,n,"%sProblems encountered while compressing file %s%s%s",
+             pre,bn,closed ? " (it was closed properly, so the uncompressed"
+             " file might be fine)" : "",post);
+  if ( ok == 1 || printing )
     mcpl_print(buf);
-  } else {
-    snprintf(buf,n,"Problems encountered while compressing file %s",bn);
+  else if ( ok < 0 )
+    mcpl_internal_raise_runtime( es, buf );
+  else
     mcpl_internal_raise_io( es, buf );
-  }
   free(bn);
   free(buf);
-  return ok;
+  return ok == 1;
 }
 
 int mcpl_gzip_file(const char * filename)
 {
-  //Not via mcpl_gzip_file_es, since failures to compress files are not errors
-  //here (they are reported, and 0 is returned):
-  char * bn = mcpl_basename(filename);
-  size_t n = 128 + strlen(bn);
-  char * buf = mcpl_internal_malloc(n);
-  snprintf(buf,n,"MCPL: Compressing file %s\n",bn);
-  mcpl_print(buf);
-  int ec;
-  if (!mcpl_internal_do_gzip(filename)) {
-    ec = 0;
-    snprintf(buf,n,
-             "MCPL ERROR: Problems encountered while compressing file %s.\n",
-             bn);
-  } else {
-    ec = 1;
-    snprintf(buf,n,"MCPL: Compressed file into %s.gz\n",bn);
-  }
-  mcpl_print(buf);
-  free(bn);
-  free(buf);
-  return ec;
+  //Failures to compress files are not errors here (they are reported, and 0
+  //is returned):
+  return mcpl_internal_gzip_reporting( filename, 0, 0, 1, NULL );
 }
 
 void mcpl_internal_dump_to_stdout( const char * data,
@@ -7119,9 +7226,20 @@ MCPL_LOCAL mcu8str mcpl_internal_namehelper( const char * filename,
   return fn;
 }
 
-mcpl_outfile_t mcpl_create_outfile_mpi( const char * filename,
-                                        unsigned long iproc,
-                                        unsigned long nproc )
+//The final output file of the MPI helpers (gzipped for names ending with
+//.mcpl.gz):
+MCPL_LOCAL mcu8str mcpl_internal_mpi_final_name( const char * filename )
+{
+  return mcpl_internal_namehelper( filename, 0,
+                                   ( mcpl_internal_has_suffix( filename,
+                                                               ".mcpl.gz" )
+                                     ? 'G' : 'M' ) );
+}
+
+MCPL_LOCAL mcpl_outfile_t mcpl_internal_create_outfile_mpi( const char * filename,
+                                                            unsigned long iproc,
+                                                            unsigned long nproc,
+                                                            int allow_overwrite )
 {
   if ( nproc > 100000000 )
     mcpl_error("mcpl_create_outfile_mpi: nproc too large");
@@ -7129,17 +7247,50 @@ mcpl_outfile_t mcpl_create_outfile_mpi( const char * filename,
     mcpl_error("mcpl_create_outfile_mpi: nproc must be larger than 0");
   if ( iproc >= nproc )
     mcpl_error("mcpl_create_outfile_mpi: iproc must be less than nproc");
-  mcu8str fn;
-
-  if ( nproc > 1 ) {
-    fn = mcpl_internal_namehelper( filename, iproc, 'm' );
-  } else {
+  mcu8str finalfn = mcpl_internal_mpi_final_name( filename );
+  if ( nproc == 1 ) {
     //Write directly to target destination:
-    fn = mcpl_internal_namehelper( filename, iproc, 'M' );
+    mcpl_outfile_t outfile
+      = mcpl_internal_create_outfile_es( finalfn.c_str, allow_overwrite, NULL );
+    mcu8str_dealloc( &finalfn );
+    return outfile;
   }
-  mcpl_outfile_t outfile = mcpl_create_outfile( fn.c_str );
+  //Refuse an existing final file already now (so a run does not fail only at
+  //the end), or with allow_overwrite remove it (since mcpl_merge_outfiles_mpi
+  //can not overwrite it):
+  int gzip;
+  char * finalwritten = mcpl_internal_outfile_name_es( finalfn.c_str, &gzip,
+                                                       NULL );
+  if ( !allow_overwrite ) {
+    mcpl_internal_check_output_es( finalwritten, gzip, 0, NULL, 0, NULL );
+  } else if ( iproc == 0 ) {
+    if ( mcpl_file_certainly_exists( finalwritten ) )
+      mcpl_internal_delete_file( finalwritten );
+    if ( gzip && mcpl_file_certainly_exists( finalfn.c_str ) )
+      mcpl_internal_delete_file( finalfn.c_str );
+  }
+  free( finalwritten );
+  mcu8str_dealloc( &finalfn );
+  //Uncompressed worker files:
+  mcu8str fn = mcpl_internal_namehelper( filename, iproc, 'm' );
+  mcpl_outfile_t outfile
+    = mcpl_internal_create_outfile_es( fn.c_str, allow_overwrite, NULL );
   mcu8str_dealloc( &fn );
   return outfile;
+}
+
+mcpl_outfile_t mcpl_create_outfile_mpi( const char * filename,
+                                        unsigned long iproc,
+                                        unsigned long nproc )
+{
+  return mcpl_internal_create_outfile_mpi( filename, iproc, nproc, 0 );
+}
+
+mcpl_outfile_t mcpl_create_outfile_mpi_allow_overwrite( const char * filename,
+                                                        unsigned long iproc,
+                                                        unsigned long nproc )
+{
+  return mcpl_internal_create_outfile_mpi( filename, iproc, nproc, 1 );
 }
 
 void mcpl_merge_outfiles_mpi( const char * filename,
@@ -7153,7 +7304,7 @@ void mcpl_merge_outfiles_mpi( const char * filename,
   if ( nproc == 1 ) {
     //nothing to do, we wrote directly to the target. But for consistency with
     //the nproc>1 case, we do verify that the expected output file exist.
-    mcu8str fngz = mcpl_internal_namehelper( filename, 0, 'G' );
+    mcu8str fngz = mcpl_internal_mpi_final_name( filename );
     int ok = mctools_is_file( &fngz);
     if ( !ok ) {
       char ebuf[4096];
@@ -7170,10 +7321,10 @@ void mcpl_merge_outfiles_mpi( const char * filename,
     return;
   }
 
-  mcu8str targetfn = mcpl_internal_namehelper( filename, 0, 'M' );
+  mcu8str targetfn = mcpl_internal_mpi_final_name( filename );
   char ** fns = (char **)mcpl_internal_malloc( sizeof(char*) * nproc);
   for ( unsigned long iproc = 0; iproc < nproc; ++iproc ) {
-    mcu8str fn_i = mcpl_internal_namehelper( filename, iproc, 'g' );
+    mcu8str fn_i = mcpl_internal_namehelper( filename, iproc, 'm' );
     fns[iproc] = fn_i.c_str;
   }
   //Merge worker files:
@@ -7190,9 +7341,13 @@ void mcpl_merge_outfiles_mpi( const char * filename,
     free(bn);
     free(buf);
   }
-  //Compress merged file, removes uncompressed file too
-  if ( !mcpl_closeandgzip_outfile(outfh) )
-    mcpl_error("mcpl_merge_outfiles_mpi: problems gzipping final output");
+  //Close the merged file (compressing it for names ending with .mcpl.gz):
+  if ( ((mcpl_outfileinternal_t *)outfh.internal)->gzip_at_close ) {
+    if ( !mcpl_closeandgzip_outfile(outfh) )
+      mcpl_error("mcpl_merge_outfiles_mpi: problems gzipping final output");
+  } else {
+    mcpl_close_outfile(outfh);
+  }
   //Cleanup memory:
   mcu8str_dealloc( &targetfn );
   for ( unsigned long iproc = 0; iproc < nproc; ++iproc )

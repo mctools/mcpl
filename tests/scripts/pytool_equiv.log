@@ -14,11 +14,11 @@ mcpltool-c --merge out.mcpl a1.mcpl b_dp.mcpl: exit code 1
    | Run with -h or --help for usage information
 mcpltool-c --merge out.mcpl a1.mcpl: exit code 0
 mcpltool-c --merge a2.mcpl a1.mcpl a1.mcpl: exit code 1
-   | ERROR: Requested output file already exists.
+   | ERROR: The output file "a2.mcpl" already exists.
    | 
    | Run with -h or --help for usage information
 mcpltool-c --merge out.gz a1.mcpl a2.mcpl: exit code 1
-   | ERROR: Requested output file should not have .gz extension (unless it is .mcpl.gz).
+   | ERROR: Output file names ending with .gz must end with .mcpl.gz (not "out.gz").
    | 
    | Run with -h or --help for usage information
 mcpltool-c --merge out.mcpl a1.mcpl a1.mcpl: exit code 1
@@ -38,7 +38,7 @@ mcpltool-c --forcemerge --keepuserflags out.mcpl.gz b_dp.mcpl b_pol.mcpl: exit c
    | MCPL force-merge: Files have different userflags (no and yes), enabling them (zero for particles without)
    | MCPL force-merge: Transferring 12 particles from file b_dp.mcpl
    | MCPL force-merge: Transferring 7 particles from file b_pol.mcpl
-   | MCPL force-merge: Transferred a total of 19 particles to new file out.mcpl
+   | MCPL force-merge: Transferred a total of 19 particles to new file out.mcpl.gz
    | MCPL: Compressing file out.mcpl
    | MCPL: Compressed file into out.mcpl.gz
 mcpltool-c --forcemerge out.mcpl a1.mcpl a2.mcpl: exit code 0
@@ -80,11 +80,11 @@ mcpltool-c --extract crash.mcpl out.mcpl: exit code 0
 mcpltool-c --extract ref1.mcpl out.mcpl: exit code 0
    | MCPL: Successfully extracted 5 / 5 particles from ref1.mcpl into out.mcpl
 mcpltool-c --extract a1.mcpl a2.mcpl: exit code 1
-   | ERROR: Requested output file already exists.
+   | ERROR: The output file "a2.mcpl" already exists.
    | 
    | Run with -h or --help for usage information
 mcpltool-c --extract a1.mcpl out.gz: exit code 1
-   | ERROR: Requested output file should not have .gz extension (unless it is .mcpl.gz).
+   | ERROR: Output file names ending with .gz must end with .mcpl.gz (not "out.gz").
    | 
    | Run with -h or --help for usage information
 mcpltool-c --extract a1.mcpl: exit code 1
@@ -474,6 +474,72 @@ mcpltool-c --forcemerge out.mcpl b_dp.mcpl nan.mcpl: exit code 1
    | MCPL ERROR: add_particles asked to transfer particle with NaN or infinite position
 mcpltool-c --repair nan.mcpl: exit code 1
    | MCPL ERROR: File does not appear to be broken.
+mcpltool-c --merge b_dp.mcpl a1.mcpl a2.mcpl: exit code 1
+   | ERROR: The output file "b_dp.mcpl" already exists.
+   | 
+   | Run with -h or --help for usage information
+mcpltool-c --merge --allow-overwrite b_dp.mcpl a1.mcpl a2.mcpl: exit code 0
+mcpltool-c -m a3.mcpl.gz a1.mcpl: exit code 1
+   | ERROR: The output file "a3.mcpl.gz" already exists.
+   | 
+   | Run with -h or --help for usage information
+mcpltool-c -m --allow-overwrite a3.mcpl.gz a1.mcpl: exit code 0
+   | MCPL: Compressing file a3.mcpl
+   | MCPL: Compressed file into a3.mcpl.gz
+mcpltool-c -m b_pol.mcpl.gz a1.mcpl: exit code 1
+   | ERROR: The output file "b_pol.mcpl.gz" can not be written, since "b_pol.mcpl" (which it is compressed from) already exists.
+   | 
+   | Run with -h or --help for usage information
+mcpltool-c -m --allow-overwrite b_pol.mcpl.gz a1.mcpl: exit code 0
+   | MCPL: Compressing file b_pol.mcpl
+   | MCPL: Compressed file into b_pol.mcpl.gz
+mcpltool-c -m --allow-overwrite a2.mcpl a1.mcpl a2.mcpl: exit code 1
+   | ERROR: The output file "a2.mcpl" is also one of the input files.
+   | 
+   | Run with -h or --help for usage information
+mcpltool-c --forcemerge b_dp.mcpl a1.mcpl b_pol.mcpl: exit code 1
+   | ERROR: The output file "b_dp.mcpl" already exists.
+   | 
+   | Run with -h or --help for usage information
+mcpltool-c --forcemerge --allow-overwrite b_dp.mcpl a1.mcpl b_pol.mcpl: exit code 0
+   | MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+   | MCPL force-merge: Discarding comments and blobs of the input files
+   | MCPL force-merge: Transferring 30 particles from file a1.mcpl
+   | MCPL force-merge: Transferring 7 particles from file b_pol.mcpl
+   | MCPL force-merge: Transferred a total of 37 particles to new file b_dp.mcpl
+mcpltool-c --extract --allow-overwrite -l3 a1.mcpl a2.mcpl: exit code 0
+   | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
+   | MCPL: Successfully extracted 3 / 30 particles from a1.mcpl into a2.mcpl
+mcpltool-c --extract --allow-overwrite a1.mcpl a1.mcpl: exit code 1
+   | ERROR: The output file "a1.mcpl" is also one of the input files.
+   | 
+   | Run with -h or --help for usage information
+mcpltool-c --text a1.mcpl a2.mcpl: exit code 1
+   | ERROR: The output file "a2.mcpl" already exists.
+   | 
+   | Run with -h or --help for usage information
+mcpltool-c --text --allow-overwrite a1.mcpl a2.mcpl: exit code 0
+mcpltool-c --text --allow-overwrite a1.mcpl a1.mcpl: exit code 1
+   | ERROR: The output file "a1.mcpl" is also one of the input files.
+   | 
+   | Run with -h or --help for usage information
+mcpltool-c --allow --merge b_dp.mcpl a1.mcpl: exit code 0
+mcpltool-c --allow-overwrite a1.mcpl: exit code 1
+   | ERROR: --allow-overwrite can only be used with --merge, --forcemerge, --extract, or --text.
+   | 
+   | Run with -h or --help for usage information
+   mcpltool:
+   | ERROR: --allow-overwrite can only be used with --merge, --forcemerge, --extract, --text, or -o.
+   | 
+   | Run with -h or --help for usage information
+mcpltool-c --merge --inplace --allow-overwrite a1.mcpl a2.mcpl: exit code 1
+   | ERROR: --allow-overwrite can only be used with --merge, --forcemerge, --extract, or --text.
+   | 
+   | Run with -h or --help for usage information
+   mcpltool:
+   | ERROR: --allow-overwrite can only be used with --merge, --forcemerge, --extract, --text, or -o.
+   | 
+   | Run with -h or --help for usage information
 mcpltool --extract a1.mcpl out.mcpl --pick pdgcode == neutron: MCPL: Successfully extracted 10 / 30 particles from a1.mcpl into out.mcpl
    same as with the Python API: True
 mcpltool --extract a1.mcpl out.mcpl --pick ekin > 5keV and ekin <= 20keV and x <= 2cm + abs(y): MCPL: Successfully extracted 15 / 30 particles from a1.mcpl into out.mcpl
@@ -622,4 +688,4 @@ mcpltool --extract --pick mod(fileidx,2) == 0: stat:sum:nsim = None
    | MCPL: Successfully extracted 15 / 30 particles from a1.mcpl into out.mcpl
 mcpltool --extract -E x = 1cm*fileidx: stat:sum:nsim = 1000.0
    | MCPL: Successfully extracted 30 / 30 particles from a1.mcpl into out.mcpl
-Compared 66 command lines with mcpltool-c
+Compared 83 command lines with mcpltool-c

@@ -86,6 +86,9 @@ class Backend(PlotBackend):
     def show( self, figures ):
         print(describe(figures))
 
+    def output_filenames( self, filename, n ):
+        return [ filename ]
+
     def save( self, figures, filename ):
         import pathlib
         self.check_format(filename)

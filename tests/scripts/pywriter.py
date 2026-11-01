@@ -53,13 +53,13 @@ def test_reference_files():
         if not orig.startswith(b'MCPL'):
             orig = gzip.decompress(orig)
         with mcpl.MCPLFile(f, raw_strings=True, blocklength=7) as src:
-            with mcpl.MCPLOutFile('xfer.mcpl') as o:
+            with mcpl.MCPLOutFile('xfer.mcpl', allow_overwrite=True) as o:
                 o.transfer_metadata(src)
                 for b in src.particle_blocks:
                     o.add_particles(b)
             exact = ( pathlib.Path('xfer.mcpl').read_bytes() == orig )
             src.rewind()
-            with mcpl.MCPLOutFile('repack_py.mcpl') as o:
+            with mcpl.MCPLOutFile('repack_py.mcpl', allow_overwrite=True) as o:
                 o.transfer_metadata(src)
                 for b in src.particle_blocks:
                     o.add_particles(position=b.position, direction=b.direction,
@@ -116,11 +116,11 @@ def test_raw_values():
         kw = dict( sourcename='writefromraw', comments=['a comment'],
                    stat_sum={'nsim':-1}, blobs={'blobkey':b'abc\0d'},
                    **opts_kwargs(opts) )
-        with mcpl.MCPLOutFile('raw_py_blocks.mcpl', **kw) as o:
+        with mcpl.MCPLOutFile('raw_py_blocks.mcpl', allow_overwrite=True, **kw) as o:
             o.add_particles(**{k:v[:1000] for k,v in fields.items()})
             o.add_particles(**{k:v[1000:] for k,v in fields.items()})
             o.hdr_add_stat_sum('nsim', 12345.0)
-        with mcpl.MCPLOutFile('raw_py_single.mcpl', blocklength=100, **kw) as o:
+        with mcpl.MCPLOutFile('raw_py_single.mcpl', allow_overwrite=True, blocklength=100, **kw) as o:
             for i in range(n):
                 o.add_particle(**{k:v[i] for k,v in fields.items()})
             o.hdr_add_stat_sum('nsim', 12345.0)
@@ -141,7 +141,7 @@ def test_transfers():
                 continue#universal pdgcode/weight do not match source
             lib.mcpltest_transfer('src.mcpl','xfer_c.mcpl',opts or '-')
             with mcpl.MCPLFile('src.mcpl', blocklength=77) as src:  # noqa: SIM117
-                with mcpl.MCPLOutFile('xfer_py.mcpl', **opts_kwargs(opts)) as o:
+                with mcpl.MCPLOutFile('xfer_py.mcpl', allow_overwrite=True, **opts_kwargs(opts)) as o:
                     for b in src.particle_blocks:
                         o.add_particles(b)
             same = same_file('xfer_py.mcpl','xfer_c.mcpl')
@@ -149,7 +149,7 @@ def test_transfers():
             assert same
     #Double to single precision: packed direction+ekin are narrowed:
     lib.mcpltest_writefromraw('raw.bin','src.mcpl','dpu')
-    with mcpl.MCPLFile('src.mcpl') as src, mcpl.MCPLOutFile('xfer_py.mcpl') as o:
+    with mcpl.MCPLFile('src.mcpl') as src, mcpl.MCPLOutFile('xfer_py.mcpl', allow_overwrite=True) as o:
         for b in src.particle_blocks:
             o.add_particles(b)
     with mcpl.MCPLFile('src.mcpl') as src, mcpl.MCPLFile('xfer_py.mcpl') as res:
@@ -162,7 +162,7 @@ def test_transfers():
     #Single particles from MCPLFile.read(), including into a file with universal
     #pdgcode where only particles with that pdgcode are accepted:
     with mcpl.MCPLFile('src.mcpl') as src:  # noqa: SIM117
-        with mcpl.MCPLOutFile('filtered.mcpl', opt_universalpdgcode=2112) as o:
+        with mcpl.MCPLOutFile('filtered.mcpl', allow_overwrite=True, opt_universalpdgcode=2112) as o:
             while ( p := src.read() ) is not None:
                 if p.pdgcode == 2112:
                     o.add_particle(p)
@@ -202,14 +202,14 @@ def test_api():
         print(f'blobs={f.blobs} stat_sum={dict(f.stat_sum)}')
     #Errors:
     print('Errors:')
-    with mcpl.MCPLOutFile('err.mcpl') as o:
+    with mcpl.MCPLOutFile('err.mcpl', allow_overwrite=True) as o:
         expect_error(o.add_particles, direction=(1,1,0))
         expect_error(o.add_particles, direction=(1,0,0), ekin=-1.0)
         expect_error(o.add_particle, direction=(0,0.5,0))
         expect_error(o.add_particles, direction=[[1,0,0]]*3, ekin=[1.0,2.0])
         expect_error(o.add_particles, position=(0,0,0), x=1.0, direction=(1,0,0))
         expect_error(o.add_particles, direction=(1,0,0), pdgcode=2**31)
-    with mcpl.MCPLOutFile('err.mcpl') as o:
+    with mcpl.MCPLOutFile('err.mcpl', allow_overwrite=True) as o:
         expect_error(o.hdr_add_comment,'stat:something')
         expect_error(o.hdr_add_comment,'stat:sum:bad')
         expect_error(o.hdr_add_stat_sum,'bad key',1.0)
@@ -229,9 +229,9 @@ def test_api():
     #Gzipped output:
     with mcpl.MCPLOutFile('gz') as o:
         o.add_particles(direction=(0,0,1), ekin=np.linspace(1,2,5))
-    o = mcpl.MCPLOutFile('gz2', opt_singleprec=False)
+    o = mcpl.MCPLOutFile('gz2.mcpl.gz', opt_singleprec=False)
     o.add_particles(direction=(0,0,1), ekin=np.linspace(1,2,5))
-    assert o.closeandgzip()
+    o.close()
     with mcpl.MCPLFile('gz2.mcpl.gz') as f:
         print(f'gz2.mcpl.gz: {f.nparticles} particles, ekin={f.read_block().ekin}')
     assert not pathlib.Path('gz2.mcpl').exists()
@@ -333,7 +333,7 @@ def test_single_vs_blocks():
                     del fields['weight']
                 fields[field] = value
                 try:
-                    with mcpl.MCPLOutFile(fn, **sett) as o:
+                    with mcpl.MCPLOutFile(fn, allow_overwrite=True, **sett) as o:
                         if single:
                             o.add_particle(**fields)
                         else:
@@ -355,7 +355,7 @@ def test_example():
     f = test_data_dir.joinpath('pyexamples','pyexample_writemcpl')
     code = f.read_text().replace('\nimport mcpl\n','\nimport mcpldev as mcpl\n')
     assert 'import mcpldev as mcpl' in code
-    sys.argv = [ str(f), 'example_output' ]
+    sys.argv = [ str(f), 'example_output.mcpl.gz' ]
     exec(compile(code,str(f),'exec'),{'__name__':'__main__'})  # noqa: S102
     with mcpl.MCPLFile('example_output.mcpl.gz') as f:
         print(f'pyexample_writemcpl wrote {f.nparticles} particles from'
