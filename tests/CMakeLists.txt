@@ -114,6 +114,8 @@ set( mcpltest_appenvmod "" )
 list(
   APPEND mcpltest_appenvmod
   "MCPL_TESTDATA_DIR=set:${CMAKE_CURRENT_LIST_DIR}/data"
+  #(where the test modules are, for test programs loading them):
+  "MCTOOLS_TESTMODULES_LOCDIR=set:${PROJECT_BINARY_DIR}/tests/modlib_locations_$<CONFIG>"
 )
 
 if ( WIN32 )

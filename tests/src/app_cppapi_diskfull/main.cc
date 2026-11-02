@@ -90,8 +90,8 @@ namespace {
           f.add(p);
         }
         mcpltest::fail("no error");
-      } catch ( const mcpl::IOError& e ) {
-        std::cout << "add -> mcpl::IOError: " << e.what() << std::endl;
+      } catch ( const std::runtime_error& e ) {
+        std::cout << "add -> " << e.what() << std::endl;
       }
       //The file is unusable, and closing it leaves it unfinished (without
       //reporting the error again, as in the C API):
@@ -168,8 +168,8 @@ namespace {
     try {
       mcpl::merge_files( "cdf_merged.mcpl", { "cdf_in1.mcpl", "cdf_in2.mcpl" } );
       mcpltest::fail("no error");
-    } catch ( const mcpl::IOError& e ) {
-      std::cout << "merge_files -> mcpl::IOError: " << e.what() << std::endl;
+    } catch ( const std::runtime_error& e ) {
+      std::cout << "merge_files -> " << e.what() << std::endl;
     }
     reset_filesize_limit();
     nrec = count_particles("cdf_merged.mcpl");

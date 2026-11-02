@@ -32,7 +32,6 @@ import xml.etree.ElementTree as ET
 
 #Sections of the page, with the classes and functions they show:
 _sections = [
-    ( 'Errors', ('mcpl::Error','mcpl::IOError') ),
     ( 'Reading files', ('mcpl::MCPLFile','mcpl::Particle','mcpl::StringListView',
                         'mcpl::BlobView','mcpl::DumpParts') ),
     ( 'Userdata', ('mcpl::UserdataField',) ),
@@ -436,6 +435,12 @@ def generate( front_matter = None, strict = False, note = None, xmldir = None ):
                ' `std::filesystem::path` objects, which work with all names on'
                ' all platforms, or strings (`std::string`, `std::string_view`'
                ' or C strings), which are interpreted as UTF-8.' ), '' ]
+    out += [ ( 'Errors are thrown as `std::runtime_error`, with messages'
+               ' starting with `MCPL::IOError: ` for failed I/O operations'
+               ' (e.g. when opening or writing files), and `MCPL::Error: ` for'
+               ' other errors (e.g. invalid files or arguments). Exceptions are'
+               ' `std::bad_alloc` when memory allocation fails, and'
+               ' `std::out_of_range` for invalid indices.' ), '' ]
     done = set()
     for title, names in _sections:
         out += [ f'## {title}', '' ]

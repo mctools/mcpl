@@ -1,0 +1,2 @@
+opening a missing file: caught as std::runtime_error: MCPL::IOError: Unable to open file!
+empty output file name: caught as std::runtime_error: MCPL::Error: mcpl_create_outfile called with empty string.

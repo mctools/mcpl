@@ -35,8 +35,9 @@ int main( int argc, char ** argv )
     return 1;
   }
 
-  //Errors are reported as exceptions (mcpl::Error, or the derived
-  //mcpl::IOError for problems with reading or writing files):
+  //Errors are thrown as std::runtime_error (with messages starting with
+  //"MCPL::IOError: " for problems with reading or writing files, and
+  //"MCPL::Error: " otherwise):
   try {
 
     //Open the input file, and show some of the information in its header:
@@ -94,8 +95,8 @@ int main( int argc, char ** argv )
                 << neworigdir(p,2) << std::endl;
     }
 
-  } catch ( const mcpl::Error& e ) {
-    std::cout << "Error: " << e.what() << std::endl;
+  } catch ( const std::runtime_error& e ) {
+    std::cout << e.what() << std::endl;
     return 1;
   }
   return 0;
