@@ -524,7 +524,7 @@ namespace {
         for ( auto p : f )
           std::cout << " " << p.x();
         mcpltest::fail("no error while reading truncated data");
-      } catch ( const mcpl::Error& ) {
+      } catch ( const std::runtime_error& ) {
         std::cout << std::endl << "  -> " << mcpltest::describe_current_exception()
                   << std::endl;
       }

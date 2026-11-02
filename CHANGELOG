@@ -210,8 +210,8 @@ v2.2.9  (work in progress)
         the reference documentation (as Markdown, for the website).
       * New header-only C++ interface, mcplcpp.h (requires C++17 or later),
         built on the _es functions of the C API (issue #61). Errors are
-        reported as exceptions (mcpl::Error, mcpl::IOError and
-        std::bad_alloc). Files are read with mcpl::MCPLFile (with range-based
+        thrown as std::runtime_error (with messages starting with
+        "MCPL::IOError: " or "MCPL::Error: ") and std::bad_alloc. Files are read with mcpl::MCPLFile (with range-based
         for loops over the particles, which are lightweight mcpl::Particle
         views) and written with mcpl::MCPLOutFile (which leaves files
         unfinished unless they are explicitly closed). Userdata fields are

@@ -33,5 +33,5 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     1        2112        0.04           2           0          -1           0           0           1         0.2           3  02000000000000009a99193f00000000...
     2        2112        0.08           4           0          -1           0           0           1         0.4           5  04000000000000009a99193f00000000...
 With a missing input file:
-Error: Unable to open file!
+MCPL::IOError: Unable to open file!
 (exit code 1)

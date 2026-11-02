@@ -66,9 +66,9 @@
  *
  * The C++ interface to MCPL requires C++17 or later, and is built on the
  * functions of the C API with error states (the `_es` variants). It offers
- * the same functionality as the C API, with errors reported as exceptions
- * (see mcpl::Error), files which are closed automatically, and type-safe
- * access to particles and their userdata.
+ * the same functionality as the C API, with errors reported as exceptions,
+ * files which are closed automatically, and type-safe access to particles and
+ * their userdata.
  *
  * Reading files:
  * @code{.cpp}
@@ -108,43 +108,18 @@
  * with all names on all platforms, or as strings (`std::string`,
  * `std::string_view` or C strings), which are interpreted as UTF-8 like
  * elsewhere in MCPL.
+ *
+ * Errors are thrown as `std::runtime_error`, with messages starting with
+ * "MCPL::IOError: " for failed I/O operations (e.g. when opening or writing
+ * files), and "MCPL::Error: " for other errors (e.g. invalid files or
+ * arguments). Exceptions are `std::bad_alloc` when memory allocation fails,
+ * and `std::out_of_range` for invalid indices. Being standard types, they can
+ * be caught in all libraries. After an error while reading particles, or while
+ * writing data to an output file, the file object can only be closed (and
+ * further calls give the same error). Other errors, like invalid arguments,
+ * leave the file usable.
  */
 namespace mcpl {
-
-  //////////////////////////////////////////////////////////////////////////////
-  // Exceptions
-
-  /**
-   * @brief Errors from MCPL.
-   *
-   * All errors are reported as exceptions: mcpl::Error for invalid files or
-   * arguments (and other errors), the derived mcpl::IOError for failed I/O
-   * operations (e.g. when opening or writing files), and `std::bad_alloc`
-   * when memory allocation fails. After an error while reading particles, or
-   * while writing data to an output file, the file object can only be closed
-   * (and further calls give the same error). Other errors, like invalid
-   * arguments, leave the file usable.
-   */
-  class Error : public std::runtime_error {
-  public:
-    /**
-     * @brief Error with the given message.
-     *
-     * @param msg The error message.
-     */
-    explicit Error( const std::string& msg ) : std::runtime_error(msg) {}
-  };
-
-  /** @brief Failed I/O operations (e.g. when opening or writing files). */
-  class IOError : public Error {
-  public:
-    /**
-     * @brief Error with the given message.
-     *
-     * @param msg The error message.
-     */
-    explicit IOError( const std::string& msg ) : Error(msg) {}
-  };
 
   //////////////////////////////////////////////////////////////////////////////
   // Implementation details
@@ -156,13 +131,13 @@ namespace mcpl {
       if ( es.code == MCPL_ERROR_MEMORY )
         throw std::bad_alloc();
       if ( es.code == MCPL_ERROR_IO )
-        throw IOError(es.msg);
-      throw Error(es.msg);
+        throw std::runtime_error( std::string("MCPL::IOError: ") + es.msg );
+      throw std::runtime_error( std::string("MCPL::Error: ") + es.msg );
     }
 
     [[noreturn]] inline void throw_runtime( const std::string& msg )
     {
-      throw Error(msg);
+      throw std::runtime_error( "MCPL::Error: " + msg );
     }
 
     //Sizes passed to the C API as 32 bit integers:
@@ -963,7 +938,7 @@ namespace mcpl {
      * @brief Value of the field.
      *
      * @param p The particle.
-     * @throws mcpl::Error if the particle has no (or too short) userdata.
+     * @throws std::runtime_error if the particle has no (or too short) userdata.
      */
     value_type operator()( const Particle& p ) const
     {
@@ -973,7 +948,7 @@ namespace mcpl {
      * @brief Value of the field.
      *
      * @param p The particle.
-     * @throws mcpl::Error if the particle has no (or too short) userdata.
+     * @throws std::runtime_error if the particle has no (or too short) userdata.
      */
     value_type operator()( const OutParticle& p ) const
     {
@@ -984,7 +959,7 @@ namespace mcpl {
      *
      * @param p The particle.
      * @param i Index of the element.
-     * @throws std::out_of_range if `i>=N`, and mcpl::Error if the particle has no (or too short) userdata.
+     * @throws std::out_of_range if `i>=N`, and std::runtime_error if the particle has no (or too short) userdata.
      */
     T operator()( const Particle& p, std::size_t i ) const
     {
@@ -995,7 +970,7 @@ namespace mcpl {
      *
      * @param p The particle.
      * @param i Index of the element.
-     * @throws std::out_of_range if `i>=N`, and mcpl::Error if the particle has no (or too short) userdata.
+     * @throws std::out_of_range if `i>=N`, and std::runtime_error if the particle has no (or too short) userdata.
      */
     T operator()( const OutParticle& p, std::size_t i ) const
     {
@@ -1116,7 +1091,7 @@ namespace mcpl {
      * Gzipped files (with names ending in `.gz`) can be read directly.
      *
      * @param filename Name of the file.
-     * @throws mcpl::IOError if the file can not be read, and mcpl::Error if it is not a valid MCPL file.
+     * @throws std::runtime_error if the file can not be read (MCPL::IOError) or is not a valid MCPL file (MCPL::Error).
      */
     explicit MCPLFile( FilenameArg filename )
     {
@@ -1222,7 +1197,7 @@ namespace mcpl {
      * @brief The blob with the key.
      *
      * @param key The key.
-     * @throws mcpl::Error if there is no blob with the key.
+     * @throws std::runtime_error if there is no blob with the key.
      */
     BlobView blob( std::string_view key ) const
     {
@@ -1264,7 +1239,7 @@ namespace mcpl {
      *
      * @param key The key.
      * @return The value, or an empty value if it is not available (-1 in the file, e.g. if the program writing the file crashed).
-     * @throws mcpl::Error if there is no entry with the key.
+     * @throws std::runtime_error if there is no entry with the key.
      */
     std::optional<double> stat_sum( std::string_view key ) const
     {
@@ -1294,7 +1269,7 @@ namespace mcpl {
      * @tparam T Type of the values of the field.
      * @tparam N Number of values of array fields (0 for single values).
      * @param name Name of the field.
-     * @throws mcpl::Error if the file has no userdata, or the field does not exist with exactly this type.
+     * @throws std::runtime_error if the file has no userdata, or the field does not exist with exactly this type.
      */
     template<class T, std::size_t N = 0>
     UserdataField<T,N> userdata_field( std::string_view name ) const
@@ -1487,7 +1462,7 @@ namespace mcpl {
      *
      * @param filename Name of the file (`.mcpl` is appended if it does not end with `.mcpl`; names ending with `.mcpl.gz` are written without `.gz` and compressed when closed, and other names ending with `.gz` are not allowed).
      * @param allow_overwrite Whether an existing file may be overwritten.
-     * @throws mcpl::Error if the file exists (unless allowed), mcpl::IOError if it can not be created.
+     * @throws std::runtime_error if the file exists, unless allowed (MCPL::Error), or can not be created (MCPL::IOError).
      */
     explicit MCPLOutFile( FilenameArg filename,
                           AllowOverwrite allow_overwrite = AllowOverwrite::No )
@@ -1712,7 +1687,7 @@ namespace mcpl {
      * @param name Name of the field.
      * @param unit Unit of the values (e.g. `"cm"` or `"MeV^-1"`), or empty for none.
      * @return The field object for setting the values.
-     * @throws mcpl::Error for invalid names or units, or after the layout is fixed.
+     * @throws std::runtime_error for invalid names or units, or after the layout is fixed.
      */
     template<class T, std::size_t N = 0>
     UserdataField<T,N> add_userdata_field( std::string_view name, std::string_view unit = {} )
@@ -1776,7 +1751,7 @@ namespace mcpl {
      * @tparam T Type of the values of the field.
      * @tparam N Number of values of array fields (0 for single values).
      * @param name Name of the field.
-     * @throws mcpl::Error if there is no userdata, or the field does not exist with exactly this type.
+     * @throws std::runtime_error if there is no userdata, or the field does not exist with exactly this type.
      */
     template<class T, std::size_t N = 0>
     UserdataField<T,N> userdata_field( std::string_view name ) const

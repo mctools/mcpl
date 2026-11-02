@@ -28,13 +28,12 @@
 #include <algorithm>
 #include <array>
 #include <list>
+#include <typeinfo>
 
 using mcpltest::require;
 using mcpltest::expect_throw;
 using mcpltest::expect_ok;
 
-static_assert( std::is_base_of_v<std::runtime_error,mcpl::Error> );
-static_assert( std::is_base_of_v<mcpl::Error,mcpl::IOError> );
 
 namespace {
 
@@ -352,30 +351,23 @@ namespace {
       expect_throw( "error state with code " + std::to_string(code),
                     [&]{ mcpl::detail::throw_error(es); } );
     }
-    //Catching as base classes:
+    //Errors are plain std::runtime_error objects:
     try {
       mcpl::MCPLFile f("nosuchfile.mcpl");
     } catch ( const std::runtime_error& e ) {
-      std::cout << "caught as std::runtime_error: " << e.what() << std::endl;
+      std::cout << "caught as std::runtime_error: " << e.what()
+                << ( typeid(e) == typeid(std::runtime_error)
+                     ? "" : " (of a derived type!)" ) << std::endl;
     }
-    try {
-      mcpl::MCPLFile f("nosuchfile.mcpl");
-    } catch ( const mcpl::Error& e ) {
-      std::cout << "caught as mcpl::Error: " << e.what() << std::endl;
-    }
-    //Exceptions can be created by users:
-    mcpl::Error e1("custom");
-    mcpl::IOError e2("custom io");
-    std::cout << "user exceptions: " << e1.what() << ", " << e2.what()
-              << std::endl;
-    //Long messages are truncated to 1023 characters:
+    //Long messages are truncated to 1023 characters (plus the "MCPL::Error: "
+    //prefix):
     {
       mcpl::MCPLOutFile f("long.mcpl");
       std::string longkey( 2000, 'k' );
       try {
         f.add_stat_sum( longkey, 1.0 );
         mcpltest::fail("no exception");
-      } catch ( const mcpl::Error& e ) {
+      } catch ( const std::runtime_error& e ) {
         std::cout << "long message: " << std::strlen(e.what())
                   << " characters" << std::endl;
       }

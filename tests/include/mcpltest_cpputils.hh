@@ -29,6 +29,7 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <typeinfo>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -53,14 +54,16 @@ namespace mcpltest {
     std::string res;
     try {
       throw;
-    } catch ( const mcpl::IOError& e ) {
-      res = std::string("mcpl::IOError: ") + e.what();
-    } catch ( const mcpl::Error& e ) {
-      res = std::string("mcpl::Error: ") + e.what();
     } catch ( const std::bad_alloc& ) {
       res = "std::bad_alloc";
     } catch ( const std::out_of_range& e ) {
       res = std::string("std::out_of_range: ") + e.what();
+    } catch ( const std::runtime_error& e ) {
+      //(errors from MCPL are plain std::runtime_error objects, with messages
+      //starting with "MCPL::"):
+      const bool from_mcpl = ( typeid(e) == typeid(std::runtime_error)
+                               && std::string(e.what()).rfind("MCPL::",0) == 0 );
+      res = ( from_mcpl ? "" : "other std::exception: " ) + std::string(e.what());
     } catch ( const std::exception& e ) {
       res = std::string("other std::exception: ") + e.what();
     } catch (...) {
