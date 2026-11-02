@@ -105,6 +105,8 @@ MCPLFile(std::string) -> ok
 MCPLFile(std::string_view) -> ok
 MCPLFile(std::filesystem::path) -> ok
 MCPLFile(const char*) -> ok
+MCPLFile(std::wstring) -> ok
+MCPLFile(std::filesystem::directory_entry) -> ok
 MCPLFile(UTF-8 std::string) -> ok
 MCPLFile(std::filesystem::path from UTF-8 name) -> ok
 gzipped file: 5 particles, seek(1) then read() gives x=2

@@ -45,7 +45,6 @@
 #include <cstdint>
 #include <cstring>
 #include <exception>
-#include <filesystem>
 #include <functional>
 #include <initializer_list>
 #include <iterator>
@@ -60,6 +59,16 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+//std::filesystem::path is accepted for file names where the standard library
+//has it (not e.g. with GCC 7). The functions taking it are templates, so that
+//they are only compiled when used: on macOS before 10.15, the standard library
+//marks std::filesystem as unavailable, which would otherwise make every user
+//of this header fail to compile.
+#if __has_include(<filesystem>)
+#  include <filesystem>
+#  define MCPLCPP_HAS_FILESYSTEM 1
+#endif
 
 /**
  * @brief Header-only C++ interface to MCPL.
@@ -106,8 +115,8 @@
  *
  * Filenames can be given as `std::filesystem::path` objects, which work
  * with all names on all platforms, or as strings (`std::string`,
- * `std::string_view` or C strings), which are interpreted as UTF-8 like
- * elsewhere in MCPL.
+ * `std::string_view`, or C strings), which are interpreted as UTF-8 like
+ * elsewhere in MCPL (see mcpl::FilenameArg).
  *
  * Errors are thrown as `std::runtime_error`, with messages starting with
  * "MCPL::IOError: " for failed I/O operations (e.g. when opening or writing
@@ -162,8 +171,23 @@ namespace mcpl {
       mcpl_errstate_t m_es;
     };
 
-    inline std::string path_to_utf8( const std::filesystem::path& p )
+#ifdef MCPLCPP_HAS_FILESYSTEM
+    //Paths, and other types converting to them (e.g. directory entries, or
+    //wide strings), but not the strings which are taken as UTF-8:
+    template<class P>
+    using if_pathlike = std::enable_if_t<
+      std::is_convertible_v<const P&,std::filesystem::path>
+      && !std::is_convertible_v<const P&,std::string_view>, int >;
+
+    //std::filesystem::path, as a type depending on P (so that nothing using
+    //it is compiled before it is used, see the includes above):
+    template<class P>
+    using path_t = std::conditional_t<sizeof(P) != 0, std::filesystem::path, void>;
+
+    template<class P, if_pathlike<P> = 0>
+    std::string path_to_utf8( const P& path )
     {
+      const path_t<P>& p = path;
 #if defined(__cpp_char8_t) && __cpp_char8_t >= 201811L
       std::u8string s = p.u8string();
       return std::string( reinterpret_cast<const char*>(s.data()), s.size() );
@@ -172,13 +196,13 @@ namespace mcpl {
 #endif
     }
 
+    template<class P, if_pathlike<P> = 0>
+    std::string to_utf8( const P& p ) { return path_to_utf8(p); }
+#endif
+
     inline std::string to_utf8( const char * s ) { return s ? s : ""; }
     inline std::string to_utf8( const std::string& s ) { return s; }
     inline std::string to_utf8( std::string_view s ) { return std::string(s); }
-    inline std::string to_utf8( const std::filesystem::path& p )
-    {
-      return path_to_utf8(p);
-    }
 
     //Filenames as C strings (for the C functions taking lists of files):
     class FilenameList {
@@ -336,9 +360,14 @@ namespace mcpl {
    *
    * Functions taking file names accept `std::filesystem::path` objects, which
    * work with all names on all platforms, or strings (`std::string`,
-   * `std::string_view` or C strings), which are interpreted as UTF-8. A
+   * `std::string_view`, or C strings), which are interpreted as UTF-8. A
    * FilenameArg can refer to the string it was made from, so it is only
    * meant for function arguments (and it can not be copied).
+   *
+   * Other types which convert to a path are accepted as well (e.g. directory
+   * entries, or wide strings). Paths need a standard library with
+   * `std::filesystem` (on macOS from 10.15, and with GCC 8 linked with
+   * `-lstdc++fs`).
    */
   class FilenameArg {
   public:
@@ -348,9 +377,12 @@ namespace mcpl {
     FilenameArg( const std::string& s ) : m_cstr(s.c_str()) {}
     /** @brief A name given as a std::string_view (UTF-8). */
     FilenameArg( std::string_view s ) : m_buf(s), m_cstr(m_buf.c_str()) {}
-    /** @brief A name given as a path. */
-    FilenameArg( const std::filesystem::path& p )
+#ifdef MCPLCPP_HAS_FILESYSTEM
+    /** @brief A name given as a `std::filesystem::path` (or a type converting to it). */
+    template<class P, detail::if_pathlike<P> = 0>
+    FilenameArg( const P& p )
       : m_buf(detail::path_to_utf8(p)), m_cstr(m_buf.c_str()) {}
+#endif
     FilenameArg( const FilenameArg& ) = delete;
     FilenameArg& operator=( const FilenameArg& ) = delete;
     /** @brief The name as a null-terminated UTF-8 string. */
