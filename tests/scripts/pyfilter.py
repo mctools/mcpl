@@ -621,7 +621,7 @@ def test_pick_statements():
     with mcpl.MCPLFile(example_file,pick = pick) as f:
         n = sum( len(blk) for blk in f.particle_blocks )
     h = mcpl.histogram(str(example_file),'x;bins=5;display_by=single',pick = pick)
-    print(f'file and histogram with {pick!r}: {n} {int(sum(h.contents[None]))}')
+    print(f"file and histogram with {pick!r}: {n} {int(h.contents.sum())}")
     for bad in ( 'x = 1cm; x > 0cm', 'r = hypot(x,y); x > 0cm', 'swap(x,y); x > 0cm',
                  'rotate_z(90deg); x > 0cm', 'x > 0cm; y > 0cm', 'r = hypot(x,y);',
                  'r = hypot(x,y); r', 'r += 1cm; r > 0cm', 'r = 1meV; r > 1cm', 'pi = 3; x > 0cm',

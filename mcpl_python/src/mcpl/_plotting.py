@@ -19,30 +19,18 @@
 ##                                                                            ##
 ################################################################################
 
-"""Description of plots, and functions to show or save them. Plots are
-described with the Figure, Panel, and item classes below (which hold numbers,
-not graphics objects), and are shown in a window with matplotlib, or in the
-terminal with terminal=True (drawn as text with Unicode characters, or else
-ASCII, or always ASCII with terminal='ascii'). They are saved in files of the
-format given by the extension: .pdf, .png, or .svg (with matplotlib), or .txt
-(as text with Unicode characters).
+"""Showing and saving plots (not part of the public API): the plots are
+described with the Figure, Panel, and item classes of _figures (which hold
+numbers, not graphics objects), and are shown in a window with matplotlib, or
+in the terminal with terminal=True (drawn as text with Unicode characters, or
+else ASCII, or always ASCII with terminal='ascii'). They are saved in files of
+the format given by the extension: .pdf, .png, or .svg (with matplotlib), or
+.txt (as text with Unicode characters)."""
 
-For instance:
-
-   from mcpl.plotting import Figure, Panel, StepHist
-   from mcpl.plotting import save
-   hist = StepHist(edges,values)
-   panel = Panel( title = 'My histogram',
-                  xlabel = 'x [cm]',
-                  items = [ hist ] )
-   save( Figure( panels = [ panel ] ), 'myplot.pdf' )
-"""
-
-__all__ = [ 'Bars', 'Figure', 'Hist2D', 'Panel', 'Scatter3D', 'StepHist', 'Text',
-            'save', 'show' ]
+__all__ = []
 
 from ._common import MCPLError
-from ._figures import Bars, Figure, Hist2D, Panel, Scatter3D, StepHist, Text
+from ._figures import Figure
 from ._plotregistry import _save_backend, _show_backend
 
 

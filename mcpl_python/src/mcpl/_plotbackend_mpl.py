@@ -118,7 +118,7 @@ class Backend(PlotBackend):
         return draw_figure(figure,None if saving else self._plt)
 
 def draw_figure( figure, plt = None, logo = True ):
-    """The figure (see mcpl.plotting) drawn as a matplotlib figure: one of
+    """The figure (see _figures) drawn as a matplotlib figure: one of
     pyplot (plt), or else one which pyplot does not manage (for saving it),
     with the MCPL logo if logo is set"""
     big = figure.nrows * figure.ncols > 1

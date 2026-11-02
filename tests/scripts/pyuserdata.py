@@ -34,6 +34,7 @@ import sys
 import mcpldev as mcpl
 from MCPLTestUtils.dirs import mcpltool_cmd, test_data_dir
 from MCPLTestUtils.loadlib import getlib
+from MCPLTestUtils.plots import hist_panel
 
 lib = getlib('userdata')
 input_dir = pathlib.Path('inputs').absolute()
@@ -479,7 +480,7 @@ def test_units():
                'userdata.d;range=0:20', 'userdata.temp;range=0cm:2cm', 'userdata.n;bar',
                'userdata.d;bar' ):
         try:
-            panel = mcpl.histogram(f,p).figure().panels[0]
+            panel = hist_panel(mcpl,mcpl.histogram(f,p))
             print(f'plot {p}: {panel.xlabel} | {panel.ylabel}')
         except mcpl.MCPLError as err:
             print(f'plot {p}: MCPLError: {err}')

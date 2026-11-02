@@ -68,7 +68,7 @@ def mcpltool_hist(filelist,hist,skip,limit,pick,edit,outfn,terminal,bad,color=No
     """The histogram of mcpltool -w or -t (shown with matplotlib, or in the
     terminal if terminal is set), printed with the print option, or else
     plotted (in the file outfn with -o, or else shown)"""
-    from ._histogram import _histogram
+    from ._histfill import _fill
     from ._histstring import _parse_hist
     if not filelist:
         bad("No input file specified")
@@ -93,20 +93,21 @@ def mcpltool_hist(filelist,hist,skip,limit,pick,edit,outfn,terminal,bad,color=No
             if res is not None:
                 maxbins = tuple(res) if len(o['exprs']) == 2 else res[0]
         try:
-            h = _histogram(sources,o,_maxbins=maxbins,selection=selection)
+            h = _fill(sources,o,_maxbins=maxbins,selection=selection)
         except MCPLError as e:
             bad(str(e),'--hist')
         if o['print']:
             print(h.to_text())
             return
+        from ._histfigures import figure
         #(drawn with the bins exactly, with a whole number of columns each):
         if maxbins is not None:
             bk._fit_resolution(h._display_bins)
         try:
             if outfn:
-                print('Created ' + ', '.join(bk.save([h.figure()],outfn)))
+                print('Created ' + ', '.join(bk.save([figure(h)],outfn)))
             else:
-                bk.show([h.figure()])
+                bk.show([figure(h)])
         except MCPLError as e:
             bad(str(e))
     finally:

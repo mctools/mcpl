@@ -22,20 +22,31 @@
 
 # NEEDS: numpy
 
-# Test histograms (mcpl.histogram, mcpl.histogram2d, mcpl.plot_histograms),
-# and mcpltool -w and -t, using the plotting backend for tests (which prints
-# descriptions of the figures), and that plot_stats is no longer available.
+# Test histograms: mcpl.histogram (its read-only results), the histograms with
+# all their details and options (made as by mcpl.histogram and mcpltool, see
+# _histfill), and mcpltool -w and -t, using the plotting backend for tests
+# (which prints descriptions of the figures), and that plot_stats is no longer
+# available.
 
+import collections.abc
 import contextlib
 import io
+import operator
 import pathlib
 import shutil
 
 import matplotlib
 import mcpldev as mcpl
 import numpy as np
+from mcpldev import _plotting
 from mcpldev._plotregistry import _forced_backend
 from MCPLTestUtils.dirs import test_data_dir
+from MCPLTestUtils.plots import (
+    hist_figure,
+    hist_panel,
+    internal_histogram,
+    internal_histogram2d,
+)
 
 #(no windows, also where there is a display, so plots which would be shown
 #are drawn in the terminal instead):
@@ -46,41 +57,49 @@ shutil.copy(test_data_dir.joinpath('example.mcpl'),'example.mcpl')
 shutil.copy(test_data_dir.joinpath('ref','reffile_1.mcpl'),'reffile_1.mcpl')
 example_file = pathlib.Path('example.mcpl')
 ref1 = pathlib.Path('reffile_1.mcpl')
+#(the histograms with all their details, and the options also as keyword
+#arguments, see internal_histogram):
+def ihist( *args, **kwargs ):
+    return internal_histogram(mcpl,*args,**kwargs)
+
+def ihist2d( *args, **kwargs ):
+    return internal_histogram2d(mcpl,*args,**kwargs)
+
 def show(obj):
-    figs = obj if isinstance(obj,list) else [ obj.figure() ]
-    mcpl.plotting.show(figs)
+    figs = obj if isinstance(obj,list) else [ hist_figure(mcpl,obj) ]
+    _plotting.show(figs)
 
 def test_histograms():
     with mcpl.MCPLFile(example_file) as f:
         b = f.read_block()
-    h = mcpl.histogram(example_file, 'ekin/MeV', logx=True, display_by='pdgcode')
+    h = ihist(example_file, 'ekin/MeV', logx=True, display_by='pdgcode')
     show(h)
     assert np.isclose(sum(c.sum() for c in h.contents.values()), b.weight.sum())
-    h = mcpl.histogram(example_file, 'ekin/eV', pick='pdgcode == neutron',
+    h = ihist(example_file, 'ekin/eV', pick='pdgcode == neutron',
                        lethargy=True, bins=20, display_by='single')
     show(h)
     ref = np.histogram(b.ekin[b.pdgcode==2112]*1e6, bins=h.edges)[0]
     assert np.allclose(h.contents[None], ref)
     assert np.allclose(h.values(), ref/np.log(h.edges[1:]/h.edges[:-1]))
     print(h.to_text())
-    h = mcpl.histogram(example_file, 'acos(uz)/deg', range=(0,90), bins=9,
+    h = ihist(example_file, 'acos(uz)/deg', range=(0,90), bins=9,
                        display_by='x > 0cm', unweighted=True)
     show(h)
     print(h.to_text())
-    h = mcpl.histogram([example_file, ref1], 'x/cm', range=(-20,20), bins=8)
+    h = ihist([example_file, ref1], 'x/cm', range=(-20,20), bins=8)
     show(h)
     print('underflow:', h.underflow, 'overflow:', h.overflow)
     #(at most 8 curves, the others combined into one):
-    h = mcpl.histogram(example_file, 'pdgcode', display_by='mod(fileidx,10)',
+    h = ihist(example_file, 'pdgcode', display_by='mod(fileidx,10)',
                        range=(-300,2300), bins=26)
     show(h)
-    h = mcpl.histogram2d(example_file, 'x/cm', 'y/cm', bins=10,
+    h = ihist2d(example_file, 'x/cm', 'y/cm', bins=10,
                          pick=mcpl.ParticleFilter('pdgcode == gamma'))
     show(h)
     assert np.isclose(h.contents.sum(), np.count_nonzero(b.pdgcode==22))
     #No selected particles, but a range (so an empty histogram), with splits:
     for split in ('pdgcode', 'x > 0cm'):
-        h = mcpl.histogram(example_file, 'ekin/MeV', pick='x > 1km',
+        h = ihist(example_file, 'ekin/MeV', pick='x > 1km',
                            range=(0,10), bins=2, display_by=split)
         print(f'empty histogram with display_by={split!r}:', h.to_text())
     for args, kwargs in ( (('ekin',),{}), (('ekin/MeV',),{'pick':'x > 1km'}),
@@ -93,17 +112,17 @@ def test_histograms():
                           (('x/cm',),{'range':(0,float('inf'))}), (('x/cm',),{'range':'a'}),
                           (('x/cm',),{'range':(1,2,3)}) ):
         try:
-            mcpl.histogram(example_file, *args, **kwargs)
+            ihist(example_file, *args, **kwargs)
             print(f'histogram{args} {kwargs}: no error')
         except mcpl.MCPLError as e:
             print(f'histogram{args} {kwargs}: {e}')
     for kwargs in ( {'bins':(5,0)}, {'bins':[3]}, {'xrange':(1,0)}, {'yrange':'a'} ):
         try:
-            mcpl.histogram2d(example_file, 'x/cm', 'y/cm', **kwargs)
+            ihist2d(example_file, 'x/cm', 'y/cm', **kwargs)
             print(f'histogram2d {kwargs}: no error')
         except mcpl.MCPLError as e:
             print(f'histogram2d {kwargs}: {e}')
-    h = mcpl.histogram(example_file, 'x/cm', bins=np.int64(4), range=[-1,1])
+    h = ihist(example_file, 'x/cm', bins=np.int64(4), range=[-1,1])
     print('bins as a numpy integer, and range as a list:', len(h.edges)-1, h.edges[[0,-1]].tolist())
 
 def test_plot_stats():
@@ -112,30 +131,76 @@ def test_plot_stats():
     except mcpl.MCPLError as e:
         print(f'plot_stats: {e}')
 
-def test_overlay():
-    hn = mcpl.histogram(example_file, 'ekin/MeV', pick='pdgcode == neutron',
-                        logx=True, bins=10)
-    hg = mcpl.histogram(example_file, 'ekin/MeV', pick='pdgcode == gamma',
-                        logx=True, bins=10)
-    mcpl.plot_histograms([hn,hg], overlay=True, logy=True)
-    mcpl.plot_histograms([hn,hg], overlay=True, labels=['n','g'])
-    files = mcpl.plot_histograms([hn,hg], filename='hists.txt')
-    print(f'plot_histograms without overlay created {files}')
-    h2 = mcpl.histogram([example_file, ref1], 'x/cm', range=(-20,20), bins=4)
-    mcpl.plot_histograms([h2,hn], overlay=True)
-    for args, kwargs in ( ( [], {} ),
-                          ( [hn, mcpl.histogram2d(example_file,'x/cm','y/cm')], {} ),
-                          ( [hn, hg], {'labels':['a']} ) ):
+def test_public_api():
+    #The results of mcpl.histogram: their data (in the units the expressions
+    #give, else in those of MCPL), read-only, and plots without options:
+    ex = str(example_file)
+    with mcpl.MCPLFile(ex) as f:
+        b = f.read_block()
+    w = np.broadcast_to(b.weight,(len(b),))
+    h = mcpl.histogram(ex, 'x/cm;range=-10:10;bins=4')
+    ref = np.histogram(b.x, bins=h.edges, weights=w)[0]
+    print(type(h).__name__, repr(h.expression), h.edges.tolist(), h.contents.tolist(),
+          'as numpy:', np.allclose(h.contents, ref))
+    for e in ( 'x;range=-0.1m:0.1m;bins=2', 'ekin;bins=2', 'ekin/keV;bins=2' ):
+        print(f'edges of {e!r}:', mcpl.histogram(ex, e).edges.tolist())
+    h = mcpl.histogram(ex, 'ekin/MeV;bins=5;display_by=pdgcode', pick='x > 0cm')
+    print('contents of all curves, with a pick:', np.isclose(h.contents.sum(), w[b.x > 0].sum()))
+    h2 = mcpl.histogram(ex, 'x/cm : y/cm;bins=3,2')
+    print(type(h2).__name__, h2.expressions, h2.xedges.tolist(), h2.yedges.tolist(),
+          h2.contents.shape, np.isclose(h2.contents.sum(), w.sum()))
+    hd = mcpl.histogram(ex, 'pdgcode;bar=2')
+    print(type(hd).__name__, repr(hd.expression), hd.values.tolist(), hd.contents.tolist())
+    p3 = mcpl.histogram(ex, 'x/cm : y/cm : z/cm;points=10')
+    print(type(p3).__name__, p3.expressions, p3.points.shape, p3.nparticles)
+    from mcpldev._plotbackend_test import describe
+    print(describe([ hist_figure(mcpl,p3) ]).splitlines()[1])
+    print(describe([ hist_figure(mcpl,mcpl.histogram(ex, 'x : y : z')) ]).splitlines()[1])
+    #(the particles chosen depend only on the particles, so those which remain
+    #after a stricter pick stay chosen):
+    full = mcpl.histogram(ex, 'x/cm : y/cm : z/cm;points=50')
+    sub = mcpl.histogram(ex, 'x/cm : y/cm : z/cm;points=50', pick='x > 0cm')
+    kept = { tuple(p) for p in full.points.tolist() if p[0] > 0 }
+    print(f'{len(kept)} of the points have x > 0, and all are chosen with the pick x > 0:',
+          kept <= { tuple(p) for p in sub.points.tolist() })
+    for r in ( h, hd, h2, p3 ):
+        print(type(r).__name__, [ a for a in dir(r) if not a.startswith('_') ],
+              'isinstance:', isinstance(r,getattr(mcpl,type(r).__name__)))
+    try:
+        mcpl.Hist1D()
+    except TypeError as e:
+        print(f'Hist1D(): TypeError: {e}')
+    for what, change in ( ( 'edges', lambda : operator.setitem(h.edges,0,1.0) ),
+                          ( 'contents', lambda : operator.setitem(h.contents,0,1.0) ),
+                          ( '2D contents', lambda : operator.setitem(h2.contents,(0,0),1.0) ),
+                          ( 'points', lambda : operator.setitem(p3.points,(0,0),1.0) ),
+                          ( 'attribute', lambda : setattr(h,'edges',None) ),
+                          ( 'new attribute', lambda : setattr(h,'logy',True) ),
+                          ( 'plot option', lambda : h.plot(logy=True) ),
+                          ( 'histogram option', lambda : mcpl.histogram(ex,'x',bins=3) ) ):
         try:
-            mcpl.plot_histograms(args, overlay=True, **kwargs)
+            change()
+            print(f'{what}: changed!')
+        except ( ValueError, TypeError, AttributeError ) as e:
+            print(f'{what}: {type(e).__name__}')
+    for args in ( ( [ ex, ex ], 'x' ), ( ex, 3 ), ( ex, 'x;print' ) ):
+        try:
+            mcpl.histogram(*args)
+            print(f'histogram{args}: no error')
         except mcpl.MCPLError as e:
-            print(f'plot_histograms(overlay=True) with {len(args)} histograms {kwargs}: {e}')
+            print(f'histogram{args}: {e}')
+    h.plot()
+    print(f'plot created {h.plot("plot.txt")}')
+    try:
+        h.plot('plot.txt')
+    except mcpl.MCPLError as e:
+        print(f'plot to an existing file: {e}')
 
 def test_autobins():
     #Without bins, the number of bins follows from the effective number of
     #entries (square root, clamped to [10,400]), after histogramming with many
     #bins which are then merged exactly:
-    from mcpldev._histogram import _auto_nbins, _nice_nbins
+    from mcpldev._histfill import _auto_nbins, _nice_nbins
     print('nice numbers of bins:',[ (m,_nice_nbins(m)) for m in (1200,400,239,83,37,15,8) ])
     for neff in (1, 100, 1000, 1e4, 1e5, 1e6):
         print(f'neff={neff:g}: bins of 1080 -> {_auto_nbins(neff,1080)},'
@@ -161,24 +226,24 @@ def test_autobins():
           f' {min(r for r,_,c in stats if not c):.2f}..{max(r for r,_,c in stats if not c):.2f}'
           f' when not capped, {sum(c for _,_,c in stats)} capped by narrow plots,'
           f' at most {100*max(u for _,u,_ in stats):.0f}% unused columns')
-    h = mcpl.histogram(example_file, 'x/cm')
-    hf = mcpl.histogram(example_file, 'x/cm', bins=1080)
+    h = ihist(example_file, 'x/cm')
+    hf = ihist(example_file, 'x/cm', bins=1080)
     v, vf = h.values(), hf.values()
     print(f'auto: {len(h.edges)-1} bins, sum {v.sum():g} (1080 bins: {vf.sum():g}),'
           f' merged exactly: {np.allclose(v,vf.reshape(len(v),-1).sum(axis=1))},'
           f' same edges: {np.allclose(h.edges,hf.edges[::1080//len(v)])},'
           f' for display: {h._display_bins}')
-    h = mcpl.histogram(example_file, 'x/cm', pick='pdgcode == 2212')
+    h = ihist(example_file, 'x/cm', pick='pdgcode == 2212')
     print(f'auto with few particles: {len(h.edges)-1} bins, sum {h.values().sum():g}')
-    h = mcpl.histogram(example_file, 'x/cm', _maxbins=83)
+    h = ihist(example_file, 'x/cm', _maxbins=83)
     print(f'auto with at most 83 bins: {len(h.edges)-1} bins, for display: {h._display_bins}')
-    h = mcpl.histogram2d(example_file, 'x/cm', 'y/cm')
+    h = ihist2d(example_file, 'x/cm', 'y/cm')
     print(f'auto 2D: {h.contents.shape} bins, sum {h.contents.sum():g},'
           f' for display: {h._display_bins}')
-    h = mcpl.histogram2d(example_file, 'x/cm', 'y/cm', _maxbins=(69,15))
+    h = ihist2d(example_file, 'x/cm', 'y/cm', _maxbins=(69,15))
     print(f'auto 2D with at most (69,15) bins: {h.contents.shape} bins,'
           f' sum {h.contents.sum():g}, for display: {h._display_bins}')
-    h = mcpl.histogram2d(example_file, 'x/cm', 'y/cm', bins=(8,4))
+    h = ihist2d(example_file, 'x/cm', 'y/cm', bins=(8,4))
     print(f'2D with bins=(8,4): {h.contents.shape} bins, for display: {h._display_bins}')
 
 def tool(*args):
@@ -288,13 +353,13 @@ def test_units():
     for e, kw in ( ( 'x', {} ), ( 'ekin;logx=auto', {} ), ( 'wavelength', { 'pick' : 'pdgcode == neutron' } ),
                    ( 'x;range=-10cm:10cm;bins=2', {} ), ( 'x;range=0:1m;bins=2', {} ), ( 'x/cm;bins=2', {} ),
                    ( 'hypot(x,y)', {} ) ):
-        h = mcpl.histogram(ex,e,**kw)
+        h = ihist(ex,e,**kw)
         print(f'histogram({e!r}): label {h.label!r}, edges from {h.edges[0]:.4g} to {h.edges[-1]:.4g}')
-    h = mcpl.histogram2d(ex,'x','ekin/MeV',bins=2)
+    h = ihist2d(ex,'x','ekin/MeV',bins=2)
     print('histogram2d(x, ekin/MeV):', h.to_text().splitlines()[0])
     for e in ( 'x;range=-10:10', 'x/cm;range=-10cm:10cm', 'ekin;range=0cm:1cm', 'x;range=1cm', 'x;range=y:1cm' ):
         try:
-            mcpl.histogram(ex,e)
+            ihist(ex,e)
         except mcpl.MCPLError as err:
             print(f'histogram({e!r}): {err}')
 
@@ -306,17 +371,17 @@ def test_bars_groups_domains():
                    ( 'mod(abs(pdgcode),7);bar=auto;unweighted=1', {} ), ( 'pdgcode', { 'bar' : 2 } ),
                    ( 'pdgcode;bar=auto', { 'pick' : 'pdgcode != neutron' } ),
                    ( 'round(x/10cm);bar=4;logy=1', {} ), ( 'mod(floor(ekin/MeV),3);bar=auto;logy=0', {} ) ):
-        h = mcpl.histogram(ex,e,**kw)
+        h = ihist(ex,e,**kw)
         print(f'histogram({e!r},{kw}):')
         print(h.to_text())
         show(h)
-    h = mcpl.histogram(ex,'ekin/MeV',display_by='mod(fileidx,10)',bins=3)
+    h = ihist(ex,'ekin/MeV',display_by='mod(fileidx,10)',bins=3)
     print('split in at most 8 curves:', list(h.contents), h.colors)
     for e, kw in ( ( 'wavelength;bins=3', {} ), ( 'wavelength;bins=3', { 'pick' : 'pdgcode == neutron' } ),
                    ( 'wavelength;display_by=pdgcode;bins=3', {} ), ( 'round(1000*wavelength/Aa);bar=auto', { 'pick' : 'ekin > 1GeV' } ) ):
-        h = mcpl.histogram(ex,e,**kw)
+        h = ihist(ex,e,**kw)
         print(f'histogram({e!r},{kw}): label {h.label!r}, contents {[ float(np.sum(c)) for c in h.contents.values() ]}')
-    h = mcpl.histogram2d(ex,'wavelength','x',bins=2)
+    h = ihist2d(ex,'wavelength','x',bins=2)
     print('histogram2d(wavelength,x):', h.xlabel, '|', h.ylabel, '|', h.contents.sum())
     for e, kw in ( ( 'x;bar=auto', {} ), ( 'pdgcode;bar=1', {} ), ( 'pdgcode;bar=on', {} ),
                    ( 'pdgcode;bar=auto;logx=1', {} ), ( 'pdgcode;bar=auto;display_by=pdgcode', {} ),
@@ -326,14 +391,14 @@ def test_bars_groups_domains():
                    ( 'ekin/MeV;bar=auto', {} ), ( 'round(x);bar=auto', {} ),
                    ( 'round(1e300*x/cm);bar=auto', {} ) ):
         try:
-            mcpl.histogram(ex,e,**kw)
+            ihist(ex,e,**kw)
             print(f'histogram({e!r},{kw}): no error')
         except mcpl.MCPLError as err:
             print(f'histogram({e!r},{kw}): {err}')
 
 def test_ranges_colors():
     from mcpldev._figures import _line_style
-    from mcpldev._histogram import _nice_range, _value_colors
+    from mcpldev._histfill import _nice_range, _value_colors
     #Automatic ranges of linear axes: from 0 if the values are close enough
     #to it, and to round values (adding at most 7.5% to the range):
     for lo, hi in ( (0.3,20.5), (-20.5,-0.3), (-9.83,10.21), (1012.3,1077.9),
@@ -357,16 +422,16 @@ def test_3d():
     #3D plots of a sample of the particles (the same for the same particles):
     from mcpldev._plotbackend_test import describe
     ex = str(example_file)
-    h = mcpl.histogram(ex,'x : y : z;points=100;display_by=single')
+    h = ihist(ex,'x : y : z;points=100;display_by=single')
     print('3D:', type(h).__name__, { k : v.shape for k, v in h.groups.items() }, h.labels,
           h.nparticles)
-    same = mcpl.histogram(ex,'x : y : z;points=100;display_by=single')
+    same = ihist(ex,'x : y : z;points=100;display_by=single')
     print('same sample:', np.array_equal(h.groups[None],same.groups[None]))
-    h = mcpl.histogram(ex,'ux : uy : uz;display_by=mod(fileidx,10)',pick='ekin > 1keV')
+    h = ihist(ex,'ux : uy : uz;display_by=mod(fileidx,10)',pick='ekin > 1keV')
     print('split:', { k : len(v) for k, v in h.groups.items() }, h.colors)
-    print(describe([ h.figure() ]))
+    print(describe([ hist_figure(mcpl,h) ]))
     print(h.to_text().splitlines()[:4])
-    h = mcpl.histogram(ex,'x : y : z;unweighted;points=5000;display_by=single')
+    h = ihist(ex,'x : y : z;unweighted;points=5000;display_by=single')
     print('more points than particles:', len(h.groups[None]), 'of', h.nparticles)
 
 def test_logz():
@@ -374,12 +439,11 @@ def test_logz():
     #makes another plot (logz and logz=1 make the same as without logz):
     ex = str(example_file)
     for text in ( 'x : y', 'x : y;logz', 'x : y;logz=0' ):
-        h = mcpl.histogram(ex,text)
-        print(f'{text!r}: logz {h.logz}, panel {h.panel().items[0].logz}')
-    print('panel(logz=False) of the default:', mcpl.histogram(ex,'x : y').panel(logz = False).items[0].logz)
+        h = ihist(ex,text)
+        print(f'{text!r}: logz {h.logz}, panel {hist_panel(mcpl,h).items[0].logz}')
     for bad in ( 'x;logz=0', 'x : y : z;logz', 'x : y;logz=2' ):
         try:
-            mcpl.histogram(ex,bad)
+            ihist(ex,bad)
         except mcpl.MCPLError as e:
             print(f'{bad!r}: {e}')
 
@@ -389,12 +453,12 @@ def test_equal():
     from mcpldev._plotbackend_test import describe
     ex = str(example_file)
     for text in ( 'x : y;equal', 'x : 0.02*y;equal', 'ux : uy;equal', 'x : y' ):
-        h = mcpl.histogram(ex,text)
-        print(f'{text!r}: aspect {h.aspect} ({h.xunit}, {h.yunit}), panel {h.panel().aspect}')
-    print(describe([ mcpl.histogram(ex,'x : y;equal').figure() ]).splitlines()[1])
+        h = ihist(ex,text)
+        print(f'{text!r}: aspect {h.aspect} ({h.xunit}, {h.yunit}), panel {hist_panel(mcpl,h).aspect}')
+    print(describe([ hist_figure(mcpl,ihist(ex,'x : y;equal')) ]).splitlines()[1])
     for bad in ( 'x : ekin;equal', 'x;equal', 'x : y : z;equal' ):
         try:
-            mcpl.histogram(ex,bad)
+            ihist(ex,bad)
         except mcpl.MCPLError as e:
             print(f'{bad!r}: {e}')
 
@@ -405,21 +469,22 @@ def test_only():
     ex = str(example_file)
     def contents( h ):
         c = h.contents
-        return np.concatenate([ np.ravel(v) for v in c.values() ]) if isinstance(c,dict) else np.ravel(c)
+        return ( np.concatenate([ np.ravel(v) for v in c.values() ])
+                 if isinstance(c,collections.abc.Mapping) else np.ravel(c) )
     for text, cond, pick in ( ( 'ekin/MeV;bins=20', 'ekin < 1MeV', None ),
                               ( 'x/cm : y/cm;bins=8', 'pdgcode == neutron', None ),
                               ( 'pdgcode;bar', 'ekin > 1MeV', None ),
                               ( 'ekin/MeV;bins=20;display_by=pdgcode', 'ekin < 1MeV', 'x > 0' ),
                               ( 'x : y : z;points=50', 'ekin < 1MeV', None ) ):
-        h = mcpl.histogram(ex,f'{text};display_only={cond}',pick = pick)
+        h = ihist(ex,f'{text};display_only={cond}',pick = pick)
         both = cond if pick is None else f'({pick}) and ({cond})'
-        ref = mcpl.histogram(ex,text,pick = both)
+        ref = ihist(ex,text,pick = both)
         same = ( h.nparticles == ref.nparticles if hasattr(h,'nparticles')
                  else np.array_equal(contents(h),contents(ref)) )
         print(f'{text};display_only={cond} (pick {pick}): as picking them: {same} | title {h.title!r}')
     for bad in ( 'x;display_only', 'x;display_only=r = x', 'x;display_only=foo > 1', 'x;display_only=1cm' ):
         try:
-            mcpl.histogram(ex,bad)
+            ihist(ex,bad)
         except mcpl.MCPLError as e:
             print(f'{bad!r}: {e}')
 
@@ -434,7 +499,7 @@ with _forced_backend('test'):
     test_bars_groups_domains()
     test_histograms()
     test_plot_stats()
-    test_overlay()
+    test_public_api()
     test_cmdline()
     test_cmdline_more()
     test_help_topics()

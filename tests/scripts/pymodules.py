@@ -46,8 +46,8 @@ from MCPLTestUtils.pymoddeps import package_imports
 dependencies = {
     '_ascii'            : ( '_common', '_reader' ),
     '_blocks'           : ( '_common', '_numpy', '_physics' ),
-    '_cli'              : ( '_ascii', '_clistats', '_common', '_examples', '_expressions', '_exprhelp', '_extract', '_fileops', '_histogram', '_histstring', '_messages', '_particles', '_reader' ),
-    '_clistats'         : ( '_common', '_histogram', '_histstring', '_plotregistry', '_reader', '_stats' ),
+    '_cli'              : ( '_ascii', '_clistats', '_common', '_examples', '_expressions', '_exprhelp', '_extract', '_fileops', '_histfill', '_histstring', '_messages', '_particles', '_reader' ),
+    '_clistats'         : ( '_common', '_histfigures', '_histfill', '_histstring', '_plotregistry', '_reader', '_stats' ),
     '_common'           : (  ),
     'constants'         : (  ),
     '_examples'         : ( '_common', '_messages', '_numpy', '_writer' ),
@@ -62,7 +62,9 @@ dependencies = {
     '_figures'          : (  ),
     '_fileops'          : ( '_common', '_messages', '_reader', '_statsum', '_writer' ),
     '_helptext'         : (  ),
-    '_histogram'        : ( '_common', '_exprcore', '_expressions', '_exprplot', '_exprunits', '_histstring', '_numpy', '_particles', '_reader', 'plotting' ),
+    '_histfigures'      : ( '_figures', '_histfill', '_histstring', '_numpy' ),
+    '_histfill'         : ( '_common', '_exprcore', '_expressions', '_exprplot', '_exprunits', '_histstring', '_numpy', '_particles', '_reader' ),
+    '_histogram'        : ( '_common', '_histfigures', '_histfill', '_histstring', '_numpy', '_plotting' ),
     '_histstring'       : ( '_common', '_exprcore', '_expressions', '_exprplot', '_exprunits', '_numpy', '_particles' ),
     '_logo'             : (  ),
     '_messages'         : (  ),
@@ -74,7 +76,7 @@ dependencies = {
     '_plotbackend_test' : ( '_figures', '_numpy', '_plotbackend' ),
     '_plotbackend_text' : ( '_figures', '_numpy', '_particles', '_physics', '_plotbackend', '_termcolor' ),
     '_plotregistry'     : ( '_common', '_plotbackend', '_plotbackend_mpl', '_plotbackend_test', '_plotbackend_text' ),
-    'plotting'          : ( '_common', '_figures', '_plotregistry' ),
+    '_plotting'         : ( '_common', '_figures', '_plotregistry' ),
     '_reader'           : ( '_blocks', '_common', '_expressions', '_messages', '_numpy', '_scipp', '_statsum', '_userdata' ),
     '_records'          : ( '_blocks', '_common', '_numpy', '_particles', '_physics' ),
     '_scipp'            : ( '_common', '_messages', '_numpy', '_userdata' ),
@@ -83,14 +85,14 @@ dependencies = {
     '_termcolor'        : ( '_common', ),
     '_userdata'         : ( '_common', '_numpy' ),
     '_writer'           : ( '_blocks', '_common', '_expressions', '_messages', '_numpy', '_reader', '_records', '_statsum', '_userdata' ),
-    '__init__'          : ( '_ascii', '_blocks', '_cli', '_common', '_expressions', '_fileops', '_histogram', '_messages', '_reader', '_stats', '_statsum', '_writer', 'constants', 'plotting' ),
+    '__init__'          : ( '_ascii', '_blocks', '_cli', '_common', '_expressions', '_fileops', '_histogram', '_messages', '_reader', '_stats', '_statsum', '_writer', 'constants' ),
     '__main__'          : ( '_cli', ),
     'mcpl'              : ( '_ascii', '_blocks', '_cli', '_common', '_reader', '_stats', '_statsum' ),
 }
 
 entry_points = ( '__init__', '__main__', 'mcpl' )
 
-public_submodules = ['constants', 'plotting']
+public_submodules = ['constants']
 
 allowed_external_imports = {
     'numpy' : ['_numpy'],

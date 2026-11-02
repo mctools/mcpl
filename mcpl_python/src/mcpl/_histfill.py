@@ -19,11 +19,14 @@
 ##                                                                            ##
 ################################################################################
 
-"""Histograms of values calculated with expressions from the particles in MCPL
-files, and plots of them."""
+"""The histograms of values calculated with expressions from the particles in
+MCPL files, as plain data: the fillers, which make them from blocks of
+particles, and the classes of their results. Plots of them are made by
+_histfigures, and the public API (mcpl.histogram) wraps the results, see
+_histogram. This module does not use the plotting module (so it can be used
+where plots are never shown, like in background threads)."""
 
-#(the classes of the histograms are not public, see Histogram):
-__all__ = [ 'histogram', 'histogram2d', 'plot_histograms' ]
+__all__ = []
 
 import math
 import os
@@ -36,12 +39,9 @@ from ._exprunits import _dim_unknown
 from ._histstring import (
     _as_range,
     _auto_logx,
-    _bins_arg,
     _check_range,
     _display_by,
     _display_only_condition,
-    _hist_defaults,
-    _hist_with_args,
 )
 from ._numpy import np
 from ._particles import _pdg_colors
@@ -110,11 +110,11 @@ def _display_by_label( display_by, key, unicode = False ):
         return display_by.expression if key else f'not ({display_by.expression})'
     return f'{display_by.expression} = {key:g}'
 
-class _Plot:
-    """Common basis of Histogram, BarHistogram, Histogram2D, and Points3D: the
-    title (the pick, for instance), whether the values are sums of weights,
-    and the plots and text tables"""
-    _panel_options = ()#(keyword arguments of panel(), also for figure() and plot())
+class _HistData:
+    """Common basis of the results of the fillers (_Hist1DData, _HistDiscreteData,
+    _Hist2DData, and _PointSet3DData): the title (the pick, for instance),
+    whether the values are sums of weights, what their plots show (see
+    _histfigures), and the text tables"""
     def __init__( self, weighted, title ):
         self.weighted = weighted
         self.title = title
@@ -139,43 +139,18 @@ class _Plot:
     def _what( self ):
         return 'weights' if self.weighted else 'particles'
 
-    def figure( self, **kwargs ):
-        """Figure (see mcpl.plotting) with the plot (keyword arguments as for
-        panel())."""
-        from .plotting import Figure
-        return Figure( panels = [ self.panel(**kwargs) ] )
-
-    def plot( self, filename = None, *, terminal = False, terminal_width = None,
-              terminal_height = None, terminal_color = None,
-              allow_overwrite = False, **kwargs ):
-        """Show the plot in a window, or in the terminal if terminal is True
-        or 'ascii' (or save it in a file if filename is given, which must not
-        exist unless allow_overwrite is True), as with mcpl.plotting.show
-        (and save). Further keyword arguments are those of panel() (like
-        logy). Returns the list of created files when saving."""
-        unknown = sorted( set(kwargs) - set(self._panel_options) )
-        if unknown:
-            raise MCPLError('Unknown keyword argument(s) of plot: ' + ', '.join(unknown))
-        return _show_or_save([self.figure(**kwargs)],filename,terminal,
-                             terminal_width,terminal_height,terminal_color,
-                             allow_overwrite)
-
     def _text_header( self, what, values, columns ):
         lines = [ f'# {what}' ] + [ f'# {t}' for t in ( self.title or '' ).splitlines() ]
         return lines + [ f'# values: {values}', '# ' + ' | '.join(columns) ]
 
-class Histogram(_Plot):
-    """1D histogram of the values of an expression, created by the histogram()
-    function. The bin edges are in edges (in the unit, a text like "cm", for
-    expressions with units), and the contents (sums of weights, or numbers of
-    particles if unweighted) in the dictionary contents, with one entry per
+class _Hist1DData(_HistData):
+    """1D histogram of the values of an expression (the result of
+    _Hist1DFiller). The bin edges are in edges (in the unit, a text like "cm",
+    for expressions with units), and the contents (sums of weights, or numbers
+    of particles if unweighted) in the dictionary contents, with one entry per
     curve (keyed by label, None for a single curve, see display_by). The sums
     of squared weights are in sumw2, and the sums of weights below and above
-    the edges are in underflow and overflow (with the same keys).
-
-    Objects of this class are made by histogram(), and the class itself is not part
-    of the public API (it is not made directly)."""
-    _panel_options = ( 'logy', )
+    the edges are in underflow and overflow (with the same keys)."""
     def __init__( self, expression, edges, *, logx, weighted, lethargy, title, unit = None ):
         super().__init__(weighted,title)
         self.expression = expression
@@ -213,22 +188,6 @@ class Histogram(_Plot):
         """Label of the values (e.g. "weights per bin")"""
         return f'{self._what} per {"unit lethargy" if self.lethargy else "bin"}'
 
-    def panel( self, logy = None ):
-        """Panel (see mcpl.plotting) with the histogram, with a logarithmic y
-        axis if logy is True (or 'auto', if suitable for the values; default is
-        the logy option of the histogram string, see histogram())."""
-        from .plotting import Panel, StepHist
-        labels = list(self.contents)
-        values = [ self.values(lbl) for lbl in labels ]
-        logy = self.logy if logy is None else logy
-        p = Panel( title = self.title, xlabel = _xlabel([ self ]), ylabel = self.ylabel,
-                   logx = self.logx, logy = _log_scale(logy,values),
-                   xlim = ( self.edges[0], self.edges[-1] ) )
-        for i, ( label, v ) in enumerate(zip(labels,values)):
-            p.add(StepHist(self.edges,v,label = self._plot_label(label) if len(labels) > 1 else None,
-                           color = self.colors.get(label,i)))
-        return p
-
     def to_text( self ):
         """Text table with the histogram contents."""
         labels = list(self.contents)
@@ -241,15 +200,12 @@ class Histogram(_Plot):
                                    + [ v[i] for v in vals ] ))
         return '\n'.join(lines)
 
-class BarHistogram(_Plot):
-    """Bar chart of the values of an expression with whole numbers, created by
-    the histogram() function with bar. The contents are the sums of weights (or
-    numbers of particles if unweighted) of the bars, by their labels (the
-    values, or names like "n (2112)" for pdgcode values).
-
-    Objects of this class are made by histogram() with bar, and the class itself is not part
-    of the public API (it is not made directly)."""
-    _panel_options = ( 'logy', )
+class _HistDiscreteData(_HistData):
+    """Histogram of the values of an expression with whole numbers (the result
+    of _HistDiscreteFiller), plotted as bars. The contents are the sums of weights
+    (or numbers of particles if unweighted) of the bars, by their labels (the
+    values, or names like "n (2112)" for pdgcode values), and _value_sums
+    those of all values."""
     def __init__( self, expression, *, weighted, title ):
         super().__init__(weighted,title)
         self.expression = expression
@@ -260,37 +216,20 @@ class BarHistogram(_Plot):
 
     @property
     def label( self ):
-        """The expression, with its note (see Histogram.label)"""
+        """The expression, with its note (see _Hist1DData.label)"""
         return _with_unit(self.expression,None,self.note)
-
-    def panel( self, logy = None ):
-        """Panel (see mcpl.plotting) with the bars, with a logarithmic scale of
-        the bars if logy is True (or 'auto', if suitable for the values; default
-        is the logy option of the histogram string, see histogram())."""
-        labels = list(self.contents)
-        return _bars_panel([ self._plot_label(lbl) for lbl in labels ],
-                           [ self.contents[lbl] for lbl in labels ],
-                           [ self.colors.get(lbl,0) for lbl in labels ],
-                           self.logy if logy is None else logy, title = self.title,
-                           xlabel = self._what,
-                           ylabel = _with_unit(self.expression,None,
-                                               self._plot_notes.get('x',self.note)))
 
     def to_text( self ):
         """Text table with the contents."""
         lines = self._text_header(f'bars of: {self.label}',self._what,[ 'bar', 'value' ])
         return '\n'.join( lines + [ f'{lbl} | {v:.8g}' for lbl, v in self.contents.items() ] )
 
-class Histogram2D(_Plot):
-    """2D histogram of the values of two expressions, created by the
-    histogram2d() function. The contents (with shape (len(xedges)-1,
-    len(yedges)-1)) are sums of weights, or numbers of particles if
-    unweighted. For expressions with units, the edges are in the units xunit
-    and yunit (texts like "cm", else None).
-
-    Objects of this class are made by histogram2d(), and the class itself is not part
-    of the public API (it is not made directly)."""
-    _panel_options = ( 'logz', )
+class _Hist2DData(_HistData):
+    """2D histogram of the values of two expressions (the result of
+    _Hist2DFiller). The contents (with shape (len(xedges)-1, len(yedges)-1))
+    are sums of weights, or numbers of particles if unweighted. For
+    expressions with units, the edges are in the units xunit and yunit (texts
+    like "cm", else None)."""
     def __init__( self, xexpression, yexpression, xedges, yedges, *, weighted, title,
                   xunit = None, yunit = None, logx = False, logy = False ):
         super().__init__(weighted,title)
@@ -300,34 +239,20 @@ class Histogram2D(_Plot):
         self.xnote, self.ynote = None, None
         self.xedges, self.yedges = xedges, yedges
         self.contents = np.zeros((len(xedges)-1,len(yedges)-1))
-        self.logz = True#(the colour scale of the plot, see panel)
+        self.logz = True#(the colour scale of the plot)
         #(the length per unit of the y axis relative to the x axis of the
         #plot, for equal scales of axes with the same units, or None):
         self.aspect = None
 
     @property
     def xlabel( self ):
-        """The x expression, with its unit and note (see Histogram.label)"""
+        """The x expression, with its unit and note (see _Hist1DData.label)"""
         return _with_unit(self.xexpression,self.xunit,self.xnote)
 
     @property
     def ylabel( self ):
-        """The y expression, with its unit and note (see Histogram.label)"""
+        """The y expression, with its unit and note (see _Hist1DData.label)"""
         return _with_unit(self.yexpression,self.yunit,self.ynote)
-
-    def panel( self, logz = None ):
-        """Panel (see mcpl.plotting) with the histogram, with a logarithmic
-        colour scale if logz is True (default: the logz attribute, which is
-        True unless the histogram string had logz=0)."""
-        logz = self.logz if logz is None else logz
-        from .plotting import Hist2D, Panel
-        notes = self._plot_notes
-        p = Panel( title = self.title,
-                   xlabel = _with_unit(self.xexpression,self.xunit,notes.get('x',self.xnote)),
-                   ylabel = _with_unit(self.yexpression,self.yunit,notes.get('y',self.ynote)),
-                   aspect = self.aspect, logx = self.logx, logy = self.logy )
-        p.add(Hist2D(self.xedges,self.yedges,self.contents,logz = logz))
-        return p
 
     def to_text( self ):
         """Text table with the histogram contents."""
@@ -342,40 +267,27 @@ class Histogram2D(_Plot):
                                        ( xe[i], xe[i+1], ye[j], ye[j+1], self.contents[i,j] ) ))
         return '\n'.join(lines)
 
-class Points3D(_Plot):
-    """3D plot of the values of three expressions for a sample of the particles
-    (as many as points, chosen at random with their weights, unless
-    unweighted, so they are distributed as the particles), in groups (label
-    -> array of shape (n,3), with the label None for one group, see display_by). For
-    expressions with units, the values are in the units (texts like "cm",
-    else None). The sample is the same for the same particles.
-
-    Objects of this class are made by histogram() for histogram strings of
-    three expressions, and the class itself is not part of the public API (it
-    is not made directly)."""
+class _PointSet3DData(_HistData):
+    """The values of three expressions for particles chosen at random (the
+    result of _PointSet3DFiller: as many as points, chosen with their weights,
+    unless unweighted, so they are distributed as the particles), in
+    groups (label -> array of shape (n,3), with the label None for one group,
+    see display_by). For expressions with units, the values are in the units
+    (texts like "cm", else None). The same particles are always chosen for the
+    same particles of a file (see _index_random)."""
     def __init__( self, expressions, *, weighted, title, units, nparticles ):
         super().__init__(weighted,title)
         self.expressions, self.units = list(expressions), list(units)
         self.notes = [ None ] * 3
-        self.nparticles = nparticles#(of which the points are a sample)
+        self.nparticles = nparticles#(of which the points were chosen)
         self.groups = {}
-        self.colors = {}#(label -> colour index, see StepHist)
+        self.colors = {}#(label -> colour index, see _figures.StepHist)
 
     @property
     def labels( self ):
         """The labels of the axes, with their units and notes (see
-        Histogram.label)"""
+        _Hist1DData.label)"""
         return [ _with_unit(e,u,n) for e, u, n in zip(self.expressions,self.units,self.notes) ]
-
-    def panel( self ):
-        """Panel (see mcpl.plotting) with the points"""
-        from .plotting import Panel, Scatter3D
-        x, y, z = self.labels
-        p = Panel( title = self.title, xlabel = x, ylabel = y, zlabel = z )
-        for i, ( label, pts ) in enumerate(self.groups.items()):
-            p.add(Scatter3D(pts[:,0],pts[:,1],pts[:,2],label = self._plot_label(label),
-                            color = self.colors.get(label,i)))
-        return p
 
     def to_text( self ):
         """Text table with the points."""
@@ -387,20 +299,6 @@ class Points3D(_Plot):
             lines += [ ' '.join( f'{v:.8g}' for v in pt ) + f' {label or ""}'.rstrip()
                        for pt in pts ]
         return '\n'.join(lines)
-
-def _xlabel( histograms ):
-    """The label of the x axis of a plot of the (1D) histograms: their
-    expression with its unit and note (see _DomainNote), or those of each
-    one if they differ, and the part of the weights (or particles) outside
-    the plot range, if any"""
-    labels = dict.fromkeys( _with_unit(h.expression,h.unit,h._plot_notes.get('x',h.note))
-                            for h in histograms )
-    label = ', '.join(labels)
-    outside = sum( sum(h.underflow.values()) + sum(h.overflow.values()) for h in histograms )
-    total = outside + sum( c.sum() for h in histograms for c in h.contents.values() )
-    if outside and total:
-        label += f'\n({100.0*outside/total:.3g}% of {histograms[0]._what} outside plot range)'
-    return label
 
 def _with_unit( expression, unit, note = None ):
     """Axis label of an expression, with its unit and note (see _DomainNote)"""
@@ -415,7 +313,7 @@ _reserved_colors = { 'pdgcode' : { _pdg_colors[c] for c in ( 2112, 22, 11, 2212 
 
 def _value_colors( field, keys ):
     """Colours of the values (keys) of the field, if it has fixed colours (as
-    {key : colour index}, see plotting.StepHist): the other values get the
+    {key : colour index}, see _figures.StepHist): the other values get the
     colours which are not used in the plot (cyan first, and not the reserved
     ones), and then those of the next cycles (with dashed or dotted lines)"""
     fixed = _fixed_colors.get(field)
@@ -439,29 +337,6 @@ def _top_keys( sums, limit ):
         return keys, []
     return keys[:limit-1], keys[limit-1:]
 
-def _log_scale( flag, arrays ):
-    """Whether values (the arrays) get a logarithmic scale with the flag (of
-    the option logy): if it is on, or with 'auto', if their positive values
-    span more than two decades"""
-    if flag != 'auto':
-        return bool(flag)
-    v = np.concatenate([ np.ravel(a) for a in arrays ]) if len(arrays) else np.zeros(0)
-    v = v[v>0]
-    return bool(len(v)) and _auto_logx(v.min(),v.max())
-
-def _bars_panel( labels, values, colors, logy, title = None, xlabel = None, ylabel = None ):
-    """Panel with horizontal bars, whose labels show their fractions of the
-    total, with a logarithmic scale of the bars if logy is True (or 'auto', if
-    suitable for the values)"""
-    from .plotting import Bars, Panel
-    total = float(sum(values))
-    if total > 0:
-        labels = [ f'{lab} ({100.0*v/total:.2f}%)' for lab, v in zip(labels,values) ]
-    p = Panel( title = title, xlabel = xlabel, ylabel = ylabel,
-               logx = _log_scale(logy,[ values ]) )
-    p.add(Bars(labels,list(values),horizontal = True,colors = colors))
-    return p
-
 class _DomainNote:
     """Collects for which particles the values of a _PlotValue were defined
     (for expressions defined only for some, like wavelengths), for the note in
@@ -478,17 +353,6 @@ class _DomainNote:
         self._left_out = self._left_out or not self._v._e.domain_mask(b).all()
     def note( self, unicode = False ):
         return self._v.domain_note(self._seen,unicode) if self._left_out else None
-
-def _show_or_save( figures, filename, terminal, width, height, color,
-                   allow_overwrite = False ):
-    from .plotting import save, show
-    if filename:
-        if terminal or color is not None:
-            raise MCPLError('terminal and terminal_color can not be used when saving'
-                            ' plots in a file (the extension gives the format)')
-        return save(figures,filename,width,height,allow_overwrite)
-    show(figures,terminal,width,height,color)
-    return None
 
 def _bin_index( v, edges, log ):
     """The bins of the values v, which are within the edges (as for
@@ -579,83 +443,6 @@ def _neff( sumw, sumw2 ):
 
 _range = range#(the name range is shadowed by arguments below)
 
-
-def histogram( files, expression, *, pick = None, bins = 'auto', range = None,
-               logx = False, unweighted = False, display_by = None,
-               display_only = None, lethargy = False, bar = False,
-               _maxbins = None ):
-    """Histogram of the values of an expression (see ParticleValue) for the
-    particles in one or more files (picked with pick, see ParticleFilter),
-    for instance:
-
-       h = mcpl.histogram( "myfile.mcpl", "ekin/eV",
-                           pick = "pdgcode == neutron",
-                           logx = True, lethargy = True )
-       h.plot()
-
-    Values with units are shown in a suitable unit, unless divided by one (as
-    in "ekin/eV"), and ranges (low,high) are given with units, e.g.
-    range=("1meV","10MeV"). Without a range, all values are covered, and
-    without a number of bins, it is chosen from the number of particles. The
-    bins are logarithmic with logx (or with logx='auto', if suitable for the
-    values), and with lethargy (which implies logx), the values are divided
-    by the bin widths in lethargy, ln(E2/E1). The contents are sums of
-    weights, or numbers of particles if unweighted is True.
-
-    There is a curve for each value of the expression display_by, by default
-    pdgcode (a curve for each particle type), e.g. display_by="x > 0cm", or
-    "single" for one curve, for at most 8 values, the others are combined
-    into one. With several files, there is a curve for each
-    file (and of each value of display_by in each file, if it is given), and
-    the 2D histograms and 3D plots of histogram strings combine the files.
-    With display_only (a condition, or a particle type like "neutron"), only
-    those of the picked particles are used. With bar (True, or the number of bars), the result is a bar
-    chart of the values (whole numbers, as of pdgcode), see BarHistogram.
-
-    The options can also be given in the expression, as in the histogram
-    strings of mcpltool -w and -t (see mcpltool --hist-help), e.g.
-    "ekin/eV;logx;lethargy;bins=50;logy", which can also have two
-    expressions for a 2D histogram (see histogram2d()), or three for a 3D plot
-    of a sample of the particles.
-    """
-    given = { 'bins' : None if bins == 'auto' else bins, 'range' : range,
-              'logx' : logx, 'unweighted' : unweighted, 'display_by' : display_by,
-              'display_only' : display_only,
-              'lethargy' : lethargy,
-              'bar' : bar }
-    o = _hist_with_args(expression,given)
-    if o['print']:
-        raise MCPLError('The histogram option print is only for the mcpltool'
-                        ' command (use the to_text() method of the histogram'
-                        ' instead)')
-    return _histogram(files,o,pick = pick,_maxbins = _maxbins)
-
-def histogram2d( files, xexpression, yexpression, *, pick = None, bins = 'auto',
-                 xrange = None, yrange = None, unweighted = False,
-                 logx = False, logy = False, _maxbins = None ):
-    """2D histogram of the values of two expressions (see histogram()) for the
-    particles in one or more files, for instance:
-
-       h = mcpl.histogram2d( "myfile.mcpl",
-                             "x/cm", "y/cm" )
-       h.plot()
-
-    The number of bins can be given for both axes, or as a tuple (nx,ny), and
-    is otherwise chosen from the effective number of entries N (the cube root
-    of N per axis, between 10 and 400). The ranges of the axes can be
-    given as tuples (low,high) with xrange and yrange, otherwise they cover
-    all values. The bins of the axes are logarithmic with logx and logy (or
-    with 'auto', if suitable for the values). The histogram contains the sum
-    of weights in each bin, or the number of particles if unweighted is
-    True.
-    """
-    o = _hist_defaults([ xexpression, yexpression ])
-    o.update( bins = _bins_arg(None if bins == 'auto' else bins,2),
-              xrange = _as_range(xrange,'xrange'),
-              yrange = _as_range(yrange,'yrange'), unweighted = unweighted,
-              logx = logx, logy = logy )
-    return _histogram(files,o,pick = pick,_maxbins = _maxbins)
-
 def _selection_title( pick = None, edit = None, display_only = None ):
     """The title of a plot of the particles picked and edited with these
     expressions (as texts, or None), and of those shown (display_only): one
@@ -664,7 +451,7 @@ def _selection_title( pick = None, edit = None, display_only = None ):
                                                       ('display_only',display_only) )
                       if e is not None ) or None
 
-def _histogram( files, o, pick = None, _maxbins = None, selection = ( None, None ) ):
+def _fill( files, o, pick = None, _maxbins = None, selection = ( None, None ) ):
     """The histogram of the particles in the files, with the options o (see
     _parse_hist), with the selection (the expressions of the pick and edit
     applied to the particles of the files, for the title)"""
@@ -685,7 +472,7 @@ def _histogram( files, o, pick = None, _maxbins = None, selection = ( None, None
 def _filler_for( o, pick = None, labels = ( None, ), _maxbins = None ):
     """The filler of a histogram with the options o (see _parse_hist): blocks of
     (picked) particles of the files with the labels are given to it as in
-    _histogram, and its result() is the histogram of the blocks so far."""
+    _fill, and its result() is the histogram of the blocks so far."""
     bins = o['bins'] or 'auto'
     #(with several files, 1D histograms have a curve for each file, unless
     #display_by is given, instead of one for each particle type in each file,
@@ -695,7 +482,7 @@ def _filler_for( o, pick = None, labels = ( None, ), _maxbins = None ):
     display_only = ( _display_only_condition(o['display_only'])
                      if o['display_only'] is not None else None )
     if len(o['exprs']) == 3:
-        return _Points3DFiller(o['exprs'],pick = pick,points = o['points'],
+        return _PointSet3DFiller(o['exprs'],pick = pick,points = o['points'],
                                unweighted = o['unweighted'],display_by = display_by,
                                display_only = display_only)
     if len(o['exprs']) == 2:
@@ -706,7 +493,7 @@ def _filler_for( o, pick = None, labels = ( None, ), _maxbins = None ):
                              display_only = display_only,logx = o['logx'],
                              logy = o['logy'] or False)
     if o['bar'] is not False:
-        return _BarFiller(o['exprs'][0],pick = pick,
+        return _HistDiscreteFiller(o['exprs'][0],pick = pick,
                           limit = 10 if o['bar'] is True else o['bar'],
                           unweighted = o['unweighted'],logy = o['logy'],labels = labels,
                           display_only = display_only)
@@ -753,7 +540,7 @@ class _Filler:
         """The curves (or bars) of the values with the sums (a dict by key):
         those of the limit largest sums, and one of the others (if any), as
         (keys, label, plot label, colour index or None), with labels from
-        name(key, unicode) (see _Plot._plot_labels), or 'other', and the
+        name(key, unicode) (see _HistData._plot_labels), or 'other', and the
         colours of the values of the field (if any), or with the label flabel
         of the file before the labels (of several files, without colours)"""
         shown, rest = _top_keys(sums,limit)
@@ -904,12 +691,13 @@ class _Hist1DFiller(_Filler):
         #are known when particles were read):
         v = self._vals[0]
         unit, scale = _plot_unit(v.dim,*self._range,self._logx,v.wavelength)
-        h = Histogram(self._vals[0].expression,edges/scale,logx=self._logx,
+        h = _Hist1DData(self._vals[0].expression,edges/scale,logx=self._logx,
                       weighted=self._weighted,lethargy=self._lethargy,title=self._title,
                       unit=unit)
         h.logy = self._logy
         h.note, h._plot_notes['x'] = ( self._notes[0].note(u) for u in ( False, True ) )
         h._display_bins = nbins if self._auto else None
+        h._scale = scale#(the edges are in units of the scale, see _plot_unit)
         #The curves, by total weight (per file), with the smallest ones combined:
         multifile = len(self._labels) > 1
         empty = [ np.zeros(len(edges)-1), np.zeros(len(edges)-1), 0.0, 0.0 ]
@@ -926,9 +714,9 @@ class _Hist1DFiller(_Filler):
                 h._add_label(lbl,plbl,color)
         return h
 
-class _BarFiller(_Filler):
-    """Makes the bar charts of histogram() with bar (see _Filler; no range is
-    needed)"""
+class _HistDiscreteFiller(_Filler):
+    """Makes the histograms of whole numbers of the histogram strings with the
+    option bar (see _Filler; no range is needed)"""
     def __init__( self, expression, pick = None, limit = 10, unweighted = False,
                   logy = None, labels = ( None, ), display_only = None ):
         super().__init__([ expression ],pick,unweighted,labels,display_only)
@@ -956,10 +744,15 @@ class _BarFiller(_Filler):
 
     def result( self ):
         e = self._vals[0]
-        h = BarHistogram(e.expression,weighted=self._weighted,title=self._title)
+        h = _HistDiscreteData(e.expression,weighted=self._weighted,title=self._title)
         if self._logy is not None:
             h.logy = self._logy
         h.note, h._plot_notes['x'] = ( self._notes[0].note(u) for u in ( False, True ) )
+        #(the sums of all values, of all files):
+        h._value_sums = {}
+        for sums in self._sums.values():
+            for k, v in sums.items():
+                h._value_sums[k] = h._value_sums.get(k,0.0) + v
         multifile = len(self._labels) > 1
         for flabel, sums in self._sums.items():
             for keys, lbl, plbl, color in self._curves(sums,self._limit,e._e.field,
@@ -1051,31 +844,42 @@ class _Hist2DFiller(_Filler):
         #_Hist1DFiller.result):
         ( xunit, xscale ), ( yunit, yscale ) = ( _plot_unit(v.dim,*r,lg,v.wavelength) for v, r, lg
                                                  in zip(self._vals,self._ranges,self._log) )
-        h = Histogram2D(self._vals[0].expression,self._vals[1].expression,xe/xscale,
+        h = _Hist2DData(self._vals[0].expression,self._vals[1].expression,xe/xscale,
                         ye/yscale,weighted=self._weighted,title=self._title,xunit=xunit,
                         yunit=yunit,logx=self._log[0],logy=self._log[1])
         h.xnote, h.ynote = ( n.note() for n in self._notes )
         h._plot_notes['x'], h._plot_notes['y'] = ( n.note(True) for n in self._notes )
         h.contents += contents
         h._display_bins = ( bx, by ) if self._auto else None
+        h._scales = ( xscale, yscale )#(see _Hist1DFiller.result)
         h.logz = self._logz
         if self._equal:
             #(the axes are in the units of the scales xscale and yscale):
             h.aspect = yscale / xscale
         return h
 
-class _Points3DFiller(_Filler):
-    """The filler of 3D plots (see Points3D): a random sample of the points
-    (weighted, with the method of Efraimidis and Spirakis: the points with the
-    largest u^(1/w), for random u in [0,1)), which needs no ranges"""
+def _index_random( fileidx ):
+    """Random numbers in (0,1) for the particles at these positions in the file
+    (a fixed hash of the positions, splitmix64), so a particle always gets the
+    same number, whatever else is read or picked"""
+    with np.errstate(over='ignore'):
+        x = np.asarray(fileidx,dtype=np.uint64) + np.uint64(0x9E3779B97F4A7C15)
+        x = ( x ^ ( x >> np.uint64(30) ) ) * np.uint64(0xBF58476D1CE4E5B9)
+        x = ( x ^ ( x >> np.uint64(27) ) ) * np.uint64(0x94D049BB133111EB)
+        x = x ^ ( x >> np.uint64(31) )
+    return ( ( x >> np.uint64(11) ).astype(np.float64) + 0.5 ) / 9007199254740992.0
+
+class _PointSet3DFiller(_Filler):
+    """The filler of 3D plots (see _PointSet3DData): particles chosen at random
+    with their weights (the method of Efraimidis and Spirakis: those with the
+    largest u^(1/w), with u from the positions of the particles in the file, see
+    _index_random), which needs no ranges"""
     def __init__( self, expressions, pick = None, points = None, unweighted = False,
                   display_by = None, max_curves = 8, display_only = None ):
         super().__init__(list(expressions),pick,unweighted,( None, ),display_only)
         self._npoints = points or 5000
         self._dby = _DisplayByValue(display_by) if display_by is not None else None
         self._max_curves = max_curves
-        #(a fixed seed, so the same particles give the same sample):
-        self._rng = np.random.default_rng(12345)
         self._keys, self._pts, self._sv = np.zeros(0), np.zeros((0,3)), np.zeros(0)
         self._n = 0
 
@@ -1087,7 +891,7 @@ class _Points3DFiller(_Filler):
         ok = np.isfinite(pts).all(axis=1) & ( w > 0 )
         pts, w, sv = pts[ok], w[ok], sv[ok]
         self._n += len(pts)
-        keys = self._rng.random(len(pts)) ** ( 1.0 / w )
+        keys = _index_random(b.fileidx[defined][ok]) ** ( 1.0 / w )
         keys, pts, sv = ( np.concatenate(( a, b )) for a, b in ( ( self._keys, keys ),
                                                                 ( self._pts, pts ),
                                                                 ( self._sv, sv ) ) )
@@ -1102,10 +906,11 @@ class _Points3DFiller(_Filler):
         for i, v in enumerate(self._vals):
             lo, hi = ( pts[:,i].min(), pts[:,i].max() ) if len(pts) else ( 0.0, 1.0 )
             units.append(_plot_unit(v.dim,lo,hi,False,v.wavelength))
-        res = Points3D([ v.expression for v in self._vals ],weighted = self._weighted,
+        res = _PointSet3DData([ v.expression for v in self._vals ],weighted = self._weighted,
                        title = self._title,units = [ u for u, _ in units ],
                        nparticles = self._n)
         res.notes = [ n.note() for n in self._notes ]
+        res._points = pts#(all points, in the units of the values, see _histogram)
         scaled = pts / np.array([ s for _, s in units ]) if len(pts) else pts
         if dby is None:
             res.groups[None] = scaled
@@ -1119,52 +924,3 @@ class _Points3DFiller(_Filler):
             res.groups[lbl] = scaled[np.isin(self._sv,keys)]
             res._add_label(lbl,plbl,color)
         return res
-
-def plot_histograms( histograms, filename = None, *, terminal = False, logy = None,
-                     overlay = False, labels = None, terminal_width = None,
-                     terminal_height = None, terminal_color = None,
-                     allow_overwrite = False ):
-    """Show histograms in a window, or in the terminal if terminal is True or
-    'ascii' (or save them in a file if filename is given), as with
-    Histogram.plot (logy is by default that of each histogram, see
-    histogram()). Each histogram is
-    shown in a separate figure (e.g. on separate pages of a PDF file), or
-    with overlay=True, all the (1D) histograms are drawn in the same plot
-    with a legend, for instance to compare histograms of the same expression
-    from different simulations. The legend shows the labels if given, and otherwise the titles (picks) or
-    expressions of the histograms. Returns the list of created files when
-    saving (existing files are only overwritten if allow_overwrite is
-    True)."""
-    from .plotting import Figure, Panel, StepHist
-    display = ( terminal, terminal_width, terminal_height, terminal_color,
-                allow_overwrite )
-    histograms = list(histograms)
-    if not overlay:
-        figs = [ h.figure(**( {} if logy is None or 'logy' not in h._panel_options
-                              else { 'logy' : logy } )) for h in histograms ]
-        return _show_or_save(figs,filename,*display)
-    if not histograms:
-        raise MCPLError('No histograms to plot')
-    if not all( isinstance(h,Histogram) for h in histograms ):
-        raise MCPLError('Only 1D histograms can be overlaid')
-    if labels is not None and len(labels) != len(histograms):
-        raise MCPLError('The number of labels must be the number of histograms')
-    first = histograms[0]
-    logy = first.logy if logy is None else logy
-    p = Panel( xlabel = _xlabel(histograms), ylabel = first.ylabel, logx = first.logx,
-               logy = _log_scale(logy,[ h.values(c) for h in histograms for c in h.contents ]),
-               xlim = ( min( h.edges[0] for h in histograms ),
-                        max( h.edges[-1] for h in histograms ) ) )
-    #(all curves with their own colour, as those of several histograms can be
-    #of the same particle type):
-    color = 0
-    for i,h in enumerate(histograms):
-        name = labels[i] if labels is not None else ( h.title or h.expression )
-        for curve in h.contents:
-            #(the curve of a histogram with one curve, e.g. of one particle
-            #type, is named as the histogram):
-            label = ( name if curve is None or len(h.contents) == 1
-                      else f'{name}: {h._plot_label(curve)}' )
-            p.add(StepHist(h.edges,h.values(curve),label = label,color = color))
-            color += 1
-    return _show_or_save([Figure(panels = [p])],filename,*display)

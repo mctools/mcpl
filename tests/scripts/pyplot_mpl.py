@@ -28,6 +28,7 @@
 import pathlib
 
 import mcpldev as mcpl
+from mcpldev import _plotting
 from MCPLTestUtils.dirs import test_data_dir
 from MCPLTestUtils.plots import example_figures, items_figure
 
@@ -45,13 +46,13 @@ def test_plots():
             if not mf.nparticles:
                 continue
         pdf = f'plots_{i}.pdf'
-        mcpl.plotting.save(example_figures(mcpl,f)[:1], pdf)
+        _plotting.save(example_figures(mcpl,f)[:1], pdf)
         assert pathlib.Path(pdf).stat().st_size > 1000
         print(f'plots ok for {f.name}')
 
 def test_png():
     figs = example_figures(mcpl,example_file)[:3]
-    files = mcpl.plotting.save(figs, 'stats.png')
+    files = _plotting.save(figs, 'stats.png')
     for f in files:
         assert pathlib.Path(f).read_bytes()[:4] == b'\x89PNG'
     print(f'Created {files}')
@@ -70,7 +71,7 @@ def test_png():
 def test_items():
     #All kinds of items (a 3D plot, an empty cell, same scales, coloured
     #bars and dashed curves), with the logo:
-    files = mcpl.plotting.save(items_figure(mcpl), 'items.png')
+    files = _plotting.save(items_figure(mcpl), 'items.png')
     assert pathlib.Path(files[0]).read_bytes()[:4] == b'\x89PNG'
     print(f'Created {files} with all kinds of items')
 

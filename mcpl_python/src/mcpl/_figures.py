@@ -20,7 +20,7 @@
 ################################################################################
 
 """The description of figures which the plotting backends draw (see
-plotting.py, which provides these classes)."""
+_plotting.py, which shows and saves them)."""
 
 __all__ = []
 

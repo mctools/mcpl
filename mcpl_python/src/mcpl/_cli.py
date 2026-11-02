@@ -460,7 +460,7 @@ def _app_mcpltool(argv):
             bad(str(e),'--edit')
     #(and the histogram, with the same checks as when it is made):
     if hist is not None:
-        from ._histogram import _filler_for
+        from ._histfill import _filler_for
         from ._histstring import _parse_hist
         try:
             _filler_for(_parse_hist(hist))
