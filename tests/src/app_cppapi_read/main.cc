@@ -615,6 +615,13 @@ namespace {
     expect_ok( "MCPLFile(std::filesystem::path)", [&]{ mcpl::MCPLFile f(p); } );
     expect_ok( "MCPLFile(const char*)",
                [&]{ mcpl::MCPLFile f(s.c_str()); } );
+    //Other types converting to paths:
+    expect_ok( "MCPLFile(std::wstring)",
+               [&]{ mcpl::MCPLFile f(std::wstring(L"simple.mcpl")); } );
+    for ( const auto& entry : std::filesystem::directory_iterator(".") )
+      if ( entry.path().filename() == p )
+        expect_ok( "MCPLFile(std::filesystem::directory_entry)",
+                   [&]{ mcpl::MCPLFile f(entry); } );
     //Non-ASCII filenames (UTF-8):
     const std::string u8name = "simple_\xc3\xa6\xc3\xb8\xc3\xa5.mcpl";
     {
