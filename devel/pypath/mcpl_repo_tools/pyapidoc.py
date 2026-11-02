@@ -33,7 +33,7 @@ import sys
 _sections = [
     ( 'Reading files', ('_reader','_blocks') ),
     ( 'Writing files', ('_writer',) ),
-    ( 'File operations', ('_fileops',) ),
+    ( 'File operations', ('_fileops','_ascii') ),
     ( 'Expressions', ('_expressions',) ),
     ( 'Statistics and histograms', ('_stats','_histogram') ),
     ( 'Other', ('_common','_messages','_statsum','_cli') ),
