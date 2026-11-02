@@ -907,17 +907,16 @@ int32_t conv_mcnp6_pdg2ssw( int32_t c )
 //Function needed for unit tests, outfile must be ascii characters only (for
 //now):
 
-#ifdef _MSC_VER
-#  pragma warning( push )
-#  pragma warning( disable : 4996 )
-#endif
 FILE* ssw_simple_fopenw( const char * fn )
 {
-  return fopen( fn, "w" );
-}
 #ifdef _MSC_VER
-#  pragma warning( pop )
+  //(fopen gives a warning with MSVC):
+  FILE * fh = NULL;
+  return fopen_s( &fh, fn, "w" ) == 0 ? fh : NULL;
+#else
+  return fopen( fn, "w" );
 #endif
+}
 
 
 void ssw_dump( const char * filename, const char * outfile )

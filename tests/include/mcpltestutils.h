@@ -22,41 +22,38 @@
 #ifndef mcpltestutils_h
 #define mcpltestutils_h
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #if 1
-#ifdef _MSC_VER
-#  pragma warning( push )
-#  pragma warning( disable : 4996 )
-#endif
 const char * mcpltests_find_data( const char * subpath1, const char * subpath2 )
 {
   //Quick and dirty, not MT safe.
+#ifdef _MSC_VER
+  //(getenv gives a warning with MSVC):
+  static char * datadir = NULL;
+  if ( !datadir ) {
+    size_t n = 0;
+    if ( _dupenv_s( &datadir, &n, "MCPL_TESTDATA_DIR" ) != 0 )
+      datadir = NULL;
+  }
+#else
   const char * datadir = getenv("MCPL_TESTDATA_DIR");
+#endif
   if (!datadir)
     return "MCPL_TESTDATA_DIR/NOT/SET";
-  static char buffer[32768+1];
-  buffer[0] = '\0';
-  strncat(buffer,datadir,16384);
 #ifdef _WIN32
   const char * sep = "\\";
 #else
   const char * sep = "/";
 #endif
-  if ( subpath1 ) {
-    strncat(buffer,sep,2);
-    strncat(buffer,subpath1,16384);
-  }
-  if ( subpath2 ) {
-    strncat(buffer,sep,2);
-    strncat(buffer,subpath2,16384);
-  }
+  static char buffer[32768+1];
+  snprintf( buffer, sizeof(buffer), "%.16384s%s%.8000s%s%.8000s", datadir,
+            subpath1 ? sep : "", subpath1 ? subpath1 : "",
+            subpath2 ? sep : "", subpath2 ? subpath2 : "" );
   return buffer;
 }
-#ifdef _MSC_VER
-#  pragma warning( pop )
-#endif
 
 
 #else
