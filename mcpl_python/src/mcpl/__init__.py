@@ -47,6 +47,9 @@ programme under grant agreement No 676548 (the BrightnESS project)
 """
 
 __all__ = [
+            'Hist1D',
+            'Hist2D',
+            'HistDiscrete',
             'MCPLError',
             'MCPLFile',
             'MCPLOutFile',
@@ -55,6 +58,7 @@ __all__ = [
             'ParticleEdit',
             'ParticleFilter',
             'ParticleValue',
+            'PointSet3D',
             'app_mcpltool',
             'app_pymcpltool',
             'can_merge',
@@ -68,15 +72,12 @@ __all__ = [
             'forcemerge_files',
             'gzip_file',
             'histogram',
-            'histogram2d',
             'is_valid_stat_sum_key',
             'merge_files',
             'merge_inplace',
             'merge_outfiles_mpi',
             'name_helper',
-            'plot_histograms',
             'plot_stats',
-            'plotting',
             'repair',
             'use_logging',
            ]
@@ -114,10 +115,11 @@ _on_demand = {
     'collect_stats' : '_stats',
     'dump_stats' : '_stats',
     'histogram' : '_histogram',
-    'histogram2d' : '_histogram',
-    'plot_histograms' : '_histogram',
+    'Hist1D' : '_histogram',
+    'Hist2D' : '_histogram',
+    'HistDiscrete' : '_histogram',
+    'PointSet3D' : '_histogram',
     'plot_stats' : '_stats',
-    'plotting' : 'plotting',
 }
 
 def __getattr__(name):

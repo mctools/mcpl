@@ -34,35 +34,41 @@ import sys
 
 import mcpldev as mcpl
 import numpy as np
+from mcpldev import _plotting
+from mcpldev._figures import Figure, Panel, StepHist, Text
 from mcpldev._plotregistry import _forced_backend, _resolution
-from mcpldev.plotting import Figure, Panel, StepHist, Text
 from MCPLTestUtils.dirs import test_data_dir
-from MCPLTestUtils.plots import example_figures
+from MCPLTestUtils.plots import (
+    example_figures,
+    hist_figure,
+    internal_histogram,
+    internal_histogram2d,
+)
 
 example_file = test_data_dir.joinpath('example.mcpl')
 
 def show(figs, backend, width=72, height=8):
     #(terminal=True draws with unicode in these tests, and 'ascii' with ascii):
     print(f'==> {backend} backend, width {width}, height {height}:')
-    mcpl.plotting.show(figs, terminal = True if backend == 'unicode' else 'ascii',
+    _plotting.show(figs, terminal = True if backend == 'unicode' else 'ascii',
                        terminal_width=width, terminal_height=height)
 
 def test_histograms():
-    h = mcpl.histogram(example_file, 'ekin/MeV', logx=True, bins=50, display_by='single')
+    h = internal_histogram(mcpl, example_file, 'ekin/MeV', logx=True, bins=50, display_by='single')
     for backend in ('unicode','ascii'):
-        show(h.figure(), backend)
+        show(hist_figure(mcpl,h), backend)
     #Several curves (markers and legend), and a logarithmic y axis:
-    h = mcpl.histogram(example_file, 'ekin/MeV', logx=True, bins=50,
+    h = internal_histogram(mcpl, example_file, 'ekin/MeV;logy', logx=True, bins=50,
                        display_by='pdgcode')
-    show(h.figure(logy=True), 'unicode', height=10)
-    h = mcpl.histogram(example_file, 'acos(uz)/deg', range=(0,180), bins=36,
+    show(hist_figure(mcpl,h), 'unicode', height=10)
+    h = internal_histogram(mcpl, example_file, 'acos(uz)/deg', range=(0,180), bins=36,
                        display_by='x > 0cm')
-    show(h.figure(), 'ascii')
+    show(hist_figure(mcpl,h), 'ascii')
     #2D histogram:
-    h = mcpl.histogram2d(example_file, 'x/cm', 'y/cm', bins=30,
+    h = internal_histogram2d(mcpl, example_file, 'x/cm', 'y/cm', bins=30,
                          pick='pdgcode == neutron')
     for backend in ('unicode','ascii'):
-        show(h.figure(), backend, height=12)
+        show(hist_figure(mcpl,h), backend, height=12)
 
 def test_overview():
     figs = example_figures(mcpl,example_file)
@@ -76,12 +82,13 @@ def test_files_and_options():
     #(.txt files are drawn with unicode, and here also with ascii):
     for backend in ('unicode','ascii'):
         with _forced_backend(backend):
-            files = mcpl.plotting.save(figs, f'stats_{backend}.txt', terminal_width=60)
+            files = _plotting.save(figs, f'stats_{backend}.txt', terminal_width=60)
         data = pathlib.Path(files[0]).read_bytes()
         widths = { len(line) for line in data.decode('utf-8').splitlines() }
         print(f'{backend}: saved {files}, {len(data.splitlines())} lines, max width'
               f' {max(widths)}, ascii only: {data.isascii()}')
-    h = mcpl.histogram(example_file, 'ekin/MeV', bins=10)
+    h = mcpl.histogram(example_file, 'ekin/MeV;bins=10')
+    #(plots of histograms have no other options):
     for args, kw in ( ( "'x.txt',terminal=True", { 'filename' : 'x.txt', 'terminal' : True } ),
                       ( "'x.txt',terminal_color='always'",
                         { 'filename' : 'x.txt', 'terminal_color' : 'always' } ),
@@ -90,16 +97,19 @@ def test_files_and_options():
             h.plot(**kw)
         except mcpl.MCPLError as e:
             print(f'plot({args}): MCPLError: {e}')
+        except TypeError:
+            print(f'plot({args}): TypeError')
     #In terminals which can not show its characters, plots in the terminal
     #are drawn with ascii characters:
     env = dict(os.environ, PYTHONIOENCODING='ascii',
                PYTHONPATH=os.pathsep.join(p for p in sys.path if p))
     for args in ( 'terminal=True,terminal_width=40,terminal_height=5', ):
-        code = ( f'import mcpldev; mcpldev.histogram({str(example_file)!r},"ekin/MeV",'
-                 f'bins=10,display_by="single").plot({args})' )
+        code = ( 'import mcpldev, mcpldev._plotting; from MCPLTestUtils.plots import hist_figure;'
+                 f' h = mcpldev.histogram({str(example_file)!r},"ekin/MeV;bins=10;display_by=single");'
+                 f' mcpldev._plotting.show(hist_figure(mcpldev,h),{args})' )
         rv = subprocess.run([sys.executable,'-c',code], capture_output=True,
                             env=env, check=False)
-        print(f'plot({args}) with PYTHONIOENCODING=ascii: exit code {rv.returncode},'
+        print(f'show({args}) with PYTHONIOENCODING=ascii: exit code {rv.returncode},'
               f' output only ASCII: {(rv.stdout + rv.stderr).isascii()}')
         #(splitlines, since the output has \r\n line endings on Windows):
         out = rv.stdout.decode().splitlines()

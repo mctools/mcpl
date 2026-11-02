@@ -264,8 +264,8 @@ def generate( front_matter = None, strict = False, note = None ):
                ' of the `mcpl` Python package, as given by its built-in'
                ' documentation (e.g. `help(mcpl.MCPLFile)`). Everything is'
                ' available directly after `import mcpl`, except the contents of'
-               ' the `mcpl.plotting` and `mcpl.constants` modules.' ), '' ]
-    names = [ n for n in mcpl.__all__ if n not in ('plotting','constants') ]
+               ' the `mcpl.constants` module.' ), '' ]
+    names = [ n for n in mcpl.__all__ if n != 'constants' ]
     done = set()
     for title, mods in _sections:
         objs = [ n for n in names
@@ -279,11 +279,6 @@ def generate( front_matter = None, strict = False, note = None ):
     missing = sorted(set(names) - done)
     if missing:
         raise SystemExit(f'Error: names not in any section: {missing}')
-    #The plotting module:
-    plotting = mcpl.plotting
-    out += [ '## mcpl.plotting', '', doc_to_markdown(plotting.__doc__,0), '' ]
-    for n in plotting.__all__:
-        _document(out,f'mcpl.plotting.{n}',getattr(plotting,n),3)
     #The constants module:
     constants = mcpl.constants
     out += [ '## mcpl.constants', '', doc_to_markdown(constants.__doc__,0), '',

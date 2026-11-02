@@ -29,8 +29,9 @@ import pathlib
 
 import mcpldev as mcpl
 import numpy as np
+from mcpldev import _plotting
+from mcpldev._figures import Bars, Figure, Hist2D, Panel, StepHist, Text
 from mcpldev._plotregistry import _forced_backend
-from mcpldev.plotting import Bars, Figure, Hist2D, Panel, StepHist, Text
 from MCPLTestUtils.dirs import test_data_dir
 from MCPLTestUtils.plots import example_figures, items_figure
 
@@ -38,18 +39,18 @@ example_file = test_data_dir.joinpath('example.mcpl')
 
 def test_errors():
     #(the errors come before anything is drawn):
-    for what, f in ( ( "save(fig,'x.foo')", lambda : mcpl.plotting.save(Figure(),'x.foo') ),
-                     ( "save(fig,'x')", lambda : mcpl.plotting.save(Figure(),'x') ),
+    for what, f in ( ( "save(fig,'x.foo')", lambda : _plotting.save(Figure(),'x.foo') ),
+                     ( "save(fig,'x')", lambda : _plotting.save(Figure(),'x') ),
                      ( "save(fig,'x.pdf',terminal_width=60)",
-                       lambda : mcpl.plotting.save(Figure(),'x.pdf',terminal_width=60) ),
+                       lambda : _plotting.save(Figure(),'x.pdf',terminal_width=60) ),
                      ( "show(fig,terminal='yes')",
-                       lambda : mcpl.plotting.show(Figure(),terminal='yes') ),
+                       lambda : _plotting.show(Figure(),terminal='yes') ),
                      ( "show(fig,terminal_width=60)",
-                       lambda : mcpl.plotting.show(Figure(),terminal_width=60) ),
+                       lambda : _plotting.show(Figure(),terminal_width=60) ),
                      ( "show(fig,terminal_color='always')",
-                       lambda : mcpl.plotting.show(Figure(),terminal_color='always') ),
+                       lambda : _plotting.show(Figure(),terminal_color='always') ),
                      ( "show(fig,terminal=True,terminal_color='sometimes')",
-                       lambda : mcpl.plotting.show(Figure(),terminal=True,
+                       lambda : _plotting.show(Figure(),terminal=True,
                                                    terminal_color='sometimes') ) ):
         try:
             f()
@@ -67,14 +68,14 @@ def test_figures():
     fig.add(Panel( title = 'Bars', items = [ Bars(['a','b'],[1.0,2.0],horizontal=True) ] ))
     fig.add(Panel( title = 'Text', items = [ Text('No data') ] ))
     with _forced_backend('test'):
-        mcpl.plotting.show(fig)
-        files = mcpl.plotting.save([fig,Figure(title='Empty')], 'figs.txt')
+        _plotting.show(fig)
+        files = _plotting.save([fig,Figure(title='Empty')], 'figs.txt')
     nlines = len(pathlib.Path(files[0]).read_text(encoding='utf-8').splitlines())
     print(f'save() created {files}, with {nlines} lines')
 
 def test_example_figures():
     with _forced_backend('test'):
-        mcpl.plotting.show(example_figures(mcpl,example_file))
+        _plotting.show(example_figures(mcpl,example_file))
 
 def test_items():
     #All kinds of items, also as text (where 3D plots give a message, and the
@@ -82,13 +83,13 @@ def test_items():
     from mcpldev._figures import _line_style
     fig = items_figure(mcpl)
     with _forced_backend('test'):
-        mcpl.plotting.show(fig)
+        _plotting.show(fig)
     print('line styles of curves 0, 9, 10, 20 and 30:',
           [ _line_style(k) for k in (0, 9, 10, 20, 30) ])
     #(.txt files are drawn with unicode, and here also with ascii):
     for backend in ('unicode','ascii'):
         with _forced_backend(backend):
-            files = mcpl.plotting.save(fig, f'items_{backend}.txt', terminal_width=60,
+            files = _plotting.save(fig, f'items_{backend}.txt', terminal_width=60,
                                        terminal_height=6)
         text = pathlib.Path(files[0]).read_text(encoding='utf-8')
         print(f'==> {backend}:')

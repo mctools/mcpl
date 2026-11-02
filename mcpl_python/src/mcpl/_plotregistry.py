@@ -64,15 +64,13 @@ def _create( cls, width = None, height = None, color = None ):
              if v is not None }
     return cls(**opts)
 
-_window_hint = ' Use terminal=True to show them in the terminal.'
-
 def _show_backend( terminal = False, width = None, height = None, color = None,
-                   hint = _window_hint ):
+                   hint = '' ):
     """Backend object for showing plots: in a window with matplotlib, or in the
     terminal if terminal is True (with unicode, or else ascii, characters) or
     'ascii' (with ascii characters), with the size (width and height in
     characters) and the colour setting of plots in the terminal. When plots
-    can not be shown in a window, the error message ends with hint."""
+    can not be shown in a window, the error message ends with hint (if given)."""
     if not ( terminal is True or terminal is False or terminal == 'ascii' ):
         raise MCPLError(f'terminal must be True, False, or "ascii" (not {terminal!r})')
     if not terminal:

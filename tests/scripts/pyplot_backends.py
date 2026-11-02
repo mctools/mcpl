@@ -32,8 +32,9 @@ import subprocess
 import sys
 
 import mcpldev as mcpl
+from mcpldev import _plotting
+from mcpldev._figures import Figure, Panel, Text
 from mcpldev._plotregistry import _backend_class, _save_backend, _show_backend
-from mcpldev.plotting import Figure, Panel, Text
 from MCPLTestUtils.dirs import test_data_dir
 
 example_file = test_data_dir.joinpath('example.mcpl')
@@ -54,9 +55,9 @@ def test_choice():
     for fn in ( 'auto.txt', 'auto.pdf', 'auto.png', 'auto.svg' ):
         print(f'saving {fn}: {_save_backend(fn).name}')
     for fn in ( 'auto.txt', 'auto.pdf' ):
-        print(f'save(fig, {fn!r}) created {mcpl.plotting.save(fig, fn)}')
+        print(f'save(fig, {fn!r}) created {_plotting.save(fig, fn)}')
     for fn in ( 'auto.html', 'auto', 'auto.jpg' ):
-        expect_error(f'save(fig, {fn!r})', lambda fn = fn : mcpl.plotting.save(fig, fn))
+        expect_error(f'save(fig, {fn!r})', lambda fn = fn : _plotting.save(fig, fn))
 
 def test_window_errors():
     #Plots are only shown in a window when matplotlib can do it (with an
@@ -65,12 +66,12 @@ def test_window_errors():
     saved = cls.__dict__['is_available']
     try:
         cls.is_available = classmethod(lambda c : False)
-        expect_error('show(fig) without matplotlib', lambda : mcpl.plotting.show(fig))
+        expect_error('show(fig) without matplotlib', lambda : _plotting.show(fig))
         expect_error("save(fig, 'x.png') without matplotlib",
-                     lambda : mcpl.plotting.save(fig, 'x.png'))
+                     lambda : _plotting.save(fig, 'x.png'))
     finally:
         cls.is_available = saved
-    code = f'import mcpldev; mcpldev.histogram({str(example_file)!r},"ekin/MeV",bins=3).plot()'
+    code = f'import mcpldev; mcpldev.histogram({str(example_file)!r},"ekin/MeV;bins=3").plot()'
     rv = subprocess.run([sys.executable, '-c', code],
                         capture_output=True, encoding='utf-8', check=False,
                         env=dict(os.environ, MPLBACKEND='agg'))

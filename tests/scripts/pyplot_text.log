@@ -209,10 +209,10 @@ gamma (22) (23.76%) |###################################### 239
                                 No data
 unicode: saved ['stats_unicode.txt'], 142 lines, max width 59, ascii only: False
 ascii: saved ['stats_ascii.txt'], 139 lines, max width 59, ascii only: True
-plot('x.txt',terminal=True): MCPLError: terminal and terminal_color can not be used when saving plots in a file (the extension gives the format)
-plot('x.txt',terminal_color='always'): MCPLError: terminal and terminal_color can not be used when saving plots in a file (the extension gives the format)
-plot(terminal=True,logz=True): MCPLError: Unknown keyword argument(s) of plot: logz
-plot(terminal=True,terminal_width=40,terminal_height=5) with PYTHONIOENCODING=ascii: exit code 0, output only ASCII: True
+plot('x.txt',terminal=True): TypeError
+plot('x.txt',terminal_color='always'): TypeError
+plot(terminal=True,logz=True): TypeError
+show(terminal=True,terminal_width=40,terminal_height=5) with PYTHONIOENCODING=ascii: exit code 0, output only ASCII: True
 (weights per bin)
      994 +###
          |###

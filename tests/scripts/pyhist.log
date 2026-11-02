@@ -10,7 +10,6 @@ x : y : z;points=50;display_only=ekin < 1MeV (pick None): as picking them: True 
 'x : y': logz True, panel True
 'x : y;logz': logz True, panel True
 'x : y;logz=0': logz False, panel False
-panel(logz=False) of the default: False
 'x;logz=0': Histogram option "logz" (the colour scale) can only be used for 2D histograms, in "x;logz=0"
 'x : y : z;logz': Histogram option "logz" (the colour scale) can only be used for 2D histograms, in "x : y : z;logz"
 'x : y;logz=2': Histogram option "logz" must be 1 or 0 (not "2"), in "x : y;logz=2"
@@ -22,11 +21,11 @@ panel(logz=False) of the default: False
 'x : ekin;equal': Equal scales of the axes (the histogram option "equal") need expressions with the same units, not length and energy (of x and ekin)
 'x;equal': Histogram option "equal" (equal scales of the axes) can only be used for 2D histograms, in "x;equal"
 'x : y : z;equal': Histogram option "equal" (equal scales of the axes) can only be used for 2D histograms, in "x : y : z;equal"
-3D: Points3D {None: (100, 3)} ['x [cm]', 'y [cm]', 'z [cm]'] 1006
+3D: _PointSet3DData {None: (100, 3)} ['x [cm]', 'y [cm]', 'z [cm]'] 1006
 same sample: True
 split: {'mod(fileidx,10) = 0': 101, 'mod(fileidx,10) = 1': 101, 'mod(fileidx,10) = 2': 101, 'mod(fileidx,10) = 3': 101, 'mod(fileidx,10) = 4': 101, 'mod(fileidx,10) = 5': 101, 'mod(fileidx,10) = 6': 100, 'other': 300} {}
 Figure 1 (1x1): None
-  Panel 'pick: ekin > 1keV' xlabel='ux' ylabel='uy' 
+  Panel 'pick: ekin > 1keV\nall 1,006 particles' xlabel='ux' ylabel='uy' 
     Scatter3D label='mod(fileidx,10) = 0' color=0 points=101 x=[-0.952691,0.983025] y=[-0.983829,0.972862] z=[0.0836284,0.999082]
     Scatter3D label='mod(fileidx,10) = 1' color=1 points=101 x=[-0.934464,0.965526] y=[-0.936342,0.979886] z=[0.146776,0.996766]
     Scatter3D label='mod(fileidx,10) = 2' color=2 points=101 x=[-0.946124,0.95677] y=[-0.951279,0.889154] z=[0.0920351,0.998256]
@@ -283,23 +282,43 @@ histogram2d {'xrange': (1, 0)}: The xrange must be given as xrange=LOW:HIGH with
 histogram2d {'yrange': 'a'}: The yrange must be given as yrange=LOW:HIGH with LOW < HIGH (with units if the expression has units, as in yrange=0cm:10cm)
 bins as a numpy integer, and range as a list: 4 [-1.0, 1.0]
 plot_stats: plot_stats is no longer available: use mcpl.histogram(FILE,EXPR).plot() for plots of the particles
+Hist1D 'x/cm' [-10.0, -5.0, 0.0, 5.0, 10.0] [94.0, 252.0, 294.0, 90.0] as numpy: True
+edges of 'x;range=-0.1m:0.1m;bins=2': [-10.0, 0.0, 10.0]
+edges of 'ekin;bins=2': [0.0, 5000.0, 10000.0]
+edges of 'ekin/keV;bins=2': [0.0, 5000000.0, 10000000.0]
+contents of all curves, with a pick: True
+Hist2D ('x/cm', 'y/cm') [-65.0, -20.0, 25.0, 70.0] [-65.0, -2.5, 60.0] (3, 2) True
+HistDiscrete 'pdgcode' [2112, 22, 11, 2212, -11, 211, -211, 14] [726.0, 239.0, 15.0, 10.0, 8.0, 5.0, 2.0, 1.0]
+PointSet3D ('x/cm', 'y/cm', 'z/cm') (10, 3) 1006
+  Panel '10 of 1,006 particles, chosen at random with their weights' xlabel='x/cm' ylabel='y/cm' 
+  Panel 'all 1,006 particles' xlabel='x [cm]' ylabel='y [cm]' 
+31 of the points have x > 0, and all are chosen with the pick x > 0: True
+Hist1D ['contents', 'edges', 'expression', 'plot'] isinstance: True
+HistDiscrete ['contents', 'expression', 'plot', 'values'] isinstance: True
+Hist2D ['contents', 'expressions', 'plot', 'xedges', 'yedges'] isinstance: True
+PointSet3D ['expressions', 'nparticles', 'plot', 'points'] isinstance: True
+Hist1D(): TypeError: Hist1D objects are made by mcpl.histogram
+edges: ValueError
+contents: ValueError
+2D contents: ValueError
+points: ValueError
+attribute: AttributeError
+new attribute: AttributeError
+plot option: TypeError
+histogram option: TypeError
+histogram(['example.mcpl', 'example.mcpl'], 'x'): mcpl.histogram takes one file
+histogram('example.mcpl', 3): The expression of mcpl.histogram must be a histogram string
+histogram('example.mcpl', 'x;print'): The histogram option print is only for the mcpltool command
 Figure 1 (1x1): None
-  Panel None xlabel='ekin/MeV' ylabel='weights per bin' logx logy xlim=[0.00139345,2409.78]
-    StepHist label='pick: pdgcode == neutron' color=0 bins=10 edges=[0.00139345,2409.78] sum=726 max=258 nonzero_bins=10
-    StepHist label='pick: pdgcode == gamma' color=1 bins=10 edges=[0.249474,182.253] sum=239 max=61 nonzero_bins=10
-Figure 1 (1x1): None
-  Panel None xlabel='ekin/MeV' ylabel='weights per bin' logx xlim=[0.00139345,2409.78]
-    StepHist label='n' color=0 bins=10 edges=[0.00139345,2409.78] sum=726 max=258 nonzero_bins=10
-    StepHist label='g' color=1 bins=10 edges=[0.249474,182.253] sum=239 max=61 nonzero_bins=10
-plot_histograms without overlay created ['hists.txt']
-Figure 1 (1x1): None
-  Panel None xlabel='x/cm, ekin/MeV\n(5.41% of weights outside plot range)' ylabel='weights per bin' xlim=[-20,2409.78]
-    StepHist label='x/cm: example.mcpl' color=0 bins=4 edges=[-20,20] sum=912 max=384 nonzero_bins=4
-    StepHist label='x/cm: reffile_1.mcpl' color=1 bins=4 edges=[-20,20] sum=5 max=5 nonzero_bins=1
-    StepHist label='pick: pdgcode == neutron' color=2 bins=10 edges=[0.00139345,2409.78] sum=726 max=258 nonzero_bins=10
-plot_histograms(overlay=True) with 0 histograms {}: No histograms to plot
-plot_histograms(overlay=True) with 2 histograms {}: Only 1D histograms can be overlaid
-plot_histograms(overlay=True) with 2 histograms {'labels': ['a']}: The number of labels must be the number of histograms
+  Panel 'pick: x > 0cm' xlabel='ekin/MeV' ylabel='weights per bin' xlim=[0,10000]
+    StepHist label='n (2112)' color=0 bins=5 edges=[0,10000] sum=347 max=346 nonzero_bins=2
+    StepHist label='γ (22)' color=8 bins=5 edges=[0,10000] sum=141 max=141 nonzero_bins=1
+    StepHist label='e⁻ (11)' color=1 bins=5 edges=[0,10000] sum=11 max=11 nonzero_bins=1
+    StepHist label='e⁺ (-11)' color=3 bins=5 edges=[0,10000] sum=7 max=7 nonzero_bins=1
+    StepHist label='π⁺ (211)' color=2 bins=5 edges=[0,10000] sum=4 max=4 nonzero_bins=1
+    StepHist label='p (2212)' color=4 bins=5 edges=[0,10000] sum=4 max=3 nonzero_bins=2
+plot created ['plot.txt']
+plot to an existing file: The output file "plot.txt" already exists
 mcpltool -w ekin/MeV;logx=1;display_by=pdgcode example.mcpl: exit code 0
    | Figure 1 (1x1): None
    |   Panel None xlabel='ekin/MeV' ylabel='weights per bin' logx xlim=[0.00139345,9724.96]
@@ -464,7 +483,7 @@ mcpltool -w x/cm : y/cm;logx=1;equal example.mcpl: exit code 1
    | Run with "--hist-help" for how to write histograms
 mcpltool -w x/cm : y/cm : z/cm example.mcpl: exit code 0
    | Figure 1 (1x1): None
-   |   Panel None xlabel='x/cm' ylabel='y/cm' 
+   |   Panel 'all 1,006 particles' xlabel='x/cm' ylabel='y/cm' 
    |     Scatter3D label='n (2112)' color=0 points=726 x=[-60.0882,65.8944] y=[-61.3354,57.6935] z=[20,20]
    |     Scatter3D label='γ (22)' color=8 points=239 x=[-26.4199,24.6688] y=[-44.7764,30.7065] z=[20,20]
    |     Scatter3D label='e⁻ (11)' color=1 points=15 x=[-1.99964,28.3457] y=[-43.5895,3.14284] z=[20,20]
@@ -753,10 +772,10 @@ mcpltool --edit=help: exit code 0, 203 lines, starting with:
    | EDIT: statements separated by ";", executed in order, for example:
    | 
    | Changing values:
-mcpltool --hist-help: exit code 0, 79 lines, starting with:
+mcpltool --hist-help: exit code 0, 80 lines, starting with:
    | HIST: what to plot, an expression of the particles (written as for -p),
-   | or two separated by ":" for a 2D histogram (or three for a 3D plot of a
-   | sample of the particles, in windows), followed by options separated by ";".
+   | or two separated by ":" for a 2D histogram (or three for a 3D plot of
+   | particles chosen at random, in windows), followed by options separated by ";".
 nice numbers of bins: [(1200, 1080), (400, 360), (239, 216), (83, 72), (37, 36), (15, 15), (8, 8)]
 neff=1: bins of 1080 -> 10, of 216 -> 9, 2D of 216 -> 9
 neff=100: bins of 1080 -> 10, of 216 -> 9, 2D of 216 -> 9

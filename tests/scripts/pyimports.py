@@ -50,7 +50,8 @@ plot_modules = { 'matplotlib', 'PIL', 'tkinter', 'curses', 'scipp', 'IPython',
 core_modules = '_blocks _common _messages _numpy _reader'
 
 _expr = '_exprcore _expressions _exprrotation _exprsyntax _exprunits _particles _physics constants'
-_plot = '_exprplot _figures _histogram _histstring _plotbackend _plotbackend_test _plotregistry plotting'
+_plot_tool = '_exprplot _figures _histfigures _histfill _histstring _plotbackend _plotbackend_text _plotregistry _termcolor'
+_plot = f'{_plot_tool} _histogram _plotting'
 
 expected = {
     #Core functionality, which must not import any other modules:
@@ -69,19 +70,19 @@ expected = {
     'pick' : _expr,
     'stats' : '_particles _physics _stats _statsum constants',
     'stats_pick' : f'{_expr} _stats _statsum',
-    'hist' : f'{_expr} _exprplot _histogram _histstring',
+    'hist' : f'{_expr} _exprplot _histfill _histogram _histstring',
     'tool' : '_cli',
     'tool_pick' : f'_cli {_expr}',
     'tool_stats' : '_cli _clistats _particles _physics _stats _statsum constants',
-    'tool_hist' : f'_cli _clistats {_expr} _exprplot _histogram _histstring',
+    'tool_hist' : f'_cli _clistats {_expr} _exprplot _histfill _histstring',
     'tool_extract' : '_cli _extract _statsum _records _writer',
     'tool_extract_edit' : f'_cli _extract {_expr} _statsum _records _writer',
     'tool_merge' : '_cli _extract _fileops _statsum _records _writer',
     'tool_repair' : '_cli _fileops _statsum _records _writer',
     'tool_text' : '_ascii _cli',
-    #Plotting with the test backend loads only that backend:
+    #Plots saved as text load only the text backend:
     'plot' : f'{_expr} {_plot}',
-    'tool_plot' : f'_cli _clistats {_expr} {_plot}',
+    'tool_plot' : f'_cli _clistats {_expr} {_plot_tool}',
 }
 
 def check_static( graph, got, imports ):

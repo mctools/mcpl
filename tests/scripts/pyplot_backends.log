@@ -9,10 +9,10 @@ save(fig, 'auto.pdf') created ['auto.pdf']
 save(fig, 'auto.html'): MCPLError: Plots can not be saved as .html files (the extension gives the format of the plots: .pdf, .png, .svg, .txt)
 save(fig, 'auto'): MCPLError: The file name auto has no extension (the extension gives the format of the plots: .pdf, .png, .svg, .txt)
 save(fig, 'auto.jpg'): MCPLError: Plots can not be saved as .jpg files (the extension gives the format of the plots: .pdf, .png, .svg, .txt)
-show(fig) without matplotlib: MCPLError: Plots can not be shown in a window, since matplotlib is not installed. Use terminal=True to show them in the terminal.
+show(fig) without matplotlib: MCPLError: Plots can not be shown in a window, since matplotlib is not installed.
 save(fig, 'x.png') without matplotlib: MCPLError: Plots can not be saved as .png files, since matplotlib is not installed
 plot() with MPLBACKEND=agg: exit code 1
-mcpldev._common.MCPLError: Plots can not be shown in a window here (is there no display?). Use terminal=True to show them in the terminal.
+mcpldev._common.MCPLError: Plots can not be shown in a window here (is there no display?).
 ==> mcpltool -t ekin/MeV;bins=3;display_by=single : exit code 0
    | (weights per bin)
    |     1003 ┤███████████████████████

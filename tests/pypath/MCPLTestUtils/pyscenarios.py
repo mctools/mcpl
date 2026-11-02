@@ -41,10 +41,6 @@ def _tool(*args):
 _pick_edit = ( "for b in mcpl.MCPLFile('example.mcpl', pick='pdgcode == neutron',"
                " edit='rotate_z(90deg)').particle_blocks: pass" )
 
-#(the code which follows is run with the test backend, where mcpl.plotting
-#loads the module with _forced_backend):
-_test_backend = "mcpl.plotting\nwith mcpl._plotregistry._forced_backend('test'):\n"
-
 #( key, title, code ), the code using the files made by prepare_files:
 scenarios = [
     ( 'import', 'import mcpl', 'pass' ),
@@ -79,8 +75,8 @@ scenarios = [
     ( 'stats', 'statistics', "mcpl.dump_stats(mcpl.collect_stats('example.mcpl'))" ),
     ( 'stats_pick', 'statistics with pick',
       "mcpl.dump_stats(mcpl.collect_stats('example.mcpl', pick='x > 0cm'))" ),
-    ( 'hist', 'histogram as text',
-      "print(mcpl.histogram('example.mcpl','ekin/MeV',bins=4).to_text())" ),
+    ( 'hist', 'histogram contents',
+      "print(mcpl.histogram('example.mcpl','ekin/MeV;bins=4').contents)" ),
     ( 'tool', 'mcpltool FILE', _tool('example.mcpl') ),
     ( 'tool_pick', 'mcpltool --pick', _tool('-l3','--pick','pdgcode == gamma','example.mcpl') ),
     ( 'tool_stats', 'mcpltool --stats', _tool('--stats','example.mcpl') ),
@@ -91,11 +87,11 @@ scenarios = [
     ( 'tool_merge', 'mcpltool --merge', _tool('--merge','m.mcpl','example.mcpl','example2.mcpl') ),
     ( 'tool_repair', 'mcpltool --repair', _tool('--repair','torepair2.mcpl') ),
     ( 'tool_text', 'mcpltool --text', _tool('--text','example.mcpl','t.txt') ),
-    #(the test backend makes no plots, so no plotting packages are needed):
-    ( 'plot', 'plot with the test backend',
-      _test_backend + "    mcpl.histogram('example.mcpl','ekin/MeV',bins=4).plot()" ),
-    ( 'tool_plot', 'mcpltool --window with the test backend',
-      _test_backend + '    ' + _tool('--window','ekin/MeV','example.mcpl') ),
+    #(plots saved as text, which needs no plotting packages):
+    ( 'plot', 'plot saved as text',
+      "mcpl.histogram('example.mcpl','ekin/MeV;bins=4').plot('plot.txt')" ),
+    ( 'tool_plot', 'mcpltool --terminal saved as text',
+      _tool('--terminal','ekin/MeV','-o','tool_plot.txt','example.mcpl') ),
 ]
 
 def prepare_files( data_dir ):

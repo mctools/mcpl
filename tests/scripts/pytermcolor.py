@@ -37,11 +37,11 @@ import sys
 
 import mcpldev as mcpl
 from mcpldev import _termcolor
+from mcpldev._figures import Hist2D, StepHist
 from mcpldev._plotbackend_text import AsciiBackend, UnicodeBackend
 from mcpldev._termcolor import _code256, _ncolors, _paint
-from mcpldev.plotting import Hist2D, StepHist
 from MCPLTestUtils.dirs import test_data_dir
-from MCPLTestUtils.plots import example_figures
+from MCPLTestUtils.plots import example_figures, hist_figure
 
 example_file = test_data_dir.joinpath('example.mcpl')
 
@@ -106,7 +106,7 @@ def test_stripped():
     hs = mcpl.histogram(example_file,'ekin/MeV;logx=1;display_by=pdgcode;bins=20')
     h2 = mcpl.histogram(example_file,'x/cm : y/cm;bins=10')
     overview = example_figures(mcpl,example_file)[0]
-    cases = ( ('1D',h1.figure()), ('split',hs.figure()), ('2D',h2.figure()),
+    cases = ( ('1D',hist_figure(mcpl,h1)), ('split',hist_figure(mcpl,hs)), ('2D',hist_figure(mcpl,h2)),
               ('overview',overview) )
     with environ(COLORTERM='truecolor'):
         for cls, opt in ( (UnicodeBackend,'unicode'), (AsciiBackend,'ascii') ):
@@ -135,7 +135,7 @@ def test_stripped():
                 else:
                     assert same
         #Files are written without colours:
-        UnicodeBackend(color='always').save([h1.figure()],'colour.txt')
+        UnicodeBackend(color='always').save([hist_figure(mcpl,h1)],'colour.txt')
         print('file without escape sequences:',
               '\x1b' not in pathlib.Path('colour.txt').read_text(encoding='utf-8'))
 
