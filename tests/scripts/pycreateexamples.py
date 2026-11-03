@@ -60,6 +60,7 @@ def check(fn, n):
 
 def main():
     run('--create-examples=500','--dry-run')
+    run('--create-examples=2.5e3','--dry-run')
     assert not files()
     run('--create-examples=2500')
     print('Created:',', '.join(files()))
@@ -68,7 +69,8 @@ def main():
     print('Existing files are not overwritten:')
     run('--create-examples=10')
     for bad in ('--create-examples=0','--create-examples=abc',
-                '--create-examples=-5','--create-examples=1e6'):
+                '--create-examples=-5','--create-examples=1,000',
+                '--create-examples=1.5','--create-examples=1e-3'):
         run(bad)
     run('--create-examples','-j','foo.mcpl')
     print('A second run gives the same particles (fixed random seed):')

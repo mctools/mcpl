@@ -54,6 +54,23 @@ class MCPLError(Exception):
 def _native_endianness():
     return 'L' if sys.byteorder == 'little' else 'B'
 
+def _parse_count( text ):
+    """The whole number which the text gives, as digits (like 1000) or as a
+    decimal number which is a whole number (like 1e8 or 2.5e3), or None if it
+    gives none (also for texts like 1,000)"""
+    import re
+    #(not more than 64 bits, as in C):
+    if re.fullmatch(r'[0-9]+',text):
+        return int(text) if int(text) < 2**64 else None
+    if not re.fullmatch(r'([0-9]+\.?[0-9]*|\.[0-9]+)([eE][+-]?[0-9]+)?',text):
+        return None
+    from decimal import Decimal
+    d = Decimal(text)
+    #(which also keeps exponents like 1e999999 cheap):
+    if d >= 2**64 or d != d.to_integral_value():
+        return None
+    return int(d)
+
 def _determine_version():
     if os.environ.get('PYMCPLTOOL_FAKE_PYVERSION','').strip():
         return '99.99.99'

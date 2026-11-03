@@ -273,6 +273,8 @@ def test_cmdline():
          '-p','x > 1km',ex)
     #-l, -s, and -E (the particles are picked before they are edited):
     tool('-w','z/cm;bins=2;range=0:100;print=1','-s1000',ex)
+    #(numbers like 1e3 for -l and -s):
+    tool('-w','z/cm;bins=2;range=0:100;print=1','-s1e3','-l2.5e1',ex)
     tool('-w','z/cm;bins=2;range=0:100;print=1','-l3','-E','z += 50cm',ex)
     tool('-w','z/cm;bins=2;range=0:100;print=1','--pick=z < 25cm',
          '--edit=z += 50cm',ex)
@@ -306,7 +308,8 @@ def test_cmdline_more():
     #(the errors as without the test backend):
     with _forced_backend(None):
         for bad in ( ['-p','neutron',ex], ['-p2112',ex], ['-p',' gamma ',ex],
-                     ['-p'], ['-lX',ex], ['-l',ex],
+                     ['-p'], ['-lX',ex], ['-l',ex], ['-l1,000',ex], ['-l1.5',ex],
+                     ['-s1e-3',ex], ['-l2\u00b2',ex], ['-l99999999999999999999',ex],
                      ['-p','x > 0','-p','x < 1cm',ex], ['--pdf',ex], ['--gui',ex],
                      ['--select','x > 0',ex], ['-S','-t','x',ex],
                      ['-S','-w','x/cm',ex], [ex,ex,ex],

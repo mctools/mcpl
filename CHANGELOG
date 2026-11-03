@@ -103,6 +103,8 @@ v2.2.9  (work in progress)
         around a target, and a polarised neutron beam with userdata. The
         particles are generated from simple distributions, for trying out
         mcpltool and the mcpl Python package with large files.
+      * The numbers of mcpltool -l, -s, and --create-examples=N can also be
+        written like 1e8 (whole numbers only).
       * The minimum CMake version is now 3.21 (and on Windows 3.27, which was
         already needed there, now with a clear error message).
       * The command-line tools are renamed: the Python tool from the
