@@ -3,6 +3,11 @@ MCPL: Would create mcplexample_source.mcpl with 500 particles (neutrons leaving 
 MCPL: Would create mcplexample_target.mcpl with 500 particles (mixed particles leaving the surroundings of a target)
 MCPL: Would create mcplexample_beam.mcpl with 500 particles (polarised neutron beam, with userdata)
 MCPL: dry run, nothing was written
+--> mcpltool --create-examples=2.5e3 --dry-run
+MCPL: Would create mcplexample_source.mcpl with 2500 particles (neutrons leaving a moderator surface)
+MCPL: Would create mcplexample_target.mcpl with 2500 particles (mixed particles leaving the surroundings of a target)
+MCPL: Would create mcplexample_beam.mcpl with 2500 particles (polarised neutron beam, with userdata)
+MCPL: dry run, nothing was written
 --> mcpltool --create-examples=2500
 MCPL: Creating mcplexample_source.mcpl with 2500 particles (neutrons leaving a moderator surface)
 MCPL: Creating mcplexample_target.mcpl with 2500 particles (mixed particles leaving the surroundings of a target)
@@ -32,7 +37,17 @@ ERROR: --create-examples=N requires a positive integer N
 
 Run with -h or --help for usage information
     exit code 1
---> mcpltool --create-examples=1e6
+--> mcpltool --create-examples=1,000
+ERROR: --create-examples=N requires a positive integer N
+
+Run with -h or --help for usage information
+    exit code 1
+--> mcpltool --create-examples=1.5
+ERROR: --create-examples=N requires a positive integer N
+
+Run with -h or --help for usage information
+    exit code 1
+--> mcpltool --create-examples=1e-3
 ERROR: --create-examples=N requires a positive integer N
 
 Run with -h or --help for usage information

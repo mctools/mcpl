@@ -420,6 +420,12 @@ mcpltool -w z/cm;bins=2;range=0:100;print=1 -s1000 example.mcpl: exit code 0
    | # lower edge | upper edge | n (2112)
    | 0 50 6
    | 50 100 0
+mcpltool -w z/cm;bins=2;range=0:100;print=1 -s1e3 -l2.5e1 example.mcpl: exit code 0
+   | # histogram of: z/cm
+   | # values: weights per bin
+   | # lower edge | upper edge | n (2112)
+   | 0 50 6
+   | 50 100 0
 mcpltool -w z/cm;bins=2;range=0:100;print=1 -l3 -E z += 50cm example.mcpl: exit code 0
    | # histogram of: z/cm
    | # edit: z += 50cm
@@ -654,6 +660,26 @@ mcpltool -lX example.mcpl: exit code 1
    | Run with -h or --help for usage information
 mcpltool -l example.mcpl: exit code 1
    | ERROR: Bad option: missing number
+   | 
+   | Run with -h or --help for usage information
+mcpltool -l1,000 example.mcpl: exit code 1
+   | ERROR: Bad option: expected number
+   | 
+   | Run with -h or --help for usage information
+mcpltool -l1.5 example.mcpl: exit code 1
+   | ERROR: Bad option: expected number
+   | 
+   | Run with -h or --help for usage information
+mcpltool -s1e-3 example.mcpl: exit code 1
+   | ERROR: Bad option: expected number
+   | 
+   | Run with -h or --help for usage information
+mcpltool -l2² example.mcpl: exit code 1
+   | ERROR: Bad option: expected number
+   | 
+   | Run with -h or --help for usage information
+mcpltool -l99999999999999999999 example.mcpl: exit code 1
+   | ERROR: Bad option: expected number
    | 
    | Run with -h or --help for usage information
 mcpltool -p x > 0 -p x < 1cm example.mcpl: exit code 1

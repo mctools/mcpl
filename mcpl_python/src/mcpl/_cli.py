@@ -27,7 +27,7 @@ import os
 import re
 import sys
 
-from ._common import MCPLError, _determine_version, _output_bytearray_raw
+from ._common import MCPLError, _determine_version, _output_bytearray_raw, _parse_count
 from ._messages import _ForcePrinting, _info
 from ._reader import MCPLFile, dump_file
 
@@ -261,9 +261,9 @@ def _app_mcpltool(argv):
                 " --allow-overwrite.")
         n = None
         if opt_examples:
-            if not opt_examples.isdigit() or not int(opt_examples) > 0:
+            n = _parse_count(opt_examples)
+            if not n:
                 bad("--create-examples=N requires a positive integer N")
-            n = int(opt_examples)
         from ._examples import create_examples
         dry_run = '-d' in longnames or '--dry-run' in longnames
         try:
@@ -340,16 +340,17 @@ def _app_mcpltool(argv):
                 elif f in 'ls':
                     if not a:
                         bad("Bad option: missing number")
-                    if not a.isdigit():
+                    number = _parse_count(a)
+                    if number is None:
                         bad("Bad option: expected number")
                     if f == 'l':
                         if opt_limit is not None:
                             bad("-l specified more than once")
-                        opt_limit = int(a)
+                        opt_limit = number
                     else:
                         if opt_skip is not None:
                             bad("-s specified more than once")
-                        opt_skip = int(a)
+                        opt_skip = number
                     a = ''
                 else:
                     bad(f"Unrecognised option : -{f}")
