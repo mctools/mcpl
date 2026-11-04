@@ -286,6 +286,14 @@ mcpltool-c nan.mcpl: exit code 0
    |     7          22       0.008        10.5         -14         0.7         0.6           0         0.8        0.07         4.5
    |     8          11       0.009          12         -16         0.8        -0.8           0         0.6        0.08           5
    |     9        2112        0.01        13.5         -18         0.9         0.6           0         0.8        0.09         5.5
+mcpltool-c nosuchfile.mcpl: exit code 1
+   | MCPL ERROR: Unable to open file!
+mcpltool-c ..: exit code 1
+   | MCPL ERROR: Is a directory and not a file!
+mcpltool-c -e .. out.mcpl: exit code 1
+   | MCPL ERROR: Is a directory and not a file!
+mcpltool-c -l3 ..: exit code 1
+   | MCPL ERROR: Is a directory and not a file!
 mcpltool-c -n -l0 nan.mcpl: exit code 0
    | Opened MCPL file nan.mcpl:
    | index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
@@ -688,4 +696,4 @@ mcpltool --extract --pick mod(fileidx,2) == 0: stat:sum:nsim = None
    | MCPL: Successfully extracted 15 / 30 particles from a1.mcpl into out.mcpl
 mcpltool --extract -E x = 1cm*fileidx: stat:sum:nsim = 1000.0
    | MCPL: Successfully extracted 30 / 30 particles from a1.mcpl into out.mcpl
-Compared 83 command lines with mcpltool-c
+Compared 87 command lines with mcpltool-c

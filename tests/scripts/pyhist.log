@@ -682,6 +682,12 @@ mcpltool -l99999999999999999999 example.mcpl: exit code 1
    | ERROR: Bad option: expected number
    | 
    | Run with -h or --help for usage information
+mcpltool ..: exit code 1
+   | MCPL ERROR: Is a directory and not a file!
+mcpltool -S ..: exit code 1
+   | MCPL ERROR: Is a directory and not a file!
+mcpltool -t x/cm ..: exit code 1
+   | MCPL ERROR: Is a directory and not a file!
 mcpltool -p x > 0 -p x < 1cm example.mcpl: exit code 1
    | ERROR: -p specified more than once
    | 

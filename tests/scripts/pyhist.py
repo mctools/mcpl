@@ -254,6 +254,10 @@ def tool(*args):
             mcpl.app_mcpltool(['mcpltool',*args])
         except SystemExit as e:
             rc = e.code
+        except mcpl.MCPLError as e:
+            #(as the mcpltool command):
+            print(f'MCPL ERROR: {e!s}')
+            rc = 1
     print(f'mcpltool {" ".join(args)}: exit code {rc}')
     for line in out.getvalue().splitlines():
         print(f'   | {line}')
@@ -310,6 +314,8 @@ def test_cmdline_more():
         for bad in ( ['-p','neutron',ex], ['-p2112',ex], ['-p',' gamma ',ex],
                      ['-p'], ['-lX',ex], ['-l',ex], ['-l1,000',ex], ['-l1.5',ex],
                      ['-s1e-3',ex], ['-l2\u00b2',ex], ['-l99999999999999999999',ex],
+                     #(a directory, as file):
+                     ['..'], ['-S','..'], ['-t','x/cm','..'],
                      ['-p','x > 0','-p','x < 1cm',ex], ['--pdf',ex], ['--gui',ex],
                      ['--select','x > 0',ex], ['-S','-t','x',ex],
                      ['-S','-w','x/cm',ex], [ex,ex,ex],
