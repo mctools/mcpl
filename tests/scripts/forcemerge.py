@@ -21,16 +21,15 @@
 
 # NEEDS: numpy
 
-import contextlib
 import hashlib
 import itertools
 import os
 import pathlib
+import sys
 
 import mcpldev as mcpl
 from MCPLTestUtils.dirs import test_data_dir
 from MCPLTestUtils.stdout_redirect import RedirectStdout
-from MCPLTestUtils.toolcheck_common import python_tool, tool_command
 
 
 def fix_print_str(s):
@@ -46,8 +45,8 @@ def fix_print_str(s):
 
 def run_mcpltool(*args, expect_failure):
     cmdargs =[str(e) for e in args]
-    fullcmd, name = tool_command(cmdargs)
-    print( '\n\n\n\n\nRUNNING: {} {}'.format(name,fix_print_str(' '.join(cmdargs))),
+    fullcmd = [ sys.executable, '-m', 'mcpldev', *cmdargs ]
+    print( '\n\n\n\n\nRUNNING: mcpltool {}'.format(fix_print_str(' '.join(cmdargs))),
            flush=True )
     print( 'Expect failure: %s'%('yes' if expect_failure else 'no'),
            flush=True )
@@ -66,18 +65,6 @@ def run_mcpltool(*args, expect_failure):
         raise SystemExit('Did not end in failure as expected!'
                          if expect_failure else
                          'Should not have ended in failure!')
-
-@contextlib.contextmanager
-def dump_or_checksum():
-    """What is printed inside, or with the mcpltool of Python its checksum"""
-    if not python_tool():
-        yield
-        return
-    with RedirectStdout('dump.txt'):
-        yield
-    #(with \n line endings, also on Windows):
-    dump = pathlib.Path('dump.txt').read_bytes().replace(b'\r\n',b'\n')
-    print('dump with checksum', hashlib.md5(dump).hexdigest())
 
 def do_test(folder):
 
@@ -148,22 +135,21 @@ def do_test(folder):
             mcpltool_args.append('--keepuserflags')
 
         run_mcpltool(*mcpltool_args,expect_failure = expect_failure)
-        #Sys.rm_f('tmp.mcpl')
-        #cmd=Sys.quote_cmd(['sb_mcpl_tool','--forcemerge','tmp.mcpl']+list(filelist))
-        #run(cmd)
         if expect_failure:
             assert not pathlib.Path('tmp.mcpl').is_file()
             continue
         with mcpl.MCPLFile('tmp.mcpl') as res:
-            #(with the mcpltool of Python, the dumps are given as checksums,
-            #so the log stays small, see pyforcemerge):
-            with dump_or_checksum():
+            #(the dumps are given as checksums, so the log stays small):
+            with RedirectStdout('dump.txt'):
                 res.dump_hdr()
                 if sum(inputcounts)<30:
                     res.dump_particles(limit=0)
                 else:
                     for skip in [0]+inputcounts[:-1]:
                         res.dump_particles(limit=10,skip=max(0,skip-5))
+            #(with \n line endings, also on Windows):
+            dump = pathlib.Path('dump.txt').read_bytes().replace(b'\r\n',b'\n')
+            print('dump with checksum',hashlib.md5(dump).hexdigest())
             assert res.opt_userflags==expected_uf,"unexpected user flags setting"
             assert res.opt_polarisation==expected_pol,"unexpected polarisation setting"
             assert res.opt_singleprec==(not expected_dp),"unexpected singleprec setting"

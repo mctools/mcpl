@@ -1,29 +1,34 @@
 MCPL: Compressing file a3.mcpl
 MCPL: Compressed file into a3.mcpl.gz
-mcpltool-c --merge out.mcpl a1.mcpl a2.mcpl: exit code 0
-mcpltool-c -m out.mcpl.gz a1.mcpl a2.mcpl a3.mcpl.gz: exit code 0
+mcpltool --merge out.mcpl a1.mcpl a2.mcpl: exit code 0
+   file out.mcpl: md5 31d44c968f012abac360c7180fdd245a
+mcpltool -m out.mcpl.gz a1.mcpl a2.mcpl a3.mcpl.gz: exit code 0
    | MCPL: Compressing file out.mcpl
    | MCPL: Compressed file into out.mcpl.gz
-mcpltool-c --merge out a1.mcpl: exit code 0
-mcpltool-c --merge --inplace a1.mcpl a2.mcpl a3.mcpl.gz: exit code 0
-mcpltool-c -m --inplace a3.mcpl.gz a1.mcpl: exit code 1
+   file out.mcpl.gz: md5 195796b1da00eb13d669d0e538efb640
+mcpltool --merge out a1.mcpl: exit code 0
+   file out.mcpl: md5 3e4d8851e2f2febf37d76ff079c9be7f
+mcpltool --merge --inplace a1.mcpl a2.mcpl a3.mcpl.gz: exit code 0
+   file a1.mcpl: md5 195796b1da00eb13d669d0e538efb640
+mcpltool -m --inplace a3.mcpl.gz a1.mcpl: exit code 1
    | MCPL ERROR: direct modification of gzipped files is not supported.
-mcpltool-c --merge out.mcpl a1.mcpl b_dp.mcpl: exit code 1
+mcpltool --merge out.mcpl a1.mcpl b_dp.mcpl: exit code 1
    | ERROR: Requested files are incompatible for merge as they have different header info (source name: "MySim" vs "Other").
    | 
    | Run with -h or --help for usage information
-mcpltool-c --merge out.mcpl a1.mcpl: exit code 0
-mcpltool-c --merge a2.mcpl a1.mcpl a1.mcpl: exit code 1
+mcpltool --merge out.mcpl a1.mcpl: exit code 0
+   file out.mcpl: md5 3e4d8851e2f2febf37d76ff079c9be7f
+mcpltool --merge a2.mcpl a1.mcpl a1.mcpl: exit code 1
    | ERROR: The output file "a2.mcpl" already exists.
    | 
    | Run with -h or --help for usage information
-mcpltool-c --merge out.gz a1.mcpl a2.mcpl: exit code 1
+mcpltool --merge out.gz a1.mcpl a2.mcpl: exit code 1
    | ERROR: Output file names ending with .gz must end with .mcpl.gz (not "out.gz").
    | 
    | Run with -h or --help for usage information
-mcpltool-c --merge out.mcpl a1.mcpl a1.mcpl: exit code 1
+mcpltool --merge out.mcpl a1.mcpl a1.mcpl: exit code 1
    | MCPL ERROR: Merging file with itself
-mcpltool-c --forcemerge out.mcpl a1.mcpl b_dp.mcpl b_pol.mcpl: exit code 0
+mcpltool --forcemerge out.mcpl a1.mcpl b_dp.mcpl b_pol.mcpl: exit code 0
    | MCPL force-merge: Files have different FP precision (single and double), using double
    | MCPL force-merge: Files have different polarisation info (no and yes), enabling it
    | MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
@@ -32,7 +37,8 @@ mcpltool-c --forcemerge out.mcpl a1.mcpl b_dp.mcpl b_pol.mcpl: exit code 0
    | MCPL force-merge: Transferring 12 particles from file b_dp.mcpl
    | MCPL force-merge: Transferring 7 particles from file b_pol.mcpl
    | MCPL force-merge: Transferred a total of 49 particles to new file out.mcpl
-mcpltool-c --forcemerge --keepuserflags out.mcpl.gz b_dp.mcpl b_pol.mcpl: exit code 0
+   file out.mcpl: md5 28330218e528d9438b813dd20dc13da2
+mcpltool --forcemerge --keepuserflags out.mcpl.gz b_dp.mcpl b_pol.mcpl: exit code 0
    | MCPL force-merge: Files have different FP precision (single and double), using double
    | MCPL force-merge: Files have different polarisation info (no and yes), enabling it
    | MCPL force-merge: Files have different userflags (no and yes), enabling them (zero for particles without)
@@ -41,130 +47,132 @@ mcpltool-c --forcemerge --keepuserflags out.mcpl.gz b_dp.mcpl b_pol.mcpl: exit c
    | MCPL force-merge: Transferred a total of 19 particles to new file out.mcpl.gz
    | MCPL: Compressing file out.mcpl
    | MCPL: Compressed file into out.mcpl.gz
-mcpltool-c --forcemerge out.mcpl a1.mcpl a2.mcpl: exit code 0
+   file out.mcpl.gz: md5 67e70ccaf40415912863d1324c89fa8e
+mcpltool --forcemerge out.mcpl a1.mcpl a2.mcpl: exit code 0
    | MCPL forcemerge_files called with 2 files that are compatible for a standard merge => falling back to standard merge_files function
-mcpltool-c --forcemerge out.mcpl: exit code 1
+   file out.mcpl: md5 31d44c968f012abac360c7180fdd245a
+mcpltool --forcemerge out.mcpl: exit code 1
    | ERROR: Too few arguments for --forcemerge.
    | 
    | Run with -h or --help for usage information
-mcpltool-c --extract a1.mcpl out.mcpl: exit code 0
+mcpltool --extract a1.mcpl out.mcpl: exit code 0
    | MCPL: Successfully extracted 30 / 30 particles from a1.mcpl into out.mcpl
-mcpltool-c -e a1.mcpl out.mcpl.gz: exit code 0
+   file out.mcpl: md5 a30df74e6146d6c2562192cd08e91fdf
+mcpltool -e a1.mcpl out.mcpl.gz: exit code 0
    | MCPL: Compressing file out.mcpl
    | MCPL: Compressed file into out.mcpl.gz
    | MCPL: Successfully extracted 30 / 30 particles from a1.mcpl into out.mcpl.gz
-mcpltool-c --extract -l5 a1.mcpl out.mcpl: exit code 0
+   file out.mcpl.gz: md5 a30df74e6146d6c2562192cd08e91fdf
+mcpltool --extract -l5 a1.mcpl out.mcpl: exit code 0
    | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
    | MCPL: Successfully extracted 5 / 30 particles from a1.mcpl into out.mcpl
-mcpltool-c --extract -s25 a1.mcpl out: exit code 0
+   file out.mcpl: md5 a3f13257ca49dd0447ed20b26d767713
+mcpltool --extract -s25 a1.mcpl out: exit code 0
    | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
    | MCPL: Successfully extracted 5 / 30 particles from a1.mcpl into out.mcpl
-mcpltool-c --extract -l3 -s4 a3.mcpl.gz out.mcpl: exit code 0
+   file out.mcpl: md5 ef5d67212d36a3f34ab79c811a187ac4
+mcpltool --extract -l3 -s4 a3.mcpl.gz out.mcpl: exit code 0
    | MCPL: Successfully extracted 1 / 5 particles from a3.mcpl.gz into out.mcpl
-mcpltool-c --extract -l100 -s0 a1.mcpl out.mcpl: exit code 0
+   file out.mcpl: md5 f21a0f434d44bb93e6c78eb122ab2f02
+mcpltool --extract -l100 -s0 a1.mcpl out.mcpl: exit code 0
    | MCPL: Successfully extracted 30 / 30 particles from a1.mcpl into out.mcpl
-mcpltool-c --no-comment --extract -p22 a1.mcpl out.mcpl: exit code 0
+   file out.mcpl: md5 0b950a1d28a8ab8016c59bae3b6537ed
+mcpltool --extract -p pdgcode == 22 a1.mcpl out.mcpl: exit code 0
    | MCPL: Successfully extracted 10 / 30 particles from a1.mcpl into out.mcpl
-mcpltool-c --no-comment -e -p-11 b_dp.mcpl out.mcpl: exit code 0
+   file out.mcpl: md5 182304f1bd2122e081db063e23bf67e9
+mcpltool -e -p pdgcode == -11 b_dp.mcpl out.mcpl: exit code 0
    | MCPL: Successfully extracted 0 / 12 particles from b_dp.mcpl into out.mcpl
-mcpltool-c --no-comment -e -p11 -l10 -s3 a1.mcpl out.mcpl: exit code 0
+   file out.mcpl: md5 96e2ecad40c10c8562675405b60e1829
+mcpltool -e -p pdgcode == 11 -l10 -s3 a1.mcpl out.mcpl: exit code 0
    | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
    | MCPL: Successfully extracted 3 / 30 particles from a1.mcpl into out.mcpl
-mcpltool-c --no-comment --extract -p2112 c_nostat.mcpl out.mcpl: exit code 0
+   file out.mcpl: md5 fead3d1f205834035c479e0cff476517
+mcpltool --extract -p pdgcode == 2112 c_nostat.mcpl out.mcpl: exit code 0
    | MCPL: Successfully extracted 3 / 9 particles from c_nostat.mcpl into out.mcpl
-mcpltool-c --extract -s5 c_nostat.mcpl out.mcpl: exit code 0
+   file out.mcpl: md5 7a5fda1424457c49190e588c2e95ebbe
+mcpltool --extract -s5 c_nostat.mcpl out.mcpl: exit code 0
    | MCPL: Successfully extracted 4 / 9 particles from c_nostat.mcpl into out.mcpl
-mcpltool-c --extract crash.mcpl out.mcpl: exit code 0
+   file out.mcpl: md5 b6b1953247e891d4c5eed886fc1de52a
+mcpltool --extract crash.mcpl out.mcpl: exit code 0
    | MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
    | MCPL: Successfully extracted 4 / 4 particles from crash.mcpl into out.mcpl
-mcpltool-c --extract ref1.mcpl out.mcpl: exit code 0
+   file out.mcpl: md5 44e760490da61a9d90f3bfad1be26dc8
+mcpltool --extract ref1.mcpl out.mcpl: exit code 0
    | MCPL: Successfully extracted 5 / 5 particles from ref1.mcpl into out.mcpl
-mcpltool-c --extract a1.mcpl a2.mcpl: exit code 1
+   file out.mcpl: md5 1301a64c76e8711c596137067cf6c21f
+mcpltool --extract a1.mcpl a2.mcpl: exit code 1
    | ERROR: The output file "a2.mcpl" already exists.
    | 
    | Run with -h or --help for usage information
-mcpltool-c --extract a1.mcpl out.gz: exit code 1
+mcpltool --extract a1.mcpl out.gz: exit code 1
    | ERROR: Output file names ending with .gz must end with .mcpl.gz (not "out.gz").
    | 
    | Run with -h or --help for usage information
-mcpltool-c --extract a1.mcpl: exit code 1
+mcpltool --extract a1.mcpl: exit code 1
    | ERROR: Must specify both input and output files with --extract.
    | 
    | Run with -h or --help for usage information
-mcpltool-c --extract a1.mcpl x.mcpl y.mcpl: exit code 1
+mcpltool --extract a1.mcpl x.mcpl y.mcpl: exit code 1
    | ERROR: Too many arguments.
    | 
    | Run with -h or --help for usage information
-mcpltool-c --extract --no-comment -p22 -l5 a1.mcpl out.mcpl: exit code 0
+mcpltool --extract --no-comment -p pdgcode == 22 -l5 a1.mcpl out.mcpl: exit code 0
    | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
    | MCPL: Successfully extracted 2 / 30 particles from a1.mcpl into out.mcpl
-mcpltool-c --no-comment --extract -p11 -l3 -s4 a1.mcpl out.mcpl: exit code 0
+   file out.mcpl: md5 d555ef4fcb424a10df21147296627a98
+mcpltool --extract -p pdgcode == 11 -l3 -s4 a1.mcpl out.mcpl: exit code 0
    | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
    | MCPL: Successfully extracted 1 / 30 particles from a1.mcpl into out.mcpl
-mcpltool-c --no-comment a1.mcpl: exit code 1
-   | ERROR: --no-comment can only be used with --extract.
-   | 
-   | Run with -h or --help for usage information
-   mcpltool:
+   file out.mcpl: md5 fe0d1b6c369474c670c7aa42d4747d81
+mcpltool --no-comment a1.mcpl: exit code 1
    | ERROR: --no-comment can only be used with -e.
    | 
    | Run with -h or --help for usage information
-mcpltool-c --no-comment --extract -pgamma a1.mcpl out.mcpl: exit code 0
+mcpltool --extract -p pdgcode == gamma a1.mcpl out.mcpl: exit code 0
    | MCPL: Successfully extracted 10 / 30 particles from a1.mcpl into out.mcpl
-mcpltool-c --no-comment --extract -pphoton -l10 a1.mcpl out.mcpl: exit code 0
+   file out.mcpl: md5 5e60df9321660cb23300569ef5e93b8e
+mcpltool --extract -p pdgcode == photon -l10 a1.mcpl out.mcpl: exit code 0
    | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
    | MCPL: Successfully extracted 3 / 30 particles from a1.mcpl into out.mcpl
-mcpltool-c --no-comment --extract -pantielectron b_dp.mcpl out.mcpl: exit code 0
+   file out.mcpl: md5 76235c54f0c516a51f445d79e655f81a
+mcpltool --extract -p pdgcode == antielectron b_dp.mcpl out.mcpl: exit code 0
    | MCPL: Successfully extracted 0 / 12 particles from b_dp.mcpl into out.mcpl
-mcpltool-c --no-comment --extract -pneutron c_nostat.mcpl out.mcpl: exit code 0
+   file out.mcpl: md5 24b9b617422cb4b9f07f866abaa7c387
+mcpltool --extract -p pdgcode == neutron c_nostat.mcpl out.mcpl: exit code 0
    | MCPL: Successfully extracted 3 / 9 particles from c_nostat.mcpl into out.mcpl
-mcpltool-c --inplace a1.mcpl a2.mcpl: exit code 1
-   | ERROR: --inplace can only be used with --merge.
-   | 
-   | Run with -h or --help for usage information
-   mcpltool:
+   file out.mcpl: md5 d5dd46058a1fdfbf28aac41047928bff
+mcpltool --inplace a1.mcpl a2.mcpl: exit code 1
    | ERROR: --inplace can only be used with -m.
    | 
    | Run with -h or --help for usage information
-mcpltool-c --keepuserflags a1.mcpl: exit code 1
+mcpltool --keepuserflags a1.mcpl: exit code 1
    | ERROR: --keepuserflags can only be used with --forcemerge.
    | 
    | Run with -h or --help for usage information
-mcpltool-c --merge --forcemerge out.mcpl a1.mcpl a2.mcpl: exit code 1
-   | ERROR: --merge and --forcemerge can not both be specified .
-   | 
-   | Run with -h or --help for usage information
-   mcpltool:
+mcpltool --merge --forcemerge out.mcpl a1.mcpl a2.mcpl: exit code 1
    | ERROR: -m and --forcemerge can not be used together.
    | 
    | Run with -h or --help for usage information
-mcpltool-c --merge --extract a1.mcpl out.mcpl: exit code 1
-   | ERROR: Conflicting options specified.
-   | 
-   | Run with -h or --help for usage information
-   mcpltool:
+mcpltool --merge --extract a1.mcpl out.mcpl: exit code 1
    | ERROR: -e and -m can not be used together.
    | 
    | Run with -h or --help for usage information
-mcpltool-c -j --extract a1.mcpl out.mcpl: exit code 1
-   | ERROR: Conflicting options specified.
-   | 
-   | Run with -h or --help for usage information
-   mcpltool:
+mcpltool -j --extract a1.mcpl out.mcpl: exit code 1
    | ERROR: -j can only be used when showing particles.
    | 
    | Run with -h or --help for usage information
-mcpltool-c --repair crash.mcpl: exit code 0
+mcpltool --repair crash.mcpl: exit code 0
    | MCPL: Successfully repaired file with 4 particles.
-mcpltool-c --repair a1.mcpl: exit code 1
+   file crash.mcpl: md5 75c80085dcb85c8b7ee2ed280b2b8647
+mcpltool --repair a1.mcpl: exit code 1
    | MCPL ERROR: File does not appear to be broken.
-mcpltool-c --repair a3.mcpl.gz: exit code 1
+mcpltool --repair a3.mcpl.gz: exit code 1
    | MCPL ERROR: File must be gunzipped before it can be checked and possibly repaired.
-mcpltool-c -r a1.mcpl a2.mcpl: exit code 1
+mcpltool -r a1.mcpl a2.mcpl: exit code 1
    | ERROR: Too many arguments.
    | 
    | Run with -h or --help for usage information
-mcpltool-c -l3 a1.mcpl: exit code 0
+mcpltool -l3 a1.mcpl: exit code 0
    | Opened MCPL file a1.mcpl:
    | 
    |   Basic info
@@ -194,7 +202,7 @@ mcpltool-c -l3 a1.mcpl: exit code 0
    |     0        2112       0.001           0          -0           0        -0.8           0         0.6           0           1
    |     1          22       0.002         1.5          -2         0.1         0.6           0         0.8        0.01         1.5
    |     2          11       0.003           3          -4         0.2        -0.8           0         0.6        0.02           2
-mcpltool-c -j b_dp.mcpl: exit code 0
+mcpltool -j b_dp.mcpl: exit code 0
    | Opened MCPL file b_dp.mcpl:
    | 
    |   Basic info
@@ -217,7 +225,7 @@ mcpltool-c -j b_dp.mcpl: exit code 0
    |     Endianness         : little
    |     Storage            : 72 bytes/particle
    | 
-mcpltool-c --justhead a1.mcpl: exit code 0
+mcpltool --justhead a1.mcpl: exit code 0
    | Opened MCPL file a1.mcpl:
    | 
    |   Basic info
@@ -243,13 +251,13 @@ mcpltool-c --justhead a1.mcpl: exit code 0
    |     Endianness         : little
    |     Storage            : 36 bytes/particle
    | 
-mcpltool-c --nohead -l2 a1.mcpl: exit code 0
+mcpltool --nohead -l2 a1.mcpl: exit code 0
    | Opened MCPL file a1.mcpl:
    | index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
    |     0        2112       0.001           0          -0           0        -0.8           0         0.6           0           1
    |     1          22       0.002         1.5          -2         0.1         0.6           0         0.8        0.01         1.5
-mcpltool-c -bnosuchkey a1.mcpl: exit code 1
-mcpltool-c nan.mcpl: exit code 0
+mcpltool -bnosuchkey a1.mcpl: exit code 1
+mcpltool nan.mcpl: exit code 0
    | Opened MCPL file nan.mcpl:
    | 
    |   Basic info
@@ -286,15 +294,15 @@ mcpltool-c nan.mcpl: exit code 0
    |     7          22       0.008        10.5         -14         0.7         0.6           0         0.8        0.07         4.5
    |     8          11       0.009          12         -16         0.8        -0.8           0         0.6        0.08           5
    |     9        2112        0.01        13.5         -18         0.9         0.6           0         0.8        0.09         5.5
-mcpltool-c nosuchfile.mcpl: exit code 1
+mcpltool nosuchfile.mcpl: exit code 1
    | MCPL ERROR: Unable to open file!
-mcpltool-c ..: exit code 1
+mcpltool ..: exit code 1
    | MCPL ERROR: Is a directory and not a file!
-mcpltool-c -e .. out.mcpl: exit code 1
+mcpltool -e .. out.mcpl: exit code 1
    | MCPL ERROR: Is a directory and not a file!
-mcpltool-c -l3 ..: exit code 1
+mcpltool -l3 ..: exit code 1
    | MCPL ERROR: Is a directory and not a file!
-mcpltool-c -n -l0 nan.mcpl: exit code 0
+mcpltool -n -l0 nan.mcpl: exit code 0
    | Opened MCPL file nan.mcpl:
    | index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
    |     0        2112       0.001           0          -0           0        -0.8           0         0.6           0           1
@@ -328,7 +336,7 @@ mcpltool-c -n -l0 nan.mcpl: exit code 0
    |    27        2112       0.028        40.5         -54         2.7         0.6           0         0.8        0.27        14.5
    |    28          22       0.029          42         -56         2.8        -0.8           0         0.6        0.28          15
    |    29          11        0.03        43.5         -58         2.9         0.6           0         0.8        0.29        15.5
-mcpltool-c -s10 -l5 nan.mcpl: exit code 0
+mcpltool -s10 -l5 nan.mcpl: exit code 0
    | Opened MCPL file nan.mcpl:
    | 
    |   Basic info
@@ -361,7 +369,7 @@ mcpltool-c -s10 -l5 nan.mcpl: exit code 0
    |    12        2112       0.013         nan         -24         1.2        -0.8           0         0.6        0.12           7
    |    13          22       0.014        19.5         -26         1.3         0.6           0         0.8        0.13         7.5
    |    14          11       0.015          21         -28         1.4        -0.8           0         0.6        0.14           8
-mcpltool-c -s13 nan.mcpl: exit code 0
+mcpltool -s13 nan.mcpl: exit code 0
    | Opened MCPL file nan.mcpl:
    | 
    |   Basic info
@@ -398,7 +406,7 @@ mcpltool-c -s13 nan.mcpl: exit code 0
    |    20          11       0.021          30         -40           2        -0.8           0         0.6         0.2          11
    |    21        2112       0.022        31.5         -42         2.1         0.6           0         0.8        0.21        11.5
    |    22          22       0.023          33         -44         2.2        -0.8           0         0.6        0.22          12
-mcpltool-c -n -l0 inf.mcpl: exit code 0
+mcpltool -n -l0 inf.mcpl: exit code 0
    | Opened MCPL file inf.mcpl:
    | index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
    |     0        2112       0.001           0          -0           0        -0.8           0         0.6           0           1
@@ -432,7 +440,7 @@ mcpltool-c -n -l0 inf.mcpl: exit code 0
    |    27        2112       0.028        40.5         -54         2.7         0.6           0         0.8        0.27        14.5
    |    28          22       0.029          42         -56         2.8        -0.8           0         0.6        0.28          15
    |    29          11        0.03        43.5         -58         2.9         0.6           0         0.8        0.29        15.5
-mcpltool-c -j nan.mcpl: exit code 0
+mcpltool -j nan.mcpl: exit code 0
    | Opened MCPL file nan.mcpl:
    | 
    |   Basic info
@@ -458,21 +466,25 @@ mcpltool-c -j nan.mcpl: exit code 0
    |     Endianness         : little
    |     Storage            : 36 bytes/particle
    | 
-mcpltool-c --extract nan.mcpl out.mcpl: exit code 1
+mcpltool --extract nan.mcpl out.mcpl: exit code 1
    | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 12). They can not be added to other MCPL files.
    | MCPL ERROR: add_particles asked to transfer particle with NaN or infinite position
-mcpltool-c --extract -l12 nan.mcpl out.mcpl: exit code 0
+mcpltool --extract -l12 nan.mcpl out.mcpl: exit code 0
    | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
    | MCPL: Successfully extracted 12 / 30 particles from nan.mcpl into out.mcpl
-mcpltool-c --no-comment --extract -p22 nan.mcpl out.mcpl: exit code 0
+   file out.mcpl: md5 13324e7af40121c4368888326f045b8a
+mcpltool --extract -p pdgcode == 22 nan.mcpl out.mcpl: exit code 0
    | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 12). They can not be added to other MCPL files.
    | MCPL: Successfully extracted 10 / 30 particles from nan.mcpl into out.mcpl
-mcpltool-c --no-comment --extract -p2112 inf.mcpl out.mcpl: exit code 1
+   file out.mcpl: md5 182304f1bd2122e081db063e23bf67e9
+mcpltool --extract -p pdgcode == 2112 inf.mcpl out.mcpl: exit code 1
    | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 3). They can not be added to other MCPL files.
    | MCPL ERROR: add_particles asked to transfer particle with NaN or infinite kinetic energy
-mcpltool-c --merge out.mcpl a1.mcpl nan.mcpl inf.mcpl: exit code 0
-mcpltool-c --merge --inplace a2.mcpl nan.mcpl: exit code 0
-mcpltool-c --forcemerge out.mcpl b_dp.mcpl nan.mcpl: exit code 1
+mcpltool --merge out.mcpl a1.mcpl nan.mcpl inf.mcpl: exit code 0
+   file out.mcpl: md5 3046b208cd954d4bf09ca1989ea91bcc
+mcpltool --merge --inplace a2.mcpl nan.mcpl: exit code 0
+   file a2.mcpl: md5 8f21b5d88344c1be0c1849236e15431d
+mcpltool --forcemerge out.mcpl b_dp.mcpl nan.mcpl: exit code 1
    | MCPL force-merge: Files have different FP precision (single and double), using double
    | MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
    | MCPL force-merge: Discarding comments and blobs of the input files
@@ -480,71 +492,70 @@ mcpltool-c --forcemerge out.mcpl b_dp.mcpl nan.mcpl: exit code 1
    | MCPL force-merge: Transferring 30 particles from file nan.mcpl
    | MCPL WARNING: File contains particles with NaN or infinite values (first one found at index 12). They can not be added to other MCPL files.
    | MCPL ERROR: add_particles asked to transfer particle with NaN or infinite position
-mcpltool-c --repair nan.mcpl: exit code 1
+mcpltool --repair nan.mcpl: exit code 1
    | MCPL ERROR: File does not appear to be broken.
-mcpltool-c --merge b_dp.mcpl a1.mcpl a2.mcpl: exit code 1
+mcpltool --merge b_dp.mcpl a1.mcpl a2.mcpl: exit code 1
    | ERROR: The output file "b_dp.mcpl" already exists.
    | 
    | Run with -h or --help for usage information
-mcpltool-c --merge --allow-overwrite b_dp.mcpl a1.mcpl a2.mcpl: exit code 0
-mcpltool-c -m a3.mcpl.gz a1.mcpl: exit code 1
+mcpltool --merge --allow-overwrite b_dp.mcpl a1.mcpl a2.mcpl: exit code 0
+   file b_dp.mcpl: md5 31d44c968f012abac360c7180fdd245a
+mcpltool -m a3.mcpl.gz a1.mcpl: exit code 1
    | ERROR: The output file "a3.mcpl.gz" already exists.
    | 
    | Run with -h or --help for usage information
-mcpltool-c -m --allow-overwrite a3.mcpl.gz a1.mcpl: exit code 0
+mcpltool -m --allow-overwrite a3.mcpl.gz a1.mcpl: exit code 0
    | MCPL: Compressing file a3.mcpl
    | MCPL: Compressed file into a3.mcpl.gz
-mcpltool-c -m b_pol.mcpl.gz a1.mcpl: exit code 1
+   file a3.mcpl.gz: md5 3e4d8851e2f2febf37d76ff079c9be7f
+mcpltool -m b_pol.mcpl.gz a1.mcpl: exit code 1
    | ERROR: The output file "b_pol.mcpl.gz" can not be written, since "b_pol.mcpl" (which it is compressed from) already exists.
    | 
    | Run with -h or --help for usage information
-mcpltool-c -m --allow-overwrite b_pol.mcpl.gz a1.mcpl: exit code 0
+mcpltool -m --allow-overwrite b_pol.mcpl.gz a1.mcpl: exit code 0
    | MCPL: Compressing file b_pol.mcpl
    | MCPL: Compressed file into b_pol.mcpl.gz
-mcpltool-c -m --allow-overwrite a2.mcpl a1.mcpl a2.mcpl: exit code 1
+   file b_pol.mcpl.gz: md5 3e4d8851e2f2febf37d76ff079c9be7f
+mcpltool -m --allow-overwrite a2.mcpl a1.mcpl a2.mcpl: exit code 1
    | ERROR: The output file "a2.mcpl" is also one of the input files.
    | 
    | Run with -h or --help for usage information
-mcpltool-c --forcemerge b_dp.mcpl a1.mcpl b_pol.mcpl: exit code 1
+mcpltool --forcemerge b_dp.mcpl a1.mcpl b_pol.mcpl: exit code 1
    | ERROR: The output file "b_dp.mcpl" already exists.
    | 
    | Run with -h or --help for usage information
-mcpltool-c --forcemerge --allow-overwrite b_dp.mcpl a1.mcpl b_pol.mcpl: exit code 0
+mcpltool --forcemerge --allow-overwrite b_dp.mcpl a1.mcpl b_pol.mcpl: exit code 0
    | MCPL force-merge: Files have different polarisation info (no and yes), enabling it
    | MCPL force-merge: Discarding comments and blobs of the input files
    | MCPL force-merge: Transferring 30 particles from file a1.mcpl
    | MCPL force-merge: Transferring 7 particles from file b_pol.mcpl
    | MCPL force-merge: Transferred a total of 37 particles to new file b_dp.mcpl
-mcpltool-c --extract --allow-overwrite -l3 a1.mcpl a2.mcpl: exit code 0
+   file b_dp.mcpl: md5 ab8c05a8d233c01a98867851f00433e8
+mcpltool --extract --allow-overwrite -l3 a1.mcpl a2.mcpl: exit code 0
    | MCPL WARNING: Marking stat:sum entries in output file as not available (-1) when filtering based on particle positions
    | MCPL: Successfully extracted 3 / 30 particles from a1.mcpl into a2.mcpl
-mcpltool-c --extract --allow-overwrite a1.mcpl a1.mcpl: exit code 1
+   file a2.mcpl: md5 d29993a52d26b1e09a914b5fe88fafcd
+mcpltool --extract --allow-overwrite a1.mcpl a1.mcpl: exit code 1
    | ERROR: The output file "a1.mcpl" is also one of the input files.
    | 
    | Run with -h or --help for usage information
-mcpltool-c --text a1.mcpl a2.mcpl: exit code 1
+mcpltool --text a1.mcpl a2.mcpl: exit code 1
    | ERROR: The output file "a2.mcpl" already exists.
    | 
    | Run with -h or --help for usage information
-mcpltool-c --text --allow-overwrite a1.mcpl a2.mcpl: exit code 0
-mcpltool-c --text --allow-overwrite a1.mcpl a1.mcpl: exit code 1
+mcpltool --text --allow-overwrite a1.mcpl a2.mcpl: exit code 0
+   file a2.mcpl: md5 e62e70028f25917c9a1d16d8279bdd0f
+mcpltool --text --allow-overwrite a1.mcpl a1.mcpl: exit code 1
    | ERROR: The output file "a1.mcpl" is also one of the input files.
    | 
    | Run with -h or --help for usage information
-mcpltool-c --allow --merge b_dp.mcpl a1.mcpl: exit code 0
-mcpltool-c --allow-overwrite a1.mcpl: exit code 1
-   | ERROR: --allow-overwrite can only be used with --merge, --forcemerge, --extract, or --text.
-   | 
-   | Run with -h or --help for usage information
-   mcpltool:
+mcpltool --allow --merge b_dp.mcpl a1.mcpl: exit code 0
+   file b_dp.mcpl: md5 3e4d8851e2f2febf37d76ff079c9be7f
+mcpltool --allow-overwrite a1.mcpl: exit code 1
    | ERROR: --allow-overwrite can only be used with --merge, --forcemerge, --extract, --text, or -o.
    | 
    | Run with -h or --help for usage information
-mcpltool-c --merge --inplace --allow-overwrite a1.mcpl a2.mcpl: exit code 1
-   | ERROR: --allow-overwrite can only be used with --merge, --forcemerge, --extract, or --text.
-   | 
-   | Run with -h or --help for usage information
-   mcpltool:
+mcpltool --merge --inplace --allow-overwrite a1.mcpl a2.mcpl: exit code 1
    | ERROR: --allow-overwrite can only be used with --merge, --forcemerge, --extract, --text, or -o.
    | 
    | Run with -h or --help for usage information
@@ -696,4 +707,3 @@ mcpltool --extract --pick mod(fileidx,2) == 0: stat:sum:nsim = None
    | MCPL: Successfully extracted 15 / 30 particles from a1.mcpl into out.mcpl
 mcpltool --extract -E x = 1cm*fileidx: stat:sum:nsim = 1000.0
    | MCPL: Successfully extracted 30 / 30 particles from a1.mcpl into out.mcpl
-Compared 87 command lines with mcpltool-c

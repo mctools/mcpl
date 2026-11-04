@@ -25,7 +25,6 @@ import sys
 from MCPLExtraTestUtils.dirs import (
     core_test_data_dir,
     mcpl2phits_cmd,
-    mcpltool_cmd,
     phits2mcpl_cmd,
 )
 from MCPLTestUtils import clib
@@ -80,22 +79,18 @@ def main():
     if rv.stderr or rv.returncode:
         raise SystemExit(1)
 
-    print("Run mcpltool-c",flush=True)
+    print("Run mcpltool",flush=True)
     name = f'f{oslash}{oslash}/hell{oslash}2.mcpl.gz'
     assert pathlib.Path(name).is_file()
-    rv = subprocess.run( [ mcpltool_cmd, name ], capture_output = True, check = False )
+    rv = subprocess.run( [ sys.executable, '-m', 'mcpldev', name ],
+                         capture_output = True, check = False )
     sys.stdout.buffer.write(rv.stdout)
     if rv.stderr:
         sys.stdout.buffer.write(rv.stderr)
     if rv.stderr or rv.returncode:
         raise SystemExit(1)
-    #The same with the C library itself, and with the mcpltool of Python
-    #(which will replace mcpltool-c, when it is retired):
+    #The same with the C library:
     print('C library: same dump:', clib.dump(name) == rv.stdout.replace(b'\r\n',b'\n'))
-    py = subprocess.run( [ sys.executable, '-m', 'mcpldev', name ],
-                         capture_output = True, check = False )
-    print('mcpltool: same dump:', py.stdout.replace(b'\r\n',b'\n') == rv.stdout.replace(b'\r\n',b'\n'),
-          '| exit code:', py.returncode, '| stderr:', py.stderr)
 
     print("All ok",flush=True)
 

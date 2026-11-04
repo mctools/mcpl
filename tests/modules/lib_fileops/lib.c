@@ -22,10 +22,10 @@
 #include "mcpltestmodutils.h"
 #include "mcpltest_errstate.h"
 
-//The file operations of the C library which mcpltool-c gave on the command
-//line (dumps, merges, repairs, and gzipping), with the variants with error
-//states, so the tests (tests/scripts/cfileops.py) can do what mcpltool-c did
-//with the C library, and see its errors. Each returns "ok", or the error.
+//The file operations of the C library (dumps, merges, repairs, and gzipping),
+//with the variants with error states, so the tests (tests/scripts/cfileops.py
+//and others) can call them, and see their errors. Each returns "ok", or the
+//error.
 
 MCPLTEST_CTYPE_DICTIONARY
 {

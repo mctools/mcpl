@@ -22,11 +22,13 @@
 
 # NEEDS: numpy
 
-# Check that mcpltool gives the same results and printouts as mcpltool-c for
-# the operations they share, and test the --pick, --edit, and --keep-statsum
-# options of mcpltool.
+# Tests of the operations of mcpltool on files (merging, extracting,
+# repairing, and dumping), including errors, and of its --pick, --edit, and
+# --keep-statsum options.
 
 import gzip
+import hashlib
+import os
 import pathlib
 import shutil
 import subprocess
@@ -34,10 +36,9 @@ import sys
 
 import mcpldev as mcpl
 import numpy as np
-from MCPLTestUtils.dirs import mcpltool_cmd, test_data_dir
+from MCPLTestUtils.dirs import test_data_dir
 from MCPLTestUtils.loadlib import getlib
 from MCPLTestUtils.mcplpatch import set_values
-from MCPLTestUtils.toolcheck_common import py_args
 
 input_dir = pathlib.Path('inputs').absolute()
 
@@ -78,7 +79,8 @@ def dir_contents(d):
     return res
 
 def run(cmd, cwd):
-    r = subprocess.run(cmd, cwd=cwd, capture_output=True, check=False)
+    r = subprocess.run(cmd, cwd=cwd, capture_output=True, check=False,
+                       env = { **os.environ, 'PYMCPLTOOL_FAKE_PYVERSION' : '1' })
     return r.returncode, r.stdout.decode().replace('\r\n','\n'), r.stderr.decode()
 
 def fresh(d):
@@ -86,52 +88,26 @@ def fresh(d):
         shutil.rmtree(d)
     shutil.copytree(input_dir, d)
 
-ncases = 0
-
-def compare(*args):
-    global ncases
-    ncases += 1
-    #(with -p, the comments added by --extract are different, since -p is a
-    #PICK expression for mcpltool):
-    if ( any( a.startswith('-p') for a in args )
-         and any( a in ('--extract','-e') for a in args )
-         and '--no-comment' not in args ):
-        args = ( '--no-comment', *args )
-    fresh('c')
+def tool(*args):
+    """Run mcpltool on copies of the inputs, and show its output, and the
+    checksums of the files it creates or changes (uncompressed)"""
     fresh('py')
-    c = run([str(mcpltool_cmd), *args], 'c')
-    #the Python API has no mcpl_ prefix on function names, and transfers
-    #particles with add_particles:
-    c = ( c[0], c[1].replace('mcpl_','').replace('transfer_last_read_particle',
-                                                 'add_particles'), c[2] )
-    p = run([sys.executable, '-m', 'mcpldev', *py_args(args)], 'py')
-    problems = []
-    if c[0] != p[0]:
-        problems.append(f'exit codes differ: C: {c[0]} Py: {p[0]}')
-    usage_errors = all( out.startswith('ERROR: ') and 'Run with -h' in out
-                        for out in (c[1],p[1]) )
-    if c[1] != p[1] and not usage_errors:
-        problems.append(f'printouts differ:\n      C: {c[1]!r}\n     Py: {p[1]!r}')
-    if p[2]:
-        problems.append(f'mcpltool stderr: {p[2]!r}')
-    dc, dp = dir_contents('c'), dir_contents('py')
-    if set(dc) != set(dp):
-        problems.append(f'different files: C: {sorted(dc)} Py: {sorted(dp)}')
-    else:
-        problems += [ f'file {k} differs' for k in dc if dc[k] != dp[k] ]
-    print(f'mcpltool-c {" ".join(args)}: exit code {c[0]}')
-    for line in c[1].splitlines():
+    rc, out, err = run([sys.executable, '-m', 'mcpldev', *args], 'py')
+    print(f'mcpltool {" ".join(args)}: exit code {rc}')
+    for line in out.splitlines():
         print(f'   | {line}')
-    if c[1] != p[1] and usage_errors:
-        #(the usage errors of mcpltool can be worded differently)
-        print('   mcpltool:')
-        for line in p[1].splitlines():
-            print(f'   | {line}')
-    for problem in problems:
-        print(f'   PROBLEM: {problem}')
-    return not problems
+    if err:
+        print(f'   PROBLEM: mcpltool stderr: {err!r}')
+    before = dir_contents(input_dir)
+    for name, data in dir_contents('py').items():
+        if before.get(name) != data:
+            #(with \n line endings in text files, also on Windows, like those
+            #of --text, so all are converted):
+            data = data.replace(b'\r\n',b'\n')
+            print(f'   file {name}: md5 {hashlib.md5(data).hexdigest()}')
+    return not err
 
-def test_compare_with_mcpltool():
+def test_mcpltool():
     ok = True
     cases = [
         ['--merge','out.mcpl','a1.mcpl','a2.mcpl'],
@@ -154,10 +130,10 @@ def test_compare_with_mcpltool():
         ['--extract','-s25','a1.mcpl','out'],
         ['--extract','-l3','-s4','a3.mcpl.gz','out.mcpl'],
         ['--extract','-l100','-s0','a1.mcpl','out.mcpl'],
-        ['--extract','-p22','a1.mcpl','out.mcpl'],
-        ['-e','-p-11','b_dp.mcpl','out.mcpl'],
-        ['-e','-p11','-l10','-s3','a1.mcpl','out.mcpl'],
-        ['--extract','-p2112','c_nostat.mcpl','out.mcpl'],
+        ['--extract','-p','pdgcode == 22','a1.mcpl','out.mcpl'],
+        ['-e','-p','pdgcode == -11','b_dp.mcpl','out.mcpl'],
+        ['-e','-p','pdgcode == 11','-l10','-s3','a1.mcpl','out.mcpl'],
+        ['--extract','-p','pdgcode == 2112','c_nostat.mcpl','out.mcpl'],
         ['--extract','-s5','c_nostat.mcpl','out.mcpl'],
         ['--extract','crash.mcpl','out.mcpl'],
         ['--extract','ref1.mcpl','out.mcpl'],
@@ -165,13 +141,13 @@ def test_compare_with_mcpltool():
         ['--extract','a1.mcpl','out.gz'],
         ['--extract','a1.mcpl'],
         ['--extract','a1.mcpl','x.mcpl','y.mcpl'],
-        ['--extract','--no-comment','-p22','-l5','a1.mcpl','out.mcpl'],
-        ['--extract','-p11','-l3','-s4','a1.mcpl','out.mcpl'],
+        ['--extract','--no-comment','-p','pdgcode == 22','-l5','a1.mcpl','out.mcpl'],
+        ['--extract','-p','pdgcode == 11','-l3','-s4','a1.mcpl','out.mcpl'],
         ['--no-comment','a1.mcpl'],
-        ['--extract','-pgamma','a1.mcpl','out.mcpl'],
-        ['--extract','-pphoton','-l10','a1.mcpl','out.mcpl'],
-        ['--extract','-pantielectron','b_dp.mcpl','out.mcpl'],
-        ['--extract','-pneutron','c_nostat.mcpl','out.mcpl'],
+        ['--extract','-p','pdgcode == gamma','a1.mcpl','out.mcpl'],
+        ['--extract','-p','pdgcode == photon','-l10','a1.mcpl','out.mcpl'],
+        ['--extract','-p','pdgcode == antielectron','b_dp.mcpl','out.mcpl'],
+        ['--extract','-p','pdgcode == neutron','c_nostat.mcpl','out.mcpl'],
         ['--inplace','a1.mcpl','a2.mcpl'],
         ['--keepuserflags','a1.mcpl'],
         ['--merge','--forcemerge','out.mcpl','a1.mcpl','a2.mcpl'],
@@ -198,8 +174,8 @@ def test_compare_with_mcpltool():
         ['-j','nan.mcpl'],
         ['--extract','nan.mcpl','out.mcpl'],
         ['--extract','-l12','nan.mcpl','out.mcpl'],
-        ['--extract','-p22','nan.mcpl','out.mcpl'],
-        ['--extract','-p2112','inf.mcpl','out.mcpl'],
+        ['--extract','-p','pdgcode == 22','nan.mcpl','out.mcpl'],
+        ['--extract','-p','pdgcode == 2112','inf.mcpl','out.mcpl'],
         ['--merge','out.mcpl','a1.mcpl','nan.mcpl','inf.mcpl'],
         ['--merge','--inplace','a2.mcpl','nan.mcpl'],
         ['--forcemerge','out.mcpl','b_dp.mcpl','nan.mcpl'],
@@ -224,7 +200,7 @@ def test_compare_with_mcpltool():
         ['--merge','--inplace','--allow-overwrite','a1.mcpl','a2.mcpl'],
     ]
     for args in cases:
-        ok &= compare(*args)
+        ok &= tool(*args)
     return ok
 
 def py_extract(infile, outfile, pick = None, edit = None):
@@ -353,8 +329,7 @@ def test_statsum():
 
 def main():
     make_inputs()
-    results = [ test_compare_with_mcpltool(), test_pick_edit(), test_statsum() ]
-    print(f'Compared {ncases} command lines with mcpltool-c')
+    results = [ test_mcpltool(), test_pick_edit(), test_statsum() ]
     assert all(results), 'Problems found'
 
 if __name__ == '__main__':

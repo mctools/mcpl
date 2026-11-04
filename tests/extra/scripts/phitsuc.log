@@ -10,7 +10,7 @@ Run phits2mcpl
 MCPL: Compressing file hellø2.mcpl
 MCPL: Compressed file into hellø2.mcpl.gz
 Created føø/hellø2.mcpl.gz
-Run mcpltool-c
+Run mcpltool
 Opened MCPL file hellø2.mcpl.gz:
 
   Basic info
@@ -43,5 +43,4 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1           0           0           0
     4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1           0           0           0
 C library: same dump: True
-mcpltool: same dump: True | exit code: 0 | stderr: b''
 All ok

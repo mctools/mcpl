@@ -157,26 +157,6 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     0        2112         0.5           1           0           0           0           0           1           0           1  000102030405060708090a0b0c0d0e0f...
     1        2112           1           2           0           0           0           0           1           0           1  0708090a0b0c0d0e0f10111213141516...
 Python module: 4 temp:float32,origin:int32,tags:uint8[3],big:float64,id:uint64,s:int16
-=== Text export
-#MCPL-ASCII
-#ASCII-FORMAT: v1
-#NPARTICLES: 3
-#WARNING: The userdata of the particles in the MCPL file is not included
-#END-HEADER
-index     pdgcode               ekin[MeV]                   x[cm]                   y[cm]                   z[cm]                      ux                      uy                      uz                time[ms]                  weight                   pol-x                   pol-y                   pol-z  userflags
-    0        2112                     0.5                       1                       0                       0                       0                       0                       1                       0                       1                       0                       0                       0 0x00000000
-    1        2112                       1                       2                       0                       0                       0                       0                       1                       0                       1                       0                       0                       0 0x00000000
-    2        2112                     1.5                       3                       0                       0                       0                       0                       1                       0                       1                       0                       0                       0 0x00000000
-#MCPL-ASCII
-#ASCII-FORMAT: v1
-#NPARTICLES: 4
-#WARNING: The userdata of the particles in the MCPL file is not included
-#END-HEADER
-index     pdgcode               ekin[MeV]                   x[cm]                   y[cm]                   z[cm]                      ux                      uy                      uz                time[ms]                  weight                   pol-x                   pol-y                   pol-z  userflags
-    0        2112                     0.5                       1                       0                       0                       0                       0                       1                       0                       1                       0                       0                       0 0x00000000
-    1        2112                       1                       2                       0                       0                       0                       0                       1                       0                       1                       0                       0                       0 0x00000000
-    2        2112                     1.5                       3                       0                       0                       0                       0                       1                       0                       1                       0                       0                       0 0x00000000
-    3        2112                       2                       4                       0                       0                       0                       0                       1                       0                       1                       0                       0                       0 0x00000000
 === Transfers
 t1.mcpl: format version 4, userdata layout "temp:float32,origin:int32,tags:uint8[3],big:float64,id:uint64,s:int16", size 29, particle size 65
   particle 0 x=1 ekin=0.5: temp=293.15 origin=0 tags=0,1,2 big=1e+300 id=18446744073709551615 s=-32768

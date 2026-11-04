@@ -40,7 +40,6 @@ MCPLTEST_CTYPE_DICTIONARY
     "void mcpltest_ud_merge_inplace( const char *, const char * );"
     "int mcpltest_ud_can_merge( const char *, const char * );"
     "void mcpltest_ud_dump( const char * );"
-    "void mcpltest_ud_text( const char *, const char * );"
     "void mcpltest_ud_misuse( unsigned );"
     ;
 }
@@ -263,15 +262,6 @@ MCPLTEST_CTYPES int mcpltest_ud_can_merge( const char * f1, const char * f2 )
 MCPLTEST_CTYPES void mcpltest_ud_dump( const char * filename )
 {
   mcpl_dump(filename,0,0,0);
-}
-
-MCPLTEST_CTYPES void mcpltest_ud_text( const char * filename,
-                                       const char * outfile )
-{
-  char a0[] = "mcpltool";
-  char a1[] = "--text";
-  char * argv[4] = { a0, a1, (char*)filename, (char*)outfile };
-  mcpl_tool(4,argv);
 }
 
 //Wrong usage which must give errors:

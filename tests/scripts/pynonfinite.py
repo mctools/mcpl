@@ -97,7 +97,7 @@ def test_directions():
     #Directions with NaN or -0.0 values are unpacked like in the C library:
     #computed components which would be NaN are 0, and the sign of -0.0 is
     #kept (in MCPL-2 files, which pack directions differently). Values found
-    #with mcpltool-c:
+    #with the C library:
     set_values('ok.mcpl','dirnan.mcpl',4,{'uve1':float('nan')})
     with mcpl.MCPLFile('dirnan.mcpl') as f:
         b = f.read_block()
