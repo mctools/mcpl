@@ -241,7 +241,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
 ---- -> ok
 ---- dump reffile_truncated.mcpl (parts 0, skip 0, limit 3)
----- -> error: Input file is truncated (it has fewer particles than given in its header)
+---- -> error: Input file is truncated (it has fewer particles than given in its header) (when opening)
 ---- dump reffile_truncated.mcpl.gz (parts 0, skip 0, limit 3)
 
   Basic info
@@ -271,7 +271,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     2        2112           0           0           0           0     0.61152     0.73811    -0.28504           0
 ---- -> ok
 ---- dump reffile_bad1.mcpl (parts 0, skip 0, limit 3)
----- -> error: File is not an MCPL file!
+---- -> error: File is not an MCPL file! (when opening)
 ---- dump reffile_notreallygz.mcpl.gz (parts 0, skip 0, limit 3)
 
   Basic info
@@ -300,9 +300,9 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
 ---- -> ok
 ---- dump nosuchfile.mcpl (parts 0, skip 0, limit 0)
----- -> I/O error: Unable to open file!
+---- -> I/O error: Unable to open file! (when opening)
 ---- dump adirectory.mcpl (parts 0, skip 0, limit 0)
----- -> I/O error: Is a directory and not a file!
+---- -> I/O error: Is a directory and not a file! (when opening)
 can merge a and b: 1
 ---- merge a.mcpl b.mcpl.gz into ab.mcpl
 ---- -> ok
@@ -777,7 +777,7 @@ MCPL: Successfully repaired file with 9 particles.
 ---- repair repaired_ref_statsum_crash.mcpl
 ---- -> error: File does not appear to be broken.
 ---- dump repaired_reffile_truncated.mcpl (parts 1, skip 0, limit 0)
----- -> error: Input file is truncated (it has fewer particles than given in its header)
+---- -> error: Input file is truncated (it has fewer particles than given in its header) (when opening)
 ---- repair repaired_reffile_truncated.mcpl
 MCPL: Successfully repaired file with 7 particles.
 ---- -> ok
