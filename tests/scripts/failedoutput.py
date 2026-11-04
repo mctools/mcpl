@@ -19,8 +19,8 @@
 ##                                                                            ##
 ################################################################################
 
-# Failed --merge, --forcemerge, and --extract operations of mcpltool-c and
-# mcpltool must not leave output files behind. They fail here because the
+# Failed --merge, --forcemerge, and --extract operations of mcpltool must
+# not leave output files behind. They fail here because the
 # input file has a comment starting with "stat:" which is not "stat:sum:"
 # (which is refused when writing files).
 
@@ -30,19 +30,13 @@ import subprocess
 import sys
 
 from MCPLTestUtils import clib
-from MCPLTestUtils.dirs import mcpltool_cmd, test_data_dir
-from MCPLTestUtils.toolcheck_common import py_args
+from MCPLTestUtils.dirs import test_data_dir
 
 
-def run( tool, args ):
-    if tool == 'C':
-        cmd = [ str(mcpltool_cmd) ]
-    else:
-        code = ( 'import sys; import mcpldev._cli as c;'
-                 ' sys.argv[0] = "mcpltool"; c.main()' )
-        cmd = [ sys.executable, '-c', code ]
-        args = py_args(args)
-    rv = subprocess.run( cmd + [ str(a) for a in args ],
+def run( args ):
+    code = ( 'import sys; import mcpldev._cli as c;'
+             ' sys.argv[0] = "mcpltool"; c.main()' )
+    rv = subprocess.run( [ sys.executable, '-c', code ] + [ str(a) for a in args ],
                          capture_output = True, check = False )
     return rv.returncode, ( rv.stdout + rv.stderr ).decode()
 
@@ -50,22 +44,21 @@ def main():
     src = test_data_dir / 'ref' / 'ref_statunsupported.mcpl.gz'
     for fn in ( 'a.mcpl', 'b.mcpl' ):
         pathlib.Path(fn).write_bytes( gzip.decompress( src.read_bytes() ) )
-    for tool in ( 'C', 'Python' ):
-        for args in ( [ '--merge', 'out.mcpl', 'a.mcpl', 'b.mcpl' ],
-                      [ '--merge', 'out', 'a.mcpl', 'b.mcpl' ],
-                      [ '--merge', 'out.mcpl.gz', 'a.mcpl', 'b.mcpl' ],
-                      [ '--forcemerge', 'out.mcpl', 'a.mcpl', 'b.mcpl' ],
-                      [ '--extract', 'a.mcpl', 'out.mcpl' ],
-                      [ '--extract', '-p2112', 'a.mcpl', 'out' ],
-                      [ '--extract', 'a.mcpl', 'out.mcpl.gz' ] ):
-            rc, output = run( tool, args )
-            assert rc != 0, (tool, args, output)
-            assert 'reserved for future usage' in output, (tool, args, output)
-            left = sorted( str(f) for f in pathlib.Path('.').glob('out*') )
-            assert not left, (tool, args, left)
-            print(f'{tool}: failed {" ".join(args)} leaves no output file')
+    for args in ( [ '--merge', 'out.mcpl', 'a.mcpl', 'b.mcpl' ],
+                  [ '--merge', 'out', 'a.mcpl', 'b.mcpl' ],
+                  [ '--merge', 'out.mcpl.gz', 'a.mcpl', 'b.mcpl' ],
+                  [ '--forcemerge', 'out.mcpl', 'a.mcpl', 'b.mcpl' ],
+                  [ '--extract', 'a.mcpl', 'out.mcpl' ],
+                  [ '--extract', '-p', 'pdgcode == 2112', 'a.mcpl', 'out' ],
+                  [ '--extract', 'a.mcpl', 'out.mcpl.gz' ] ):
+        rc, output = run( args )
+        assert rc != 0, (args, output)
+        assert 'reserved for future usage' in output, (args, output)
+        left = sorted( str(f) for f in pathlib.Path('.').glob('out*') )
+        assert not left, (args, left)
+        print(f'mcpltool: failed {" ".join(args)} leaves no output file')
     #The merges of the C library itself fail the same way, but leave the
-    #output file unfinished (it is only removed by the tools):
+    #output file unfinished (it is only removed by mcpltool):
     for out, force in ( ( 'out.mcpl', 0 ), ( 'out', 0 ), ( 'out.mcpl.gz', 0 ),
                         ( 'out.mcpl', 1 ) ):
         res = clib.lib().mcpltest_merge(out,'a.mcpl\nb.mcpl',force,0)
@@ -78,17 +71,16 @@ def main():
             f.unlink()
     #While successful operations of course do:
     ex = test_data_dir / 'ref' / 'reffile_1.mcpl'
-    for tool in ( 'C', 'Python' ):
-        for args, out in ( ( [ '--merge', 'ok.mcpl', ex, 'b0.mcpl' ],
-                             'ok.mcpl' ),
-                           ( [ '--extract', '-p2112', ex, 'okx.mcpl.gz' ],
-                             'okx.mcpl.gz' ) ):
-            pathlib.Path('b0.mcpl').write_bytes( ex.read_bytes() )
-            rc, output = run( tool, args )
-            assert rc == 0, (tool, args, output)
-            assert pathlib.Path(out).is_file()
-            pathlib.Path(out).unlink()
-            print(f'{tool}: successful {args[0]} gives an output file')
+    for args, out in ( ( [ '--merge', 'ok.mcpl', ex, 'b0.mcpl' ],
+                         'ok.mcpl' ),
+                       ( [ '--extract', '-p', 'pdgcode == 2112', ex, 'okx.mcpl.gz' ],
+                         'okx.mcpl.gz' ) ):
+        pathlib.Path('b0.mcpl').write_bytes( ex.read_bytes() )
+        rc, output = run( args )
+        assert rc == 0, (args, output)
+        assert pathlib.Path(out).is_file()
+        pathlib.Path(out).unlink()
+        print(f'mcpltool: successful {args[0]} gives an output file')
 
 if __name__ == '__main__':
     main()

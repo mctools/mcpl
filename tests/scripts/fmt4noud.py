@@ -35,7 +35,7 @@ import subprocess
 
 import mcpldev as mcpl
 from MCPLTestUtils import clib
-from MCPLTestUtils.dirs import mcpltool_cmd, test_data_dir
+from MCPLTestUtils.dirs import test_data_dir
 
 
 def set_version( src, tgt, version ):
@@ -43,16 +43,9 @@ def set_version( src, tgt, version ):
     assert data[0:4] == b'MCPL' and data[4:7] in (b'003',b'004')
     tgt.write_bytes( data[0:4] + version + data[7:] )
 
-def run_c( *args ):
-    rv = subprocess.run( [mcpltool_cmd]+[str(a) for a in args],
-                         capture_output = True, check = True )
-    assert not rv.stderr
-    return rv.stdout.decode('utf-8','replace')
-
 def run_clib( *args ):
-    """What run_c gives, done with the C library (see MCPLTestUtils.clib), for
-    dumps (-l0) and merges (--merge), which will replace run_c when mcpltool-c
-    is retired (extracting is only done by the tools)"""
+    """What run_py gives, done with the C library (see MCPLTestUtils.clib),
+    for dumps (-l0) and merges (--merge)"""
     if args[0] == '-l0':
         return clib.dump(args[1]).decode('utf-8','replace')
     assert args[0] == '--merge'
@@ -107,7 +100,7 @@ def check( src, f3 ):
     with mcpl.MCPLFile(f4) as f:
         assert f.version == 4, f.version
     #Same header and particles in the dumps (C and Python):
-    for runner, name in ( (run_c,'C'), (run_clib,'C library'), (run_py,'Python') ):
+    for runner, name in ( (run_clib,'C library'), (run_py,'Python') ):
         d3 = runner( '-l0', f3 )
         d4 = runner( '-l0', f4 )
         assert 'MCPL-3' in d3 and 'MCPL-4' in d4
@@ -118,19 +111,17 @@ def check( src, f3 ):
     assert particles(f3) == particles(f4)
     print('  Python: same particles as MCPL-3')
     #Merging with the MCPL-3 file, and extracting (which give MCPL-3 files):
-    for runner, name in ( (run_c,'C'), (run_clib,'C library'), (run_py,'Python') ):
+    for runner, name in ( (run_clib,'C library'), (run_py,'Python') ):
         out = pathlib.Path(f'merged_{name.replace(" ","_")}_{f3.name}')
         runner( '--merge', out, f4, f3 )
         with mcpl.MCPLFile(out) as f:
             assert f.version == 3
         assert particles(out) == particles(f3) * 2
-        if runner is run_clib:
-            print(f'  {name}: merging with the MCPL-3 file works')
-            continue
-        out = pathlib.Path(f'extracted_{name}_{f3.name}')
-        runner( '--extract', f4, out )
-        assert particles(out) == particles(f3)
-        print(f'  {name}: merging with the MCPL-3 file and extracting work')
+        print(f'  {name}: merging with the MCPL-3 file works')
+    out = pathlib.Path(f'extracted_{f3.name}')
+    run_py( '--extract', f4, out )
+    assert particles(out) == particles(f3)
+    print('  Python: extracting works')
     #Round trips: version 3 -> 4 -> 3, and version 4 -> 3 -> 4:
     f3b = pathlib.Path( 'back_' + f3.name )
     set_version( f4, f3b, b'003' )
@@ -151,7 +142,7 @@ def check_with_userdata():
         assert data[0:7] == b'MCPL004'
         flags = int.from_bytes(data[24:28],'little')
         assert flags == ( 0x3 if userflags else 0x2 ), flags
-        for runner in ( run_c, run_py ):
+        for runner in ( run_clib, run_py ):
             runner( '-l0', fn )
         #Invalid values of the userflags field in version 4:
         for bad in ( 0x4, 0x6, 0xff ):
@@ -164,9 +155,6 @@ def check_with_userdata():
                 assert 'userflags field' in str(e)
             else:
                 raise AssertionError('invalid userflags field not detected')
-            rv = subprocess.run( [mcpltool_cmd,'-l0',str(badfn)],
-                                 capture_output = True, check = False )
-            assert rv.returncode != 0 and b'userflags field' in rv.stdout+rv.stderr
             assert b'MCPL ERROR: ' in clib.dump(badfn) and b'userflags field' in clib.dump(badfn)
     print('  0x2 in the userflags field, invalid values detected (C and Python)')
 
@@ -177,9 +165,6 @@ def expect_open_failure( fn, errmsg_part ):
         assert errmsg_part in str(e), str(e)
     else:
         raise AssertionError(f'Python reader did not refuse {fn}')
-    rv = subprocess.run( [mcpltool_cmd,'-l0',str(fn)],
-                         capture_output = True, check = False )
-    assert rv.returncode != 0 and errmsg_part.encode() in rv.stdout+rv.stderr, rv
     assert b'MCPL ERROR: ' in clib.dump(fn) and errmsg_part.encode() in clib.dump(fn)
 
 def check_header_rules():
@@ -238,7 +223,6 @@ def check_header_rules():
     data3 = gzip.decompress(src.read_bytes())
     fn3 = pathlib.Path('badkeys_v3.mcpl')
     fn3.write_bytes( data3 )
-    run_c( '-l0', fn3 )
     run_clib( '-l0', fn3 )
     run_py( '-l0', fn3 )
     fn4 = pathlib.Path('badkeys_v4.mcpl')
@@ -298,9 +282,8 @@ def main():
             print(f'{src.name}: skipped (not in version 3)')
             continue
         f3.write_bytes( data )
-        rv = subprocess.run( [mcpltool_cmd,'-l0',str(f3)],
-                             capture_output = True, check = False )
-        if rv.returncode != 0 or rv.stderr or b'WARNING' in rv.stdout:
+        d = clib.dump(f3)
+        if b'MCPL ERROR' in d or b'WARNING' in d:
             print(f'{src.name}: skipped (can not be read without problems)')
             continue
         problem = fmt4_problem( f3 )

@@ -80,39 +80,3 @@ def load_file( fn ):
     if det_res['nparticles'] == 0:
         return None
     return numpy.genfromtxt(fn,**det_res['genfromtxt_args']).T
-
-def check_compat( fn1, fn2, epsilon = 1e-14 ):
-    # return None if compatible, otherwise an error message.
-    import numpy
-    d1 = load_file(fn1)
-    d2 = load_file(fn2)
-    if d1 is None and d2 is None:
-        #Two empty files
-        return None
-    if d1.shape != d2.shape or d1.dtype.names != d2.dtype.names:
-        return 'Incompatible data shapes or types'
-    for icol,name in enumerate(d1.dtype.names):
-        col1 = d1[name]
-        col2 = d2[name]
-        if col1.dtype != col2.dtype or len(col1) != len(col2):
-            return 'Incompatible data shapes or types'
-        if col1.dtype != numpy.dtype('float64'):
-            if not numpy.array_equal( col1, col2 ):
-                return f'Unequal values in column {icol+1}'
-        else:
-            #FP compare:
-            if not numpy.allclose( col1, col2,
-                                   rtol=1e-14,
-                                   atol=1e-200,
-                                   equal_nan=True ):
-                return f'Unequal values in column {icol+1}'
-    return None
-
-#
-#if __name__ == '__main__':
-#    import sys
-#    incompat_msg = check_compat(sys.argv[1],sys.argv[2])
-#    if incompat_msg is not None:
-#        raise SystemExit(f'Files not compatible: {incompat_msg}')
-#    print('Files are compatible')
-#

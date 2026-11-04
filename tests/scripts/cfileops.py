@@ -20,12 +20,10 @@
 ################################################################################
 
 
-# The file operations of the C library which mcpltool-c gave on the command
-# line (dumps, merges, in-place merges, forced merges, repairs, and gzipping),
-# called directly (with the test library fileops), on the reference files and
-# their failures, so they stay tested when mcpltool-c (and mcpl_tool) are
-# retired. The command line is tested with the mcpltool of Python (pytool and
-# others).
+# The file operations of the C library (dumps, merges, in-place merges, forced
+# merges, repairs, and gzipping), called directly (with the test library
+# fileops), on the reference files and their failures. The command line is
+# tested with mcpltool (tool and others).
 
 import gzip
 import shutil

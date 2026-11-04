@@ -22,15 +22,14 @@
 # NEEDS: numpy
 
 import pathlib
-import subprocess
-import sys
 
+import mcpldev
 from mcpldev import MCPLError
 from mcpldev import dump_file as pymcpltool_dump_file
-from MCPLTestUtils.checkasciicompat import check_compat
+from MCPLTestUtils.checkasciicompat import load_file
 from MCPLTestUtils.clib import dump as c_library_dump
 from MCPLTestUtils.common import flush
-from MCPLTestUtils.dirs import mcpltool_cmd, test_data_dir
+from MCPLTestUtils.dirs import test_data_dir
 from MCPLTestUtils.stdout_redirect import RedirectStdout
 
 
@@ -42,16 +41,27 @@ def run_pymcpltool(*args):
         if str(e) != '0':
             raise
 
-def run_mcpltool(*args, check = False):
-    flush()
-    rv = subprocess.run( [mcpltool_cmd]+[str(e) for e in args],
-                         capture_output = True, check = check )
-    flush()
-    assert not rv.stderr
-    if check:
-        return rv.stdout
-    else:
-        return rv.returncode, rv.stdout
+def check_text( text_file, file_path ):
+    """None if the numbers in the file of mcpltool --text are those of the
+    particles (as read by Python), otherwise an error message"""
+    import numpy
+    cols = load_file(text_file)
+    #(its warnings were already shown by the dump):
+    hidden = RedirectStdout('check_text_messages.txt')
+    with hidden, mcpldev.MCPLFile(file_path,blocklength=10**6) as f:
+        blocks = list(f.particle_blocks)
+    if cols is None:
+        return None if not blocks else 'no particles in the text file'
+    #(the columns after the index):
+    names = ( 'pdgcode', 'ekin', 'x', 'y', 'z', 'ux', 'uy', 'uz', 'time',
+              'weight', 'polx', 'poly', 'polz', 'userflags' )
+    for colname, name in zip(cols.dtype.names[1:], names):
+        expected = numpy.concatenate([ getattr(b,name) for b in blocks ])
+        if not numpy.allclose( numpy.atleast_1d(cols[colname]).astype(float),
+                               numpy.asarray(expected,dtype=float),
+                               rtol = 1e-14, atol = 0.0, equal_nan = True ):
+            return f'different {name}'
+    return None
 
 
 files = {}
@@ -71,11 +81,11 @@ for file_key in sorted(files.keys()):
         expect_crash = True
         print(" -- assuming this is a broken file which can't be read without errors")
 
-        #First compare mcpltool-like output:
+        #First compare the dumps:
     with RedirectStdout('dump_pymcpltool.txt'):
         try:
             if truncated_file:
-                pymcpltool_dump_file(file_path,limit=0,blocklength=1)#need bl=1 to get same output as C-mcpltool
+                pymcpltool_dump_file(file_path,limit=0,blocklength=1)#need bl=1 to get the same output as the C library
             else:
                 pymcpltool_dump_file(file_path,limit=0)
             ec=0
@@ -87,23 +97,11 @@ for file_key in sorted(files.keys()):
         print("ERRORS DETECTED in python dump (unexpected exception status)")
         continue
 
-    ec,mcpltool_output = run_mcpltool('-l0',file_path)
-    with open('dump_mcpltool.txt','wb') as f:
-        f.write(mcpltool_output)
-    if (ec!=0) !=  expect_crash:
-        errors = True
-        print("ERRORS DETECTED in mcpltool-c (unexpected error status)")
-        continue
-
-    if pathlib.Path('dump_pymcpltool.txt').read_bytes() != mcpltool_output:
-        errors = True
-        print("ERRORS DETECTED in mcpltool-like output")
-
-    #The same as the dump by the C library (which will be compared instead
-    #when mcpltool-c is retired):
-    #(with \n line endings, also on Windows):
+    #The same as the dump by the C library (with \n line endings, also on
+    #Windows):
+    clib_output = c_library_dump(file_path)
     pydump = pathlib.Path('dump_pymcpltool.txt').read_bytes().replace(b'\r\n',b'\n')
-    if pydump != c_library_dump(file_path):
+    if pydump != clib_output:
         errors = True
         print("ERRORS DETECTED in the output compared with the C library")
 
@@ -112,7 +110,8 @@ for file_key in sorted(files.keys()):
     if file_key.startswith('reffmt4/') and not expect_crash:
         with RedirectStdout('dump_pymcpltool_bl3.txt'):
             pymcpltool_dump_file(file_path,limit=0,blocklength=3)
-        if pathlib.Path('dump_pymcpltool_bl3.txt').read_bytes() != mcpltool_output:
+        pydump_bl3 = pathlib.Path('dump_pymcpltool_bl3.txt').read_bytes()
+        if pydump_bl3.replace(b'\r\n',b'\n') != clib_output:
             errors = True
             print("ERRORS DETECTED in mcpltool-like output with blocklength=3")
 
@@ -124,23 +123,13 @@ for file_key in sorted(files.keys()):
         p = pathlib.Path(f)
         if p.exists():
             p.unlink()
-    rm_f('dump_ascii_c.txt')
     rm_f('dump_ascii_py.txt')
     flush()
-    out_c = run_mcpltool('--text',file_path,'dump_ascii_c.txt',check=True)
+    run_pymcpltool('--text',file_path,'dump_ascii_py.txt')
     flush()
-    sys.stdout.buffer.write(out_c)
-    flush()
-    rm_f('out_pymcpltool.txt')
-    with RedirectStdout('out_pymcpltool.txt'):
-        run_pymcpltool('--text',file_path,'dump_ascii_py.txt')
-    out_py = pathlib.Path('out_pymcpltool.txt').read_bytes()
-    if out_c!=out_py:
-        errors = True
-        print("ERRORS DETECTED in stdout during creation of ascii output")
-    incompat_errmsg = check_compat('./dump_ascii_c.txt','./dump_ascii_py.txt')
+    incompat_errmsg = check_text('./dump_ascii_py.txt',file_path)
     if incompat_errmsg is not None:
-        raise SystemExit('ERRORS DETECTED in high-res ascii output.'
-                        f' C and Py tool output differs: {incompat_errmsg}')
+        raise SystemExit('ERRORS DETECTED in high-res ascii output:'
+                         f' {incompat_errmsg}')
 
 assert not errors

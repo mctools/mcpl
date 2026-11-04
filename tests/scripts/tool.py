@@ -24,7 +24,7 @@ import os
 from pathlib import Path
 
 from MCPLTestUtils.dirs import test_data_dir
-from MCPLTestUtils.toolcheck_common import check_same, cmd, copy, gunzip, python_tool
+from MCPLTestUtils.toolcheck_common import check_same, cmd, copy, gunzip
 
 
 def main():
@@ -86,21 +86,20 @@ def main():
     #Test various options (also illegal ones):
     cmd('-h')
     cmd('--help')
-    #(--h and --n are ambiguous in the mcpltool of Python, which has more
-    #options):
-    cmd('--h',pyfail=True)
+    #(--h and --n are ambiguous):
+    cmd('--h',fail=True)
     cmd('--version')
     cmd('--v')
     cmd(f1,'--justhead')
     cmd(f1,'--ju')
     cmd(f1,'-j')
     cmd(f1,'--nohead')
-    cmd(f1,'--n',pyfail=True)
+    cmd(f1,'--n',fail=True)
     cmd(f1,'--n','-m','--inplace',fail=True)
     cmd(f1,'--ju','-l2',fail=True)
     cmd(f1,'--ju','-s1',fail=True)
     cmd(f1,'-l2','-r',fail=True)
-    cmd(f1,'--v','--h',pyfail=True)
+    cmd(f1,'--v','--h',fail=True)
     cmd(f1,'--v','--m','--inplace',fail=True)
     cmd(f1,'-l0','-s2')
     cmd(f1,'-l2','-s0')
@@ -179,38 +178,31 @@ def main():
     cmd('-e',fmisc,'extracted_0')
     cmd('-e',fmisc,'extracted_0',fail=True)#already exists (as .mcpl)
     #(--no-comment, since the files are merged again below):
-    cmd('--extract','-p2112','--no-comment',fmisc,'extracted_1.mcpl.gz')
-    cmd('--extract','-p-11','--no-comment',fmisc,'extracted_2.mcpl.gz')
-    cmd('-ep-1000020040','--no-comment',fmiscnogz,'extracted_3.mcpl.gz')
-    cmd('-e','-p1000922350','--no-comment',fmisc,'extracted_4.mcpl.gz')
-    cmd('-e','-p111','-l999999','-s150','--no-comment',fmiscnogz,'extracted_5.mcpl.gz')
-    #invalid -p arguments must not leave output files behind:
-    #(for the mcpltool of Python, this is the pick pdgcode == 0, which picks
-    #no particles):
-    cmd('-e','-p0',fmiscnogz,'badpdg.mcpl',fail=True,pyfail=False)
-    if python_tool():
-        Path('badpdg.mcpl').unlink()
-    #Numbers which are too large, and leading zeros:
-    cmd('-e','-p99999999999999999999',fmiscnogz,'badpdg.mcpl',fail=True)
+    cmd('--extract','-p','pdgcode == 2112','--no-comment',fmisc,'extracted_1.mcpl.gz')
+    cmd('--extract','-p','pdgcode == -11','--no-comment',fmisc,'extracted_2.mcpl.gz')
+    cmd('-e','-p','pdgcode == -1000020040','--no-comment',fmiscnogz,'extracted_3.mcpl.gz')
+    cmd('-e','-p','pdgcode == 1000922350','--no-comment',fmisc,'extracted_4.mcpl.gz')
+    cmd('-e','-p','pdgcode == 111','-l999999','-s150','--no-comment',fmiscnogz,'extracted_5.mcpl.gz')
+    #A pick of no particles gives an empty file:
+    cmd('-e','-p','pdgcode == 0',fmiscnogz,'badpdg.mcpl')
+    Path('badpdg.mcpl').unlink()
+    #Invalid picks must not leave output files behind, like numbers which are
+    #too large, and leading zeros:
+    cmd('-e','-p','pdgcode == 99999999999999999999',fmiscnogz,'badpdg.mcpl',fail=True)
     cmd(f1,'-l99999999999999999999',fail=True)
-    #(the mcpltool of Python refuses numbers with leading zeros):
-    cmd('-e','-p022','--no-comment',fmisc,'extracted_6.mcpl.gz',pyfail=True)
+    cmd('-e','-p','pdgcode == 022','--no-comment',fmisc,'extracted_6.mcpl.gz',fail=True)
     #Outputs with the name of an existing directory are refused:
     Path('dirout.mcpl.gz').mkdir()
     cmd('-e',fmisc,'dirout.mcpl.gz',fail=True)
     Path('dirout.mcpl.gz').rmdir()
-    cmd('-e','-pabc',fmiscnogz,'badpdg.mcpl',fail=True)
-    cmd('-e','-pNeutron',fmiscnogz,'badpdg.mcpl',fail=True)
-    cmd('-e','-pneutron',fmiscnogz,'extracted_names_1.mcpl')
-    cmd('-e','-pantiproton','-l200',fmiscnogz,'extracted_names_2.mcpl')
-    cmd('-e','-pphoton',fmiscnogz,'extracted_names_3.mcpl')
-    cmd('-e','-pantielectron',fmiscnogz,'extracted_names_4.mcpl')
-    cmd('-e','-p-11',fmiscnogz,'extracted_names_5.mcpl')
+    cmd('-e','-p','pdgcode == abc',fmiscnogz,'badpdg.mcpl',fail=True)
+    cmd('-e','-p','pdgcode == Neutron',fmiscnogz,'badpdg.mcpl',fail=True)
+    cmd('-e','-p','pdgcode == neutron',fmiscnogz,'extracted_names_1.mcpl')
+    cmd('-e','-p','pdgcode == antiproton','-l200',fmiscnogz,'extracted_names_2.mcpl')
+    cmd('-e','-p','pdgcode == photon',fmiscnogz,'extracted_names_3.mcpl')
+    cmd('-e','-p','pdgcode == antielectron',fmiscnogz,'extracted_names_4.mcpl')
+    cmd('-e','-p','pdgcode == -11',fmiscnogz,'extracted_names_5.mcpl')
     cmd('-n','-l3','extracted_names_3.mcpl')
-    #(the mcpltool of Python records the picks as written in the comments of
-    #the files, so only the particles are the same):
-    if not python_tool():
-        assert Path('extracted_names_4.mcpl').read_bytes() == Path('extracted_names_5.mcpl').read_bytes()
     assert not Path('badpdg.mcpl').exists()
     cmd('-l0','extracted_1.mcpl.gz')
     cmd('-l0','extracted_2.mcpl.gz')
@@ -234,9 +226,9 @@ def main():
     gunzip('extracted_3.mcpl.gz')
     gunzip('extracted_4.mcpl.gz')
     gunzip('extracted_5.mcpl.gz')
-    cmd('--extract','-p2112','--no-comment',fmiscnogz,'extracted_1_new.mcpl')
-    cmd('--extract','-p-11','--no-comment',fmiscnogz,'extracted_2_new.mcpl')
-    cmd('-e','-p1000922350','--no-comment',fmiscnogz,'extracted_4_new.mcpl')
+    cmd('--extract','-p','pdgcode == 2112','--no-comment',fmiscnogz,'extracted_1_new.mcpl')
+    cmd('--extract','-p','pdgcode == -11','--no-comment',fmiscnogz,'extracted_2_new.mcpl')
+    cmd('-e','-p','pdgcode == 1000922350','--no-comment',fmiscnogz,'extracted_4_new.mcpl')
     cmd('--merge','merged_1to5_new_filec.mcpl','extracted_1_new.mcpl','extracted_2_new.mcpl','extracted_3.mcpl','extracted_4_new.mcpl','extracted_5.mcpl')
     #merge to gzipped output by specifying .mcpl.gz:
     #  -> but fail since .mcpl file exists:
@@ -267,10 +259,10 @@ def main():
     cmd('-e','difficult_unitvector.mcpl','extracted_all','-l0','--preventcomment')
     cmd('-e','difficult_unitvector.mcpl','extracted_none','-s999999999','--preventcomment')
     #comments describing the extraction (and --no-comment):
-    cmd('-e','-l3','-s2','-pneutron',fmiscnogz,'extracted_comment_1.mcpl')
-    cmd('-e','-p-11',fmiscnogz,'extracted_comment_2.mcpl')
+    cmd('-e','-l3','-s2','-p','pdgcode == neutron',fmiscnogz,'extracted_comment_1.mcpl')
+    cmd('-e','-p','pdgcode == -11',fmiscnogz,'extracted_comment_2.mcpl')
     cmd('-e',fmiscnogz,'extracted_comment_3.mcpl')
-    cmd('-e','--no-comment','-p22',fmiscnogz,'extracted_comment_4.mcpl')
+    cmd('-e','--no-comment','-p','pdgcode == 22',fmiscnogz,'extracted_comment_4.mcpl')
     cmd('-j','extracted_comment_1.mcpl')
     cmd('-j','extracted_comment_2.mcpl')
     cmd('-j','extracted_comment_3.mcpl')
@@ -278,18 +270,17 @@ def main():
     cmd('--no-comment',fmiscnogz,fail=True)
     #with comments, files extracted in the same way can be merged, but not
     #files extracted in different ways:
-    cmd('-e','-pneutron','-s5',fmiscnogz,'extracted_comment_5.mcpl')
-    cmd('-e','-pneutron','-l5',fmiscnogz,'extracted_comment_6.mcpl')
-    cmd('-e','-p2112',fmisc,'extracted_comment_7.mcpl')
+    cmd('-e','-p','pdgcode == neutron','-s5',fmiscnogz,'extracted_comment_5.mcpl')
+    cmd('-e','-p','pdgcode == neutron','-l5',fmiscnogz,'extracted_comment_6.mcpl')
+    cmd('-e','-p','pdgcode == 2112',fmisc,'extracted_comment_7.mcpl')
     cmd('--merge','merged_comment_1.mcpl','extracted_comment_1.mcpl','extracted_comment_5.mcpl',fail=True)
     cmd('--merge','merged_comment_2.mcpl','extracted_comment_7.mcpl','extracted_comment_6.mcpl',fail=True)
-    cmd('-e','-pneutron',fmisc,'extracted_comment_8.mcpl')
-    #(the mcpltool of Python records the picks as written, here pdgcode == 2112
-    #and pdgcode == neutron, so the comments differ, and the files can not be
-    #merged):
+    cmd('-e','-p','pdgcode == neutron',fmisc,'extracted_comment_8.mcpl')
+    #(the picks are recorded as written, here pdgcode == 2112 and pdgcode ==
+    #neutron, so the comments differ, and the files can not be merged):
     cmd('--merge','merged_comment_3.mcpl','extracted_comment_7.mcpl','extracted_comment_8.mcpl',
-        pyfail=True)
-    cmd('-j','merged_comment_3.mcpl',pyfail=True)
+        fail=True)
+    cmd('-j','merged_comment_3.mcpl',fail=True)
 
     cmd('-m','extracted_recombined','extracted_none.mcpl','extracted_all.mcpl')
     cmd('-m','--inplace','extracted_none.mcpl','extracted_all.mcpl')
@@ -315,15 +306,15 @@ def main():
     cmd('--extract','-l40','-s1',
         'statsum_copy.mcpl.gz','statsum_extract5.mcpl')
     cmd('statsum_extract5.mcpl')
-    cmd('-e','-l40','-s1','-p22',
+    cmd('-e','-l40','-s1','-p','pdgcode == 22',
         'statsum_copy.mcpl.gz','statsum_extract5photons.mcpl')
     cmd('statsum_extract5photons.mcpl')
 
-    cmd('--extract','-p22',
+    cmd('--extract','-p','pdgcode == 22',
         'statsum_copy.mcpl.gz','statsum_extractphotons_all.mcpl')
     cmd('statsum_extractphotons_all.mcpl')
 
-    cmd('--extract','-p22','-l400',
+    cmd('--extract','-p','pdgcode == 22','-l400',
         'statsum_copy.mcpl.gz','statsum_extractphotons_all2.mcpl')
     cmd('statsum_extractphotons_all2.mcpl')
 
@@ -343,8 +334,7 @@ def main():
     cmd('bla.txt',fail=True)
     cmd(dd('reffile_truncated.mcpl.gz'),fail=True)
     cmd(dd('reffile_truncated.mcpl'),fail=True)
-    #This next one opens nicely if mcpltool-c is build with zlib support, due to the
-    #magic of gzopen being able to handle uncompressed files. A bit too magic perhaps...
+    #A file which is not really gzipped opens nicely, despite its name:
     cmd(dd('reffile_notreallygz.mcpl.gz'))
     cmd(dd('reffile_uw.mcpl.gz'))
 

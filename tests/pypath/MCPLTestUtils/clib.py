@@ -19,8 +19,8 @@
 ##                                                                            ##
 ################################################################################
 
-"""The file operations of the C library, as mcpltool-c gave them on the
-command line, with the test library fileops (see tests/modules/lib_fileops)"""
+"""The file operations of the C library, with the test library fileops (see
+tests/modules/lib_fileops)"""
 
 import pathlib
 

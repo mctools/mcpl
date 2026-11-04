@@ -23,7 +23,6 @@
 
 #Tests of per-particle userdata in the C API (MCPL format version 4).
 
-import pathlib
 
 import mcpldev as mcpl
 from MCPLTestUtils.dirs import test_data_dir
@@ -100,12 +99,6 @@ def test_write_read():
     with mcpl.MCPLFile('std.mcpl') as f:
         print('Python module:',f.version,f.userdata_layout)
 
-def test_text():
-    print('=== Text export')
-    for fn in ('std.mcpl','raw.mcpl'):
-        run('text',fn,fn+'.txt')
-        print(pathlib.Path(fn+'.txt').read_text(),end='')
-
 def test_transfer():
     print('=== Transfers')
     run('transfer','std.mcpl','t1.mcpl','<META>',0)
@@ -169,7 +162,6 @@ if __name__ == '__main__':
     test_layouts()
     test_offsets()
     test_write_read()
-    test_text()
     test_transfer()
     test_merge()
     test_misuse()

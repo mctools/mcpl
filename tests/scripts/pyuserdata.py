@@ -23,8 +23,8 @@
 # NEEDS: numpy
 
 # Tests of reading per-particle userdata (MCPL format version 4) with the
-# Python API, and of mcpltool giving the same results and printouts as
-# mcpltool-c for such files. The files are written with the C API.
+# Python API, and of mcpltool and the C library for such files. The files are
+# written with the C API.
 
 import pathlib
 import shutil
@@ -33,10 +33,9 @@ import sys
 
 import mcpldev as mcpl
 from MCPLTestUtils import clib
-from MCPLTestUtils.dirs import mcpltool_cmd, test_data_dir
+from MCPLTestUtils.dirs import test_data_dir
 from MCPLTestUtils.loadlib import getlib
 from MCPLTestUtils.plots import hist_panel
-from MCPLTestUtils.toolcheck_common import py_args
 
 lib = getlib('userdata')
 input_dir = pathlib.Path('inputs').absolute()
@@ -76,42 +75,25 @@ def fresh(d):
 def dir_contents(d):
     return { f.name : f.read_bytes() for f in sorted(pathlib.Path(d).iterdir()) }
 
-def compare(*args):
-    fresh('c')
+def tool(*args):
+    """Run mcpltool on copies of the inputs, show its output, and read the MCPL
+    files it creates or changes with the C API"""
     fresh('py')
-    c = run([str(mcpltool_cmd), *args], 'c')
-    #the Python API has no mcpl_ prefix on function names, and transfers
-    #particles with add_particles:
-    c = ( c[0], c[1].replace('mcpl_','').replace('transfer_last_read_particle',
-                                                 'add_particles'), c[2] )
-    p = run([sys.executable, '-m', 'mcpldev', *py_args(args)], 'py')
-    problems = []
-    if c[0] != p[0]:
-        problems.append(f'exit codes differ: C: {c[0]} Py: {p[0]}')
-    if c[1] != p[1]:
-        problems.append(f'printouts differ:\n      C: {c[1]!r}\n     Py: {p[1]!r}')
-    if p[2]:
-        problems.append(f'mcpltool stderr: {p[2]!r}')
-    dc, dp = dir_contents('c'), dir_contents('py')
-    if set(dc) != set(dp):
-        problems.append(f'different files: C: {sorted(dc)} Py: {sorted(dp)}')
-    else:
-        problems += [ f'file {k} differs' for k in dc if dc[k] != dp[k] ]
-    print(f'mcpltool-c {" ".join(args)}: exit code {c[0]}')
-    for line in c[1].splitlines():
+    rc, out, err = run([sys.executable, '-m', 'mcpldev', *args], 'py')
+    print(f'mcpltool {" ".join(args)}: exit code {rc}')
+    for line in out.splitlines():
         print(f'   | {line}')
-    for problem in problems:
-        print(f'   PROBLEM: {problem}')
-    #New or modified MCPL files, read with the C API:
-    for name, data in dc.items():
+    if err:
+        print(f'   PROBLEM: mcpltool stderr: {err!r}')
+    for name, data in dir_contents('py').items():
         orig = input_dir/name
         if ( name.endswith('.mcpl') and args[0] != '--repair'
              and ( not orig.exists() or orig.read_bytes() != data ) ):
-            cprint(lib.mcpltest_ud_read,pathlib.Path('c',name).as_posix())
-    return not problems
+            cprint(lib.mcpltest_ud_read,pathlib.Path('py',name).as_posix())
+    return not err
 
-def test_compare_with_mcpltool():
-    print('=== Comparison with mcpltool-c')
+def test_mcpltool():
+    print('=== mcpltool')
     cases = [
         ['std.mcpl'],
         ['-l0','raw.mcpl'],
@@ -130,21 +112,27 @@ def test_compare_with_mcpltool():
         ['--forcemerge','out.mcpl','empty.mcpl','raw.mcpl'],
         ['--extract','std.mcpl','out.mcpl'],
         ['--extract','-l2','-s1','stddp.mcpl','out.mcpl'],
-        ['--extract','--no-comment','-p2112','raw.mcpl','out.mcpl'],
+        ['--extract','--no-comment','-p','pdgcode == 2112','raw.mcpl','out.mcpl'],
         ['--text','std.mcpl','out.txt'],
         ['--repair','trunc.mcpl'],
     ]
     ok = True
     for args in cases:
-        ok &= compare(*args)
+        ok &= tool(*args)
     return ok
 
+def test_text():
+    #The text files of mcpltool --text:
+    print('=== Text export')
+    fresh('py')
+    for fn in ('std.mcpl','raw.mcpl'):
+        rc, _, err = run([sys.executable, '-m', 'mcpldev', '--text', fn, fn+'.txt'], 'py')
+        assert rc == 0 and not err, (rc, err)
+        print(pathlib.Path('py',fn+'.txt').read_text(),end='')
+
 def test_compare_with_c_library():
-    #What the C library itself does of the cases of mcpltool-c (which will
-    #replace the comparison with it, when it is retired): the same dumps
-    #(mcpltool shows the first 10 particles, unless given with -l), and the
-    #same files from merges (extracting and --text are only done by the
-    #tools):
+    #The C library itself gives the same dumps (mcpltool shows the first 10
+    #particles, unless given with -l), and the same files from merges:
     print('=== Comparison with the C library')
     def py( *args ):
         fresh('py')
@@ -517,7 +505,8 @@ def test_units():
 
 def main():
     make_inputs()
-    ok = test_compare_with_mcpltool()
+    ok = test_mcpltool()
+    test_text()
     ok &= test_compare_with_c_library()
     test_python_api()
     test_python_writing()
