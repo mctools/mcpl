@@ -21,11 +21,16 @@
 
 # NEEDS: numpy
 
+import contextlib
+import hashlib
 import itertools
+import os
 import pathlib
 
 import mcpldev as mcpl
-from MCPLTestUtils.dirs import mcpltool_cmd, test_data_dir
+from MCPLTestUtils.dirs import test_data_dir
+from MCPLTestUtils.stdout_redirect import RedirectStdout
+from MCPLTestUtils.toolcheck_common import python_tool, tool_command
 
 
 def fix_print_str(s):
@@ -41,14 +46,15 @@ def fix_print_str(s):
 
 def run_mcpltool(*args, expect_failure):
     cmdargs =[str(e) for e in args]
-    print( '\n\n\n\n\nRUNNING: mcpltool-c {}'.format(fix_print_str(' '.join(cmdargs))),
+    fullcmd, name = tool_command(cmdargs)
+    print( '\n\n\n\n\nRUNNING: {} {}'.format(name,fix_print_str(' '.join(cmdargs))),
            flush=True )
     print( 'Expect failure: %s'%('yes' if expect_failure else 'no'),
            flush=True )
 
     import subprocess
-    rv = subprocess.run( [mcpltool_cmd] + cmdargs + ['--fakeversion'],
-                         capture_output=True, check=False )
+    rv = subprocess.run( fullcmd, capture_output=True, check=False,
+                         env = { **os.environ, 'PYMCPLTOOL_FAKE_PYVERSION' : '1' } )
     assert not rv.stderr
     print(fix_print_str(rv.stdout
                         .replace(b'\r\n',b'\n')
@@ -60,6 +66,18 @@ def run_mcpltool(*args, expect_failure):
         raise SystemExit('Did not end in failure as expected!'
                          if expect_failure else
                          'Should not have ended in failure!')
+
+@contextlib.contextmanager
+def dump_or_checksum():
+    """What is printed inside, or with the mcpltool of Python its checksum"""
+    if not python_tool():
+        yield
+        return
+    with RedirectStdout('dump.txt'):
+        yield
+    #(with \n line endings, also on Windows):
+    dump = pathlib.Path('dump.txt').read_bytes().replace(b'\r\n',b'\n')
+    print('dump with checksum', hashlib.md5(dump).hexdigest())
 
 def do_test(folder):
 
@@ -137,12 +155,15 @@ def do_test(folder):
             assert not pathlib.Path('tmp.mcpl').is_file()
             continue
         with mcpl.MCPLFile('tmp.mcpl') as res:
-            res.dump_hdr()
-            if sum(inputcounts)<30:
-                res.dump_particles(limit=0)
-            else:
-                for skip in [0]+inputcounts[:-1]:
-                    res.dump_particles(limit=10,skip=max(0,skip-5))
+            #(with the mcpltool of Python, the dumps are given as checksums,
+            #so the log stays small, see pyforcemerge):
+            with dump_or_checksum():
+                res.dump_hdr()
+                if sum(inputcounts)<30:
+                    res.dump_particles(limit=0)
+                else:
+                    for skip in [0]+inputcounts[:-1]:
+                        res.dump_particles(limit=10,skip=max(0,skip-5))
             assert res.opt_userflags==expected_uf,"unexpected user flags setting"
             assert res.opt_polarisation==expected_pol,"unexpected polarisation setting"
             assert res.opt_singleprec==(not expected_dp),"unexpected singleprec setting"
