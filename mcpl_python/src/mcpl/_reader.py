@@ -250,13 +250,12 @@ class MCPLFile:
         #here (including the ability of gzopen to open uncompressed files),
         #which is why the slightly odd order of some checks below.
 
+        if os.path.isdir(filename):
+            raise MCPLError('Is a directory and not a file!')
         try:
             fh = open(filename,'rb')  # noqa: SIM115
-        except OSError as e:
-            if e.errno == 2:
-                fh = None#file not found
-            else:
-                raise
+        except OSError:
+            fh = None#(not found, or no permission)
         if not fh:
             raise MCPLError('Unable to open file!')
 

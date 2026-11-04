@@ -3014,6 +3014,12 @@ MCPL_LOCAL int mcpl_internal_open_file( mcpl_fileinternal_t * f,
   //open file (with gzopen if filename ends with .gz):
   f->file = NULL;
   f->filegz = NULL;
+  {
+    //(directories can be opened on some platforms, and then fail to be read):
+    mcu8str fn = mcu8str_view_cstr( filename );
+    if ( mctools_is_dir( &fn ) )
+      MCPLIMP_OPENFAIL(MCPL_ERROR_IO,"Is a directory and not a file!");
+  }
   const char * lastdot = strrchr(filename, '.');
   if (lastdot && strcmp(lastdot, ".gz") == 0) {
     f->filegz = mcpl_gzopen( filename, "rb" );
