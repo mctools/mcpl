@@ -1,0 +1,823 @@
+---- dump reffile_16.mcpl (parts 0, skip 0, limit 0)
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 59 bytes
+    Data storage       : 240 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 48 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+---- -> ok
+---- dump reffile_16.mcpl (parts 1, skip 0, limit 0)
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 59 bytes
+    Data storage       : 240 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 48 bytes/particle
+
+---- -> ok
+---- dump reffile_16.mcpl (parts 2, skip 3, limit 2)
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1       -0.03           0           0 0xdeadbeef
+    4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1       -0.04           0           0 0xdeadbeef
+---- -> ok
+---- dump reffile_16.mcpl (parts 0, skip 9, limit 0)
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 59 bytes
+    Data storage       : 240 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 48 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+---- -> ok
+---- dump reffile_16.mcpl (parts 0, skip 20, limit 0)
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 59 bytes
+    Data storage       : 240 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 48 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+---- -> ok
+---- dump rf16_fmt2.mcpl (parts 0, skip 0, limit 3)
+
+  Basic info
+    Format             : MCPL-2
+    No. of particles   : 5
+    Header storage     : 59 bytes
+    Data storage       : 240 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 48 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1          -0           0           0 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1       -0.01           0           0 0xdeadbeef
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1       -0.02           0           0 0xdeadbeef
+---- -> ok
+---- dump reffile_5.mcpl.gz (parts 0, skip 0, limit 2)
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 94 bytes
+    Data storage       : 360 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 72 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight  userflags
+    0        2112       1.234           0           0           0           0           1           0           0           1 0xdeadbeef
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1 0xdeadbeef
+---- -> ok
+---- dump reffile_empty.mcpl (parts 0, skip 0, limit 0)
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 0
+    Header storage     : 94 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+---- -> ok
+---- dump reffile_empty.mcpl.gz (parts 0, skip 0, limit 0)
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 0
+    Header storage     : 94 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight       pol-x       pol-y       pol-z  userflags
+---- -> ok
+---- dump reffile_crash.mcpl (parts 0, skip 0, limit 3)
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 4
+    Header storage     : 155 bytes
+    Data storage       : 272 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 4
+          -> comment 0 : "Some comment."
+          -> comment 1 : "Some comment2."
+          -> comment 2 : "Some comment3."
+          -> comment 3 : "Some comment4444."
+    Number of blobs    : 1
+          -> 6 bytes of data with key "LalaData"
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 68 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112       1.234           0           0           0           0           1           0           0           1
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
+---- -> ok
+---- dump reffile_truncated.mcpl (parts 0, skip 0, limit 3)
+---- -> error: Input file is truncated (it has fewer particles than given in its header)
+---- dump reffile_truncated.mcpl.gz (parts 0, skip 0, limit 3)
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 15
+    Header storage     : 148 bytes
+    Data storage       : 480 bytes
+
+  Custom meta data
+    Source             : "ESS/dgcode/MCPLTests/genisotrop"
+    Number of comments : 1
+          -> comment 0 : "A simple file with isotropically generated particles."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : yes (weight 1)
+    FP precision       : single
+    Endianness         : little
+    Storage            : 32 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]
+    0        2112           0           0           0           0     0.69673    -0.32571    -0.63913           0
+    1          22           0           0           0           0    -0.43755    -0.27624     0.85571           0
+    2        2112           0           0           0           0     0.61152     0.73811    -0.28504           0
+---- -> ok
+---- dump reffile_bad1.mcpl (parts 0, skip 0, limit 3)
+---- -> error: File is not an MCPL file!
+---- dump reffile_notreallygz.mcpl.gz (parts 0, skip 0, limit 3)
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 5
+    Header storage     : 59 bytes
+    Data storage       : 340 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 68 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]      weight
+    0        2112       1.234           0           0           0           0           1           0           0           1
+    1        2112           0           0           0        0.01        0.01           0    -0.99995           0           1
+    2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1
+---- -> ok
+---- dump nosuchfile.mcpl (parts 0, skip 0, limit 0)
+---- -> I/O error: Unable to open file!
+---- dump adirectory.mcpl (parts 0, skip 0, limit 0)
+---- -> I/O error: Is a directory and not a file!
+can merge a and b: 1
+---- merge a.mcpl b.mcpl.gz into ab.mcpl
+---- -> ok
+---- dump ab.mcpl (parts 1, skip 0, limit 0)
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 10
+    Header storage     : 94 bytes
+    Data storage       : 720 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 72 bytes/particle
+
+---- -> ok
+---- merge a.mcpl b.mcpl.gz into ab_gz.mcpl.gz
+MCPL: Compressing file ab_gz.mcpl
+MCPL: Compressed file into ab_gz.mcpl.gz
+---- -> ok
+same particles in ab.mcpl and ab_gz.mcpl.gz: True
+---- merge a.mcpl b.mcpl.gz into ab.mcpl
+---- -> error: The output file "ab.mcpl" already exists
+---- merge a.mcpl b.mcpl.gz into ab_wrongname.gz
+---- -> error: Output file names ending with .gz must end with .mcpl.gz (not "ab_wrongname.gz")
+can merge a and reffile_16: 0
+---- merge a.mcpl reffile_16.mcpl into a16.mcpl
+---- -> error: Attempting to merge incompatible files (polarisation info: no vs yes).
+---- merge a.mcpl b.mcpl.gz into a.mcpl
+---- -> error: The output file "a.mcpl" is also one of the input files
+---- merge a.mcpl nosuchfile.mcpl into missing.mcpl
+---- -> I/O error: Unable to open file!
+can merge a and a missing file: -1
+---- merge rf16_fmt2.mcpl reffile_16.mcpl into mixed.mcpl
+MCPL WARNING: Merging files from older MCPL format. Output will be in latest format.
+---- -> ok
+---- dump mixed.mcpl (parts 1, skip 0, limit 0)
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 10
+    Header storage     : 59 bytes
+    Data storage       : 480 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : yes (pdgcode 2112)
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 48 bytes/particle
+
+---- -> ok
+---- merge s1.mcpl.gz s2.mcpl.gz into statsum_merged.mcpl
+---- -> ok
+---- dump statsum_merged.mcpl (parts 1, skip 0, limit 0)
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 200
+    Header storage     : 201 bytes
+    Data storage       : 7200 bytes
+
+  Custom meta data
+    Source             : "my_cool_program_name"
+    Number of comments : 4
+          -> comment 0 : "stat:sum:BLA:                      10"
+          -> comment 1 : "stat:sum:some_stat_key: 2.4691357824691356e-201"
+          -> comment 2 : "Some comment."
+          -> comment 3 : "Another comment."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+---- -> ok
+---- merge ib.mcpl.gz into ia.mcpl (in place)
+---- -> ok
+---- dump ia.mcpl (parts 1, skip 0, limit 0)
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 10
+    Header storage     : 94 bytes
+    Data storage       : 720 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 1
+          -> 20 bytes of data with key "BlaData"
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 72 bytes/particle
+
+---- -> ok
+---- merge ic.mcpl ib.mcpl.gz into inew.mcpl
+---- -> ok
+same as the merge into a new file: True
+---- merge ia.mcpl into ib.mcpl.gz (in place)
+---- -> error: direct modification of gzipped files is not supported.
+---- merge i16_fmt2.mcpl into i16.mcpl (in place)
+---- -> error: Attempting to merge incompatible files (can not mix MCPL format versions when merging inplace)
+---- merge i16b.mcpl into ia.mcpl (in place)
+---- -> error: Attempting to merge incompatible files (polarisation info: no vs yes).
+---- merge is2.mcpl.gz into is1.mcpl (in place)
+---- -> ok
+---- dump is1.mcpl (parts 1, skip 0, limit 0)
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 200
+    Header storage     : 201 bytes
+    Data storage       : 7200 bytes
+
+  Custom meta data
+    Source             : "my_cool_program_name"
+    Number of comments : 4
+          -> comment 0 : "stat:sum:BLA:                      10"
+          -> comment 1 : "stat:sum:some_stat_key: 2.4691357824691356e-201"
+          -> comment 2 : "Some comment."
+          -> comment 3 : "Another comment."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+---- -> ok
+---- forcemerge miscphys.mcpl.gz gammas_uw.mcpl.gz reffile_3.mcpl reffile_10.mcpl reffile_13.mcpl into forced.mcpl
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Discarding userflags of the input files (keep_userflags is not set)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
+MCPL force-merge: Transferring 195 particles from file miscphys.mcpl.gz
+MCPL force-merge: Transferring 15 particles from file gammas_uw.mcpl.gz
+MCPL force-merge: Transferring 5 particles from file reffile_3.mcpl
+MCPL force-merge: Transferring 5 particles from file reffile_10.mcpl
+MCPL force-merge: Transferring 5 particles from file reffile_13.mcpl
+MCPL force-merge: Transferred a total of 225 particles to new file forced.mcpl
+---- -> ok
+---- dump forced.mcpl (parts 1, skip 0, limit 0)
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 225
+    Header storage     : 92 bytes
+    Data storage       : 20700 bytes
+
+  Custom meta data
+    Source             : "mcpl_forcemerge_files (from MCPL v2.2.9)"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 92 bytes/particle
+
+---- -> ok
+---- forcemerge (keeping userflags) miscphys.mcpl.gz gammas_uw.mcpl.gz reffile_3.mcpl reffile_10.mcpl reffile_13.mcpl into forced_uf.mcpl
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Files have different userflags (no and yes), enabling them (zero for particles without)
+MCPL force-merge: Not all files have the same universal pdgcode, storing the pdgcode per particle
+MCPL force-merge: Not all files have the same universal weight, storing the weight per particle
+MCPL force-merge: Discarding comments and blobs of the input files
+MCPL force-merge: Transferring 195 particles from file miscphys.mcpl.gz
+MCPL force-merge: Transferring 15 particles from file gammas_uw.mcpl.gz
+MCPL force-merge: Transferring 5 particles from file reffile_3.mcpl
+MCPL force-merge: Transferring 5 particles from file reffile_10.mcpl
+MCPL force-merge: Transferring 5 particles from file reffile_13.mcpl
+MCPL force-merge: Transferred a total of 225 particles to new file forced_uf.mcpl
+---- -> ok
+---- dump forced_uf.mcpl (parts 1, skip 0, limit 0)
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 225
+    Header storage     : 92 bytes
+    Data storage       : 21600 bytes
+
+  Custom meta data
+    Source             : "mcpl_forcemerge_files (from MCPL v2.2.9)"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : yes
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 96 bytes/particle
+
+---- -> ok
+---- forcemerge fa.mcpl fb.mcpl into forced_compatible.mcpl
+MCPL mcpl_forcemerge_files called with 2 files that are compatible for a standard merge => falling back to standard mcpl_merge_files function
+---- -> ok
+---- merge fa.mcpl fb.mcpl into usual.mcpl
+---- -> ok
+same as the usual merge: True
+---- dump repaired_reffile_crash.mcpl (parts 1, skip 0, limit 0)
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 4 particles.
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 4
+    Header storage     : 155 bytes
+    Data storage       : 272 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 4
+          -> comment 0 : "Some comment."
+          -> comment 1 : "Some comment2."
+          -> comment 2 : "Some comment3."
+          -> comment 3 : "Some comment4444."
+    Number of blobs    : 1
+          -> 6 bytes of data with key "LalaData"
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 68 bytes/particle
+
+---- -> ok
+---- repair repaired_reffile_crash.mcpl
+MCPL: Successfully repaired file with 4 particles.
+---- -> ok
+---- dump repaired_reffile_crash.mcpl (parts 1, skip 0, limit 0)
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 4
+    Header storage     : 155 bytes
+    Data storage       : 272 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 4
+          -> comment 0 : "Some comment."
+          -> comment 1 : "Some comment2."
+          -> comment 2 : "Some comment3."
+          -> comment 3 : "Some comment4444."
+    Number of blobs    : 1
+          -> 6 bytes of data with key "LalaData"
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 68 bytes/particle
+
+---- -> ok
+---- repair repaired_reffile_crash.mcpl
+---- -> error: File does not appear to be broken.
+---- dump repaired_reffile_crash_0p4.mcpl (parts 1, skip 0, limit 0)
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 0 particles.
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 0
+    Header storage     : 59 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 68 bytes/particle
+
+---- -> ok
+---- repair repaired_reffile_crash_0p4.mcpl
+MCPL: Successfully repaired file with 0 particles.
+---- -> ok
+---- dump repaired_reffile_crash_0p4.mcpl (parts 1, skip 0, limit 0)
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 0
+    Header storage     : 59 bytes
+    Data storage       : 0 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 68 bytes/particle
+
+---- -> ok
+---- repair repaired_reffile_crash_0p4.mcpl
+---- -> error: File does not appear to be broken.
+---- dump repaired_reffile_crash_8p7.mcpl (parts 1, skip 0, limit 0)
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 8 particles.
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 8
+    Header storage     : 59 bytes
+    Data storage       : 544 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 68 bytes/particle
+
+---- -> ok
+---- repair repaired_reffile_crash_8p7.mcpl
+MCPL: Successfully repaired file with 8 particles.
+---- -> ok
+---- dump repaired_reffile_crash_8p7.mcpl (parts 1, skip 0, limit 0)
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 8
+    Header storage     : 59 bytes
+    Data storage       : 544 bytes
+
+  Custom meta data
+    Source             : "MyMCApp"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : double
+    Endianness         : little
+    Storage            : 68 bytes/particle
+
+---- -> ok
+---- repair repaired_reffile_crash_8p7.mcpl
+---- -> error: File does not appear to be broken.
+---- dump repaired_ref_statsum_crash.mcpl (parts 1, skip 0, limit 0)
+MCPL WARNING: Input file appears to not have been closed properly. Recovered 9 particles.
+MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 9
+    Header storage     : 201 bytes
+    Data storage       : 324 bytes
+
+  Custom meta data
+    Source             : "my_cool_program_name"
+    Number of comments : 4
+          -> comment 0 : "stat:sum:BLA:                      -1"
+          -> comment 1 : "stat:sum:some_stat_key:                      -1"
+          -> comment 2 : "Some comment."
+          -> comment 3 : "Another comment."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+---- -> ok
+---- repair repaired_ref_statsum_crash.mcpl
+MCPL WARNING: Marking stat:sum:BLA entry as not available (-1) since file not closed properly.
+MCPL WARNING: Marking stat:sum:some_stat_key entry as not available (-1) since file not closed properly.
+MCPL: Successfully repaired file with 9 particles.
+---- -> ok
+---- dump repaired_ref_statsum_crash.mcpl (parts 1, skip 0, limit 0)
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 9
+    Header storage     : 201 bytes
+    Data storage       : 324 bytes
+
+  Custom meta data
+    Source             : "my_cool_program_name"
+    Number of comments : 4
+          -> comment 0 : "stat:sum:BLA:                      -1"
+          -> comment 1 : "stat:sum:some_stat_key:                      -1"
+          -> comment 2 : "Some comment."
+          -> comment 3 : "Another comment."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : no
+    FP precision       : single
+    Endianness         : little
+    Storage            : 36 bytes/particle
+
+---- -> ok
+---- repair repaired_ref_statsum_crash.mcpl
+---- -> error: File does not appear to be broken.
+---- dump repaired_reffile_truncated.mcpl (parts 1, skip 0, limit 0)
+---- -> error: Input file is truncated (it has fewer particles than given in its header)
+---- repair repaired_reffile_truncated.mcpl
+MCPL: Successfully repaired file with 7 particles.
+---- -> ok
+---- dump repaired_reffile_truncated.mcpl (parts 1, skip 0, limit 0)
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 7
+    Header storage     : 148 bytes
+    Data storage       : 224 bytes
+
+  Custom meta data
+    Source             : "ESS/dgcode/MCPLTests/genisotrop"
+    Number of comments : 1
+          -> comment 0 : "A simple file with isotropically generated particles."
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : no
+    Fixed part. type   : no
+    Fixed part. weight : yes (weight 1)
+    FP precision       : single
+    Endianness         : little
+    Storage            : 32 bytes/particle
+
+---- -> ok
+---- repair repaired_reffile_truncated.mcpl
+---- -> error: File does not appear to be broken.
+---- repair reffile_crash.mcpl.gz
+---- -> error: Input file is indeed broken, but must be gunzipped before it can be repaired.
+---- repair repaired_empty.mcpl
+---- -> error: File does not appear to be broken.
+---- repair nosuchfile.mcpl
+---- -> I/O error: Unable to open file!
+---- gzip tozip.mcpl
+MCPL: Compressing file tozip.mcpl
+MCPL: Compressed file into tozip.mcpl.gz
+---- -> ok
+compressed: True True | same particles: True
+---- gzip nosuchfile.mcpl
+MCPL: Compressing file nosuchfile.mcpl
+---- -> I/O error: Problems encountered while compressing file nosuchfile.mcpl
