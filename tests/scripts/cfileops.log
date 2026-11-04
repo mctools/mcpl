@@ -489,7 +489,7 @@ MCPL force-merge: Transferred a total of 225 particles to new file forced.mcpl
     Data storage       : 20700 bytes
 
   Custom meta data
-    Source             : "mcpl_forcemerge_files (from MCPL v2.2.9)"
+    Source             : "mcpl_forcemerge_files (from MCPL v<current>)"
     Number of comments : 0
     Number of blobs    : 0
 
@@ -526,7 +526,7 @@ MCPL force-merge: Transferred a total of 225 particles to new file forced_uf.mcp
     Data storage       : 21600 bytes
 
   Custom meta data
-    Source             : "mcpl_forcemerge_files (from MCPL v2.2.9)"
+    Source             : "mcpl_forcemerge_files (from MCPL v<current>)"
     Number of comments : 0
     Number of blobs    : 0
 
