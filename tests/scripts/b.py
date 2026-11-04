@@ -28,12 +28,10 @@ import sys
 from mcpldev import MCPLError
 from mcpldev import dump_file as pymcpltool_dump_file
 from MCPLTestUtils.checkasciicompat import check_compat
+from MCPLTestUtils.clib import dump as c_library_dump
 from MCPLTestUtils.common import flush
 from MCPLTestUtils.dirs import mcpltool_cmd, test_data_dir
-from MCPLTestUtils.loadlib import getlib
 from MCPLTestUtils.stdout_redirect import RedirectStdout
-
-clib = getlib('fileops')
 
 
 def run_pymcpltool(*args):
@@ -43,20 +41,6 @@ def run_pymcpltool(*args):
     except SystemExit as e:
         if str(e) != '0':
             raise
-
-def c_library_dump( file_path ):
-    """The dump of the file by the C library (as by mcpl_dump, with the line
-    of the file name, and the error, if any), as bytes (with \n line endings)"""
-    #(the warnings are given to the print handler):
-    with RedirectStdout('dump_clib_messages.txt'):
-        res = clib.mcpltest_dump(str(file_path),0,0,0,'dump_clib.txt')
-    opened = not res.endswith(' (when opening)')
-    res = res.removesuffix(' (when opening)')
-    error = '' if res == 'ok' else f'MCPL ERROR: {res.split(": ",1)[1]}\n'
-    return ( pathlib.Path('dump_clib_messages.txt').read_bytes()
-             + ( f'Opened MCPL file {file_path.name}:\n'.encode() if opened else b'' )
-             + ( pathlib.Path('dump_clib.txt').read_bytes() if opened else b'' )
-             + error.encode() ).replace(b'\r\n',b'\n')
 
 def run_mcpltool(*args, check = False):
     flush()
