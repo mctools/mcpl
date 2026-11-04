@@ -32,9 +32,11 @@ import subprocess
 import sys
 
 import mcpldev as mcpl
+from MCPLTestUtils import clib
 from MCPLTestUtils.dirs import mcpltool_cmd, test_data_dir
 from MCPLTestUtils.loadlib import getlib
 from MCPLTestUtils.plots import hist_panel
+from MCPLTestUtils.toolcheck_common import py_args
 
 lib = getlib('userdata')
 input_dir = pathlib.Path('inputs').absolute()
@@ -73,18 +75,6 @@ def fresh(d):
 
 def dir_contents(d):
     return { f.name : f.read_bytes() for f in sorted(pathlib.Path(d).iterdir()) }
-
-def py_args( args ):
-    """Arguments for mcpltool corresponding to those of mcpltool-c: -pPDGCODE
-    is -p "pdgcode == PDGCODE" for mcpltool"""
-    res = []
-    for a in args:
-        a = str(a)
-        if a.startswith('-p') and len(a) > 2:
-            res += [ '-p', f'pdgcode == {a[2:]}' ]
-        else:
-            res.append(a)
-    return res
 
 def compare(*args):
     fresh('c')
@@ -147,6 +137,46 @@ def test_compare_with_mcpltool():
     ok = True
     for args in cases:
         ok &= compare(*args)
+    return ok
+
+def test_compare_with_c_library():
+    #What the C library itself does of the cases of mcpltool-c (which will
+    #replace the comparison with it, when it is retired): the same dumps
+    #(mcpltool shows the first 10 particles, unless given with -l), and the
+    #same files from merges (extracting and --text are only done by the
+    #tools):
+    print('=== Comparison with the C library')
+    def py( *args ):
+        fresh('py')
+        return run([sys.executable, '-m', 'mcpldev', *args], 'py')
+    ok = True
+    for args, parts, limit in ( ( ['std.mcpl'], 0, 10 ), ( ['-l0','raw.mcpl'], 0, 0 ),
+                                ( ['-n','stddp.mcpl'], 2, 10 ), ( ['-j','big.mcpl'], 1, 0 ),
+                                ( ['-l1','big.mcpl'], 0, 1 ), ( ['empty.mcpl'], 0, 10 ) ):
+        fn = args[-1]
+        c = clib.dump(input_dir/fn,parts,0,limit).decode().replace('\r\n','\n')
+        same = py(*args)[1] == c
+        ok &= same
+        print(f'dump {" ".join(args)}: same as the C library: {same}')
+    fresh('clib')
+    for name, args, cfct in (
+            ( 'merge', ['--merge','out.mcpl','std.mcpl','std2.mcpl'],
+              lambda : clib.merge('clib/out.mcpl','clib/std.mcpl','clib/std2.mcpl') ),
+            ( 'merge in place', ['--merge','--inplace','std2.mcpl','std.mcpl'],
+              lambda : clib.lib().mcpltest_merge_inplace('clib/std2.mcpl','clib/std.mcpl') ),
+            ( 'forced merge', ['--forcemerge','out_forced.mcpl','std.mcpl','stddp.mcpl'],
+              lambda : clib.lib().mcpltest_merge('clib/out_forced.mcpl',
+                                                 'clib/std.mcpl\nclib/stddp.mcpl',1,0) ),
+            ( 'forced merge, other layouts', ['--forcemerge','out_forced2.mcpl','std.mcpl','raw33.mcpl'],
+              lambda : clib.lib().mcpltest_merge('clib/out_forced2.mcpl',
+                                                 'clib/std.mcpl\nclib/raw33.mcpl',1,0) ) ):
+        rc = py(*args)[0]
+        res = cfct()
+        out = args[2] if args[1] == '--inplace' else args[1]
+        same = ( rc == 0 and res == 'ok'
+                 and pathlib.Path('py',out).read_bytes() == pathlib.Path('clib',out).read_bytes() )
+        ok &= same
+        print(f'{name}: same file as the C library: {same}' + ( '' if res == 'ok' else f' ({res})' ))
     return ok
 
 def test_python_api():
@@ -488,6 +518,7 @@ def test_units():
 def main():
     make_inputs()
     ok = test_compare_with_mcpltool()
+    ok &= test_compare_with_c_library()
     test_python_api()
     test_python_writing()
     test_example()

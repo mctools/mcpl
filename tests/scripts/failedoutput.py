@@ -29,20 +29,10 @@ import pathlib
 import subprocess
 import sys
 
+from MCPLTestUtils import clib
 from MCPLTestUtils.dirs import mcpltool_cmd, test_data_dir
+from MCPLTestUtils.toolcheck_common import py_args
 
-
-def py_args( args ):
-    """Arguments for mcpltool corresponding to those of mcpltool-c: -pPDGCODE
-    is -p "pdgcode == PDGCODE" for mcpltool"""
-    res = []
-    for a in args:
-        a = str(a)
-        if a.startswith('-p') and len(a) > 2:
-            res += [ '-p', f'pdgcode == {a[2:]}' ]
-        else:
-            res.append(a)
-    return res
 
 def run( tool, args ):
     if tool == 'C':
@@ -74,6 +64,18 @@ def main():
             left = sorted( str(f) for f in pathlib.Path('.').glob('out*') )
             assert not left, (tool, args, left)
             print(f'{tool}: failed {" ".join(args)} leaves no output file')
+    #The merges of the C library itself fail the same way, but leave the
+    #output file unfinished (it is only removed by the tools):
+    for out, force in ( ( 'out.mcpl', 0 ), ( 'out', 0 ), ( 'out.mcpl.gz', 0 ),
+                        ( 'out.mcpl', 1 ) ):
+        res = clib.lib().mcpltest_merge(out,'a.mcpl\nb.mcpl',force,0)
+        assert 'reserved for future usage' in res, (out, force, res)
+        left = sorted( pathlib.Path('.').glob('out*') )
+        assert [ f.name for f in left ] == [ 'out.mcpl' ], (out, force, left)
+        print(f'C library: failed {"forced " if force else ""}merge to {out}'
+              f' leaves {", ".join(f.name for f in left) or "no output file"}')
+        for f in left:
+            f.unlink()
     #While successful operations of course do:
     ex = test_data_dir / 'ref' / 'reffile_1.mcpl'
     for tool in ( 'C', 'Python' ):

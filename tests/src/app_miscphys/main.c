@@ -143,15 +143,8 @@ int stdtests(void)
 {
   if ( mcpltests_produce_miscphys_file("mp.mcpl")!=0 )
     return 1;
-  char * argv[3];
-  argv[0] = "mcpltool";
-  argv[1] = "-l0";
-  argv[2] = "mp.mcpl";
-  if ( mcpl_tool(3,argv) != 0 )
-    return 1;
-  argv[2] = (char*)mcpltests_find_data("ref","miscphys.mcpl.gz");
-  if ( mcpl_tool(3,argv) != 0 )
-    return 1;
+  mcpl_dump("mp.mcpl",0,0,0);
+  mcpl_dump(mcpltests_find_data("ref","miscphys.mcpl.gz"),0,0,0);
   return 0;
 }
 

@@ -42,4 +42,6 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
     2        2112       1.234           0           0        0.02        0.02           0      0.9998           0           1           0           0           0
     3        2112           0           0           0        0.03        0.03    -0.99955           0           0           1           0           0           0
     4        2112       1.234           0           0        0.04        0.04           0      0.9992           0           1           0           0           0
+C library: same dump: True
+mcpltool: same dump: True | exit code: 0 | stderr: b''
 All ok

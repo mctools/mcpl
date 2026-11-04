@@ -228,6 +228,26 @@ c/out.mcpl: format version 4, userdata layout "data:uint8[27]", size 27, particl
 mcpltool-c --text std.mcpl out.txt: exit code 0
 mcpltool-c --repair trunc.mcpl: exit code 0
    | MCPL: Successfully repaired file with 3 particles.
+=== Comparison with the C library
+dump std.mcpl: same as the C library: True
+dump -l0 raw.mcpl: same as the C library: True
+dump -n stddp.mcpl: same as the C library: True
+dump -j big.mcpl: same as the C library: True
+dump -l1 big.mcpl: same as the C library: True
+dump empty.mcpl: same as the C library: True
+merge: same file as the C library: True
+merge in place: same file as the C library: True
+MCPL force-merge: Files have different FP precision (single and double), using double
+MCPL force-merge: Files have different polarisation info (no and yes), enabling it
+MCPL force-merge: Transferring 3 particles from file clib/std.mcpl
+MCPL force-merge: Transferring 3 particles from file clib/stddp.mcpl
+MCPL force-merge: Transferred a total of 6 particles to new file clib/out_forced.mcpl
+forced merge: same file as the C library: True
+MCPL WARNING: Discarding userdata in forced merge, since not all files have the same userdata layout.
+MCPL force-merge: Transferring 3 particles from file clib/std.mcpl
+MCPL force-merge: Transferring 2 particles from file clib/raw33.mcpl
+MCPL force-merge: Transferred a total of 5 particles to new file clib/out_forced2.mcpl
+forced merge, other layouts: same file as the C library: True
 === Python API
 version=4 layout='temp:float32,origin:int32,tags:uint8[3],big:float64,id:uint64,s:int16' size=29 particlesize=65
 dtype: [('temp', '<f4'), ('origin', '<i4'), ('tags', '|u1', (3,)), ('big', '<f8'), ('id', '<u8'), ('s', '<i2')]
