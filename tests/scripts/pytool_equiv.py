@@ -37,6 +37,7 @@ import numpy as np
 from MCPLTestUtils.dirs import mcpltool_cmd, test_data_dir
 from MCPLTestUtils.loadlib import getlib
 from MCPLTestUtils.mcplpatch import set_values
+from MCPLTestUtils.toolcheck_common import py_args
 
 input_dir = pathlib.Path('inputs').absolute()
 
@@ -86,17 +87,6 @@ def fresh(d):
     shutil.copytree(input_dir, d)
 
 ncases = 0
-
-def py_args( args ):
-    """Arguments for mcpltool corresponding to those of mcpltool-c: -pPDGCODE
-    is -p "pdgcode == PDGCODE" for mcpltool"""
-    res = []
-    for a in args:
-        if a.startswith('-p') and len(a) > 2:
-            res += [ '-p', f'pdgcode == {a[2:]}' ]
-        else:
-            res.append(a)
-    return res
 
 def compare(*args):
     global ncases
