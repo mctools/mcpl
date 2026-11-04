@@ -4247,6 +4247,19 @@ MCPL_LOCAL void mcpl_internal_output( const mcpl_internal_output_t * out,
     mcpl_print( msg );
 }
 
+//Appends a number formatted with fmt (with one floating point conversion) to
+//the string in buf, with "." as the decimal point, whatever the locale of the
+//application:
+MCPL_LOCAL void mcpl_internal_append_number( char * buf, size_t nbuf,
+                                             const char * fmt, double value )
+{
+  size_t n = strlen( buf );
+  if ( n + 1 >= nbuf )
+    return;
+  snprintf( buf + n, nbuf - n, fmt, value );
+  mcpl_internal_to_c_decimal_point( buf + n );
+}
+
 //Dump the header (returns 0 in case of errors):
 MCPL_LOCAL int mcpl_internal_dump_header( mcpl_file_t f,
                                           const mcpl_internal_output_t * out,
@@ -4365,7 +4378,8 @@ MCPL_LOCAL int mcpl_internal_dump_header( mcpl_file_t f,
   mcpl_internal_output(out,"    Fixed part. weight : ");
   double uw = mcpl_hdr_universal_weight(f);
   if (uw) {
-    snprintf(buf,sizeof(buf),"yes (weight %g)\n",uw);
+    buf[0] = '\0';
+    mcpl_internal_append_number(buf,sizeof(buf),"yes (weight %g)\n",uw);
     mcpl_internal_output(out,buf);
   } else {
     mcpl_internal_output(out,"no\n");
@@ -4434,22 +4448,23 @@ MCPL_LOCAL int mcpl_internal_dump_particles( mcpl_file_t f, uint64_t nskip,
       continue;
     }
     uint64_t idx = mcpl_currentposition(f)-1;//-1 since mcpl_read skipped ahead
-    snprintf(buf,sizeof(buf),
-             "%5" PRIu64
-            " %11i %11.5g %11.5g %11.5g %11.5g %11.5g %11.5g %11.5g %11.5g",
-            idx, p->pdgcode, p->ekin,
-            p->position[0], p->position[1], p->position[2],
-            p->direction[0], p->direction[1], p->direction[2],
-            p->time );
+    snprintf(buf,sizeof(buf),"%5" PRIu64 " %11i",idx,p->pdgcode);
+    const double values[] = { p->ekin,
+                              p->position[0], p->position[1], p->position[2],
+                              p->direction[0], p->direction[1], p->direction[2],
+                              p->time };
+    for ( unsigned i = 0; i < 8; ++i )
+      mcpl_internal_append_number(buf,sizeof(buf)," %11.5g",values[i]);
     mcpl_internal_output(out,buf);
     if (!uweight) {
-      snprintf(buf,sizeof(buf)," %11.5g",p->weight);
+      buf[0] = '\0';
+      mcpl_internal_append_number(buf,sizeof(buf)," %11.5g",p->weight);
       mcpl_internal_output(out,buf);
     }
     if (has_pol) {
-      snprintf(buf,sizeof(buf),
-               " %11.5g %11.5g %11.5g",
-               p->polarisation[0],p->polarisation[1],p->polarisation[2]);
+      buf[0] = '\0';
+      for ( unsigned i = 0; i < 3; ++i )
+        mcpl_internal_append_number(buf,sizeof(buf)," %11.5g",p->polarisation[i]);
       mcpl_internal_output(out,buf);
     }
     if (has_uf) {
@@ -4593,10 +4608,14 @@ MCPL_LOCAL int mcpl_internal_merge_compat( mcpl_file_t ff1, mcpl_file_t ff2,
   }
   if (f1->opt_universalweight!=f2->opt_universalweight) {
     char b1[64], b2[64];
-    if (f1->opt_universalweight)
+    if (f1->opt_universalweight) {
       snprintf(b1,sizeof(b1),"%g",f1->opt_universalweight);
-    if (f2->opt_universalweight)
+      mcpl_internal_to_c_decimal_point(b1);
+    }
+    if (f2->opt_universalweight) {
       snprintf(b2,sizeof(b2),"%g",f2->opt_universalweight);
+      mcpl_internal_to_c_decimal_point(b2);
+    }
     snprintf(reason,nreason,"universal weight: %s vs %s",
              f1->opt_universalweight?b1:"none",
              f2->opt_universalweight?b2:"none");

@@ -6,4 +6,29 @@ stat:sum:v4:           123456789.123
 stat:sum:v5:                      -1
 stat:sum:v6:                       0
     0        2112                     1.5                    0.25                       0                       0                       0                       0                       1                   0.125                     2.5                       0                     0.5                       0 0x00000000
+Opened MCPL file dumplocale.mcpl:
+
+  Basic info
+    Format             : MCPL-3
+    No. of particles   : 1
+    Header storage     : 67 bytes
+    Data storage       : 44 bytes
+
+  Custom meta data
+    Source             : "unknown"
+    Number of comments : 0
+    Number of blobs    : 0
+
+  Particle data format
+    User flags         : no
+    Polarisation info  : yes
+    Fixed part. type   : no
+    Fixed part. weight : yes (weight 2.5)
+    FP precision       : single
+    Endianness         : little
+    Storage            : 44 bytes/particle
+
+index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux          uy          uz    time[ms]       pol-x       pol-y       pol-z
+    0        2112         1.5        0.25           0           0           0           0           1       0.125           0         0.5           0
+Merge: Attempting to merge incompatible files (universal weight: 2.5 vs 0.75).
 All values written and read correctly
