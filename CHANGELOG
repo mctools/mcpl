@@ -13,7 +13,7 @@ v2.2.9  (work in progress)
         allow_overwrite argument of mcpl_merge_files_es and
         mcpl_forcemerge_files_es, AllowOverwrite::Yes in C++,
         allow_overwrite=True in Python, or the new option --allow-overwrite
-        of mcpltool, mcpltool-c, and the converters. Before,
+        of mcpltool and the converters. Before,
         mcpl_create_outfile, mcpl_gzip_file, and the converters overwrote
         existing files. Output files which are (or are written via) one of
         the input files are always refused.
@@ -67,10 +67,9 @@ v2.2.9  (work in progress)
         mcpl_generic_fread was wrong after reading more than 32 kB at once,
         which could give wrong output from mcpl2ssw with gzipped reference
         files.
-      * stat:sum values, numbers in dumps (and in the messages of refused
-        merges), and numbers in the files of mcpltool --text, are always
-        written and read with "." as the decimal point, also in applications
-        using a locale with another one.
+      * stat:sum values, and numbers in dumps (and in the messages of
+        refused merges), are always written and read with "." as the decimal
+        point, also in applications using a locale with another one.
       * Plots in the terminal are shown in colour: curves with the colours of
         matplotlib (several curves drawn as lines of braille dots with Unicode
         characters), and 2D maps with the viridis colour map (with Unicode
@@ -109,20 +108,19 @@ v2.2.9  (work in progress)
         and not a file!" (in C, C++, Python, and all tools).
       * The minimum CMake version is now 3.21 (and on Windows 3.27, which was
         already needed there, now with a clear error message).
-      * The command-line tools are renamed: the Python tool from the
-        mcpl-python package (pymcpltool) is now mcpltool, and the compiled
-        tool from the mcpl-core package (mcpltool) is now mcpltool-c. The
-        pymcpltool command still works, but warns that it has been renamed.
-        In Python, app_mcpltool is the new name of app_pymcpltool (which also
-        still works, but warns). The usage information shown with "python -m
-        mcpl" shows "python -m mcpl" as the name of the command.
-      * The MCPL_BINDIR, MCPL_LIBDIR, MCPL_INCDIR, MCPL_LIBNAME,
-        MCPL_CMD_MCPLTOOL and MCPL_CMD_MCPLCONFIG variables provided by
-        find_package(MCPL) in CMake had wrong (or empty) values. The
-        MCPL_CMD_MCPLTOOL variable is now the path of mcpltool-c.
-      * mcpltool and pymcpltool no longer leave output files behind when
-        --merge, --forcemerge, or --extract fail (mcpltool left an empty file,
-        and pymcpltool --extract a file with an incomplete header).
+      * mcpltool is now the command-line tool from the mcpl-python package
+        (previously pymcpltool, which still works, but warns that it has
+        been renamed). The compiled mcpltool from the mcpl-core package is
+        removed, as is the C function mcpl_tool. In Python, app_mcpltool is
+        the new name of app_pymcpltool (which also still works, but warns).
+        The usage information shown with "python -m mcpl" shows "python -m
+        mcpl" as the name of the command.
+      * The MCPL_BINDIR, MCPL_LIBDIR, MCPL_INCDIR, MCPL_LIBNAME, and
+        MCPL_CMD_MCPLCONFIG variables provided by find_package(MCPL) in CMake
+        had wrong (or empty) values. The MCPL_CMD_MCPLTOOL variable is
+        removed.
+      * mcpltool no longer leaves output files behind when --merge,
+        --forcemerge, or --extract fail.
       * ssw2mcpl and mcpl2ssw read and write the numbers of histories (np1),
         particles (nrss) and histories with particles (niss) in the headers
         of MCNP5 and MCNP6 SSW files as the 64 bit integers they are (issue
@@ -479,8 +477,7 @@ v2.2.9  (work in progress)
         available (-1) when -E modifies weights, unless the new
         --keep-statsum option is used. The header comments describe the
         picks and edits, unless --no-comment is used. To pick particles of a
-        type, use e.g. -p "pdgcode == neutron" (mcpltool-c still has
-        -pPDGCODE).
+        type, use e.g. -p "pdgcode == neutron".
       * plot_stats is removed: it gives an error saying what to use instead
         (mcpl.histogram), and mcpltool -S only prints the summary of the
         particles. The --pdf and --gui options are removed.
@@ -510,13 +507,11 @@ v2.2.9  (work in progress)
       * Avoid misaligned memory access (undefined behaviour) when reading SSW
         and PHITS files in mcpl-extra.
       * The comment added by mcpltool --extract to the header of the new file
-        now describes how particles were selected (e.g. "mcpltool: extracted
-        particles with -l100 -p2112"), instead of giving the number of particles
-        in the input file. Files extracted in the same way from different files
-        can thus be merged. The new --no-comment option disables the comment.
-      * mcpltool --extract -p now also accepts the names neutron, antineutron,
-        proton, antiproton, electron, positron (or antielectron), muon,
-        antimuon, and gamma (or photon) instead of PDG codes, e.g. -pneutron.
+        now describes how particles were selected (e.g. 'mcpltool: extracted
+        particles with -l100 -p "pdgcode == 2112"'), instead of giving the
+        number of particles in the input file. Files extracted in the same way
+        from different files can thus be merged. The new --no-comment option
+        disables the comment.
       * Fix mcpl_transfer_last_read_particle for transfers from files with
         double precision to files with single precision, which wrote wrong
         kinetic energies and directions. The transfers done by mcpltool were not

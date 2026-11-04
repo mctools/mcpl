@@ -49,8 +49,8 @@ def _statsum_marking( f, skip, limit, pick, edit, keepstatsum = False ):
     in a file with its particles in a range (skip and limit), picked and edited
     (a ParticleFilter and a ParticleEdit, or None): 'positions' when picking
     particles based on their positions in the file, 'weights' when editing
-    their weights (unless keepstatsum), or None, as in mcpltool-c (see the
-    guidelines for stat:sum entries)"""
+    their weights (unless keepstatsum), or None (see the guidelines for
+    stat:sum entries)"""
     if not any( v is not None for v in f.stat_sum.values() ):
         return None
     n = f.nparticles
@@ -63,7 +63,7 @@ def _statsum_marking( f, skip, limit, pick, edit, keepstatsum = False ):
 
 def _tool_check_outfn( fn, inputs, allow_overwrite = False ):
     """Usage error message unless the output file of --merge, --forcemerge or
-    --extract can be created (like in mcpltool-c), or None if it can. Checked
+    --extract can be created, or None if it can. Checked
     before creating the file, so the output of a failed command can be
     removed."""
     from ._common import MCPLError
@@ -77,7 +77,7 @@ def _tool_check_outfn( fn, inputs, allow_overwrite = False ):
 def _mcpltool_close(outfile):
     """Close the output of --merge, --forcemerge, or --extract, returning its
     name. If compressing it (for names ending with .mcpl.gz) fails, the
-    uncompressed output is kept, with a warning (like in mcpltool-c)."""
+    uncompressed output is kept, with a warning."""
     if not outfile._gzip_at_close or outfile._dry_run:
         outfile.close()
         return outfile.filename + ( '.gz' if outfile._gzip_at_close else '' )
@@ -100,8 +100,8 @@ def _mcpltool_extract(filelist, limit, skip, pick, edit, preventcomment,
     limit = limit or 0
     skip = skip or 0
     with MCPLFile(filelist[0],raw_strings=True) as fi:
-        #Like mcpltool-c, only warn about NaN or infinite values in the
-        #particles in the range given by -s and -l:
+        #Only warn about NaN or infinite values in the particles in the range
+        #given by -s and -l:
         fi._check_nonfinite = False
         fo = MCPLOutFile(outfn, allow_overwrite = allow_overwrite, _dry_run = dry_run)
         #(a failed extraction must not leave an output file behind)

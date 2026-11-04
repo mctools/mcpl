@@ -297,10 +297,6 @@ extern "C" {
   /* invalid (values of -1):                                                  */
   MCPL_API void mcpl_repair(const char * file1);
 
-  /* For easily creating a standard mcpl-tool cmdline application (assumes */
-  /* utf8-encoded strings):                                                */
-  MCPL_API int mcpl_tool(int argc, char** argv);
-
   /* Compress a file (like running gzip on the file, transforming it from  */
   /* "filename" to "filename.gz". Non-zero return value indicates success. */
   /* It fails if "filename.gz" already exists.                             */

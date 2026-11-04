@@ -252,9 +252,6 @@ endif()
 
 set_target_properties( mcpl PROPERTIES C_VISIBILITY_PRESET "hidden" )
 
-add_executable( mcpltool-c "app_tool/mcpltool_app.c" ${mcpl_src_files} )
-target_compile_definitions( mcpltool-c PRIVATE mcpl_LIB_IS_STATIC )
-
 include( "mcpl_headercreate" )
 mcpl_create_header( mcplheader_include_path )
 #The header-only C++ interface is placed next to the generated mcpl.h:
@@ -265,12 +262,9 @@ configure_file(
 )
 
 set_target_common_props( mcpl )
-set_target_common_props( mcpltool-c )
 target_compile_features( mcpl PUBLIC c_std_99 )
-target_compile_features( mcpltool-c PRIVATE c_std_99 )
 mctools_detect_extra_cflags( mcpl_extra_private_compile_options )
 target_compile_options( mcpl PRIVATE ${mcpl_extra_private_compile_options} )
-target_compile_options( mcpltool-c PRIVATE ${mcpl_extra_private_compile_options} )
 target_include_directories(
   mcpl
   PRIVATE "${PROJECT_SOURCE_DIR}/src"
@@ -278,23 +272,16 @@ target_include_directories(
   $<BUILD_INTERFACE:${mcplheader_include_path}>
   $<INSTALL_INTERFACE:${MCPL_INCDIR}>
 )
-target_include_directories(
-  mcpltool-c PRIVATE
-  "${PROJECT_SOURCE_DIR}/src"
-  "${mcplheader_include_path}"
-)
 
 #Zlib:
 
 ##ZLib support:
 include( mcpl_zlib )
 add_zlib_dependency( mcpl )
-add_zlib_dependency( mcpltool-c )
 
 mctools_detect_math_libs( "MCPL_MATH_LIBRARIES" )
 
 target_link_libraries(mcpl PRIVATE ${MCPL_MATH_LIBRARIES} )
-target_link_libraries(mcpltool-c PRIVATE ${MCPL_MATH_LIBRARIES} )
 
 install(
   TARGETS mcpl
@@ -302,11 +289,6 @@ install(
   RUNTIME DESTINATION ${MCPL_SHLIBDIR}
   ARCHIVE DESTINATION ${MCPL_LIBDIR}
   LIBRARY DESTINATION ${MCPL_LIBDIR}
-)
-
-install(
-  TARGETS mcpltool-c
-  RUNTIME DESTINATION ${MCPL_BINDIR}
 )
 
 install(

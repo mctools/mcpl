@@ -48,9 +48,6 @@ jobs:
     - name: mcpl-config summary
       run: mcpl-config --summary
 
-    - name: mcpltool-c
-      run: mcpltool-c ./src/examples/example.mcpl
-
     - name: Check CMake variables of find_package(MCPL)
       run: cmake -S "./src/devel/misc/test_cmakevars" -B "./build_cmakevars"
 

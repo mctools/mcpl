@@ -189,7 +189,6 @@ def check_all_project_scripts():
     #]
     extra_core = [
         ('mcpl-config','_mcpl_core.info:_mcpl_config_cli_wrapper'),
-        ('mcpltool-c','_mcpl_core.info:_mcpl_tool_cli_wrapper'),
     ]
     extra_py = [
         ('mcpltool','mcpl._cli:main'),

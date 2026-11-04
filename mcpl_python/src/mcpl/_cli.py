@@ -236,8 +236,8 @@ def _app_mcpltool(argv):
     if progname == '__main__.py':
         progname = 'python -m mcpl'
 
-    #NB: We do not use standard python parsing modules, since we want to be
-    #as strictly compatible with mcpltool-c as possible.
+    #NB: We do not use standard python parsing modules, to keep the options
+    #and usage errors of the original mcpltool (written in C).
 
     if not args:
         print('ERROR: No input file specified\n\nRun with -h or --help for usage information')
