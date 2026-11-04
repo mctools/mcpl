@@ -19,10 +19,11 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-//Numbers in stat:sum: values, and in the text files of mcpltool --text, always
-//use "." as the decimal point, also when the application uses a locale with
-//another decimal point (like ","). The test is done with the first such locale
-//available (there might be none, but the output is the same either way):
+//Numbers in stat:sum: values, in the text files of mcpltool --text, and in
+//dumps always use "." as the decimal point, also when the application uses a
+//locale with another decimal point (like ","). The test is done with the first
+//such locale available (there might be none, but the output is the same
+//either way):
 
 #include "mcpl.h"
 #include "mcpltest_errstate.h"
@@ -110,6 +111,39 @@ int main(void)
       ok = 0;
     remove("textlocale.mcpl");
     remove("textlocale.txt");
+  }
+
+  //Dumps (with a universal weight, shown in the header):
+  {
+    mcpl_outfile_t fo = mcpl_create_outfile("dumplocale.mcpl");
+    mcpl_enable_polarisation(fo);
+    mcpl_enable_universal_weight(fo,2.5);
+    mcpl_particle_t * p = mcpl_get_empty_particle(fo);
+    p->pdgcode = 2112;
+    p->ekin = 1.5;
+    p->position[0] = 0.25;
+    p->direction[2] = 1.0;
+    p->polarisation[1] = 0.5;
+    p->time = 0.125;
+    p->weight = 2.5;
+    mcpl_add_particle(fo,p);
+    mcpl_close_outfile(fo);
+    mcpl_dump("dumplocale.mcpl",0,0,0);
+    //The reason why files with other universal weights can not be merged:
+    fo = mcpl_create_outfile("dumplocale2.mcpl");
+    mcpl_enable_polarisation(fo);
+    mcpl_enable_universal_weight(fo,0.75);
+    mcpl_close_outfile(fo);
+    const char * files[] = { "dumplocale.mcpl", "dumplocale2.mcpl" };
+    mcpl_errstate_t es;
+    es.code = 0;
+    mcpl_outfile_t fm = mcpl_merge_files_es("mergelocale.mcpl",2,files,0,&es);
+    printf("Merge: %s\n",es.code ? es.msg : "no error");
+    if ( fm.internal )
+      mcpl_close_outfile(fm);
+    remove("mergelocale.mcpl");
+    remove("dumplocale.mcpl");
+    remove("dumplocale2.mcpl");
   }
 
   printf(ok ? "All values written and read correctly\n" : "ERROR\n");

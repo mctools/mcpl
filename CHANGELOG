@@ -67,9 +67,10 @@ v2.2.9  (work in progress)
         mcpl_generic_fread was wrong after reading more than 32 kB at once,
         which could give wrong output from mcpl2ssw with gzipped reference
         files.
-      * stat:sum values, and numbers in the files of mcpltool --text, are
-        always written and read with "." as the decimal point, also in
-        applications using a locale with another one.
+      * stat:sum values, numbers in dumps (and in the messages of refused
+        merges), and numbers in the files of mcpltool --text, are always
+        written and read with "." as the decimal point, also in applications
+        using a locale with another one.
       * Plots in the terminal are shown in colour: curves with the colours of
         matplotlib (several curves drawn as lines of braille dots with Unicode
         characters), and 2D maps with the viridis colour map (with Unicode
