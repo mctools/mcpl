@@ -20,6 +20,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "mcpltestmodutils.h"
+#include "mcpltest_errstate.h"
 
 //The file operations of the C library which mcpltool-c gave on the command
 //line (dumps, merges, repairs, and gzipping), with the variants with error
@@ -34,7 +35,7 @@ MCPLTEST_CTYPE_DICTIONARY
     "int mcpltest_can_merge( const char *, const char * );"
     "const char * mcpltest_repair( const char * );"
     "const char * mcpltest_gzip( const char * );"
-    "const char * mcpltest_dump( const char *, int, unsigned, unsigned );"
+    "const char * mcpltest_dump( const char *, int, unsigned, unsigned, const char * );"
     ;
 }
 
@@ -116,17 +117,44 @@ MCPLTEST_CTYPES const char * mcpltest_gzip( const char * filename )
   return mcpltest_result( &es );
 }
 
+static void mcpltest_write_output( const char * msg, void * ctx )
+{
+  fputs( msg, (FILE*)ctx );
+}
+
 //Prints the header (parts 0 or 1) and the particles (parts 0 or 2) of the
-//file, nlimit (0: all) of them after the first nskip, with the print handler:
+//file, nlimit (0: all) of them after the first nskip, with the print handler,
+//or into the file output (as bytes, if not empty):
 MCPLTEST_CTYPES const char * mcpltest_dump( const char * filename, int parts,
-                                            unsigned nskip, unsigned nlimit )
+                                            unsigned nskip, unsigned nlimit,
+                                            const char * output )
 {
   mcpl_errstate_t es;
   es.code = 0;
+  FILE * out = NULL;
+  if ( *output ) {
+    out = mcpltest_fopen( output, "wb" );
+    if ( !out )
+      return "error: can not open the output file of the dump";
+  }
   mcpl_file_t f = mcpl_open_file_es( filename, &es );
-  if ( !es.code )
-    mcpl_dump_file_es( f, parts, nskip, nlimit, NULL, NULL, &es );
+  int opened = !es.code;
+  if ( opened )
+    mcpl_dump_file_es( f, parts, nskip, nlimit,
+                       out ? mcpltest_write_output : NULL, out, &es );
   if ( f.internal )
     mcpl_close_file( f );
-  return mcpltest_result( &es );
+  if ( out )
+    fclose( out );
+  //(failures to open the file are marked, as the dump then has nothing):
+  const char * res = mcpltest_result( &es );
+  if ( !opened ) {
+    //(res can be in mcpltest_result_buffer, so it is copied first):
+    char tmp[1024];
+    snprintf( tmp, sizeof(tmp), "%.1000s", res );
+    snprintf( mcpltest_result_buffer, sizeof(mcpltest_result_buffer),
+              "%s (when opening)", tmp );
+    return mcpltest_result_buffer;
+  }
+  return res;
 }

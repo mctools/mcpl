@@ -44,7 +44,7 @@ def copy( name, target = None, subdir = 'ref' ):
 
 def dump( fn, parts = 0, skip = 0, limit = 0 ):
     print(f'---- dump {fn} (parts {parts}, skip {skip}, limit {limit})', flush=True)
-    res = lib.mcpltest_dump(str(fn),parts,skip,limit)
+    res = lib.mcpltest_dump(str(fn),parts,skip,limit,'')
     print(f'---- -> {res}', flush=True)
 
 def merge( output, *files, force = False, keepuserflags = False ):
