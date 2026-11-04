@@ -29,8 +29,10 @@
 
 import gzip
 import shutil
+import sys
 from pathlib import Path
 
+import mcpldev as mcpl
 from MCPLTestUtils.dirs import test_data_dir
 from MCPLTestUtils.loadlib import getlib
 
@@ -44,7 +46,14 @@ def copy( name, target = None, subdir = 'ref' ):
 
 def dump( fn, parts = 0, skip = 0, limit = 0 ):
     print(f'---- dump {fn} (parts {parts}, skip {skip}, limit {limit})', flush=True)
-    res = lib.mcpltest_dump(str(fn),parts,skip,limit,'')
+    #(the version of MCPL in the source names of forced merges is not shown,
+    #so the log does not change with it):
+    res = lib.mcpltest_dump(str(fn),parts,skip,limit,'dump.txt')
+    if Path('dump.txt').exists():
+        sys.stdout.buffer.write( Path('dump.txt').read_bytes()
+                                 .replace(f'MCPL v{mcpl.__version__}'.encode(),
+                                          b'MCPL v<current>') )
+        Path('dump.txt').unlink()
     print(f'---- -> {res}', flush=True)
 
 def merge( output, *files, force = False, keepuserflags = False ):
