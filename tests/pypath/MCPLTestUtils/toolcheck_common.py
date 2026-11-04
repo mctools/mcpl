@@ -21,6 +21,7 @@
 
 import gzip
 import hashlib
+import os
 import shlex
 import subprocess
 import sys
@@ -40,7 +41,51 @@ def gunzip( f ):
     f.unlink()
     ftgt.write_bytes(content)
 
-def cmd(*args, print_md5sum_of_output = False,fail=False):
+#The tool run by cmd: mcpltool-c, or with use_python_tool the mcpltool of
+#Python (which will replace mcpltool-c, when it is retired):
+_python_tool = False
+
+def use_python_tool():
+    global _python_tool
+    _python_tool = True
+
+def python_tool():
+    """Whether cmd runs the mcpltool of Python"""
+    return _python_tool
+
+def _py_arg( a ):
+    """The arguments of mcpltool for the argument a of mcpltool-c (see py_args)"""
+    if a.startswith('-') and not a.startswith('--'):
+        #(the short options before p, unless one takes a value, which then is
+        #the rest, like the key of -bKEY):
+        for i, c in enumerate(a[1:],1):
+            if c in 'lsb':
+                break
+            if c == 'p':
+                if a[i+1:]:
+                    return [ a[:i] ] * ( i > 1 ) + [ '-p', f'pdgcode == {a[i+1:]}' ]
+                break
+    return [ a ]
+
+def py_args( args ):
+    """Arguments for mcpltool corresponding to those of mcpltool-c: -pPDGCODE
+    is -p "pdgcode == PDGCODE" for mcpltool (also after other short options,
+    as in -ep2112)"""
+    return [ b for a in args for b in _py_arg(str(a)) ]
+
+def tool_command( args ):
+    """The command running the tool with the arguments (those of mcpltool-c),
+    with a fixed version in its printouts, and its name"""
+    if _python_tool:
+        return [ sys.executable, '-m', 'mcpldev', *py_args(args) ], 'mcpltool'
+    return [ mcpltool_cmd, *( str(a) for a in args ), '--fakeversion' ], 'mcpltool-c'
+
+def cmd(*args, print_md5sum_of_output = False, fail = False, pyfail = None):
+    """Run the tool with the arguments, printing its output, and check that it
+    fails if fail is set (or pyfail, if given, for the mcpltool of Python,
+    where it differs)"""
+    if _python_tool and pyfail is not None:
+        fail = pyfail
     flush()
     print("----------------------------------------------")
     def argfmt( a ):
@@ -51,15 +96,12 @@ def cmd(*args, print_md5sum_of_output = False,fail=False):
             a = a.replace('\\','/')
         return a
     args_print = shlex.join( argfmt(a) for a in args )
-    print(f"Running mcpltool-c {args_print}")
+    fullcmd, name = tool_command(args)
+    print(f"Running {name} {args_print}")
     print("----------------------------------------------")
     flush()
-    fullcmd = [mcpltool_cmd]+[str(e) for e in args]
-    #print(repr(fullcmd))
-    #print("----------------------------------------------")
-    #flush()
-    rv = subprocess.run( fullcmd + ['--fakeversion'], capture_output = True,
-                         check = False )
+    rv = subprocess.run( fullcmd, capture_output = True, check = False,
+                         env = { **os.environ, 'PYMCPLTOOL_FAKE_PYVERSION' : '1' } )
     flush()
     assert not rv.stderr, "process had stderr"
     flush()

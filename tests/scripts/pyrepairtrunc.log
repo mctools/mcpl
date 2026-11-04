@@ -1,0 +1,148 @@
+==> Header says 0 particles, file has 0 particles plus 0 bytes
+----------------------------------------------
+Running mcpltool --repair truncated.mcpl
+----------------------------------------------
+MCPL ERROR: File does not appear to be broken.
+
+===> Command failed!
+----------------------------------------------
+Running mcpltool --repair truncated.mcpl
+----------------------------------------------
+MCPL ERROR: File does not appear to be broken.
+
+===> Command failed!
+==> Header says 0 particles, file has 0 particles plus 24 bytes
+----------------------------------------------
+Running mcpltool --repair truncated.mcpl
+----------------------------------------------
+MCPL: Successfully repaired file with 0 particles.
+
+----------------------------------------------
+Running mcpltool --repair truncated.mcpl
+----------------------------------------------
+MCPL ERROR: File does not appear to be broken.
+
+===> Command failed!
+==> Header says 0 particles, file has 2 particles plus 0 bytes
+----------------------------------------------
+Running mcpltool --repair truncated.mcpl
+----------------------------------------------
+MCPL: Successfully repaired file with 2 particles.
+
+----------------------------------------------
+Running mcpltool --repair truncated.mcpl
+----------------------------------------------
+MCPL ERROR: File does not appear to be broken.
+
+===> Command failed!
+==> Header says 0 particles, file has 2 particles plus 16 bytes
+----------------------------------------------
+Running mcpltool --repair truncated.mcpl
+----------------------------------------------
+MCPL: Successfully repaired file with 2 particles.
+
+----------------------------------------------
+Running mcpltool --repair truncated.mcpl
+----------------------------------------------
+MCPL ERROR: File does not appear to be broken.
+
+===> Command failed!
+==> Header says 0 particles, file has 4 particles plus 47 bytes
+----------------------------------------------
+Running mcpltool --repair truncated.mcpl
+----------------------------------------------
+MCPL: Successfully repaired file with 4 particles.
+
+----------------------------------------------
+Running mcpltool --repair truncated.mcpl
+----------------------------------------------
+MCPL ERROR: File does not appear to be broken.
+
+===> Command failed!
+==> Header says 5 particles, file has 0 particles plus 0 bytes
+----------------------------------------------
+Running mcpltool --repair truncated.mcpl
+----------------------------------------------
+MCPL: Successfully repaired file with 0 particles.
+
+----------------------------------------------
+Running mcpltool --repair truncated.mcpl
+----------------------------------------------
+MCPL ERROR: File does not appear to be broken.
+
+===> Command failed!
+==> Header says 5 particles, file has 0 particles plus 24 bytes
+----------------------------------------------
+Running mcpltool --repair truncated.mcpl
+----------------------------------------------
+MCPL: Successfully repaired file with 0 particles.
+
+----------------------------------------------
+Running mcpltool --repair truncated.mcpl
+----------------------------------------------
+MCPL ERROR: File does not appear to be broken.
+
+===> Command failed!
+==> Header says 5 particles, file has 2 particles plus 0 bytes
+----------------------------------------------
+Running mcpltool --repair truncated.mcpl
+----------------------------------------------
+MCPL: Successfully repaired file with 2 particles.
+
+----------------------------------------------
+Running mcpltool --repair truncated.mcpl
+----------------------------------------------
+MCPL ERROR: File does not appear to be broken.
+
+===> Command failed!
+==> Header says 5 particles, file has 2 particles plus 16 bytes
+----------------------------------------------
+Running mcpltool --repair truncated.mcpl
+----------------------------------------------
+MCPL: Successfully repaired file with 2 particles.
+
+----------------------------------------------
+Running mcpltool --repair truncated.mcpl
+----------------------------------------------
+MCPL ERROR: File does not appear to be broken.
+
+===> Command failed!
+==> Header says 5 particles, file has 4 particles plus 47 bytes
+----------------------------------------------
+Running mcpltool --repair truncated.mcpl
+----------------------------------------------
+MCPL: Successfully repaired file with 4 particles.
+
+----------------------------------------------
+Running mcpltool --repair truncated.mcpl
+----------------------------------------------
+MCPL ERROR: File does not appear to be broken.
+
+===> Command failed!
+==> Header says 3 particles, file has 3 particles plus 0 bytes
+----------------------------------------------
+Running mcpltool --repair truncated.mcpl
+----------------------------------------------
+MCPL ERROR: File does not appear to be broken.
+
+===> Command failed!
+==> Header says 3 particles, file has 3 particles plus 16 bytes
+----------------------------------------------
+Running mcpltool --repair truncated.mcpl
+----------------------------------------------
+MCPL: Successfully repaired file with 3 particles.
+
+==> Header says 3 particles, file has 4 particles plus 47 bytes
+----------------------------------------------
+Running mcpltool --repair truncated.mcpl
+----------------------------------------------
+MCPL ERROR: Input file has invalid combination of meta-data & filesize.
+
+===> Command failed!
+==> Header says 3 particles, file has 5 particles plus 0 bytes
+----------------------------------------------
+Running mcpltool --repair truncated.mcpl
+----------------------------------------------
+MCPL ERROR: Input file has invalid combination of meta-data & filesize.
+
+===> Command failed!

@@ -24,7 +24,7 @@ import os
 from pathlib import Path
 
 from MCPLTestUtils.dirs import test_data_dir
-from MCPLTestUtils.toolcheck_common import check_same, cmd, copy, gunzip
+from MCPLTestUtils.toolcheck_common import check_same, cmd, copy, gunzip, python_tool
 
 
 def main():
@@ -86,19 +86,21 @@ def main():
     #Test various options (also illegal ones):
     cmd('-h')
     cmd('--help')
-    cmd('--h')
+    #(--h and --n are ambiguous in the mcpltool of Python, which has more
+    #options):
+    cmd('--h',pyfail=True)
     cmd('--version')
     cmd('--v')
     cmd(f1,'--justhead')
     cmd(f1,'--ju')
     cmd(f1,'-j')
     cmd(f1,'--nohead')
-    cmd(f1,'--n')
+    cmd(f1,'--n',pyfail=True)
     cmd(f1,'--n','-m','--inplace',fail=True)
     cmd(f1,'--ju','-l2',fail=True)
     cmd(f1,'--ju','-s1',fail=True)
     cmd(f1,'-l2','-r',fail=True)
-    cmd(f1,'--v','--h')
+    cmd(f1,'--v','--h',pyfail=True)
     cmd(f1,'--v','--m','--inplace',fail=True)
     cmd(f1,'-l0','-s2')
     cmd(f1,'-l2','-s0')
@@ -183,11 +185,16 @@ def main():
     cmd('-e','-p1000922350','--no-comment',fmisc,'extracted_4.mcpl.gz')
     cmd('-e','-p111','-l999999','-s150','--no-comment',fmiscnogz,'extracted_5.mcpl.gz')
     #invalid -p arguments must not leave output files behind:
-    cmd('-e','-p0',fmiscnogz,'badpdg.mcpl',fail=True)
+    #(for the mcpltool of Python, this is the pick pdgcode == 0, which picks
+    #no particles):
+    cmd('-e','-p0',fmiscnogz,'badpdg.mcpl',fail=True,pyfail=False)
+    if python_tool():
+        Path('badpdg.mcpl').unlink()
     #Numbers which are too large, and leading zeros:
     cmd('-e','-p99999999999999999999',fmiscnogz,'badpdg.mcpl',fail=True)
     cmd(f1,'-l99999999999999999999',fail=True)
-    cmd('-e','-p022','--no-comment',fmisc,'extracted_6.mcpl.gz')
+    #(the mcpltool of Python refuses numbers with leading zeros):
+    cmd('-e','-p022','--no-comment',fmisc,'extracted_6.mcpl.gz',pyfail=True)
     #Outputs with the name of an existing directory are refused:
     Path('dirout.mcpl.gz').mkdir()
     cmd('-e',fmisc,'dirout.mcpl.gz',fail=True)
@@ -200,7 +207,10 @@ def main():
     cmd('-e','-pantielectron',fmiscnogz,'extracted_names_4.mcpl')
     cmd('-e','-p-11',fmiscnogz,'extracted_names_5.mcpl')
     cmd('-n','-l3','extracted_names_3.mcpl')
-    assert Path('extracted_names_4.mcpl').read_bytes() == Path('extracted_names_5.mcpl').read_bytes()
+    #(the mcpltool of Python records the picks as written in the comments of
+    #the files, so only the particles are the same):
+    if not python_tool():
+        assert Path('extracted_names_4.mcpl').read_bytes() == Path('extracted_names_5.mcpl').read_bytes()
     assert not Path('badpdg.mcpl').exists()
     cmd('-l0','extracted_1.mcpl.gz')
     cmd('-l0','extracted_2.mcpl.gz')
@@ -274,8 +284,12 @@ def main():
     cmd('--merge','merged_comment_1.mcpl','extracted_comment_1.mcpl','extracted_comment_5.mcpl',fail=True)
     cmd('--merge','merged_comment_2.mcpl','extracted_comment_7.mcpl','extracted_comment_6.mcpl',fail=True)
     cmd('-e','-pneutron',fmisc,'extracted_comment_8.mcpl')
-    cmd('--merge','merged_comment_3.mcpl','extracted_comment_7.mcpl','extracted_comment_8.mcpl')
-    cmd('-j','merged_comment_3.mcpl')
+    #(the mcpltool of Python records the picks as written, here pdgcode == 2112
+    #and pdgcode == neutron, so the comments differ, and the files can not be
+    #merged):
+    cmd('--merge','merged_comment_3.mcpl','extracted_comment_7.mcpl','extracted_comment_8.mcpl',
+        pyfail=True)
+    cmd('-j','merged_comment_3.mcpl',pyfail=True)
 
     cmd('-m','extracted_recombined','extracted_none.mcpl','extracted_all.mcpl')
     cmd('-m','--inplace','extracted_none.mcpl','extracted_all.mcpl')
