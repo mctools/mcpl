@@ -48,12 +48,6 @@ endif()
 set( MCPL_LIBNAME "@MCPL_libname@" )
 
 #Various scripts:
-set( MCPL_CMD_MCPLTOOL "${MCPL_BINDIR}/mcpltool-c${CMAKE_EXECUTABLE_SUFFIX}" )
-if ( NOT EXISTS "${MCPL_CMD_MCPLTOOL}" )
-  set( MCPL_CMD_MCPLTOOL "")
-endif()
-
-#Various scripts:
 set( MCPL_CMD_MCPLCONFIG "${MCPL_BINDIR}/mcpl-config${CMAKE_EXECUTABLE_SUFFIX}" )
 if ( "@mcpl_skbuild_shlib_in_wheel_scripts@" )
   #In Python wheels on Windows, the mcpl-config binary only works when called

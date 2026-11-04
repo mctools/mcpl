@@ -808,9 +808,9 @@ class MCPLFile:
 
         if self._str_decode:
             #attributes return python strings since raw_strings was not set, so
-            #we must decode these before returning to the user. But for output
-            #compatibility with mcpltool-c, dump_hdr() will use original
-            #ones above.
+            #we must decode these before returning to the user. But to give the
+            #same output as the dumps of the C library, dump_hdr() will use the
+            #original ones above.
             h['sourcename_raw'] = sourcename
             h['comments_raw'] = comments
             h['blobs_raw'] = blobs

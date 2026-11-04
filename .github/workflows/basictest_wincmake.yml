@@ -100,10 +100,6 @@ jobs:
       shell: cmd
       run: mcpl-config -s
 
-    - name: Run mcpltool-c --help
-      shell: cmd
-      run: mcpltool-c --help
-
     - name: Check CMake variables of find_package(MCPL)
       run: cmake -S "./src/devel/misc/test_cmakevars" -B "./build_cmakevars"
 

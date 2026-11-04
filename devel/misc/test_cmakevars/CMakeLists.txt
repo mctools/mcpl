@@ -40,7 +40,7 @@ function( check_failed msg )
 endfunction()
 
 foreach( var MCPL_CMAKEDIR MCPL_BINDIR MCPL_LIBDIR MCPL_INCDIR MCPL_LIBNAME
-             MCPL_CMD_MCPLTOOL MCPL_CMD_MCPLCONFIG )
+             MCPL_CMD_MCPLCONFIG )
   message( STATUS "${var} = \"${${var}}\"" )
   if ( NOT ${var} )
     check_failed( "${var} is empty" )
@@ -58,14 +58,14 @@ endif()
 if ( NOT EXISTS "${MCPL_LIBDIR}/${MCPL_LIBNAME}" )
   check_failed( "MCPL_LIBDIR does not contain MCPL_LIBNAME" )
 endif()
-foreach( var MCPL_CMD_MCPLTOOL MCPL_CMD_MCPLCONFIG )
+foreach( var MCPL_CMD_MCPLCONFIG )
   if ( NOT EXISTS "${${var}}" OR IS_DIRECTORY "${${var}}" )
     check_failed( "${var} is not a file" )
   endif()
 endforeach()
 
-#The commands must work and report the version found:
-foreach( var MCPL_CMD_MCPLTOOL MCPL_CMD_MCPLCONFIG )
+#The command must work and report the version found:
+foreach( var MCPL_CMD_MCPLCONFIG )
   execute_process(
     COMMAND "${${var}}" --version
     OUTPUT_VARIABLE out OUTPUT_STRIP_TRAILING_WHITESPACE
