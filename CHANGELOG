@@ -20,6 +20,13 @@ v2.2.9  (work in progress)
       * Output files have -1 (not available) as stat:sum values until they
         are closed, in C and Python, so unfinished files (e.g. after a crash)
         never have values.
+      * Python: headers can be edited when copying files. After
+        transfer_metadata(..., editable=True), and before the first particle,
+        the settings copied can be changed (e.g. enable_doubleprec(False) for
+        single precision, or enable_universal_weight(None)), and hdr_add_data
+        can replace blobs. The new methods hdr_set_comments, hdr_remove_data,
+        and hdr_remove_stat_sum change the comments, blobs, and stat:sum
+        entries.
       * Python fixes: MCPLFile closes the file of gzipped files, dump_file
         closes the file it opened, a plain 0 in hypot, min, max, and clamp has
         the units of the other values, histogram() checks its bins and range,

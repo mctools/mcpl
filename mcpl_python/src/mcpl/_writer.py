@@ -212,6 +212,7 @@ class MCPLOutFile:
         self._opt_universalpdgcode = 0
         self._opt_universalweight = 0.0
         self._udlayout = None
+        self._editable = False#(see transfer_metadata)
         self._nparticles = 0
         #(key -> [position of comment data in file, value, comment written
         #when the file is closed, which has -1 until then]):
@@ -363,14 +364,20 @@ class MCPLOutFile:
         userdata argument of add_particles and add_particle, which is required
         for files with userdata (userdata = {} gives userdata with all bytes
         zero). Files with userdata are written in MCPL
-        format version 4 (which older MCPL releases can not read)."""
-        from ._userdata import userdata_dtype
-        userdata_dtype(layout)#validate
-        if self._udlayout is not None:
-            if self._udlayout != layout:
-                raise MCPLError('enable_userdata called multiple times with'
-                                ' different layouts')
+        format version 4 (which older MCPL releases can not read). After
+        transfer_metadata(..., editable=True), and before the first particle
+        is added, another layout replaces the layout, and None removes the
+        userdata."""
+        if layout is not None:
+            from ._userdata import userdata_dtype
+            userdata_dtype(layout)#validate
+        if layout == self._udlayout:
             return
+        if layout is None:
+            self._check_editable('enable_userdata(None)')
+        elif self._udlayout is not None:
+            self._check_editable('enable_userdata','called multiple times with'
+                                 ' different layouts')
         self._check_hdr_notwritten('enable_userdata')
         self._udlayout = layout
 
@@ -438,14 +445,44 @@ class MCPLOutFile:
         self._comments.append(comment)
         self._hdr_entries_size += 4 + len(comment)
 
-    def _check_hdr_entry(self, nbytes):
-        #Check that a header entry with the given number of bytes can be added.
+    def hdr_set_comments(self, comments):
+        """Replace all comments with the comments given (a list), e.g. to
+        change, remove, or reorder comments copied with transfer_metadata
+        (before the first particle is added). stat:sum entries are comments
+        too (see hdr_remove_stat_sum to remove one)."""
+        self._check_hdr_notwritten('hdr_set_comments')
+        old = self._comments, self._hdr_entries_size
+        self._hdr_entries_size -= sum( 4 + len(c) for c in self._comments )
+        self._comments = []
+        try:
+            for c in comments:
+                self.hdr_add_comment(c)
+        except BaseException:
+            self._comments, self._hdr_entries_size = old
+            raise
+
+    def hdr_remove_stat_sum(self, key):
+        """Remove the stat:sum entry with the key (before the first particle
+        is added), e.g. one copied with transfer_metadata"""
+        self._check_hdr_notwritten('hdr_remove_stat_sum')
+        from ._statsum import _parse_statsum_comment
+        key = key.decode('ascii') if hasattr(key,'decode') else key
+        for i, c in enumerate(self._comments):
+            if c.startswith(b'stat:sum:') and _parse_statsum_comment(c)[1][0] == key:
+                del self._comments[i]
+                self._hdr_entries_size -= 4 + len(c)
+                return
+        raise MCPLError(f'hdr_remove_stat_sum: no stat:sum entry with the key "{key}"')
+
+    def _check_hdr_entry(self, nbytes, new_entry = True):
+        #Check that a header entry with the given number of bytes can be added
+        #(or that nbytes more can be added to an entry, without new_entry).
         #The sizes of comments and blobs are only accepted up to a smaller
         #limit, with a margin for the other parts of the header (the fixed
         #part, and the source name and userdata layout strings), so the header
         #never becomes too large:
         from ._reader import _max_header_entries, _max_header_size
-        if len(self._comments) + len(self._blobs) + 1 > _max_header_entries:
+        if new_entry and len(self._comments) + len(self._blobs) + 1 > _max_header_entries:
             raise MCPLError('File header would get too many comments and blobs'
                             ' (more than 1000000)')
         if self._hdr_entries_size + nbytes > _max_header_size - 200000:
@@ -458,7 +495,9 @@ class MCPLOutFile:
         quotation marks). Blobs are stored byte for byte, so binary numbers in
         them are in the byte order chosen by the application, unlike all
         other numbers in MCPL files (which are in the byte order of the
-        file)."""
+        file). After transfer_metadata(..., editable=True), and before the
+        first particle is added, the data replaces a blob with the same
+        key."""
         self._hdr_add_data(key, data, lenient = False)
 
     def _hdr_add_data(self, key, data, lenient):
@@ -470,66 +509,116 @@ class MCPLOutFile:
         problem = None if lenient else blobkey_problem(key)
         if problem:
             raise MCPLError(f'hdr_add_data got invalid key ({problem}).')
-        if key in self._blobs:
+        old = self._blobs.get(key)
+        if old is not None and not self._editable:
             raise MCPLError('hdr_add_data got duplicate key')
         data = bytes(data)
         if len(data) >= 4294967295:
             raise MCPLError('hdr_add_data got too large data')
+        if old is not None:
+            #(replaced, keeping its place among the blobs):
+            self._check_hdr_entry(len(data) - len(old), new_entry = False)
+            self._blobs[key] = data
+            self._hdr_entries_size += len(data) - len(old)
+            return
         self._check_hdr_entry(8 + len(key) + len(data))
         self._blobkeys.append(key)
         self._blobs[key] = data
         self._hdr_entries_size += 8 + len(key) + len(data)
 
-    def enable_userflags(self):
-        """Write the userflags info"""
-        if self._opt_userflags:
+    def hdr_remove_data(self, key):
+        """Remove the binary blob with the key (before the first particle is
+        added), e.g. one copied with transfer_metadata."""
+        self._check_hdr_notwritten('hdr_remove_data')
+        key = self._to_bytes(key,'Blob keys')
+        if key not in self._blobs:
+            raise MCPLError(f'hdr_remove_data: no blob with the key "{_decode(key)}"')
+        self._hdr_entries_size -= 8 + len(key) + len(self._blobs.pop(key))
+        self._blobkeys.remove(key)
+
+    def enable_userflags(self, enable = True):
+        """Write the userflags of the particles (or not, with enable=False,
+        after transfer_metadata(..., editable=True), before the first
+        particle is added)"""
+        if self._opt_userflags == bool(enable):
             return
+        if not enable:
+            self._check_editable('enable_userflags(False)')
         self._check_hdr_notwritten('enable_userflags')
-        self._opt_userflags = True
+        self._opt_userflags = bool(enable)
 
-    def enable_polarisation(self):
-        """Write the polarisation info"""
-        if self._opt_polarisation:
+    def enable_polarisation(self, enable = True):
+        """Write the polarisation vectors of the particles (or not, with
+        enable=False, after transfer_metadata(..., editable=True), before the
+        first particle is added)"""
+        if self._opt_polarisation == bool(enable):
             return
+        if not enable:
+            self._check_editable('enable_polarisation(False)')
         self._check_hdr_notwritten('enable_polarisation')
-        self._opt_polarisation = True
+        self._opt_polarisation = bool(enable)
 
-    def enable_doubleprec(self):
-        """Use double precision floating point numbers in storage"""
-        if not self._opt_singleprec:
+    def enable_doubleprec(self, enable = True):
+        """Use double precision floating point numbers in storage (or single
+        precision, with enable=False, after transfer_metadata(...,
+        editable=True), before the first particle is added: the values are
+        then rounded)"""
+        if self._opt_singleprec == ( not enable ):
             return
+        if not enable:
+            self._check_editable('enable_doubleprec(False)')
         self._check_hdr_notwritten('enable_doubleprec')
-        self._opt_singleprec = False
+        self._opt_singleprec = not enable
+
+    def _check_editable(self, what, problem = None):
+        """Raise MCPLError unless the header was copied with
+        transfer_metadata(..., editable=True), so its settings may change"""
+        if not self._editable:
+            raise MCPLError(f'{what} {problem}' if problem else
+                            f'{what} can only be used after'
+                            ' transfer_metadata(..., editable=True)')
 
     def enable_universal_pdgcode(self, pdgcode):
-        """All particles are of the same type"""
-        pdgcode = int(pdgcode)
-        if pdgcode == 0:
-            raise MCPLError('enable_universal_pdgcode must be called with'
-                            ' non-zero pdgcode.')
-        if not ( -2147483648 <= pdgcode <= 2147483647 ):
-            raise MCPLError('enable_universal_pdgcode must be called with'
-                            ' a 32 bit integer.')
-        if self._opt_universalpdgcode:
-            if self._opt_universalpdgcode != pdgcode:
-                raise MCPLError('enable_universal_pdgcode called multiple times')
+        """All particles are of the same type. After
+        transfer_metadata(..., editable=True), and before the first particle
+        is added, another value replaces the value, and None stores the type
+        of each particle again."""
+        if pdgcode is not None:
+            pdgcode = int(pdgcode)
+            if pdgcode == 0:
+                raise MCPLError('enable_universal_pdgcode must be called with'
+                                ' non-zero pdgcode.')
+            if not ( -2147483648 <= pdgcode <= 2147483647 ):
+                raise MCPLError('enable_universal_pdgcode must be called with'
+                                ' a 32 bit integer.')
+        if ( pdgcode or 0 ) == self._opt_universalpdgcode:
             return
+        if pdgcode is None:
+            self._check_editable('enable_universal_pdgcode(None)')
+        elif self._opt_universalpdgcode:
+            self._check_editable('enable_universal_pdgcode','called multiple times')
         self._check_hdr_notwritten('enable_universal_pdgcode')
-        self._opt_universalpdgcode = pdgcode
+        self._opt_universalpdgcode = pdgcode or 0
 
     def enable_universal_weight(self, weight):
-        """All particles have the same weight"""
-        import math
-        weight = float(weight)
-        if weight <= 0.0 or math.isinf(weight) or math.isnan(weight):
-            raise MCPLError('enable_universal_weight must be called with'
-                            ' positive but finite weight.')
-        if self._opt_universalweight:
-            if self._opt_universalweight != weight:
-                raise MCPLError('enable_universal_weight called multiple times')
+        """All particles have the same weight. After
+        transfer_metadata(..., editable=True), and before the first particle
+        is added, another value replaces the value, and None stores the weight
+        of each particle again."""
+        if weight is not None:
+            import math
+            weight = float(weight)
+            if weight <= 0.0 or math.isinf(weight) or math.isnan(weight):
+                raise MCPLError('enable_universal_weight must be called with'
+                                ' positive but finite weight.')
+        if ( weight or 0.0 ) == self._opt_universalweight:
             return
+        if weight is None:
+            self._check_editable('enable_universal_weight(None)')
+        elif self._opt_universalweight:
+            self._check_editable('enable_universal_weight','called multiple times')
         self._check_hdr_notwritten('enable_universal_weight')
-        self._opt_universalweight = weight
+        self._opt_universalweight = weight or 0.0
 
     def hdr_add_stat_sum(self, key, value):
         """Add or update named statistics "sum", encoded in a special comment
@@ -591,14 +680,20 @@ class MCPLOutFile:
                      ' range and producing infinity. Reverting value to -1'
                      ' to indicate that a precise result is not available.')
 
-    def transfer_metadata(self, source):
+    def transfer_metadata(self, source, *, editable = False):
         """Transfer all settings, blobs, and comments from an MCPLFile object (or
         the file with the given name). Note that if splitting files rather
         than filtering them, hdr_scale_stat_sums should be called afterwards
-        (see the C API for details)."""
+        (see the C API for details). With editable=True, the settings copied
+        may then be changed before the first particle is added: with the
+        enable_ methods, e.g. enable_doubleprec(False) for single precision
+        or enable_universal_weight(None), and hdr_add_data may replace blobs.
+        The comments, blobs, and stat:sum entries can also be changed without
+        editable=True (see hdr_set_comments, hdr_remove_data, and
+        hdr_remove_stat_sum)."""
         if not isinstance(source,MCPLFile):
             with MCPLFile(source) as f:
-                return self.transfer_metadata(f)
+                return self.transfer_metadata(f,editable=editable)
         h = source._hdr
         if source.endianness != _native_endianness():
             raise MCPLError('transfer_metadata can only work on files with'
@@ -624,6 +719,8 @@ class MCPLOutFile:
             self.enable_universal_weight(source.opt_universalweight)
         if source.userdata_layout is not None:
             self.enable_userdata(source.userdata_layout)
+        if editable:
+            self._editable = True
 
     def _fmt(self):
         """The format of the particle records (fixed when the header is
