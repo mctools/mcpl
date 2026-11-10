@@ -412,6 +412,9 @@ MCPL_LOCAL int mcpl_write_string_es( FILE* f, const char * str,
 typedef struct MCPL_LOCAL {
   char key[MCPL_STATSUMKEY_MAXLENGTH+1];
   double value;
+  //(in output files: the comment written when the file is closed, which has
+  //-1 until then):
+  char text[MCPL_STATSUMBUF_MAXLENGTH+1];
   uint32_t writtenstrlen;
   uint64_t writtenpos;
 } mcpl_internal_statsuminfo_t;
@@ -2006,6 +2009,22 @@ MCPL_LOCAL int mcpl_write_header_es( mcpl_outfileinternal_t * f,
         return mcpl_internal_raise_runtime( es, "stat:sum: key unexpected"
                                             " strlen" );
       memcpy( statsuminfo->key, sc.key, nn + 1 );//(with the null character)
+      if ( lcomment > MCPL_STATSUMBUF_MAXLENGTH )
+        return mcpl_internal_raise_runtime( es, "logic error: unexpected"
+                                            " stat:sum: comment length" );
+      memcpy( statsuminfo->text, f->comments[i], lcomment + 1 );
+      //The file has -1 (not available) until the values are written when it
+      //is closed, so unfinished files never have values (the length is the
+      //same, as the value field has a fixed width):
+      char unavailable[MCPL_STATSUMBUF_MAXLENGTH+1];
+      if ( !mcpl_internal_encodestatsum_es( sc.key, -1.0, unavailable, es ) )
+        return 0;
+      if ( strlen(unavailable) != lcomment )
+        return mcpl_internal_raise_runtime( es, "logic error: unexpected"
+                                            " stat:sum: comment length" );
+      if ( !mcpl_write_string_es(f->file,unavailable,errmsg,es) )
+        return 0;
+      continue;
     }
     if ( !mcpl_write_string_es(f->file,f->comments[i],errmsg,es) )
       return 0;
@@ -2457,6 +2476,40 @@ mcpl_particle_t* mcpl_get_empty_particle(mcpl_outfile_t of)
   return mcpl_get_empty_particle_es( of, NULL );
 }
 
+MCPL_LOCAL int mcpl_internal_updatestatsum_es( FILE * f,
+                                               mcpl_internal_statsuminfo_t*sc,
+                                               const char * new_comment,
+                                               mcpl_errstate_t * es )
+{
+  //Seek and update comment at correct location in header (returns 0 in case
+  //of errors).
+
+  const char * errmsg = ( "Errors encountered while attempting "
+                          "to update stat:sum: header in file." );
+  if (!f||!sc||!new_comment)
+    return mcpl_internal_raise_io( es, errmsg );
+
+  uint32_t n = sc->writtenstrlen;
+  if ( n != strlen(new_comment) )
+    return mcpl_internal_raise_runtime( es, "preallocated space for stat:sum:"
+                                        " update does not fit (2)" );
+
+  int64_t savedpos = MCPL_FTELL(f);
+  if (savedpos<0)
+    return mcpl_internal_raise_io( es, errmsg );
+  uint64_t updatepos = sc->writtenpos;
+  updatepos += sizeof(uint32_t);//skip strlen data (no, we can't read it since
+                                //the file is in output mode)
+  if (MCPL_FSEEK( f, updatepos ))
+    return mcpl_internal_raise_io( es, errmsg );
+  size_t nb = fwrite( new_comment, 1, n, f);
+  if ( nb != n )
+    return mcpl_internal_raise_io( es, errmsg );
+  if (MCPL_FSEEK( f, savedpos ))
+    return mcpl_internal_raise_io( es, errmsg );
+  return 1;
+}
+
 //Finishes and closes the file, and frees the file object (also in case of
 //errors). Returns 0 in case of errors, in which case the file is left
 //unfinished: with nparticles=0 in the header, so it can be recovered (if
@@ -2480,6 +2533,10 @@ MCPL_LOCAL int mcpl_internal_close_outfile_es( mcpl_outfileinternal_t * f,
                             " particle data." );
     ok = 0;
   }
+  //The stat:sum values (the file has -1 until now), before nparticles:
+  for ( unsigned i = 0; ok && i < f->nstatsuminfo; ++i )
+    ok = mcpl_internal_updatestatsum_es( f->file, &f->statsuminfo[i],
+                                         f->statsuminfo[i].text, es );
   if ( ok && f->nparticles && !mcpl_update_nparticles_es( f->file,
                                                           f->nparticles, es ) )
     ok = 0;
@@ -3469,40 +3526,6 @@ mcpl_file_t mcpl_open_file_es( const char * filename, mcpl_errstate_t * es )
 mcpl_file_t mcpl_open_file(const char * filename)
 {
   return mcpl_open_file_es( filename, NULL );
-}
-
-MCPL_LOCAL int mcpl_internal_updatestatsum_es( FILE * f,
-                                               mcpl_internal_statsuminfo_t*sc,
-                                               const char * new_comment,
-                                               mcpl_errstate_t * es )
-{
-  //Seek and update comment at correct location in header (returns 0 in case
-  //of errors).
-
-  const char * errmsg = ( "Errors encountered while attempting "
-                          "to update stat:sum: header in file." );
-  if (!f||!sc||!new_comment)
-    return mcpl_internal_raise_io( es, errmsg );
-
-  uint32_t n = sc->writtenstrlen;
-  if ( n != strlen(new_comment) )
-    return mcpl_internal_raise_runtime( es, "preallocated space for stat:sum:"
-                                        " update does not fit (2)" );
-
-  int64_t savedpos = MCPL_FTELL(f);
-  if (savedpos<0)
-    return mcpl_internal_raise_io( es, errmsg );
-  uint64_t updatepos = sc->writtenpos;
-  updatepos += sizeof(uint32_t);//skip strlen data (no, we can't read it since
-                                //the file is in output mode)
-  if (MCPL_FSEEK( f, updatepos ))
-    return mcpl_internal_raise_io( es, errmsg );
-  size_t nb = fwrite( new_comment, 1, n, f);
-  if ( nb != n )
-    return mcpl_internal_raise_io( es, errmsg );
-  if (MCPL_FSEEK( f, savedpos ))
-    return mcpl_internal_raise_io( es, errmsg );
-  return 1;
 }
 
 MCPL_LOCAL void mcpl_internal_updatestatsum( FILE * f,
@@ -5338,14 +5361,10 @@ MCPL_LOCAL int mcpl_internal_merge_files( mcpl_outfile_t out,
         }
         continue;//leave at -1
       }
+      //(written when the file is closed):
       mcpl_internal_statsuminfo_t * sci = out_internal->statsuminfo + isc;
-      char comment[MCPL_STATSUMBUF_MAXLENGTH+1];
-      if ( !mcpl_internal_encodestatsum_es( sci->key, val, comment, es ) )
+      if ( !mcpl_internal_encodestatsum_es( sci->key, val, sci->text, es ) )
         return 0;
-      if ( !mcpl_internal_updatestatsum_es( out_internal->file, sci, comment, es ) ) {
-        mcpl_internal_outfile_failed( out_internal, es );
-        return 0;
-      }
       sci->value = val;
     }
   }
@@ -6247,8 +6266,8 @@ void mcpl_hdr_add_stat_sum_es( mcpl_outfile_t of, const char * key,
     return;
   }
 
-  //Header was already written, so we must jump back and figure out where to
-  //update in the file!
+  //Header was already written, so the value is written when the file is
+  //closed:
   mcpl_internal_statsuminfo_t * sc_to_update = NULL;
 
   for ( unsigned i = 0; i < f->nstatsuminfo; ++i ) {
@@ -6266,11 +6285,8 @@ void mcpl_hdr_add_stat_sum_es( mcpl_outfile_t of, const char * key,
     return;
   }
 
-  if ( !mcpl_internal_updatestatsum_es( f->file, sc_to_update, comment, es ) ) {
-    mcpl_internal_outfile_failed( f, es );
-    return;
-  }
   sc_to_update->value = value;
+  memcpy( sc_to_update->text, comment, strlen(comment) + 1 );
 }
 
 void mcpl_hdr_add_stat_sum( mcpl_outfile_t of,
@@ -6343,8 +6359,7 @@ void mcpl_hdr_scale_stat_sums_es( mcpl_outfile_t of, double scale,
         memcpy(f->comments[i],new_comments[i],strlen(f->comments[i]));
     free(new_comments);
   } else {
-    //Header already written, must update on-disk (errors leave the file
-    //unusable).
+    //Header already written, the values are written when the file is closed:
     for ( unsigned i = 0; i < f->nstatsuminfo; ++i ) {
       mcpl_internal_statsuminfo_t * si = &f->statsuminfo[i];
       double new_value = ( ( scale == -1.0 || si->value == -1.0 )
@@ -6354,10 +6369,8 @@ void mcpl_hdr_scale_stat_sums_es( mcpl_outfile_t of, double scale,
         new_value = -1.0;
       }
       if ( si->value == new_value )
-        continue;//no update needed
-      char new_comment[MCPL_STATSUMBUF_MAXLENGTH+1];
-      if ( !mcpl_internal_encodestatsum_es( si->key, new_value, new_comment, es )
-           || !mcpl_internal_updatestatsum_es( f->file, si, new_comment, es ) ) {
+        continue;
+      if ( !mcpl_internal_encodestatsum_es( si->key, new_value, si->text, es ) ) {
         mcpl_internal_outfile_failed( f, es );
         return;
       }

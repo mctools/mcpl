@@ -707,6 +707,26 @@ static void test_closeandgzip(void)
 ////////////////////////////////////////////////////////////////////////////////
 // Closing files without finishing them, and userdata layouts of output files
 
+//The stat:sum values as they are in the bytes of a file (not as read by MCPL):
+static void print_statsums_on_disk( const char * filename )
+{
+  buffer_t b = file_load(filename);
+  const char * key = "stat:sum:";
+  size_t nkey = strlen(key);
+  for ( size_t i = 0; i + nkey <= b.size; ++i ) {
+    if ( memcmp( b.data + i, key, nkey ) != 0 )
+      continue;
+    size_t j = i + nkey;
+    while ( j < b.size && b.data[j] != ':' )
+      ++j;
+    if ( j + 25 > b.size )
+      break;
+    printf("  on disk: %.*s:%.24s\n",(int)(j-i),b.data+i,b.data+j+1);
+    i = j;
+  }
+  free(b.data);
+}
+
 static void test_close_unfinished(void)
 {
   printf("\n==> Closing files without finishing them:\n");
@@ -739,16 +759,21 @@ static void test_close_unfinished(void)
   remove("unf1.mcpl");
 
   //With particles (left unfinished, and repairable):
+  //(the stat:sum values are -1 in the file until it is closed, also those
+  //added as comments, and those changed after particles were added):
   f = mcpl_create_outfile("unf2.mcpl");
   mcpl_hdr_add_stat_sum(f,"nevents",5.0);
+  mcpl_hdr_add_comment(f,"stat:sum:fromcomment:                       7");
   mcpl_particle_t * p = mcpl_get_empty_particle(f);
   for ( int i = 0; i < 3; ++i ) {
     fill_particle(p,i);
     mcpl_add_particle(f,p);
   }
+  mcpl_hdr_add_stat_sum(f,"nevents",6.0);
   es_reset(&es);
   mcpl_close_outfile_unfinished_es(f,&es);
   print_es("close_outfile_unfinished (3 particles)",&es);
+  print_statsums_on_disk("unf2.mcpl");
   dump_file("unf2.mcpl");
   mcpl_repair("unf2.mcpl");
   dump_file("unf2.mcpl");

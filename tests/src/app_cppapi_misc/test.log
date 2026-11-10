@@ -13,7 +13,6 @@ add_userdata_field on merged file -> MCPL::Error: userdata fields can not be add
   ids: 4100 4200 5100 -1
   m7.mcpl: nparticles=5 doubleprec=0 layout="" srcname="cppapi_misc" nevents=n/a x: 1 2 11 12 13
   (messages: MCPL WARNING: Input file appears to not have been closed properly. Recovered 5 particles.
-MCPL WARNING: Marking stat:sum:nevents entry as not available (-1) since file not closed properly.
 )
 merge_files (incompatible files) -> MCPL::Error: Attempting to merge incompatible files (FP precision: single vs double).
 merge_files (missing file) -> MCPL::IOError: Unable to open file!

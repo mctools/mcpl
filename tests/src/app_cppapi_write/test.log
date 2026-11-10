@@ -261,9 +261,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 ==> Files not closed are left unfinished:
 reading unfinished.mcpl: nparticles=5 stat_sum(nevents)=not available
   messages: MCPL WARNING: Input file appears to not have been closed properly. Recovered 5 particles.
-MCPL WARNING: Marking stat:sum:nevents entry as not available (-1) since file not closed properly.
-repair: MCPL WARNING: Marking stat:sum:nevents entry as not available (-1) since file not closed properly.
-MCPL: Successfully repaired file with 5 particles.
+repair: MCPL: Successfully repaired file with 5 particles.
 Opened MCPL file unfinished.mcpl:
 
   Basic info
