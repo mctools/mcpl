@@ -1,0 +1,46 @@
+Files with different stat:sum entries can not be merged:
+  can_merge: False
+  without them, can_merge: True
+  merged.mcpl: 100 particles, comments [], blobs [], stat_sum {}, single precision True, polarisation True, userflags True, universal pdgcode 0, universal weight 0.0, userdata None, particle size 52
+  same particles: True
+Single precision:
+  double.mcpl: 50 particles, comments ['stat:sum:n:                      50'], blobs [], stat_sum {'n': 50.0}, single precision False, polarisation True, userflags True, universal pdgcode 0, universal weight 0.0, userdata None, particle size 96
+    4898 bytes
+  single.mcpl: 50 particles, comments ['stat:sum:n:                      50'], blobs [], stat_sum {'n': 50.0}, single precision True, polarisation True, userflags True, universal pdgcode 0, universal weight 0.0, userdata None, particle size 52
+    2698 bytes
+  ekin as float32: True
+Comments, blobs, and the source name:
+  orig.mcpl: 50 particles, comments ['stat:sum:n:                      50', 'first', 'second', 'third'], blobs ['a', 'b'], stat_sum {'n': 50.0}, single precision True, polarisation True, userflags True, universal pdgcode 0, universal weight 0.0, userdata None, particle size 52
+  edited.mcpl: 50 particles, comments ['new first', 'stat:sum:n:                      50', 'first', 'a longer second comment'], blobs ['a', 'c'], stat_sum {'n': 50.0}, single precision True, polarisation True, userflags True, universal pdgcode 0, universal weight 0.0, userdata None, particle size 52
+  source name 'Edited', blobs in order [('a', b'new data of a'), ('c', b'ccc')]
+Storage:
+  storage.mcpl: 50 particles, comments ['stat:sum:n:                      50', 'first', 'second', 'third'], blobs ['a', 'b'], stat_sum {'n': 50.0}, single precision True, polarisation False, userflags False, universal pdgcode 2112, universal weight 0.0, userdata None, particle size 32
+  storage2.mcpl: 50 particles, comments ['stat:sum:n:                      50', 'first', 'second', 'third'], blobs ['a', 'b'], stat_sum {'n': 50.0}, single precision True, polarisation False, userflags False, universal pdgcode 0, universal weight 0.0, userdata None, particle size 36
+Userdata:
+  ud_none.mcpl: 10 particles, comments [], blobs [], stat_sum {}, single precision True, polarisation False, userflags False, universal pdgcode 0, universal weight 0.0, userdata None, particle size 36
+  error: add_particles asked to transfer particles into a file with a different userdata layout
+  ud_temp.mcpl: 10 particles, comments [], blobs [], stat_sum {}, single precision True, polarisation False, userflags False, universal pdgcode 0, universal weight 0.0, userdata 'temp:float32:K', particle size 40
+Without editable=True, the settings copied can not be changed:
+  error: enable_polarisation(False) can only be used after transfer_metadata(..., editable=True)
+  error: enable_doubleprec(False) can only be used after transfer_metadata(..., editable=True)
+  error: enable_userflags(False) can only be used after transfer_metadata(..., editable=True)
+  error: enable_universal_pdgcode called multiple times
+  error: enable_universal_pdgcode(None) can only be used after transfer_metadata(..., editable=True)
+  error: hdr_add_data got duplicate key
+  comments ['only this one'] blobs ['b']
+  error: enable_universal_weight called multiple times
+  error: enable_userdata called multiple times with different layouts
+  error: enable_userdata(None) can only be used after transfer_metadata(..., editable=True)
+Errors:
+  error: hdr_remove_data: no blob with the key "nosuchkey"
+  error: hdr_remove_stat_sum: no stat:sum entry with the key "nosuchkey"
+  error: Syntax error: could not properly decode comment starting with "stat:sum:" (did not find colon separating key and value). Issue with comment "stat:sum:bad"
+  comments unchanged after the error: True
+  error: enable_universal_weight must be called with positive but finite weight.
+  error: hdr_set_comments called too late.
+  error: hdr_remove_data called too late.
+  error: hdr_remove_stat_sum called too late.
+  error: enable_polarisation called too late.
+  error: enable_doubleprec called too late.
+  error: enable_userflags called too late.
+  error: enable_universal_pdgcode called too late.
