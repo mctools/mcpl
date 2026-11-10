@@ -213,7 +213,9 @@ class MCPLOutFile:
         self._opt_universalweight = 0.0
         self._udlayout = None
         self._nparticles = 0
-        self._statsuminfo = {}#key -> [position of comment data in file, value]
+        #(key -> [position of comment data in file, value, comment written
+        #when the file is closed, which has -1 until then]):
+        self._statsuminfo = {}
         self._pending = []
         self._format = None#(see _fmt)
         self._fh = _DryRunHandle() if self._dry_run else open(self._filename,'wb')  # noqa: SIM115
@@ -552,7 +554,8 @@ class MCPLOutFile:
                             ' added to file, but without first registering a'
                             ' value for the same key earlier (the special'
                             ' value -1 can be used for this)')
-        self._update_statsum_on_disk(key,comment,value)
+        #(written when the file is closed):
+        self._statsuminfo[key][1:] = [ value, comment ]
 
     def hdr_scale_stat_sums(self, scale):
         """Scale all stat:sum values with a given factor which must be a finite
@@ -676,11 +679,16 @@ class MCPLOutFile:
         add_buffer(self._srcname if self._srcname is not None else b'unknown')
         statsuminfo = {}
         for c in self._comments:
-            pos = add_buffer(c)
-            if c.startswith(b'stat:sum:'):
-                from ._statsum import _parse_statsum_comment
-                key, value = _parse_statsum_comment(c)[1]
-                statsuminfo[key] = [pos,-1.0 if value is None else value]
+            if not c.startswith(b'stat:sum:'):
+                add_buffer(c)
+                continue
+            #(the file has -1 until the values are written when it is closed,
+            #so unfinished files never have values; the length is the same, as
+            #the value field has a fixed width):
+            from ._statsum import _parse_statsum_comment, encode_stat_sum
+            key, value = _parse_statsum_comment(c)[1]
+            pos = add_buffer(encode_stat_sum(key,-1).encode('ascii'))
+            statsuminfo[key] = [pos,-1.0 if value is None else value,c]
         for k in self._blobkeys:
             add_buffer(k)
         for k in self._blobkeys:
@@ -690,15 +698,6 @@ class MCPLOutFile:
         self._statsuminfo = statsuminfo
         self._hdr_notwritten = False
         self._fmt()
-
-    def _update_statsum_on_disk(self, key, comment, value):
-        pos = self._statsuminfo[key][0]
-        self._fh.flush()
-        savedpos = self._fh.tell()
-        self._fh.seek(pos)
-        self._fh.write(comment)
-        self._fh.seek(savedpos)
-        self._statsuminfo[key][1] = value
 
     def _write_records(self, arr):
         if self._hdr_notwritten:
@@ -1018,6 +1017,11 @@ class MCPLOutFile:
             self._flush_pending()
             if self._hdr_notwritten:
                 self._write_header()
+            #The stat:sum values (the file has -1 until now), before nparticles:
+            self._fh.flush()
+            for pos, _, comment in self._statsuminfo.values():
+                self._fh.seek(pos)
+                self._fh.write(comment)
             if self._nparticles:
                 import struct
                 self._fh.seek(8)

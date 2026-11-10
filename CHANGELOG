@@ -17,6 +17,9 @@ v2.2.9  (work in progress)
         mcpl_create_outfile, mcpl_gzip_file, and the converters overwrote
         existing files. Output files which are (or are written via) one of
         the input files are always refused.
+      * Output files have -1 (not available) as stat:sum values until they
+        are closed, in C and Python, so unfinished files (e.g. after a crash)
+        never have values.
       * Python fixes: MCPLFile closes the file of gzipped files, dump_file
         closes the file it opened, a plain 0 in hypot, min, max, and clamp has
         the units of the other values, histogram() checks its bins and range,

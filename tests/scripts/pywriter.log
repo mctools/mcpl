@@ -61,6 +61,8 @@ Options "dpu": identical to C with add_particles: True, with add_particle: True
 Options "dPW": identical to C with add_particles: True, with add_particle: True
 Options "puPW": identical to C with add_particles: True, with add_particle: True
 Options "dpuPW": identical to C with add_particles: True, with add_particle: True
+Unfinished file: ['stat:sum:nevents:                      -1', 'stat:sum:fromcomment:                      -1']
+Closed file: ['stat:sum:nevents:                       6', 'stat:sum:fromcomment:                       7']
 Transfer from "" to "": identical to C: True
 Transfer from "" to "d": identical to C: True
 Transfer from "" to "p": identical to C: True
