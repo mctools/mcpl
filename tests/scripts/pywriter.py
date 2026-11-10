@@ -375,8 +375,35 @@ def test_invalid_arguments():
         o.add_particle(pdgcode=2112,ekin=1.0,uz=1.0)
     expect_error(mcpl.MCPLFile,'valid.mcpl',blocklength=0)
 
+def statsums_on_disk(fn):
+    """The stat:sum entries as they are in the bytes of a file (not as read by
+    MCPL)"""
+    data = pathlib.Path(fn).read_bytes()
+    res, i = [], data.find(b'stat:sum:')
+    while i >= 0:
+        j = data.index(b':',i+9)
+        res.append( data[i:j+25].decode() )
+        i = data.find(b'stat:sum:',j)
+    return res
+
+def test_statsums_until_closed():
+    """The stat:sum values are -1 in the file until it is closed (also those
+    added as comments, and those changed after particles were added), so
+    unfinished files never have values"""
+    o = mcpl.MCPLOutFile('statsums.mcpl', stat_sum = { 'nevents' : 5.0 } )
+    o.hdr_add_comment('stat:sum:fromcomment:                       7')
+    for _ in range(3):
+        o.add_particle(pdgcode=2112,ekin=1.0,uz=1.0)
+    o.hdr_add_stat_sum('nevents',6.0)
+    o._flush_pending()
+    o._fh.flush()
+    print('Unfinished file:',statsums_on_disk('statsums.mcpl'))
+    o.close()
+    print('Closed file:',statsums_on_disk('statsums.mcpl'))
+
 test_reference_files()
 test_raw_values()
+test_statsums_until_closed()
 test_transfers()
 test_api()
 test_api_more()
