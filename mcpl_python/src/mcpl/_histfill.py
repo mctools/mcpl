@@ -28,6 +28,7 @@ where plots are never shown, like in background threads)."""
 
 __all__ = []
 
+import decimal
 import math
 import os
 
@@ -387,11 +388,12 @@ def _nice_range( lo, hi ):
     for e in range( e0, e0 - 3, -1 ):
         for m in ( 5, 2.5, 2, 1 ):
             step = m * 10.0**e
-            #(with a tolerance for rounding errors, and the edges written as
+            #(with a tolerance for rounding errors, and the edges as written
             #in decimal, e.g. 0.3 rather than 3*0.1, but always including the
             #values):
             klo, khi = math.floor( lo / step + 1e-9 ), math.ceil( hi / step - 1e-9 )
-            nlo, nhi = ( float(f'{k*m:.12g}e{e}') for k in ( klo, khi ) )
+            nlo, nhi = ( float(( decimal.Decimal(k) * decimal.Decimal(repr(m)) ).scaleb(e))
+                         for k in ( klo, khi ) )
             if ( nhi - nlo ) - span <= _nice_waste * span:
                 return min( nlo, lo ), max( nhi, hi )
     return lo, hi
@@ -604,7 +606,8 @@ class _Filler:
             only = ( f', or none with display_only={self._only.expression}'
                      if self._only is not None else '' )
             raise MCPLError(f'No values to histogram (no particles picked{only}?)')
-        if lo == hi:
+        if hi - lo <= 1e-12 * max( abs(lo), abs(hi) ):
+            #(values which are equal, or only differ by rounding errors):
             return ( lo/2, lo*2 ) if log else ( lo - 1.0, hi + 1.0 )
         return ( lo, hi ) if log or not nice else _nice_range(lo,hi)
 

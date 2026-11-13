@@ -47,9 +47,14 @@ range of values from 1e-09 to 3.3e-07: 0 to 3.5e-07
 range of values from 0.1 to 0.3: 0.1 to 0.3
 range of values from 2.2 to 7.7: 2 to 7.75
 range of values from 123457 to 123499: 123455 to 123500
+range of values from 1.0 to 1.000000000001: 1.0 to 1.000000000001
+range of values from 1234.5678 to 1234.5678000001: 1234.5678 to 1234.5678000001
 colours of [2112, 22, 12, 14, 'other'] {12: 9, 14: 2, 'other': 3, 2112: 0, 22: 8}
 colours of [2112, 22, 11, -11, 2212, 211, -211, 13, -13, 12, 14, 16, 321, 'other'] {12: 9, 14: 10, 16: 11, 321: 12, 'other': 13, 2112: 0, 22: 8, 11: 1, -11: 3, 2212: 4, 211: 2, -211: 7, 13: 5, -13: 6} [(9, 'solid'), (0, 'dashed'), (1, 'dashed'), (2, 'dashed'), (3, 'dashed')]
 line styles: [(0, 'solid'), (9, 'solid'), (0, 'dashed'), (9, 'dashed'), (0, 'dotted'), (0, 'solid')]
+histogram 'x' of rounding.mcpl: 10 bins from -0.7 to 1.3, contents 2.0
+histogram 'x;logx' of rounding.mcpl: 10 bins from 0.15 to 0.6, contents 2.0
+histogram 'x:y' of rounding.mcpl: 10 bins from -0.7 to 1.3, contents 2.0
 unit of x, 0.3m: ('cm', 1.0)
 unit of x, 2.5m: ('m', 100.0)
 unit of x, 5mm: ('mm', 0.1)
