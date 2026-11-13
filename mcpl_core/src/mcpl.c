@@ -2386,6 +2386,32 @@ MCPL_LOCAL void mcpl_internal_write_particle_buffer_to_file( mcpl_outfileinterna
   mcpl_internal_write_particle_buffer_to_file_es( f, NULL );
 }
 
+//Check that pdgcode and weight are 0 (as in mcpl_get_empty_particle) or the
+//universal values of the file (returns 0 in case of errors):
+MCPL_LOCAL int mcpl_internal_check_universal_values( const mcpl_particle_t* particle,
+                                                     mcpl_outfileinternal_t * f,
+                                                     mcpl_errstate_t * es )
+{
+  if ( !particle )
+    return 1;//(refused when serialised)
+  char buf[256];
+  if ( f->opt_universalpdgcode && particle->pdgcode
+       && particle->pdgcode != f->opt_universalpdgcode ) {
+    snprintf(buf,sizeof(buf),"attempting to add particle with pdgcode %li to a"
+             " file with universal pdgcode %li",(long)particle->pdgcode,
+             (long)f->opt_universalpdgcode);
+    return mcpl_internal_raise_runtime( es, buf );
+  }
+  if ( f->opt_universalweight && particle->weight != 0.0
+       && particle->weight != f->opt_universalweight ) {
+    snprintf(buf,sizeof(buf),"attempting to add particle with weight %g to a"
+             " file with universal weight %g",particle->weight,
+             f->opt_universalweight);
+    return mcpl_internal_raise_runtime( es, buf );
+  }
+  return 1;
+}
+
 void mcpl_add_particle_es( mcpl_outfile_t of, const mcpl_particle_t* particle,
                            mcpl_errstate_t * es )
 {
@@ -2397,7 +2423,8 @@ void mcpl_add_particle_es( mcpl_outfile_t of, const mcpl_particle_t* particle,
                                  " with NULL for userdata with all bytes zero)" );
     return;
   }
-  if ( mcpl_internal_serialise_particle_to_buffer( particle, NULL, f, es ) )
+  if ( mcpl_internal_check_universal_values( particle, f, es )
+       && mcpl_internal_serialise_particle_to_buffer( particle, NULL, f, es ) )
     mcpl_internal_write_particle_buffer_to_file_es( f, es );
 }
 
@@ -2419,7 +2446,8 @@ void mcpl_add_particle_with_userdata_es( mcpl_outfile_t of,
                                  " (see mcpl_enable_userdata)" );
     return;
   }
-  if ( mcpl_internal_serialise_particle_to_buffer( particle, userdata, f, es ) )
+  if ( mcpl_internal_check_universal_values( particle, f, es )
+       && mcpl_internal_serialise_particle_to_buffer( particle, userdata, f, es ) )
     mcpl_internal_write_particle_buffer_to_file_es( f, es );
 }
 
@@ -4139,7 +4167,8 @@ void mcpl_transfer_last_read_particle_es( mcpl_file_t source,
     return;
   }
 
-  //Sanity checks for universal fields here (but not in mcpl_add_particle since users are allowed to create files by setting just the universal fields):
+  //Sanity checks for universal fields (mcpl_add_particle also accepts 0, see
+  //mcpl_internal_check_universal_values):
   if ( ft->opt_universalpdgcode && fs->particle->pdgcode != ft->opt_universalpdgcode) {
     char buf[256];
     snprintf(buf,sizeof(buf),"mcpl_transfer_last_read_particle asked to"

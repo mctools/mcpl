@@ -12,6 +12,9 @@ Script "options 'userflags\npol\ndp'": ok
 Script "options 'dp\nupdg -11\nuw 0.125'": ok
 Script "options 'pol\nuserflags\nupdg 22\nuw 1e-3'": ok
 Script "options set twice": ok
+Script "particle into universal weight": error: attempting to add particle with weight 1 to a file with universal weight 2.5
+Script "particle into universal pdgcode": error: attempting to add particle with pdgcode 2112 to a file with universal pdgcode 22
+Script "zero pdgcode and weight into universal values": ok
 Script "gzipped": ok
    | MCPL: Compressing file out.mcpl
    | MCPL: Compressed file into out.mcpl.gz
@@ -83,8 +86,7 @@ Script "empty filename": error: create_outfile called with empty string.
 Script "special directions": ok
 Script "zero and large ekin": ok
 Script "extreme pdgcodes": ok
-Script "NaN polarisation not stored": ok
-Script "NaN weight not stored": ok
+Script "NaN weight with universal weight": error: attempting to add particle with weight nan to a file with universal weight 2
 Script "large values in double precision": ok
 Script "userflags values": ok
 Script "stat:sum updates": ok
@@ -902,7 +904,7 @@ Script "random script 2": error: hdr_add_data called too late.
 Script "random script 3": error: hdr_add_comment called too late.
 Script "random script 4": error: Invalid value for "stat:sum:...". Value is negative but is not -1.0 (it is -3).
 Script "random script 5": error: enable_universal_pdgcode must be called with non-zero pdgcode.
-Script "random script 6": error: Invalid value for "stat:sum:...". Value is negative but is not -1.0 (it is -3).
+Script "random script 6": error: attempting to add particle with weight 2 to a file with universal weight 1
 Script "random script 7": error: hdr_add_data called too late.
 Script "random script 8": ok
    | MCPL: Compressing file out.mcpl
@@ -918,7 +920,7 @@ Script "random script 14": ok
 Script "random script 15": error: Invalid value for "stat:sum:...". Value is negative but is not -1.0 (it is -3).
 Script "random script 16": error: Refusing to create file with comments starting with "stat:" unless starting with "stat:sum:", as such syntax is reserved for future usage.
 Script "random script 17": error: hdr_set_srcname called too late.
-Script "random script 18": error: attempting to add particle with negative kinetic energy
+Script "random script 18": error: attempting to add particle with weight 1 to a file with universal weight 2.5
 Script "random script 19": ok
    | MCPL: Compressing file out.mcpl
    | MCPL: Compressed file into out.mcpl.gz
@@ -930,7 +932,7 @@ Script "random script 24": error: enable_universal_pdgcode called too late.
 Script "random script 25": error: Invalid stat:sum: key "1x" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
 Script "random script 26": error: hdr_add_data called too late.
 Script "random script 27": error: enable_universal_pdgcode called too late.
-Script "random script 28": error: hdr_add_comment called too late.
+Script "random script 28": error: attempting to add particle with pdgcode 22 to a file with universal pdgcode 2112
 Script "random script 29": error: Invalid stat:sum: key "1x" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
 Script "random script 30": error: Invalid stat:sum: key "1x" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
 Script "random script 31": error: enable_universal_pdgcode must be called with non-zero pdgcode.
@@ -1002,18 +1004,18 @@ Script "random script 80": error: enable_doubleprec called too late.
 Script "random script 81": error: hdr_scale_stat_sums called with zero scale
 Script "random script 82": ok
 Script "random script 83": error: enable_userflags called too late.
-Script "random script 84": error: attempting to add particle with negative kinetic energy
+Script "random script 84": error: attempting to add particle with weight 1 to a file with universal weight 2.5
 Script "random script 85": ok
 Script "random script 86": ok
    | MCPL: Compressing file out.mcpl
    | MCPL: Compressed file into out.mcpl.gz
 Script "random script 87": ok
-Script "random script 88": error: hdr_add_data called too late.
+Script "random script 88": error: attempting to add particle with pdgcode 2112 to a file with universal pdgcode 22
 Script "random script 89": error: Invalid value for "stat:sum:...". Value is negative but is not -1.0 (it is -3).
 Script "random script 90": error: enable_userflags called too late.
 Script "random script 91": ok
 Script "random script 92": ok
-Script "random script 93": error: attempting to add particle with negative kinetic energy
+Script "random script 93": error: attempting to add particle with weight 1 to a file with universal weight 2.5
 Script "random script 94": ok
 Script "random script 95": error: enable_polarisation called too late.
 Script "random script 96": error: Invalid stat:sum: key "1x" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
@@ -1039,7 +1041,7 @@ Script "random script 113": error: hdr_add_data called too late.
 Script "random script 114": error: attempting to add particle with negative kinetic energy
 Script "random script 115": ok
 Script "random script 116": error: hdr_add_comment called too late.
-Script "random script 117": error: hdr_add_data called too late.
+Script "random script 117": error: attempting to add particle with pdgcode 2112 to a file with universal pdgcode 22
 Script "random script 118": ok
    | MCPL: Compressing file out.mcpl
    | MCPL: Compressed file into out.mcpl.gz
@@ -1065,7 +1067,7 @@ Script "random script 135": ok
    | MCPL: Compressing file out.mcpl
    | MCPL: Compressed file into out.mcpl.gz
 Script "random script 136": ok
-Script "random script 137": error: enable_doubleprec called too late.
+Script "random script 137": error: attempting to add particle with pdgcode 22 to a file with universal pdgcode 2112
 Script "random script 138": error: enable_universal_weight called too late.
 Script "random script 139": error: Invalid stat:sum: key "1x" (must begin with a letter and otherwise only contain alphanumeric characters and underscores)
 Script "random script 140": error: enable_doubleprec called too late.
@@ -1080,4 +1082,4 @@ Script "random script 146": error: enable_userflags called too late.
 Script "random script 147": error: enable_universal_pdgcode must be called with non-zero pdgcode.
 Script "random script 148": ok
 Script "random script 149": ok
-Compared 685 operations
+Compared 687 operations

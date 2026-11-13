@@ -822,10 +822,10 @@ class MCPLOutFile:
         array with shape (N,3)) or x, y, z; direction or ux, uy, uz;
         polarisation or polx, poly, polz; ekin, time, weight, pdgcode,
         userflags. Values can be numpy arrays of length N or scalars (which
-        apply to all particles), and missing fields default to 0. Like in the
-        C API, fields not enabled in the file are ignored (e.g. polarisation
-        unless enable_polarisation() was called) as are the weight and
-        pdgcode fields in files with universal weight or pdgcode.
+        apply to all particles), and missing fields default to 0. Fields which
+        the file does not store must be 0 (userflags and polarisation, unless
+        enabled), and pdgcode and weight must be 0 or the universal values of
+        the file (if any).
 
         Instead of ekin, the wavelength [Aa] can be specified for neutrons and
         gammas.
@@ -845,10 +845,10 @@ class MCPLOutFile:
 
         Alternatively, an MCPLParticleBlock (or an MCPLParticle) read with
         MCPLFile can be passed, in which case its packed data is transferred
-        exactly whenever possible. Combined with keyword arguments, the given
-        fields replace those of the passed particles (e.g. to edit positions
-        or weights), for instance: f.add_particles( block, weight = 2 *
-        block.weight ).
+        exactly whenever possible, and fields which the file does not store
+        are dropped. Combined with keyword arguments, the given fields replace
+        those of the passed particles (e.g. to edit positions or weights), for
+        instance: f.add_particles( block, weight = 2 * block.weight ).
         """
         self._check_open()
         udarr = None
@@ -913,6 +913,7 @@ class MCPLOutFile:
             if self._edt is not None:
                 cols.update(self._edt(blk))
                 self._fmt().resolve_wavelength(cols, cols.get('pdgcode'))
+        self._check_unstored(cols.get)
         if udarr is not None:
             cols['userdata'] = udarr
         if self._hdr_notwritten:
@@ -992,11 +993,41 @@ class MCPLOutFile:
         else:
             ekin = float(fields.get('ekin',0.0))
         time, weight = float(fields.get('time',0.0)), float(fields.get('weight',0.0))
+        self._check_unstored({ 'polx' : vals[6], 'poly' : vals[7], 'polz' : vals[8],
+                               'pdgcode' : pdgcode, 'weight' : weight,
+                               'userflags' : userflags }.get)
         self._fmt().validate_one(vals,ekin,time,weight)
         vals += [ ekin, time, weight, pdgcode, userflags ]
         self._pending.append(vals)
         if len(self._pending) >= self._blocklength:
             self._flush_pending()
+
+    def _check_unstored(self, get, universal = True):
+        """Refuse values of fields (get(name) gives the values, or None) which
+        the file does not store, as mcpl_add_particle (see add_particles)"""
+        def first_bad( name, ok ):
+            v = get(name)
+            if v is None:
+                return None
+            v = np.asarray(v)
+            bad = ~ok(v)
+            return v[bad].flat[0] if np.any(bad) else None
+        zero = lambda v : v == 0
+        if not self._opt_userflags and first_bad('userflags',zero) is not None:
+            raise MCPLError('attempting to add particle with userflags to a file'
+                            ' without userflags (see enable_userflags)')
+        if not self._opt_polarisation and any( first_bad(c,zero) is not None
+                                               for c in ( 'polx', 'poly', 'polz' ) ):
+            raise MCPLError('attempting to add particle with polarisation to a'
+                            ' file without polarisation (see enable_polarisation)')
+        if not universal:
+            return
+        for name, u in ( ( 'pdgcode', self._opt_universalpdgcode ),
+                         ( 'weight', self._opt_universalweight ) ):
+            v = first_bad(name,lambda v, u = u : ( v == 0 ) | ( v == u )) if u else None
+            if v is not None:
+                raise MCPLError(f'attempting to add particle with {name} {v:g} to'
+                                f' a file with universal {name} {u:g}')
 
     def _transfer(self, block, sel, overrides = None):
         udarr = None
@@ -1035,6 +1066,7 @@ class MCPLOutFile:
             if no not in (1,n):
                 raise MCPLError('Inconsistent lengths of particle field arrays')
             ocols = { k : np.broadcast_to(v,(n,)) for k,v in ocols.items() }
+            self._check_unstored(ocols.get,universal = False)
         if udarr is not None:
             ocols['userdata'] = udarr
         if self._hdr_notwritten:

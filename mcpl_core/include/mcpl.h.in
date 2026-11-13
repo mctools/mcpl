@@ -181,7 +181,9 @@ extern "C" {
                                        const char * key, double value );
 
   /* Optionally (but rarely skipped) add particles, by updating the info in */
-  /* and then passing in a pointer to an mcpl_particle_t instance:          */
+  /* and then passing in a pointer to an mcpl_particle_t instance. Fields   */
+  /* which the file does not store are not written, and pdgcode and weight  */
+  /* must be 0 or the universal values of the file (if any):                */
   MCPL_API void mcpl_add_particle(mcpl_outfile_t,const mcpl_particle_t*);
 
   /* Finally, always remember to close the file: */

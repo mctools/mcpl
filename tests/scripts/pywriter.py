@@ -108,10 +108,17 @@ def opts_kwargs(opts):
              'opt_universalpdgcode': 2112 if 'P' in opts else 0,
              'opt_universalweight': 2.5 if 'W' in opts else 0 }
 
+def stored_fields(fields, opts):
+    """The fields which files with the options store"""
+    left_out = ( [] if 'p' in opts else [ 'polarisation' ] ) + ( [] if 'u' in opts else [ 'userflags' ] )
+    left_out += ( [ 'pdgcode' ] if 'P' in opts else [] ) + ( [ 'weight' ] if 'W' in opts else [] )
+    return { k : v for k, v in fields.items() if k not in left_out }
+
 def test_raw_values():
     n = 3000
-    fields = raw_particles(n)
+    all_fields = raw_particles(n)
     for opts in all_opts:
+        fields = stored_fields(all_fields, opts)
         lib.mcpltest_writefromraw('raw.bin','raw_c.mcpl',opts or '-')
         kw = dict( sourcename='writefromraw', comments=['a comment'],
                    stat_sum={'nsim':-1}, blobs={'blobkey':b'abc\0d'},
@@ -401,8 +408,40 @@ def test_statsums_until_closed():
     o.close()
     print('Closed file:',statsums_on_disk('statsums.mcpl'))
 
+def test_unstored_fields():
+    #Values which a file does not store are refused when given explicitly
+    #(pdgcode and weight 0 give the universal values), and dropped for
+    #particles passed from other files:
+    base = { 'x' : 0, 'y' : 0, 'z' : 0, 'ux' : 0, 'uy' : 0, 'uz' : 1, 'ekin' : 1, 'time' : 0 }
+    n, g = { 'weight' : 1, 'pdgcode' : 2112 }, { 'opt_universalweight' : 2.5, 'opt_universalpdgcode' : 22 }
+    for title, kw, given in (
+            ( 'userflags without userflags', {}, { **n, 'userflags' : 7 } ),
+            ( 'polarisation without polarisation', {}, { **n, 'polx' : 0.5 } ),
+            ( 'other weight', { 'opt_universalweight' : 2.5 }, n ),
+            ( 'other pdgcode', { 'opt_universalpdgcode' : 22 }, n ),
+            ( 'zero weight and pdgcode', g, { 'weight' : 0, 'pdgcode' : 0 } ) ):
+        for fct in ( 'add_particle', 'add_particles' ):
+            try:
+                with mcpl.MCPLOutFile('unstored.mcpl', allow_overwrite=True, **kw) as o:
+                    getattr(o,fct)(**base, **given)
+                with mcpl.MCPLFile('unstored.mcpl') as f:
+                    b = f.read_block()
+                    res = f'weight {b.weight[0]:g}, pdgcode {b.pdgcode[0]}'
+            except mcpl.MCPLError as e:
+                res = f'MCPLError: {e}'
+            print(f'{title}, {fct}: {res}')
+    lib.mcpltest_writefromraw('raw.bin','src.mcpl','dpu')
+    with mcpl.MCPLFile('src.mcpl') as src, mcpl.MCPLOutFile('lean.mcpl', allow_overwrite=True) as o:
+        for b in src.particle_blocks:
+            o.add_particles(b)
+    with mcpl.MCPLFile('lean.mcpl') as f:
+        print(f'blocks with userflags and polarisation into a file without them:'
+              f' {f.nparticles} particles, userflags {f.opt_userflags},'
+              f' polarisation {f.opt_polarisation}')
+
 test_reference_files()
 test_raw_values()
+test_unstored_fields()
 test_statsums_until_closed()
 test_transfers()
 test_api()

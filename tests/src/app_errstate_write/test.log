@@ -96,7 +96,7 @@ add_particle_with_userdata(NaN direction) -> ERROR RUNTIME: attempting to add pa
 add_particle_with_userdata(NaN polarisation (not stored)) -> ok
 add_particle_with_userdata(NaN ekin) -> ERROR RUNTIME: attempting to add particle with NaN or infinite kinetic energy
 add_particle_with_userdata(infinite time) -> ERROR RUNTIME: attempting to add particle with NaN or infinite time
-add_particle_with_userdata(NaN weight (universal weight)) -> ok
+add_particle_with_userdata(NaN weight (universal weight)) -> ERROR RUNTIME: attempting to add particle with weight nan to a file with universal weight 2
 add_particle_with_userdata(non-unit direction) -> ERROR RUNTIME: attempting to add particle with non-unit direction vector
 add_particle_with_userdata(negative ekin) -> ERROR RUNTIME: attempting to add particle with negative kinetic energy
 add_particle_with_userdata(position too large for single precision) -> ERROR RUNTIME: attempting to add particle with position too large for single precision storage
@@ -122,13 +122,12 @@ hdr_scale_stat_sums(-3) -> ERROR RUNTIME: mcpl_hdr_scale_stat_sums called with n
 hdr_scale_stat_sums(0.5) (updates the file) -> ok
 close_outfile -> ok
   Reading back (with none of the invalid data):
-  file usage.mcpl: nparticles=6 srcname="errstate_write" userflags=1 polarisation=0 doubleprec=0 universal pdgcode=2112 weight=2 userdata layout=temp:float32
+  file usage.mcpl: nparticles=5 srcname="errstate_write" userflags=1 polarisation=0 doubleprec=0 universal pdgcode=2112 weight=2 userdata layout=temp:float32
     comment 0: "a comment"
     comment 1: "stat:sum:nevents:                     500"
     comment 2: "stat:sum:eventsum:                      15"
     blob "blob1": 3 bytes
     blob "empty": 0 bytes
-    particle x=1 pdgcode=2112 weight=2 userflags=1000 (with userdata)
     particle x=1 pdgcode=2112 weight=2 userflags=1000 (with userdata)
     particle x=1 pdgcode=2112 weight=2 userflags=1000 (with userdata)
     particle x=1 pdgcode=2112 weight=2 userflags=1000 (with userdata)

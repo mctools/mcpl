@@ -61,6 +61,17 @@ Options "dpu": identical to C with add_particles: True, with add_particle: True
 Options "dPW": identical to C with add_particles: True, with add_particle: True
 Options "puPW": identical to C with add_particles: True, with add_particle: True
 Options "dpuPW": identical to C with add_particles: True, with add_particle: True
+userflags without userflags, add_particle: MCPLError: attempting to add particle with userflags to a file without userflags (see enable_userflags)
+userflags without userflags, add_particles: MCPLError: attempting to add particle with userflags to a file without userflags (see enable_userflags)
+polarisation without polarisation, add_particle: MCPLError: attempting to add particle with polarisation to a file without polarisation (see enable_polarisation)
+polarisation without polarisation, add_particles: MCPLError: attempting to add particle with polarisation to a file without polarisation (see enable_polarisation)
+other weight, add_particle: MCPLError: attempting to add particle with weight 1 to a file with universal weight 2.5
+other weight, add_particles: MCPLError: attempting to add particle with weight 1 to a file with universal weight 2.5
+other pdgcode, add_particle: MCPLError: attempting to add particle with pdgcode 2112 to a file with universal pdgcode 22
+other pdgcode, add_particles: MCPLError: attempting to add particle with pdgcode 2112 to a file with universal pdgcode 22
+zero weight and pdgcode, add_particle: weight 2.5, pdgcode 22
+zero weight and pdgcode, add_particles: weight 2.5, pdgcode 22
+blocks with userflags and polarisation into a file without them: 3000 particles, userflags False, polarisation False
 Unfinished file: ['stat:sum:nevents:                      -1', 'stat:sum:fromcomment:                      -1']
 Closed file: ['stat:sum:nevents:                       6', 'stat:sum:fromcomment:                       7']
 Transfer from "" to "": identical to C: True

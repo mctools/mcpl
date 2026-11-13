@@ -166,11 +166,17 @@ namespace {
       f.add(p);
       p.set_ekin(2.0);
       f.add(p);
-      //Other pdgcodes or weights of particles are ignored (as in the C API):
-      p.set_pdgcode(2112);
-      p.set_weight(1.0);
+      //pdgcode and weight 0 give the universal values, and others are refused:
+      p.set_pdgcode(0);
+      p.set_weight(0.0);
       p.set_ekin(3.0);
       f.add(p);
+      p.set_pdgcode(2112);
+      try {
+        f.add(p);
+      } catch ( const std::runtime_error& e ) {
+        std::cout << "  error: " << e.what() << std::endl;
+      }
       f.close();
     }
     require( mcpltest::file_exists("universal.mcpl.gz")

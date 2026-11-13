@@ -20,6 +20,10 @@ v2.2.9  (work in progress)
       * Output files have -1 (not available) as stat:sum values until they
         are closed, in C and Python, so unfinished files (e.g. after a crash)
         never have values.
+      * Particles added to files with a universal pdgcode or weight must have
+        pdgcode and weight 0 or the universal values (they were ignored). In
+        Python, userflags and polarisation given for files which do not store
+        them are refused too.
       * Python: headers can be edited when copying files. After
         transfer_metadata(..., editable=True), and before the first particle,
         the settings copied can be changed (e.g. enable_doubleprec(False) for
