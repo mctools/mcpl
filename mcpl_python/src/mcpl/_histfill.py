@@ -398,13 +398,21 @@ def _nice_range( lo, hi ):
                 return min( nlo, lo ), max( nhi, hi )
     return lo, hi
 
-def _make_edges( rng, bins, logx ):
+def _make_edges( rng, bins, logx, name = 'range', auto = False ):
+    """The bins+1 edges of bins from lo to hi of the range rng (with equal
+    widths, or in log for logx), or MCPLError if the range (option name,
+    with automatic bins if auto) is too narrow for them to differ"""
     lo, hi = rng
     if logx:
         if not lo > 0:
             raise MCPLError('Logarithmic binning requires a positive range')
-        return np.geomspace(lo,hi,bins+1)
-    return np.linspace(lo,hi,bins+1)
+        edges = np.geomspace(lo,hi,bins+1)
+    else:
+        edges = np.linspace(lo,hi,bins+1)
+    if not np.all( edges[1:] > edges[:-1] ):
+        raise MCPLError(f'The {name} is too narrow to be divided into bins' if auto
+                        else f'The {name} is too narrow for {bins} bins')
+    return edges
 
 def _nice_nbins( maxbins ):
     """A number of bins which is at most maxbins and has many divisors (the
@@ -649,7 +657,7 @@ class _Hist1DFiller(_Filler):
             self._logx = _auto_logx(*self._range)
         self._auto = ( self._bins == 'auto' )
         self._nbins = _nice_nbins(self._maxbins or 1200) if self._auto else int(self._bins)
-        self._edges = _make_edges(self._range,self._nbins,self._logx)
+        self._edges = _make_edges(self._range,self._nbins,self._logx,auto=self._auto)
         self._acc = {}#(file label,display_by key) -> [contents,sumw2,underflow,overflow]
 
     def add( self, flabel, b ):
@@ -817,8 +825,8 @@ class _Hist2DFiller(_Filler):
             bx, by = bins if isinstance(bins,(tuple,list)) else ( bins, bins )
             bx, by = int(bx), int(by)
         self._bx, self._by = bx, by
-        self._xe, self._ye = ( _make_edges(r,n,lg) for r, n, lg in
-                               zip(self._ranges,(bx,by),self._log) )
+        self._xe, self._ye = ( _make_edges(r,n,lg,name,self._auto) for r, n, lg, name in
+                               zip(self._ranges,(bx,by),self._log,('xrange','yrange')) )
         self._contents = np.zeros((bx,by))
         self._sumw, self._sumw2 = 0.0, 0.0
 
