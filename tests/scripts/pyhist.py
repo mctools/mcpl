@@ -417,6 +417,11 @@ def test_ranges_colors():
         assert nlo <= lo and nhi >= hi
         assert ( nhi - nlo ) <= 1.075 * ( max(hi,0) - min(lo,0) )
         print(f'range of values from {lo:g} to {hi:g}: {nlo:g} to {nhi:g}')
+    #(also for narrow ranges, with steps of many digits):
+    for lo, hi in ( (1.0,1.000000000001), (1234.5678,1234.5678000001) ):
+        nlo, nhi = _nice_range(lo,hi)
+        assert nlo <= lo and nhi >= hi
+        print(f'range of values from {lo!r} to {hi!r}: {nlo!r} to {nhi!r}')
     #Colours of particle types: fixed ones, and the others get the unused
     #colours (cyan first, and never those of n, gamma, e-, and p), and then
     #those of the next cycles (with dashed lines):
@@ -426,6 +431,18 @@ def test_ranges_colors():
     cols = _value_colors('pdgcode',keys)
     print('colours of', keys, cols, [ _line_style(cols[k]) for k in keys ][-5:])
     print('line styles:', [ _line_style(c) for c in ( 0, 9, 10, 19, 20, 30 ) ])
+
+def test_rounding_ranges():
+    #Values which only differ by rounding errors get the ranges of equal
+    #values (here x = 0.3 and 0.1 + 0.2, in double precision):
+    with mcpl.MCPLOutFile('rounding.mcpl',opt_singleprec=False,allow_overwrite=True) as o:
+        o.add_particles(x=np.asarray([ 0.3, 0.1 + 0.2 ]),y=0.0,z=0.0,ux=0.0,uy=0.0,uz=1.0,
+                        ekin=1.0,time=0.0,weight=1.0,pdgcode=2112)
+    for h in ( 'x', 'x;logx', 'x:y' ):
+        r = mcpl.histogram('rounding.mcpl',h)
+        e = r.edges if h != 'x:y' else r.xedges
+        print(f'histogram {h!r} of rounding.mcpl: {len(e)-1} bins from {float(e[0])!r}'
+              f' to {float(e[-1])!r}, contents {float(r.contents.sum())!r}')
 
 def test_3d():
     #3D plots of a sample of the particles (the same for the same particles):
@@ -504,6 +521,7 @@ with _forced_backend('test'):
     test_equal()
     test_3d()
     test_ranges_colors()
+    test_rounding_ranges()
     test_units()
     test_bars_groups_domains()
     test_histograms()
