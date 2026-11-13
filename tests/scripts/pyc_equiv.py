@@ -175,14 +175,26 @@ def py_script(outfile, script):
             o._fh.close()
             o._fh = None
 
-def particle(i, pdg = 2112, uf = 0, ekin = None, dirx = None):
+def particle(i, pdg = 2112, uf = 0, ekin = None, dirx = None, pol = False, w = None):
     ux, uy, uz = ( 0.6, 0.0, 0.8 ) if dirx is None else ( dirx, 0.0, math.sqrt(max(0.0,1-dirx*dirx)) )
     e = 0.025 * ( i + 1 ) if ekin is None else ekin
-    return (f'particle {1.5*i} {-2.0*i} {0.125*i} {ux!r} {uy!r} {uz!r} 0.1 0.2 {0.3*i} '
-            f'{e!r} {0.01*i} {1.0+0.5*i} {pdg} {uf}')
+    polarisation = f'0.1 0.2 {0.3*i}' if pol else '0 0 0'
+    return (f'particle {1.5*i} {-2.0*i} {0.125*i} {ux!r} {uy!r} {uz!r} {polarisation} '
+            f'{e!r} {0.01*i} {1.0+0.5*i if w is None else w} {pdg} {uf}')
 
 def parts(n, **kw):
     return '\n'.join(particle(i, **kw) for i in range(n))
+
+def fitting_parts(n, opts):
+    """Particles with the fields which files with the options store (userflags
+    and polarisation only if stored, and the universal pdgcode and weight)"""
+    kw = { 'uf' : 7 if 'userflags' in opts else 0, 'pol' : 'pol' in opts }
+    for line in opts.split('\n'):
+        if line.startswith('updg '):
+            kw['pdg'] = int(line.split()[1])
+        if line.startswith('uw '):
+            kw['w'] = line.split()[1]
+    return parts(n, **kw)
 
 def script(*lines):
     return '\n'.join( line for line in lines if line )
@@ -200,10 +212,18 @@ def test_writer_scripts():
     for opts in ['userflags','pol','dp','updg 2112','uw 2.5','userflags\npol\ndp',
                  'dp\nupdg -11\nuw 0.125','pol\nuserflags\nupdg 22\nuw 1e-3']:
         ok &= compare_script(f'options {opts!r}',
-                             script(hdr, opts, parts(4, uf=7), 'close'))
+                             script(hdr, opts, fitting_parts(4, opts), 'close'))
     ok &= compare_script('options set twice', script('pol','pol','dp','dp','userflags',
                                                      'userflags','updg 22','updg 22',
-                                                     'uw 2','uw 2',parts(2),'close'))
+                                                     'uw 2','uw 2',
+                                                     fitting_parts(2,'pol\nuserflags\nupdg 22\nuw 2'),
+                                                     'close'))
+    #(particles with other values than the universal values are refused, but
+    #0 is accepted, as in particles from mcpl_get_empty_particle):
+    ok &= compare_script('particle into universal weight', script('uw 2.5', particle(0), 'close'))
+    ok &= compare_script('particle into universal pdgcode', script('updg 22', particle(0), 'close'))
+    ok &= compare_script('zero pdgcode and weight into universal values',
+                         script('updg 22', 'uw 2', particle(0, pdg=0, w=0), 'close'))
     ok &= compare_script('gzipped', script(hdr, parts(10), 'closegz'))
     for opts in ('', 'pol', 'dp', 'userflags\npol'):
         for src in ('a1.mcpl', 'b_dp.mcpl', 'b_pol.mcpl', 'b_uf.mcpl', 'b_uw2.mcpl'):
@@ -241,11 +261,9 @@ def test_writer_scripts():
     ok &= compare_script('extreme pdgcodes', script(
         particle(0,pdg=-2147483648), particle(1,pdg=2147483647), particle(2,pdg=0),
         'close'))
-    #NaN or infinite values in fields which are not stored are fine, as are
-    #large values in double precision:
-    ok &= compare_script('NaN polarisation not stored', script(
-        'particle 0 0 0 0 0 1 nan inf 0 1 0 1 2112 0', 'close'))
-    ok &= compare_script('NaN weight not stored', script(
+    #(NaN weights are not the universal weight, and large values are fine in
+    #double precision):
+    ok &= compare_script('NaN weight with universal weight', script(
         'uw 2', 'particle 0 0 0 0 0 1 0 0 0 1 0 nan 2112 0', 'close'))
     ok &= compare_script('large values in double precision', script(
         'dp', 'pol', 'particle 1e39 0 0 0 0 1 1e300 0 0 1e39 -1e39 1e39 2112 0', 'close'))
@@ -345,13 +363,13 @@ def make_inputs():
     w('a_empty', script(hdr, 'statsum nsim 7', 'statsum other -1', 'close'))
     w('agz', script(hdr, 'statsum nsim 1', 'statsum other -1', parts(4), 'closegz'))
     w('b_dp', script(hdr, 'dp', 'statsum nsim 1', parts(3), 'close'))
-    w('b_pol', script('srcname Other', 'pol', parts(3), 'close'))
+    w('b_pol', script('srcname Other', 'pol', parts(3, pol=True), 'close'))
     w('b_uf', script('srcname Other', 'userflags', parts(3, uf=99), 'close'))
     w('b_updg', script('srcname Other', 'updg 2112', parts(3), 'close'))
     w('b_updg2', script('srcname Other', 'updg 2112', parts(2), 'close'))
     w('b_updg_g', script('srcname Other', 'updg 22', parts(2, pdg=22), 'close'))
-    w('b_uw', script('srcname Other', 'uw 2.5', parts(3), 'close'))
-    w('b_uw2', script('srcname Other', 'uw 2.5', 'dp', parts(3), 'close'))
+    w('b_uw', script('srcname Other', 'uw 2.5', parts(3, w=2.5), 'close'))
+    w('b_uw2', script('srcname Other', 'uw 2.5', 'dp', parts(3, w=2.5), 'close'))
     w('b_empty_pol', script('srcname Other', 'pol', 'dp', 'close'))
     w('c_comment', script(hdr, 'comment extra', 'statsum nsim 1', 'statsum other -1', parts(2), 'close'))
     w('c_blob', script('srcname MySim', 'comment a comment', 'blob key1 other data',
@@ -523,7 +541,7 @@ def test_header_start():
     #(truncated in the universal weight, which follows the 48 bytes of the
     #fixed part of the header):
     lib.mcpltest_script(str(input_dir/'start_uw'),
-                        script('srcname src', 'uw 2.5', parts(2), 'close'))
+                        script('srcname src', 'uw 2.5', parts(2, w=2.5), 'close'))
     data_uw = (input_dir/'start_uw.mcpl').read_bytes()
     variants += [ ( 'only 52 bytes (universal weight)', data_uw[:52] ) ]
     for what, d in variants:
@@ -585,9 +603,24 @@ def test_random_scripts(n):
              lambda : particle(rng.randrange(5), pdg=rng.choice([2112,22,-11]),
                                uf=rng.randrange(1000), dirx=rng.choice([None,0.0,1.0,0.3])),
              lambda : particle(0, ekin=rng.choice([0.0,1.0,-1.0])) ]
+    def stored( line, enabled ):
+        #(userflags and polarisation of particles only once they are stored,
+        #since only the C API drops them otherwise):
+        if not line.startswith('particle '):
+            return line
+        v = line.split()
+        if 'pol' not in enabled:
+            v[7:10] = [ '0', '0', '0' ]
+        if 'userflags' not in enabled:
+            v[14] = '0'
+        return ' '.join(v)
     ok = True
     for i in range(n):
-        lines = [ rng.choice(pool)() for _ in range(rng.randrange(1,12)) ]
+        lines, enabled = [], set()
+        for _ in range(rng.randrange(1,12)):
+            line = rng.choice(pool)()
+            enabled.add(line)
+            lines.append(stored(line,enabled))
         lines.append(rng.choice(['close','closegz']))
         title = f'random script {i}'
         ok &= compare(f'Script "{title}"', 'mcpltest_script', ('out', script(*lines)), py_script)

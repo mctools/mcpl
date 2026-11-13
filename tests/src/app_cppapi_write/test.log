@@ -41,6 +41,7 @@ index     pdgcode   ekin[MeV]       x[cm]       y[cm]       z[cm]          ux   
 stat sums: nevents=2000 later=42 unset=-1
 
 ==> Universal pdgcode and weight, gzipped:
+  error: MCPL::Error: attempting to add particle with pdgcode 2112 to a file with universal pdgcode 22
 MCPL: Compressing file universal.mcpl
 MCPL: Compressed file into universal.mcpl.gz
 Opened MCPL file universal.mcpl.gz:

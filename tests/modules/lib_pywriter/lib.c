@@ -89,8 +89,9 @@ MCPLTEST_CTYPES void mcpltest_writefromraw( const char * rawfile,
     }
     p->ekin = v[9];
     p->time = v[10];
-    p->weight = v[11];
-    p->pdgcode = pdgcode;
+    //(pdgcode and weight 0 for files with universal values):
+    p->weight = strchr(opts,'W') ? 0.0 : v[11];
+    p->pdgcode = strchr(opts,'P') ? 0 : pdgcode;
     p->userflags = userflags;
     mcpl_add_particle(o,p);
   }
