@@ -443,6 +443,16 @@ def test_rounding_ranges():
         e = r.edges if h != 'x:y' else r.xedges
         print(f'histogram {h!r} of rounding.mcpl: {len(e)-1} bins from {float(e[0])!r}'
               f' to {float(e[-1])!r}, contents {float(r.contents.sum())!r}')
+    #Given ranges too narrow for their bins are refused:
+    for h in ( 'x;range=1cm:1.0000000000000002cm;bins=10', 'x;range=1cm:1.0000000000000002cm',
+               'x;range=1cm:1.0000000000000002cm;logx;bins=10', 'x;range=1cm:1.000000000001cm;bins=10',
+               'x:y;xrange=1cm:1.0000000000000002cm;bins=10',
+               'x:y;yrange=1cm:1.0000000000000002cm' ):
+        try:
+            res = f'{len(mcpl.histogram("rounding.mcpl",h).contents)} bins'
+        except mcpl.MCPLError as e:
+            res = f'MCPLError: {e}'
+        print(f'histogram {h!r} of rounding.mcpl: {res}')
 
 def test_3d():
     #3D plots of a sample of the particles (the same for the same particles):
