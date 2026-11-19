@@ -28,75 +28,75 @@ from ._numpy import np, np_fma
 
 
 class MCPLParticle:
-    """Object representing a single particle"""
+    """A single particle read from an MCPL file."""
 
     def __init__(self,block,idx):
-        """For internal use only - users should not normally create MCPLParticle objects themselves"""
+        """(Particles are created by MCPLFile, not by users.)"""
         self._b = block#can we make it a weak ref, to make sure multiple blocks are not kept around?
         self._i = idx
     @property
     def position(self):
-        """position as 3-dimensional array [cm]"""
+        """Position [cm], as an array of 3 values"""
         return self._b.position[self._i]
     @property
     def direction(self):
-        """normalised momentum direction as 3-dimensional array"""
+        """Direction of motion (a unit vector), as an array of 3 values"""
         return self._b.direction[self._i]
     @property
     def polarisation(self):
-        """polarisation vector as 3-dimensional array"""
+        """Polarisation vector, as an array of 3 values"""
         return self._b.polarisation[self._i]
     @property
     def x(self):
-        """x-coordinate of position [cm]"""
+        """x coordinate of the position [cm]"""
         return self._b.x[self._i]
     @property
     def y(self):
-        """y-coordinate of position [cm]"""
+        """y coordinate of the position [cm]"""
         return self._b.y[self._i]
     @property
     def z(self):
-        """z-coordinate of position [cm]"""
+        """z coordinate of the position [cm]"""
         return self._b.z[self._i]
     @property
     def ux(self):
-        """x-coordinate of normalised momentum direction"""
+        """x component of the direction of motion"""
         return self._b.ux[self._i]
     @property
     def uy(self):
-        """y-coordinate of normalised momentum direction"""
+        """y component of the direction of motion"""
         return self._b.uy[self._i]
     @property
     def uz(self):
-        """z-coordinate of normalised momentum direction"""
+        """z component of the direction of motion"""
         return self._b.uz[self._i]
     @property
     def polx(self):
-        """x-coordinate of polarisation vector"""
+        """x component of the polarisation vector"""
         return self._b.polx[self._i]
     @property
     def poly(self):
-        """y-coordinate of polarisation vector"""
+        """y component of the polarisation vector"""
         return self._b.poly[self._i]
     @property
     def polz(self):
-        """z-coordinate of polarisation vector"""
+        """z component of the polarisation vector"""
         return self._b.polz[self._i]
     @property
     def ekin(self):
-        """kinetic energy [MeV]"""
+        """Kinetic energy [MeV]"""
         return self._b.ekin[self._i]
     @property
     def time(self):
-        """time-stamp [millisecond]"""
+        """Time [ms]"""
         return self._b.time[self._i]
     @property
     def weight(self):
-        """weight or intensity"""
+        """Weight (or intensity)"""
         return self._b.weight[self._i]
     @property
     def userflags(self):
-        """custom per-particle flags"""
+        """Custom 32 bit flags of the particle"""
         return self._b.userflags[self._i]
     @property
     def userdata(self):
@@ -113,11 +113,11 @@ class MCPLParticle:
         return wavelength_checked(self.ekin, self.pdgcode)
     @property
     def pdgcode(self):
-        """MC particle number from the Particle Data Group (2112=neutron, 22=gamma, ...)"""
+        """Particle type, as a PDG code (2112 for neutrons, 22 for gammas, ...)"""
         return self._b.pdgcode[self._i]
     @property
     def fileidx(self):
-        """Particle position in file (counting from 0)"""
+        """Position of the particle in the file (counting from 0)"""
         if self._b._indices is not None:
             return int(self._b._indices[self._i])
         return self._b._offset + self._i
@@ -130,12 +130,12 @@ class MCPLParticle:
         return self.fileidx
 
 class MCPLParticleBlock:
-    """Object representing a block of particle. Fields are arrays rather than single
-    numbers, but otherwise have the same meaning as on the MCPLParticle class."""
+    """A block of particles read from an MCPL file. The fields are arrays with a
+    value for each particle, but otherwise as for MCPLParticle."""
 
     def __init__(self,opt_polarisation,opt_userflags,opt_globalw,opt_globalpdg,fmtversion,
                  udinfo = None, pdt = None):
-        """For internal use only - users should not normally create MCPLParticle objects themselves"""
+        """(Particles are created by MCPLFile, not by users.)"""
         self._ctor_args = (opt_polarisation,opt_userflags,opt_globalw,opt_globalpdg,fmtversion,
                            udinfo,pdt)
         #(numpy dtype of the particle data in the file):
@@ -248,7 +248,7 @@ class MCPLParticleBlock:
 
     @property
     def file_offset(self):
-        """Particle position in file of first particle in block (counting from 0)"""
+        """Position in the file of the first particle of the block (counting from 0)"""
         return self._offset
 
     @property
@@ -261,7 +261,7 @@ class MCPLParticleBlock:
 
     @property
     def polx(self):
-        """X-coordinate of polarisation vector of each particle (array)"""
+        """x components of the polarisation vectors (array)"""
         x = self._polx
         if x[0]:
             if x[1] is None:
@@ -273,7 +273,7 @@ class MCPLParticleBlock:
 
     @property
     def poly(self):
-        """Y-coordinate of polarisation vector of each particle (array)"""
+        """y components of the polarisation vectors (array)"""
         x = self._poly
         if x[0]:
             if x[1] is None:
@@ -285,7 +285,7 @@ class MCPLParticleBlock:
 
     @property
     def polz(self):
-        """Z-coordinate of polarisation vector of each particle (array)"""
+        """z components of the polarisation vectors (array)"""
         x = self._polz
         if x[0]:
             if x[1] is None:
@@ -297,7 +297,7 @@ class MCPLParticleBlock:
 
     @property
     def pdgcode(self):
-        """MC particle number from the Particle Data Group (2112=neutron, 22=gamma, ...) of each particle (array)"""
+        """Particle types, as PDG codes (array)"""
         x = self._pdg
         if x[0]:
             if x[1] is None:
@@ -309,7 +309,7 @@ class MCPLParticleBlock:
 
     @property
     def weight(self):
-        """Weight or intensity of each particle (array)"""
+        """Weights (array)"""
         x = self._w
         if x[0]:
             if x[1] is None:
@@ -334,7 +334,7 @@ class MCPLParticleBlock:
 
     @property
     def userflags(self):
-        """Custom per-particle flags of each particle (array)"""
+        """Custom 32 bit flags of the particles (array)"""
         x = self._uf
         if x[0]:
             if x[1] is None:
@@ -346,21 +346,21 @@ class MCPLParticleBlock:
 
     @property
     def position(self):
-        """Positions [cm] as array with shape (N,3)"""
+        """Positions [cm], as an array with shape (N,3)"""
         if self._view_pos is None:
             self._view_pos = np.stack((self.x,self.y,self.z),axis=1)
         return self._view_pos
 
     @property
     def polarisation(self):
-        """Polarisation vectors as array with shape (N,3)"""
+        """Polarisation vectors, as an array with shape (N,3)"""
         if self._view_pol is None or len(self._view_pol) != len(self._data):
             self._view_pol = np.stack((self.polx,self.poly,self.polz),axis=1)
         return self._view_pol
 
     @property
     def direction(self):
-        """Normalised momentum directions as array with shape (N,3)"""
+        """Directions of motion (unit vectors), as an array with shape (N,3)"""
         if self._view_dir is None:
             if self._ux is None:
                 self._unpack()
@@ -369,41 +369,41 @@ class MCPLParticleBlock:
 
     @property
     def x(self):
-        """X-coordinate of position [cm] of each particle (array)"""
+        """x coordinates of the positions [cm] (array)"""
         return self._double('x')
     @property
     def y(self):
-        """Y-coordinate of position [cm] of each particle (array)"""
+        """y coordinates of the positions [cm] (array)"""
         return self._double('y')
     @property
     def z(self):
-        """Z-coordinate of position [cm] of each particle (array)"""
+        """z coordinates of the positions [cm] (array)"""
         return self._double('z')
     @property
     def time(self):
-        """Time-stamp [millisecond] of each particle (array)"""
+        """Times [ms] (array)"""
         return self._double('t')
     @property
     def ux(self):
-        """X-coordinate of normalised momentum direction of each particle (array)"""
+        """x components of the directions of motion (array)"""
         if self._ux is None:
             self._unpack()
         return self._ux
     @property
     def uy(self):
-        """Y-coordinate of normalised momentum direction of each particle (array)"""
+        """y components of the directions of motion (array)"""
         if self._uy is None:
             self._unpack()
         return self._uy
     @property
     def uz(self):
-        """Z-coordinate of normalised momentum direction of each particle (array)"""
+        """z components of the directions of motion (array)"""
         if self._uz is None:
             self._unpack()
         return self._uz
     @property
     def ekin(self):
-        """Kinetic energy [MeV] of each particle (array)"""
+        """Kinetic energies [MeV] (array)"""
         if self._ekin is None:
            self._ekin = abs(self._data['uve3']).astype(float)
         return self._ekin

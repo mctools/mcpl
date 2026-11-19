@@ -513,8 +513,8 @@ def _namehelper(filename, iproc, mode):
     raise MCPLError('internal namehelper: bad mode')
 
 def name_helper(filename, mode):
-    """Estimate the output name of a given filename (like mcpl_name_helper in the
-    C API), which can be relative or absolute and with or without .mcpl or
+    """The name MCPL uses for a filename (like mcpl_name_helper in the C API),
+    which can be relative or absolute and with or without .mcpl or
     .mcpl.gz suffixes. The mode controls the returned name: "M" for
     /abs/path/base.mcpl, "G" for /abs/path/base.mcpl.gz, "B" for
     /abs/path/base, and "m", "g", "b" for the same without the directory."""

@@ -64,10 +64,9 @@ def blobkey_problem( key ):
     return None
 
 class MCPLFile:
-    """Python-only class for reading MCPL files, using numpy and internal caches to
-    ensure good efficiency. File access is read-only, and the particles can only
-    be read in consecutive and forward order, providing either single particles or
-    blocks of particles as requested."""
+    """Reads an MCPL file (.mcpl or .mcpl.gz), one particle at a time, or in
+    blocks of particles with the fields as NumPy arrays, in the order of the
+    file."""
 
     def __del__(self):
         #(also for objects whose __init__ failed before the file was opened):
@@ -77,12 +76,10 @@ class MCPLFile:
     def __init__(self,filename,*,blocklength = 10000, raw_strings = False,
                  pick = None, edit = None, skip = 0, limit = None,
                  _recover = True):
-        """Open indicated mcpl file, which can either be uncompressed (.mcpl) or
-        compressed (.mcpl.gz). The other arguments must be given by name. The
-        blocklength parameter can be used to control
-        the number of particles read by each call to read_block(). The parameter
-        raw_strings will prevent UTF-8 decoding of string data loaded from the
-        file.
+        """Open an MCPL file (.mcpl or .mcpl.gz). The other arguments must be
+        given by name: blocklength is the number of particles read by each
+        read_block(), and with raw_strings=True, the strings of the header are
+        bytes (not decoded as UTF-8).
 
         If pick (an expression or a ParticleFilter) is given, only the
         picked particles are returned by read(), read_block(), and the
@@ -340,11 +337,9 @@ class MCPLFile:
         return self._edt
 
     def read_block(self):
-        """Read and return next block of particles (None when EOF). Similar to read(),
-        but returned \"particle\" object actually represents a whole block of
-        particles, and the fields on it are thus (numpy) arrays of numbers
-        rather than single numbers.  See also the particle_blocks property for
-        an iterator-based access to blocks. Calls of read() and read_block()
+        """Read the next block of particles (None at the end of the file): like
+        read(), but the fields are NumPy arrays with a value for each particle.
+        The particle_blocks property iterates over the blocks. Calls of read() and read_block()
         can be mixed: each continues after the particles returned by the
         other (after read(), read_block() returns the rest of the block of the
         particle returned by read())."""
@@ -460,9 +455,8 @@ class MCPLFile:
                  ' They can not be added to other MCPL files.')
 
     def read(self):
-        """Read and return next particle in file (None when EOF) as a particle object,
-        with particle state information available on fields as seen in the following
-        example:
+        """Read the next particle (None at the end of the file), with its fields as
+        in this example:
 
           p = mcplfile.read()
           if p is not None:
@@ -471,10 +465,9 @@ class MCPLFile:
                print(p.polx,p.poly,p.polz)
                print(p.ekin,p.time,p.weight,p.userflags)
 
-        See also the particles property for an iterator-based access to
-        particles. Furthermore, note that the read_blocks() function and
-        the particle_blocks property provides block-based access, which can
-        improve performance dramatically."""
+        The particles property iterates over the particles. Reading blocks of
+        particles (with read_block() or the particle_blocks property) is much
+        faster."""
         if self._filtered:
             if self._fpending is None:
                 b = self.read_block()
@@ -497,8 +490,8 @@ class MCPLFile:
 
     def skip_forward(self,n):
 
-        """skip n positions forward in file. (returns False when there is no
-           particle at the new position, otherwise True)"""
+        """Skip n positions forward in the file (returns False if there is no
+        particle at the new position, otherwise True)"""
         if self._filtered:
             raise MCPLError('skip_forward can not be used with files opened'
                             ' with pick, edit, skip, or limit')
@@ -546,7 +539,7 @@ class MCPLFile:
         particles each time for efficiency:
 
            for p in thefile.particle_blocks:
-               #(NB: the "values" here are actually arrays)
+               #(the fields are arrays)
                print(p.x,p.y,p.z)
         """
         self.rewind()
@@ -557,8 +550,8 @@ class MCPLFile:
             yield p
 
     def rewind(self):
-        """Rewind file, causing next calls to read() and read_blocks() to start again at
-        the beginning of the file."""
+        """Rewind the file, so the next read() or read_block() starts at the
+        beginning of the file."""
         self._fileseek(self.headersize)
         self._ipos = 0
         self._iblock = 0
@@ -583,11 +576,11 @@ class MCPLFile:
         return self._hdr['headersize']
     @property
     def endianness(self):
-        """Endianness of numbers in file"""
+        """Byte order of the numbers in the file"""
         return self._hdr['endianness']
     @property
     def opt_userflags(self):
-        """Whether or not userflags are enabled in file"""
+        """Whether the file stores userflags"""
         return self._hdr['opt_userflags']
     @property
     def userdata_layout(self):
@@ -600,47 +593,44 @@ class MCPLFile:
         return self._hdr['userdata_size']
     @property
     def opt_universalpdgcode(self):
-        """Global PDG code for all particles in file (a value of 0 means that
-        PDG codes are stored per-particle)"""
+        """PDG code of all particles in the file (0 if it is stored for each
+        particle)"""
         return self._hdr['opt_universalpdgcode']
     @property
     def opt_polarisation(self):
-        """Whether or not polarisation info is enabled in file"""
+        """Whether the file stores polarisation vectors"""
         return self._hdr['opt_polarisation']
     @property
     def opt_singleprec(self):
-        """Whether or not floating point numbers in particle data are stored in
-        single-precision (32bit) rather than double-precision (64bit)"""
+        """Whether numbers in the particle data are stored in single precision
+        (32 bit) rather than double precision (64 bit)"""
         return self._hdr['opt_singleprec']
     @property
     def opt_universalweight(self):
-        """Global weight for all particles in file (a value of 0.0 means that
-        weights are stored per-particle)"""
+        """Weight of all particles in the file (0.0 if it is stored for each
+        particle)"""
         return self._hdr['opt_universalweight']
     @property
     def sourcename(self):
-        """Name of application that wrote the MCPL file"""
+        """Name of the application which wrote the file"""
         return self._hdr['sourcename']
     @property
     def comments(self):
-        """List of custom comments (strings) embedded in the file header"""
+        """Comments (strings) in the file header"""
         return self._hdr['comments']
     @property
     def blobs(self):
-        """Dictionary of custom binary blobs (byte-arrays) embedded in the file
-        header. Each such blob is associated with a key, which is also the key
-        in the dictionary"""
+        """Binary blobs (bytes) in the file header, as a dictionary by key"""
         return self._hdr['blobs']
     @property
     def blob_storage_order(self):
-        """In-file storage order of binary blobs (as list of keys)."""
+        """Keys of the binary blobs, in the order stored in the file"""
         return self._hdr['blobkeys']
 
     @property
     def stat_sum(self):
-        """Access "stat:sum:..." data from file comments as a convenient
-        key->value dictionary. Note that any key present with a value of -1 in
-        the file will get the value None here in the Python interface.
+        """The stat:sum entries of the file header, as a dictionary of keys and
+        values. Values of -1 in the file (not available) are None here.
         """
         h = self._hdr
         d = h.get('stat_sum')
@@ -838,7 +828,7 @@ class MCPLFile:
                      " too old.")
 
     def dump_hdr(self):
-        """Dump file header to stdout (like the mcpltool command)"""
+        """Print the file header (like mcpltool)"""
         h=self._hdr
         def print_datastring(prefix,s,postfix):
             print(prefix,end='')
@@ -886,10 +876,9 @@ class MCPLFile:
         print()
 
     def dump_particles(self,limit=10,skip=0,pick=None,_view=None):
-        """Dump a list of particles to stdout (like the mcpltool command). The
-        limit and skip parameters can be used to respectively limit the
-        number of particles printed and to skip past the first particles
-        (after any skip, limit, and pick given when opening the file). Use limit=0 to disable the limit. If pick is given (an
+        """Print particles (like mcpltool): at most limit particles (all with
+        limit=0), after skipping the first skip particles (after any skip,
+        limit, and pick given when opening the file). If pick is given (an
         expression or a ParticleFilter), only the picked particles are shown,
         and limit and skip apply to those."""
 
@@ -1071,8 +1060,8 @@ class _FileView:
             yield b
 
 def dump_file(filename,header=True,particles=True,limit=10,skip=0,pick=None,**kwargs):
-    """Python equivalent of mcpl_dump(..) function from mcpl.h, which can be used to
-    dump both header and particle contents of a file to stdout. If pick is
+    """Print the header and the particles of a file (like mcpltool, and
+    mcpl_dump in the C API). If pick is
     given (an expression or a ParticleFilter), only the picked particles are
     shown."""
     with MCPLFile(filename,**kwargs) as f:
