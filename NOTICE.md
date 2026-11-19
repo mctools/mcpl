@@ -13,7 +13,7 @@ http://www.apache.org/licenses/LICENSE-2.0, as well as in the LICENSE file found
 in the source distribution.
 
 A substantial effort went into developing MCPL. If you use it for your work, we
-would appreciate it if you would use the following reference in your work:
+would appreciate it if you would cite the following reference in it:
 
    T. Kittelmann, et al., Monte Carlo Particle Lists: MCPL, Computer Physics
    Communications 218, 17-42 (2017), https://doi.org/10.1016/j.cpc.2017.04.012

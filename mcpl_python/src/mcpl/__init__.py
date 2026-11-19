@@ -36,7 +36,7 @@ This package can be freely used as per the terms in the LICENSE file distributed
 MCPL, also available at https://github.com/mctools/mcpl/blob/master/LICENSE .
 
 A substantial effort went into developing MCPL. If you use it for your work, we
-would appreciate it if you would use the following reference in your work:
+would appreciate it if you would cite the following reference in it:
 
    T. Kittelmann, et al., Monte Carlo Particle Lists: MCPL, Computer Physics
    Communications 218, 17-42 (2017), https://doi.org/10.1016/j.cpc.2017.04.012
