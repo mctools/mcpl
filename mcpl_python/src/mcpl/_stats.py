@@ -372,8 +372,7 @@ def plot_stats(*args, **kwargs):
                     ' mcpl.histogram(FILE,EXPR).plot() for plots of the particles')
 
 def dump_stats(stats):
-    """Format and print provided statistics object to stdout. The stats object is
-    assumed to have been created by a call to collect_stats()"""
+    """Print statistics collected with collect_stats()"""
 
     if not isinstance(stats,dict):
         stats = collect_stats(stats,bin_data=False)

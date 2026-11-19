@@ -97,9 +97,9 @@ def _is_same_file(f1, f2):
         return False
 
 class MCPLOutFile:
-    """Python-only class for writing MCPL files, using numpy to process blocks of
-    particles efficiently. The produced files are identical to those written by
-    the C library (in MCPL format version 3, or 4 for files with userdata).
+    """Writes MCPL files, with blocks of particles given as NumPy arrays, or
+    one particle at a time. The files are identical to those written by the C
+    library (in MCPL format version 3, or 4 for files with userdata).
 
     The header is configured with methods named like the corresponding
     functions in the C API (hdr_set_srcname, hdr_add_comment, hdr_add_data,
@@ -621,8 +621,8 @@ class MCPLOutFile:
         self._opt_universalweight = weight or 0.0
 
     def hdr_add_stat_sum(self, key, value):
-        """Add or update named statistics "sum", encoded in a special comment
-        (see the C API for details). Use value=-1 (or None) to register a
+        """Add or update a stat:sum entry (a comment with a value which is
+        added up when files are merged). Use value=-1 (or None) to register a
         value which will be updated later (at the latest before closing the
         file)."""
         self._check_open()

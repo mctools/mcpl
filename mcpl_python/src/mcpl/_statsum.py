@@ -28,10 +28,8 @@ from ._common import MCPLError
 
 def encode_stat_sum( key, value ):
     """
-    Function which can help encode a key and value into the special format
-    needed for "stat:sum:..." comments in MCPL headers. A value of either None
-    or -1.0 maps to -1.0 in the encoding.
-    """
+    Encode a key and value as a stat:sum comment of an MCPL header (None
+    and -1 give -1, meaning not available)."""
     import math
     if hasattr(key,'decode'):
         key = key.decode('ascii')
@@ -60,9 +58,7 @@ def encode_stat_sum( key, value ):
 
 def is_valid_stat_sum_key( key ):
     """
-    Function which can be used to verify that a particular key has the correct
-    format needed for "stat:sum:..." comments in MCPL headers.
-    """
+    Whether a key can be used in stat:sum comments of MCPL headers."""
     if not ( ( 1<=len(key)<=64 ) and key.isascii() and key.isidentifier() ):
         return False
     k0 = key[0].lower()

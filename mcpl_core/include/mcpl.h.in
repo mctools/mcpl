@@ -616,7 +616,7 @@ extern "C" {
   MCPL_API void mcpl_generic_fclose( mcpl_generic_filehandle_t* );
 
   /* Read at most nbytes. Returns number of bytes actually read. */
-  /* It is an error to try to read more that int32_max at a time */
+  /* It is an error to try to read more than int32_max at a time */
   MCPL_API unsigned mcpl_generic_fread_try( mcpl_generic_filehandle_t*,
                                             char * dest, unsigned nbytes );
 

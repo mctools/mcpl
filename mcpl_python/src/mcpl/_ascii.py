@@ -28,8 +28,8 @@ from ._reader import MCPLFile
 
 
 def convert2ascii(mcplfile,outfile,*,allow_overwrite=False):
-    """Read particle contents of mcplfile and write into outfile using a simple
-    ASCII-based format. An existing outfile is only overwritten if
+    """Write the particles of an MCPL file to a text file, with a column for
+    each field (like mcpltool --text). An existing outfile is only overwritten if
     allow_overwrite is True."""
     if not hasattr(outfile,'write'):
         import os

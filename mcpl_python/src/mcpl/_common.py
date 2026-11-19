@@ -49,7 +49,7 @@ def _output_bytearray_raw(b):
 
 
 class MCPLError(Exception):
-    """Common exception class for all exceptions raised by module"""
+    """The exception raised for errors in the mcpl module"""
 
 def _native_endianness():
     return 'L' if sys.byteorder == 'little' else 'B'
