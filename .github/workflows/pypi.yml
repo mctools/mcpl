@@ -576,8 +576,10 @@ jobs:
       - name: Analyse wheel files
         shell: python
         run: |
+          import fnmatch
           import pathlib
           import os.path
+          import re
           from zipfile import ZipFile
           wheel_dir = pathlib.Path('.').joinpath('dist_final')
           errors = [False]
@@ -588,8 +590,10 @@ jobs:
               assert wheelfile.is_file()
               for fn in zip_content(wheelfile):
                   bnl = os.path.basename(fn).lower()
-                  if any(bnl.endswith(e) for e in ('.dll','.dylib','.so','.a','.o','.exe')):
-                      if exceptions and bnl in exceptions:
+                  #(also versioned shared libraries like libmcpl.so.3):
+                  if re.search(r'\.(dll|dylib|so|a|o|exe)$|\.so(\.[0-9]+)+$',bnl):
+                      if exceptions and any(fnmatch.fnmatch(bnl,e)
+                                            for e in exceptions):
                           print(f"Found allowed binary in {wheelfile.name}: {fn}")
                       else:
                           errors[0] = True
@@ -601,8 +605,8 @@ jobs:
               for f in wfs:
                   validate_wheel(f,exceptions)
           val( 'mcpl_core-*.whl',
-               ['libmcpl.so','libmcpl.dylib','mcpl.lib','mcpl.dll',
-                'mcpl-config.exe'] )
+               ['libmcpl.so.[0-9]*','libmcpl.[0-9]*.dylib','mcpl.lib',
+                'mcpl.dll','mcpl-config.exe'] )
           val( 'mcpl_extra-*.whl',
                [ 'ssw2mcpl.exe','mcpl2ssw.exe','phits2mcpl.exe','mcpl2phits.exe'] )
           val( 'mcpl-*.whl')
