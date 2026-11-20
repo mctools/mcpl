@@ -192,7 +192,6 @@ def check_all_project_scripts():
     ]
     extra_py = [
         ('mcpltool','mcpl._cli:main'),
-        ('pymcpltool','mcpl._cli:_main_pymcpltool'),
     ]
     extra_extra = [
         ('mcpl2ssw','_mcpl_extra.cli:cli_wrapper_mcpl2ssw'),
