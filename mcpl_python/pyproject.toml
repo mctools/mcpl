@@ -57,4 +57,3 @@ scipp = [
 
 [project.scripts]
 mcpltool = "mcpl._cli:main"
-pymcpltool = "mcpl._cli:_main_pymcpltool"

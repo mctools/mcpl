@@ -99,13 +99,5 @@ def main():
     lines = rv.stdout.splitlines()
     print(f'    {lines[lines.index("Usage:")+1]}')
 
-    print('==> The old pymcpltool command warns, and works like mcpltool:')
-    code = ( 'import sys;sys.argv[0]="pymcpltool";'
-             'from mcpldev._cli import _main_pymcpltool as m;m()' )
-    rv = subprocess.run([sys.executable, '-c', code, '-j', str(files[1])],
-                        capture_output=True, text=True, check=True)
-    for line in rv.stdout.splitlines()[:3]:
-        print(f'    stdout: {line}')
-
 if __name__ == '__main__':
     main()

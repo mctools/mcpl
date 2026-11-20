@@ -650,10 +650,3 @@ def app_pymcpltool(argv=None):
     print('MCPL WARNING: app_pymcpltool has been renamed to app_mcpltool,'
           ' and will be removed in a future release.')
     app_mcpltool(argv)
-
-def _main_pymcpltool():
-    """The pymcpltool command, which is the old name of the mcpltool
-    command."""
-    print('MCPL WARNING: The pymcpltool command has been renamed to mcpltool,'
-          ' and will be removed in a future release.')
-    main()
