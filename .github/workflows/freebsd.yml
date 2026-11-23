@@ -34,7 +34,7 @@ jobs:
         run: python ./src/devel/bin/mcpldevtool nprocs --enable-github-parallel
 
       - name: Start FreeBSD VM
-        uses: cross-platform-actions/action@82668f1fbd89d9c99487604f822cbf6716f124d3
+        uses: cross-platform-actions/action@30cde56b87a128507bebea9531205087890ee360
         with:
           environment_variables: CMAKE_BUILD_PARALLEL_LEVEL CTEST_PARALLEL_LEVEL
           operating_system: freebsd
@@ -89,7 +89,7 @@ jobs:
         run: python ./src/devel/bin/mcpldevtool nprocs --enable-github-parallel
 
       - name: Start FreeBSD VM
-        uses: cross-platform-actions/action@82668f1fbd89d9c99487604f822cbf6716f124d3
+        uses: cross-platform-actions/action@30cde56b87a128507bebea9531205087890ee360
         with:
           environment_variables: CMAKE_BUILD_PARALLEL_LEVEL CTEST_PARALLEL_LEVEL
           operating_system: freebsd
